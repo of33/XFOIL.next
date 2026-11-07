@@ -1,0 +1,71 @@
+
+ ===================================================
+ XFOIL.next Version 1.0.0
+ Copyright (C) 2026 Olaf Frommann
+
+ Based upon XFOIL Version 6.99
+ Copyright (C) 2000   Mark Drela, Harold Youngren
+
+ This software comes with ABSOLUTELY NO WARRANTY,
+   subject to the GNU General Public License.
+
+ Caveat computor
+ ===================================================
+
+ File  xfoil.def  not found
+
+Loading profile file: sample/CLARK_Y.dat
+Foil name : CLARK Y
+Number of points : 151
+
+   QUIT    Exit program
+
+  .OPER    Direct operating point(s)
+  .MDES    Complex mapping design routine
+  .QDES    Surface speed design routine
+  .GDES    Geometry design routine
+
+   SAVE f  Write airfoil to labeled coordinate file
+   PSAV f  Write airfoil to plain coordinate file
+   ISAV f  Write airfoil to ISES coordinate file
+   MSAV f  Write airfoil to MSES coordinate file
+   REVE    Reverse written-airfoil node ordering
+   DELI i  Change written-airfoil file delimiters
+
+   LOAD f  Read buffer airfoil from coordinate file
+   NACA i  Set NACA 4,5-digit airfoil and buffer airfoil
+   INTE    Set buffer airfoil by interpolating two airfoils
+   NORM    Buffer airfoil normalization toggle
+   HALF    Halve the number of points in buffer airfoil
+   XYCM rr Change CM reference location, currently  0.25000 0.00000
+
+   BEND    Display structural properties of current airfoil
+
+   PCOP    Set current-airfoil panel nodes directly from buffer airfoil points
+   PANE    Set current-airfoil panel nodes ( 160 ) based on curvature
+  .PPAR    Show/change paneling
+
+  .PLOP    Plotting options
+
+   WDEF f  Write  current-settings file
+   RDEF f  Reread current-settings file
+   NAME s  Specify new airfoil name
+   NINC    Increment name version number
+
+   Z       Zoom    | (available in all menus)
+   U       Unzoom  |
+
+ XFOIL   c>  
+    Present paneling parameters...
+  N  i   Number of panel nodes       160
+  P  r   Panel bunching parameter    1.000
+  T  r   TE/LE panel density ratio   0.150
+  R  r   Refined area/LE  panel density ratio   0.200
+  XT rr  Top    side refined area x/c limits    1.000 1.000
+  XB rr  Bottom side refined area x/c limits    1.000 1.000
+  Z oom
+  U nzoom
+  H ardcopy
+
+Change what ? (<cr> if nothing else)   c>  
+ XFOIL   c>  

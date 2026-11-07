@@ -1,0 +1,17 @@
+
+  F  disk file
+  C  current airfoil  0012src                                         
+
+  Select source of airfoil "0" ( F C ):  
+Enter filename   s>  
+  Select source of airfoil "1" ( F C ):  
+Enter filename   s>  
+ airfoil "0":                                                  
+ airfoil "1":                                                  
+
+Specify interpolating fraction  0...1   r>   Max thickness =     0.119990  at x =   0.307
+ Max camber    =     0.009999  at x =   0.405
+
+Enter new airfoil name   s>  
+ Result has been placed in buffer airfoil
+ Execute PCOP or PANE to set new current airfoil

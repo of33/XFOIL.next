@@ -1,0 +1,4 @@
+NACA 2412
+SAVE build/regression-capture/t17d1-naca.dat
+LOAD build/regression-capture/t17d1-naca.dat
+QUIT

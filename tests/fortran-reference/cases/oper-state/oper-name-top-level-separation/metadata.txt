@@ -1,0 +1,10 @@
+case-id: oper-state/oper-name-top-level-separation
+category: oper-state
+purpose: TOP-Level NAME und OPER NINC teilen dasselbe kanonische NAME-Feld (XFOIL.INC CHARACTER*48)
+step: C11a-A34-C-OPER-NAME
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: TOP NAME TOPNAME, OPER NINC
+limitations: none

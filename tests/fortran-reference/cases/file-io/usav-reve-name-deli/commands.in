@@ -1,0 +1,10 @@
+NACA 2412
+NAME A B C
+NINC
+
+USAV usav_name.dat
+REVE
+USAV usav_reve.dat
+DELI 1
+USAV usav_delim.dat
+QUIT

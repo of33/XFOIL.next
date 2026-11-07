@@ -1,0 +1,11 @@
+case-id: design-state/gdes-over-read-error
+category: design-state
+purpose: GDES OVER unerkennbares Dateiformat: READ-Fehler, LOAD NOT COMPLETED; P4-P4.
+role: state-frame-reference
+step: C11b-P4-P4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; GDES; OVER; ov_bad.dat; ; QUIT
+limitations: Plot nicht vorhanden

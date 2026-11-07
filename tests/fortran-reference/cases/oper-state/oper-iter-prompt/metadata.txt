@@ -1,0 +1,10 @@
+case-id: oper-state/oper-iter-prompt
+category: oper-state
+purpose: ITER ohne Wert mit Current-limit-Anzeige und Prompt
+step: C11a-A34-C-OPER-state
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: ITER, ITMAX=30
+limitations: none

@@ -1,0 +1,10 @@
+case-id: oper-state/oper-state-sequence-alfa-control
+category: oper-state
+purpose: Zustandsfolge mit anschliessendem ALFA-Kontrollpunkt
+step: C11a-A34-C-OPER-state
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: VISC 1000000, RE 2000000, MACH 0.3, TYPE 2, ITER 30, ALFA 4
+limitations: none

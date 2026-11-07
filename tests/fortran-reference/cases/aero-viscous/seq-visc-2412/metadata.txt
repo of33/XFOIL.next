@@ -1,0 +1,10 @@
+case-id: aero-viscous/seq-visc-2412
+category: aero-viscous
+purpose: Viskose Sequenz NACA 2412, Re=1e6, ASEQ 0..8 Schritt 2
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: viscous, Mach 0, Ncrit 9, natuerliche Transition, Re=1000000, ITER 100, ASEQ 0 8 2
+limitations: none

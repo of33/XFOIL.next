@@ -1,0 +1,234 @@
+name: build-and-test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build and test (${{ matrix.compiler }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - compiler: GCC
+            cxx: g++
+            buildroot: build/ci-gcc
+          - compiler: Clang
+            cxx: clang++
+            buildroot: build/ci-clang
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            g++ clang gfortran make valgrind python3
+
+      - name: Debug build
+        run: make debug CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }}
+
+      - name: Release build
+        run: make release CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }}
+
+      - name: Core tests
+        run: make test-core CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }}
+
+      - name: Unit tests
+        run: make test-unit CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }}
+
+      - name: Integration tests
+        env:
+          XFOIL_CLI_PATH: ${{ matrix.buildroot }}/debug/xfoil.next
+        run: make test-integration CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }}
+
+      - name: Regression tests
+        run: make test-regression CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }}
+
+      - name: Batch tests
+        run: make test-batch CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }}
+
+      - name: Full test suite
+        run: make test CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }}
+
+  windows-msys2:
+    name: Build and test (MSYS2 UCRT64)
+    runs-on: windows-2022
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Set up MSYS2 UCRT64
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: false
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            make
+
+      - name: Environment contract
+        shell: msys2 {0}
+        run: |
+          echo "MSYSTEM=$MSYSTEM"
+          test "$MSYSTEM" = UCRT64
+          uname -a
+          g++ --version
+          gcc --version
+          make --version
+
+      - name: Debug build (-Werror)
+        shell: msys2 {0}
+        run: make debug
+
+      - name: Release build (-Werror, incl. release test program)
+        shell: msys2 {0}
+        run: make release build/release/xfoil_tests
+
+      - name: Core tests (414)
+        shell: msys2 {0}
+        run: |
+          set -o pipefail
+          make test-core | tee ci-core.log
+          grep -F "0 failure(s) in 414 test(s)" ci-core.log
+
+      - name: Unit tests (1668)
+        shell: msys2 {0}
+        run: |
+          set -o pipefail
+          make test-unit | tee ci-unit.log
+          grep -F "0 failure(s) in 1668 test(s)" ci-unit.log
+
+      - name: Integration tests (245)
+        shell: msys2 {0}
+        run: |
+          set -o pipefail
+          make test-integration | tee ci-integration.log
+          grep -F "0 failure(s) in 245 test(s)" ci-integration.log
+
+      - name: Regression tests (5)
+        shell: msys2 {0}
+        run: |
+          set -o pipefail
+          make test-regression | tee ci-regression.log
+          grep -F "0 failure(s) in 5 test(s)" ci-regression.log
+
+      - name: Batch tests (47)
+        shell: msys2 {0}
+        run: |
+          set -o pipefail
+          make test-batch | tee ci-batch.log
+          grep -F "0 failure(s) in 47 test(s)" ci-batch.log
+
+      - name: Release full suite (1968)
+        shell: msys2 {0}
+        run: |
+          set -o pipefail
+          XFOIL_CLI_PATH=build/release/xfoil.next.exe \
+            ./build/release/xfoil_tests | tee ci-release-full.log
+          grep -F "0 failure(s) in 1968 test(s)" ci-release-full.log
+
+      - name: Focused PACC dump diagnostic (1, XFOIL_DUMP_DIAG=1)
+        shell: msys2 {0}
+        run: |
+          set -o pipefail
+          XFOIL_DUMP_DIAG=1 XFOIL_CLI_PATH=build/debug/xfoil.next.exe \
+            ./build/debug/xfoil_tests \
+            regression.PaccDumpByteParityMatchesFortranReference \
+            | tee ci-pacc-diagnostic.log
+          grep -F "0 failure(s) in 1 test(s)" ci-pacc-diagnostic.log
+
+      - name: Binary contract
+        shell: msys2 {0}
+        run: |
+          set -e
+          test -f build/debug/xfoil.next.exe
+          test ! -e build/debug/xfoil.exe
+          test -f build/release/xfoil.next.exe
+          test ! -e build/release/xfoil.exe
+          out=$(./build/release/xfoil.next.exe --version)
+          echo "version output: [$out]"
+          test "$out" = "XFOIL.next 1.0.0"
+
+  validation:
+    name: Gates, reference, harnesses, sanitizer
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            g++ gfortran make python3
+
+      - name: check-dependencies
+        run: make check-dependencies
+
+      - name: check-fortran-sha
+        run: make check-fortran-sha
+
+      - name: check-release-inventory
+        run: make check-release-inventory
+
+      - name: check-license-headers
+        run: make check-license-headers
+
+      - name: check-public-docs
+        run: make check-public-docs
+
+      - name: core-link-check
+        run: make core-link-check
+
+      - name: session-link-check
+        run: make session-link-check
+
+      - name: Fortran reference verify
+        run: make test-reference
+
+      - name: Fortran reference determinism
+        run: make test-reference-determinism
+
+      - name: Harness families
+        run: make test-harnesses
+
+      - name: Sanitizer build and test
+        run: make test-sanitize
+
+  valgrind:
+    name: Valgrind
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            g++ make valgrind
+
+      - name: Build debug and core targets
+        run: |
+          make debug BUILDROOT=build/ci-valgrind
+          make core-link-check BUILDROOT=build/ci-valgrind
+          make session-link-check BUILDROOT=build/ci-valgrind
+
+      - name: Valgrind
+        run: make test-valgrind BUILDROOT=build/ci-valgrind

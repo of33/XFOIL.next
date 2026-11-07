@@ -1,0 +1,7 @@
+PLOP
+g
+
+LOAD abcopy365.dat
+ab365
+PSAV out365.dat
+QUIT

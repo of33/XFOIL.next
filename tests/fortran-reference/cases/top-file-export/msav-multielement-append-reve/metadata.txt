@@ -1,0 +1,10 @@
+case-id: top-file-export/msav-multielement-append-reve
+category: top-file-export
+purpose: MSAV ersetzt nach REVE (LCLOCK) Element 2 rueckwaerts in Zweielementdatei
+step: C11b-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: REVE, MSAV multi.mses, Element 2
+limitations: keine

@@ -1,0 +1,10 @@
+case-id: oper-state/oper-cpmn-after-mach
+category: oper-state
+purpose: CPMN nach MACH: FCPMIN-Snapshot bleibt (MACH ruft kein FCPMIN)
+step: C11a-A34-C-OPER-CPMN
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: ALFA 2, MACH 0.3, CPMN
+limitations: none

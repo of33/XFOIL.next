@@ -1,0 +1,4 @@
+
+# XFOIL-6.99-Prompts enden absichtlich mit zwei Leerzeichen.
+# Die CLI-Transkripte werden bytegenau verglichen.
+tests/golden/cli/*.stdout.txt -whitespace

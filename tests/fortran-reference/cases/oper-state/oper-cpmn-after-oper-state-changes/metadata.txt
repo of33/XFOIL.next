@@ -1,0 +1,10 @@
+case-id: oper-state/oper-cpmn-after-oper-state-changes
+category: oper-state
+purpose: CPMN erhaelt Snapshot ueber RE/INIT/VPAR XTR
+step: C11a-A34-C-OPER-CPMN-PERSISTENZ
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: ALFA 2, CPMN, RE 2000000, INIT, VPAR XTR 1.0, CPMN
+limitations: none

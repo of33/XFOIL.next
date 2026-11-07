@@ -1,0 +1,11 @@
+case-id: design-state/camb-wrtc-name
+category: design-state
+purpose: CAMB WRTC nach GDES NAME: Header 'Camber: '//NAME mit CHARACTER*48-Auffuellung (xtcam.f 313, FORMAT 1000); P4-P3.
+role: state-frame-reference
+step: C11b-P4-P3
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; GDES; NAME MyFoil; CAMB; WRTC c.dat; ; ; QUIT
+limitations: Plot nicht vorhanden

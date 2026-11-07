@@ -1,0 +1,11 @@
+case-id: design-state/camb-rdac-x-offrange
+category: design-state
+purpose: CAMB RDAC x-Bereich nicht 0..1: Normierung XCORG/XCSCL (xtcam.f 351-357); P4-P3.
+role: state-frame-reference
+step: C11b-P4-P3
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; GDES; CAMB; RDAC; offrange.dat; ; ; QUIT
+limitations: Plot nicht vorhanden

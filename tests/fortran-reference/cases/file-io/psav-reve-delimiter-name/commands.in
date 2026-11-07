@@ -1,0 +1,11 @@
+NACA 2412
+NAME A B C
+NINC
+
+PSAV psav_name.dat
+REVE
+DELI 1
+PSAV psav_reve_comma.dat
+DELI 2
+PSAV psav_tab.dat
+QUIT

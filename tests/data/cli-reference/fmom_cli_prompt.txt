@@ -1,0 +1,12 @@
+
+  Top    surface:  y =  0.0000     y/t = 1.0
+  Bottom surface:  y = -0.0000     y/t = 0.0
+
+ Flap hinge x,y :  0.0000  0.0000
+                                           2  2
+ Hinge moment/span = 0.063155  x  1/2 rho V  c 
+                                           2   
+ x-Force     /span = -.008099  x  1/2 rho V  c 
+                                           2   
+ y-Force     /span = 0.241389  x  1/2 rho V  c 
+

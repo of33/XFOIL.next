@@ -1,0 +1,12 @@
+case-id: file-io/mses-load-name-48
+category: file-io
+purpose: MSES-LOAD-Kennzeile mit genau 48 Zeichen langem NAME-Feld: bestaetigt die volle CHARACTER*48-Ausgabe ohne rechtsseitige Blancauffuellung ueber die Feldgrenze hinaus.
+role: a34c-mses-load-name-48-reference
+step: A34-C MSES LOAD Textvertrag
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: LOAD mses_name_48.dat
+fixture-origin: input/mses_name_48.dat (NAME aus 48 'A', MSES-Domainzeile ' -1.0  2.0  -1.5  2.5')
+limitations: none

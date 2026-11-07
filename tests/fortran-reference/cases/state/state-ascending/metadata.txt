@@ -1,0 +1,10 @@
+case-id: state/state-ascending
+category: state
+purpose: Aufsteigende inviskide Sequenz NACA 2412, ASEQ 0..8 Schritt 2
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: inviscid, ASEQ 0 8 2
+limitations: none

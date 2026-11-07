@@ -1,0 +1,11 @@
+PLOP
+g
+
+LOAD CLARK_Y.dat
+OPER
+PACC
+polar-inv-clark-y.pol
+
+ASEQ -4 8 2
+
+QUIT

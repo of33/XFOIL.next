@@ -1,0 +1,9 @@
+NACA 0012
+GDES
+TRAN 0.1 0.2
+!
+!
+FOO
+!
+
+QUIT

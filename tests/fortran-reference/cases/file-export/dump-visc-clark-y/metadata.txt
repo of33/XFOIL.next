@@ -1,0 +1,10 @@
+case-id: file-export/dump-visc-clark-y
+category: file-export
+purpose: DUMP-Dateiexport (BLDUMP xoper.f 1892-2050) nach viskosem konvergiertem Punkt CLARK_Y Re=3e6
+step: C11b-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: viscous Re=3e6, ALFA 4, DUMP mit Dateinamen, KDELIM 0, LWAKE aktiv
+limitations: keine

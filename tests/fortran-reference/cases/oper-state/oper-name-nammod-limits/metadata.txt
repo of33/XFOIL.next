@@ -1,0 +1,10 @@
+case-id: oper-state/oper-name-nammod-limits
+category: oper-state
+purpose: NAMMOD-Grenzen: [99] NINC (MOD 100 -> Tag bleibt), NDEC [99]->[98], fuehrende Nullen [007], 60-Zeichen-Name (CHARACTER*48-Kuerzung)
+step: C11a-A34-C-OPER-NAME
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NAME X [99], NINC, NDEC, NAME Y [007], NINC, NAME 60x, NINC
+limitations: none

@@ -1,0 +1,122 @@
+
+ ===================================================
+ XFOIL.next Version 1.0.0
+ Copyright (C) 2026 Olaf Frommann
+
+ Based upon XFOIL Version 6.99
+ Copyright (C) 2000   Mark Drela, Harold Youngren
+
+ This software comes with ABSOLUTELY NO WARRANTY,
+   subject to the GNU General Public License.
+
+ Caveat computor
+ ===================================================
+
+ File  xfoil.def  not found
+
+Loading profile file: sample/CLARK_Y.dat
+Foil name : CLARK Y
+Number of points : 151
+
+   QUIT    Exit program
+
+  .OPER    Direct operating point(s)
+  .MDES    Complex mapping design routine
+  .QDES    Surface speed design routine
+  .GDES    Geometry design routine
+
+   SAVE f  Write airfoil to labeled coordinate file
+   PSAV f  Write airfoil to plain coordinate file
+   ISAV f  Write airfoil to ISES coordinate file
+   MSAV f  Write airfoil to MSES coordinate file
+   REVE    Reverse written-airfoil node ordering
+   DELI i  Change written-airfoil file delimiters
+
+   LOAD f  Read buffer airfoil from coordinate file
+   NACA i  Set NACA 4,5-digit airfoil and buffer airfoil
+   INTE    Set buffer airfoil by interpolating two airfoils
+   NORM    Buffer airfoil normalization toggle
+   HALF    Halve the number of points in buffer airfoil
+   XYCM rr Change CM reference location, currently  0.25000 0.00000
+
+   BEND    Display structural properties of current airfoil
+
+   PCOP    Set current-airfoil panel nodes directly from buffer airfoil points
+   PANE    Set current-airfoil panel nodes ( 160 ) based on curvature
+  .PPAR    Show/change paneling
+
+  .PLOP    Plotting options
+
+   WDEF f  Write  current-settings file
+   RDEF f  Reread current-settings file
+   NAME s  Specify new airfoil name
+   NINC    Increment name version number
+
+   Z       Zoom    | (available in all menus)
+   U       Unzoom  |
+
+ XFOIL   c>  
+.OPERi   c>  
+ M  =    0.0000
+ Re =  0.1000E+07
+
+.OPERv   c>   Calculating unit vorticity distributions ...
+
+OFS: alfa =   2.0000 cl =   0.6571 cdp =  -0.0007 cm =  -0.0911
+ Calculating wake trajectory ...
+ Calculating source influence matrix ...
+
+ Solving BL system ...
+
+ Initializing BL ...
+    side            1  ...
+ MRCHUE: Inverse mode at  47     Hk =   4.307
+ MRCHUE: Inverse mode at  48     Hk =   4.779
+ MRCHUE: Inverse mode at  49     Hk =   2.500
+ MRCHUE: Inverse mode at  80     Hk =   2.500
+    side            2  ...
+ MRCHUE: Inverse mode at  68     Hk =   4.080
+ MRCHUE: Inverse mode at  69     Hk =   4.733
+ MRCHUE: Inverse mode at  70     Hk =   5.348
+ MRCHUE: Inverse mode at  71     Hk =   5.900
+ MRCHUE: Inverse mode at  72     Hk =   6.091
+ MRCHUE: Inverse mode at  73     Hk =   4.848
+
+ Side 1  free  transition at x/c =  0.4892   48
+ Side 2  free  transition at x/c =  0.9922   72
+
+   1   rms: 0.1992E+00   max: 0.1145E+01   D at   76  2   RLX: 0.775
+       a =  2.000      CL =  0.6665
+      Cm = -0.0933     CD =  0.00562   =>   CDf =  0.00450    CDp =  0.00111
+
+ Side 1  free  transition at x/c =  0.5425   52
+ Side 2 forced transition at x/c =  1.0000   73
+
+   2   rms: 0.4537E-01   max: 0.2911E+00   D at   52  1
+       a =  2.000      CL =  0.6518
+      Cm = -0.0901     CD =  0.00573   =>   CDf =  0.00423    CDp =  0.00150
+
+ Side 1  free  transition at x/c =  0.5477   52
+ Side 2  free  transition at x/c =  0.9988   73
+
+   3   rms: 0.6462E-02   max: -.4229E-01   D at   52  1
+       a =  2.000      CL =  0.6465
+      Cm = -0.0889     CD =  0.00585   =>   CDf =  0.00414    CDp =  0.00171
+
+ Side 1  free  transition at x/c =  0.5457   52
+ Side 2  free  transition at x/c =  1.0000   73
+
+   4   rms: 0.1522E-03   max: -.2151E-02   D at   52  1
+       a =  2.000      CL =  0.6465
+      Cm = -0.0889     CD =  0.00585   =>   CDf =  0.00414    CDp =  0.00171
+
+ Side 1  free  transition at x/c =  0.5456   52
+ Side 2  free  transition at x/c =  1.0000   73
+
+   5   rms: 0.6453E-06   max: -.4056E-05   C at   53  1
+       a =  2.000      CL =  0.6465
+      Cm = -0.0889     CD =  0.00585   =>   CDf =  0.00414    CDp =  0.00171
+      9.000    3.3039   0.005851   0.000000   0.000000   0.000000    0.5456     #
+
+.OPERv   c>  
+ XFOIL   c>  

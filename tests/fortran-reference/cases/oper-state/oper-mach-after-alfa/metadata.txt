@@ -1,0 +1,10 @@
+case-id: oper-state/oper-mach-after-alfa
+category: oper-state
+purpose: MACH nach einem invisiden ALFA-Punkt als Kontrollnachweis
+step: C11a-A34-C-OPER-state
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: ALFA 4, MACH 0.3
+limitations: none

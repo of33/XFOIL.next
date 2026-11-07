@@ -1,0 +1,10 @@
+# Manifest of the session/use-case layer.
+# Allowed dependencies: xfoil/session, xfoil/core, xfoil/io and the
+# documented public value-type/helper headers
+# (tools/check-core-dependencies.py: SESSION_ALLOWED_PUBLIC_HEADERS).
+# Forbidden: app/, cli/, tests, xfoil/XFoil.h,
+# globally mutable solver state.
+include/xfoil/session/SessionState.h
+include/xfoil/session/SessionOps.h
+src/session/SessionOps.cpp
+src/session/XFoilSession.cpp

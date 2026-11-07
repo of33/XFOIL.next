@@ -1,0 +1,11 @@
+case-id: design-state/camb-rotation-warning
+category: design-state
+purpose: CAMB-Rotationswarnung |AROT|>1 deg nach ADEG (xtcam.f 66-71); P4-P2.
+role: state-frame-reference
+step: C11b-P4-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; GDES; ADEG 5; CAMB; ; ; QUIT
+limitations: Plot nicht vorhanden

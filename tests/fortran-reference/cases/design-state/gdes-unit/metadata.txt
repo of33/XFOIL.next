@@ -1,0 +1,11 @@
+case-id: design-state/gdes-unit
+category: design-state
+purpose: GDES UNIT (xgdes.f 763-781): NORM auf Einheitschord mit GEOPAR-Druck; P4-P1.
+role: state-frame-reference
+step: C11b-P4-P1
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012, GDES, UNIT, <Leerzeile>, PSAV, QUIT
+limitations: Plot nicht vorhanden

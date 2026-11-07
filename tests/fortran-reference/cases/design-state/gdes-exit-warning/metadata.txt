@@ -1,0 +1,11 @@
+case-id: design-state/gdes-exit-warning
+category: design-state
+purpose: GDES-Austritt mit LGSAME=false-Warnung nach Bufferaenderung bei intakter Panelkontur (xgdes.f 80-82); P4-P1.
+role: state-frame-reference
+step: C11b-P4-P1
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012, PANE, GDES, TRAN 0.1 0.0, <Leerzeile>, QUIT
+limitations: keine Analyse

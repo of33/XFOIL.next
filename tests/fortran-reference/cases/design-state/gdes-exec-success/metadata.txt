@@ -1,0 +1,11 @@
+case-id: design-state/gdes-exec-success
+category: design-state
+purpose: GDES EXEC auf NACA-0012-Buffer (245<=365): ABCOPY-Bestaetigung FORMAT 1200; P4-P5.
+role: state-frame-reference
+step: C11b-P4-P5
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; GDES; EXEC; ; QUIT
+limitations: Plot nicht vorhanden

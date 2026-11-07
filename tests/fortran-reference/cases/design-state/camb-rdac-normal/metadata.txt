@@ -1,0 +1,11 @@
+case-id: design-state/camb-rdac-normal
+category: design-state
+purpose: CAMB RDAC normal (Datei mit Header+3 Punkten), Block-200-Bericht, ADD als Kontrollconsumer (xtcam.f 330-372, 643-683); P4-P3.
+role: state-frame-reference
+step: C11b-P4-P3
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; GDES; CAMB; RDAC; ac.dat; ADD; ; ; QUIT
+limitations: Plot nicht vorhanden

@@ -1,0 +1,11 @@
+case-id: design-state/camb-tfac
+category: design-state
+purpose: CAMB TFAC ueber TCSCAL/THKCAM, GO TO 100/200 (xtcam.f 242-244); P4-P2.
+role: state-frame-reference
+step: C11b-P4-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; GDES; CAMB; TFAC 0.5 0.5; ; ; QUIT
+limitations: Plot nicht vorhanden

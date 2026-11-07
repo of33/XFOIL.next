@@ -1,0 +1,48 @@
+
+Enter  polar dump filename  OR  <return> for no file   s>  
+ New polar dump file available
+== LPFILX=T PFNAMX=plxini_case.dump                                
+
+Enter  polar dump filename  OR  <return> for no file   s>  
+ Old polar dump file available for appending
+== LPFILX=T PFNAMX=plxini_case.dump                                
+
+Enter  polar dump filename  OR  <return> for no file   s>  
+               Dump file                       Current
+             ------------                    ------------
+ name  :   NACA 0012                       NACA 0012                                       
+ Re    :       3000000.                        1000000.
+ Mach  :         0.3000                          0.3000
+ Retyp :         1                               1
+ Matyp :         1                               1
+ NcritT:         9.0000                          9.0000
+ NcritB:         9.0000                          8.5000
+
+ Current parameters different from old dump file values.
+
+Set current parameters to old dump file values ? y/n>  
+ Old polar dump file NOT available for appending
+== LPFILX=F PFNAMX=plxini_case.dump                                
+ Default polar dump filename:  plxini_case.dump
+
+Enter  new filename  OR  "none"  OR  <return> for default   s>  
+ Polar dump file will NOT be written
+== LPFILX=F PFNAMX=plxini_case.dump                                
+
+Enter  polar dump filename  OR  <return> for no file   s>  
+               Dump file                       Current
+             ------------                    ------------
+ name  :   NACA 2412                       NACA 0012                                       
+ Re    :       1000000.                        1000000.
+ Mach  :         0.0000                          0.3000
+ Retyp :         1                               1
+ Matyp :         1                               1
+ NcritT:         9.0000                          9.0000
+ NcritB:         9.0000                          8.5000
+
+ Current parameters different from old dump file values.
+
+Set current parameters to old dump file values ? y/n>  
+ Old polar dump file available for appending
+== LPFILX=T PFNAMX=plxini_fixture.dump                             
+== NACA 2412                                           0.0000E+00    1.0000E+06   1   1    9.0000E+00    9.0000E+00

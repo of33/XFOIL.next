@@ -1,0 +1,10 @@
+case-id: polar/polar-visc-clark-y
+category: polar
+purpose: Viskose Polar Clark Y Re=1e6 ITER 100, ASEQ 0..6 Schritt 2, mit Polar- und Dump-Datei (PACC)
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: viscous, Re=1e6, ITER 100, PACC, ASEQ 0 6 2, Polar polar-visc-clark-y.pol + Dump
+limitations: Dump-Datei (binär) enthaelt die Druckverteilungen je Punkt

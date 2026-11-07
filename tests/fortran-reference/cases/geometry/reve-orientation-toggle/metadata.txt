@@ -1,0 +1,12 @@
+case-id: geometry/reve-orientation-toggle
+category: geometry
+purpose: TOP-Level-REVE-Policy-Zyklus gegen kanonisches Binary: NACA 2412 (PANGEN, 160 Panelknoten), REVE an (Text 'Airfoil will be written in clockwise order'), REVE aus (Text 'Airfoil will be written in counterclockwise order'), PANE (erneut 160 Panelknoten, identische Geometrie). Belegt, dass REVE nur die Schreiborientierung LCLOCK toggelt und Buffer-/Panelgeometrie unveraendert laesst.
+role: a34c-reve-orientation-reference
+step: A34-C TOP-Level REVE
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 2412, REVE zweimal, PANE
+fixture-origin: keine Eingabedatei; NACA-2412-Generierung (kanonisch)
+limitations: none

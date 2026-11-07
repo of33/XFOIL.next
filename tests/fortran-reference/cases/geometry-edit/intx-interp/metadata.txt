@@ -1,0 +1,10 @@
+case-id: geometry-edit/intx-interp
+category: geometry-edit
+purpose: INTX (CLI) + INTERX (Routine): Interpolation der aktuellen Kontur mit sich selbst (Frac 0.5), PCOP + PSAV
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012, INTX C C 0.5, PCOP, PSAV
+limitations: INTX (xfoil.f:229) ruft INTERX (xgeom.f:1226) auf; Ergebnis liegt im Buffer, PCOP uebertraegt

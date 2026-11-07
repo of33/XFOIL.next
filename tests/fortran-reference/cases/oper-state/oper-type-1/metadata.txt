@@ -1,0 +1,10 @@
+case-id: oper-state/oper-type-1
+category: oper-state
+purpose: TYPE 1 setzt MATYP=1 RETYP=1
+step: C11a-A34-C-OPER-state
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: TYPE 1
+limitations: none

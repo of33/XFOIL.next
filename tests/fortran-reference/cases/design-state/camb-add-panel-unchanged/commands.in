@@ -1,0 +1,10 @@
+NACA 0012
+PANE
+GDES
+CAMB
+SETC
+ADD
+
+
+SAVE camb_after_add.dat
+QUIT

@@ -1,0 +1,10 @@
+case-id: polar/polar-state-cl-driven
+category: polar
+purpose: Zustand: CL-gesteuerte viskose Polar NACA 2412 Re=1e6, CSEQ 0.2..1.2 Schritt 0.2 (PACC)
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: viscous, Re=1e6, ITER 100, PACC, CSEQ 0.2 1.2 0.2
+limitations: none

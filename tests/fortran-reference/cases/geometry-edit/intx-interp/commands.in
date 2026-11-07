@@ -1,0 +1,12 @@
+PLOP
+g
+
+NACA 0012
+INTX
+C
+C
+0.5
+intxtest
+PCOP
+PSAV intx.dat
+QUIT

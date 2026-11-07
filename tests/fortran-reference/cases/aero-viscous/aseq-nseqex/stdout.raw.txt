@@ -1,0 +1,321 @@
+
+ ===================================================
+  XFOIL Version 6.99
+  Copyright (C) 2000   Mark Drela, Harold Youngren
+
+  This software comes with ABSOLUTELY NO WARRANTY,
+    subject to the GNU General Public License.
+
+  Caveat computor
+ ===================================================
+
+ File  xfoil.def  not found
+
+   QUIT    Exit program
+
+  .OPER    Direct operating point(s)
+  .MDES    Complex mapping design routine
+  .QDES    Surface speed design routine
+  .GDES    Geometry design routine
+
+   SAVE f  Write airfoil to labeled coordinate file
+   PSAV f  Write airfoil to plain coordinate file
+   ISAV f  Write airfoil to ISES coordinate file
+   MSAV f  Write airfoil to MSES coordinate file
+   REVE    Reverse written-airfoil node ordering
+   DELI i  Change written-airfoil file delimiters
+
+   LOAD f  Read buffer airfoil from coordinate file
+   NACA i  Set NACA 4,5-digit airfoil and buffer airfoil
+   INTE    Set buffer airfoil by interpolating two airfoils
+   NORM    Buffer airfoil normalization toggle
+   HALF    Halve the number of points in buffer airfoil
+   XYCM rr Change CM reference location, currently  0.25000 0.00000
+
+   BEND    Display structural properties of current airfoil
+
+   PCOP    Set current-airfoil panel nodes directly from buffer airfoil points
+   PANE    Set current-airfoil panel nodes ( 160 ) based on curvature
+  .PPAR    Show/change paneling
+
+  .PLOP    Plotting options
+
+   WDEF f  Write  current-settings file
+   RDEF f  Reread current-settings file
+   NAME s  Specify new airfoil name
+   NINC    Increment name version number
+
+   Z       Zoom    | (available in all menus)
+   U       Unzoom  | 
+
+ XFOIL   c>   ...............................................
+
+  G raphics-enable flag:        T
+  S ize of plot object          10.00"
+  A spect ratio of plot object   0.5500
+  P age dimensions              11.00 x  8.50"
+  M argins from page edges       0.00",  0.00"
+  F ont size (relative)          0.0150
+  W indow/screen size fraction   0.8000
+  B lowup input method:        Cursor    
+  O rientation of plot:        Landscape 
+  C olor PostScript output?     T
+  L ine colors for top,bottom    8  3
+
+      Option, Value   (or <Return>)    c>   ...............................................
+
+  G raphics-enable flag:        F
+  S ize of plot object          10.00"
+  A spect ratio of plot object   0.5500
+  P age dimensions              11.00 x  8.50"
+  M argins from page edges       0.00",  0.00"
+  F ont size (relative)          0.0150
+  W indow/screen size fraction   0.8000
+  B lowup input method:        Cursor    
+  O rientation of plot:        Landscape 
+  C olor PostScript output?     T
+  L ine colors for top,bottom    8  3
+
+      Option, Value   (or <Return>)    c>  
+ XFOIL   c>   Max thickness =     0.120032  at x =   0.297
+ Max camber    =     0.019999  at x =   0.403
+
+ Buffer airfoil set using 245 points
+
+ Blunt trailing edge.  Gap =  0.00252
+
+ Paneling parameters used...
+   Number of panel nodes       160
+   Panel bunching parameter    1.000
+   TE/LE panel density ratio   0.150
+   Refined-area/LE panel density ratio    0.200
+   Top    side refined area x/c limits  1.000 1.000
+   Bottom side refined area x/c limits  1.000 1.000
+
+ XFOIL   c>  
+.OPERi   c>  
+Enter Reynolds number   r>  
+ M  =    0.0000
+ Re =  0.1000E+07
+
+.OPERv   c>  
+.OPERv   c>   Calculating unit vorticity distributions ...
+
+OFS: alfa =   0.0000 cl =   0.2554 cdp =  -0.0011 cm =  -0.0557
+ Calculating wake trajectory ...
+ Calculating source influence matrix ...
+
+ Solving BL system ...
+
+ Initializing BL ...
+    side            1  ...
+ MRCHUE: Inverse mode at  54     Hk =   4.738
+ MRCHUE: Inverse mode at  55     Hk =   5.669
+ MRCHUE: Inverse mode at  56     Hk =   3.111
+ MRCHUE: Inverse mode at  82     Hk =   2.500
+    side            2  ...
+ MRCHUE: Inverse mode at  58     Hk =   3.348
+ MRCHUE: Inverse mode at  80     Hk =   2.500
+
+ Side 1  free  transition at x/c =  0.5860   56
+ Side 2  free  transition at x/c =  0.6451   58
+
+   1   rms: 0.1213E+00   max: -.9189E+00   D at   80  2   RLX: 0.544
+       a =  0.000      CL =  0.2097
+      Cm = -0.0454     CD =  0.00538   =>   CDf =  0.00493    CDp =  0.00045
+
+ Side 1  free  transition at x/c =  0.5985   57
+ Side 2  free  transition at x/c =  0.6497   59
+
+   2   rms: 0.9220E-01   max: -.8916E+00   C at   57  1   RLX: 0.561
+       a =  0.000      CL =  0.2065
+      Cm = -0.0446     CD =  0.00548   =>   CDf =  0.00492    CDp =  0.00056
+
+ Side 1  free  transition at x/c =  0.6234   58
+ Side 2  free  transition at x/c =  0.6573   59
+
+   3   rms: 0.7794E-01   max: -.1272E+01   C at   58  1   RLX: 0.393
+       a =  0.000      CL =  0.2179
+      Cm = -0.0474     CD =  0.00555   =>   CDf =  0.00463    CDp =  0.00092
+
+ Side 1  free  transition at x/c =  0.6273   58
+ Side 2  free  transition at x/c =  0.6644   59
+
+   4   rms: 0.3739E-01   max: -.3998E+00   C at   59  2
+       a =  0.000      CL =  0.2346
+      Cm = -0.0514     CD =  0.00575   =>   CDf =  0.00465    CDp =  0.00110
+
+ Side 1  free  transition at x/c =  0.6676   61
+ Side 2  free  transition at x/c =  0.6789   60
+
+   5   rms: 0.2357E-01   max: 0.4458E+00   C at   61  1
+       a =  0.000      CL =  0.2368
+      Cm = -0.0519     CD =  0.00566   =>   CDf =  0.00437    CDp =  0.00129
+
+ Side 1  free  transition at x/c =  0.6525   60
+ Side 2  free  transition at x/c =  0.6794   60
+
+   6   rms: 0.2000E-02   max: -.3518E-01   D at   62  1
+       a =  0.000      CL =  0.2371
+      Cm = -0.0520     CD =  0.00564   =>   CDf =  0.00443    CDp =  0.00122
+ VISCAL:  Convergence failed
+      9.000    3.4236   0.005643   0.000000   0.000000   0.000000    0.6525     #
+
+OFS: alfa =   1.0000 cl =   0.3761 cdp =  -0.0011 cm =  -0.0572
+ Calculating wake trajectory ...
+ Calculating source influence matrix ...
+
+ Solving BL system ...
+
+ Side 1  free  transition at x/c =  0.6517   60
+ Side 2  free  transition at x/c =  0.6795   60
+
+   1   rms: 0.2944E+00   max: -.5004E+01   C at   60  2   RLX: 0.100
+       a =  1.000      CL =  0.2478
+      Cm = -0.0518     CD =  0.00563   =>   CDf =  0.00443    CDp =  0.00121
+
+ Side 1  free  transition at x/c =  0.6445   59
+ Side 2  free  transition at x/c =  0.6987   61
+
+   2   rms: 0.2051E+00   max: -.2985E+01   C at   61  2   RLX: 0.168
+       a =  1.000      CL =  0.2646
+      Cm = -0.0518     CD =  0.00562   =>   CDf =  0.00441    CDp =  0.00121
+
+ Side 1  free  transition at x/c =  0.6327   59
+ Side 2  free  transition at x/c =  0.7348   64
+
+   3   rms: 0.2192E+00   max: -.3427E+01   C at   64  2   RLX: 0.146
+       a =  1.000      CL =  0.2747
+      Cm = -0.0510     CD =  0.00555   =>   CDf =  0.00431    CDp =  0.00124
+
+ Side 1  free  transition at x/c =  0.6263   59
+ Side 2  free  transition at x/c =  0.7482   63
+
+   4   rms: 0.1635E+00   max: -.2679E+01   C at   63  2   RLX: 0.187
+       a =  1.000      CL =  0.2883
+      Cm = -0.0512     CD =  0.00556   =>   CDf =  0.00432    CDp =  0.00123
+
+ Side 1  free  transition at x/c =  0.6178   59
+ Side 2  free  transition at x/c =  0.7654   64
+
+   5   rms: 0.1356E+00   max: -.2163E+01   C at   64  2   RLX: 0.231
+       a =  1.000      CL =  0.3010
+      Cm = -0.0510     CD =  0.00557   =>   CDf =  0.00429    CDp =  0.00127
+
+ Side 1  free  transition at x/c =  0.6105   58
+ Side 2  free  transition at x/c =  0.7853   66
+
+   6   rms: 0.1159E+00   max: -.1910E+01   C at   66  2   RLX: 0.262
+       a =  1.000      CL =  0.3117
+      Cm = -0.0507     CD =  0.00550   =>   CDf =  0.00427    CDp =  0.00123
+ VISCAL:  Convergence failed
+      9.000    3.4764   0.005496   0.000000   0.000000   0.000000    0.6105     #
+
+OFS: alfa =   2.0000 cl =   0.4968 cdp =  -0.0011 cm =  -0.0587
+ Calculating wake trajectory ...
+ Calculating source influence matrix ...
+
+ Solving BL system ...
+
+ Side 1  free  transition at x/c =  0.6034   58
+ Side 2  free  transition at x/c =  0.7992   66
+
+   1   rms: 0.3048E+00   max: -.4318E+01   C at   66  2   RLX: 0.116
+       a =  2.000      CL =  0.3281
+      Cm = -0.0507     CD =  0.00556   =>   CDf =  0.00424    CDp =  0.00132
+
+ Side 1  free  transition at x/c =  0.5937   57
+ Side 2  free  transition at x/c =  0.8211   68
+
+   2   rms: 0.3091E+00   max: -.5046E+01   C at   68  2   RLX: 0.099
+       a =  2.000      CL =  0.3396
+      Cm = -0.0504     CD =  0.00550   =>   CDf =  0.00421    CDp =  0.00129
+
+ Side 1  free  transition at x/c =  0.5861   57
+ Side 2  free  transition at x/c =  0.8347   68
+
+   3   rms: 0.2382E+00   max: -.3317E+01   C at   68  2   RLX: 0.151
+       a =  2.000      CL =  0.3564
+      Cm = -0.0503     CD =  0.00557   =>   CDf =  0.00415    CDp =  0.00142
+
+ Side 1  free  transition at x/c =  0.5767   57
+ Side 2  free  transition at x/c =  0.8571   69
+
+   4   rms: 0.2331E+00   max: -.3865E+01   C at   69  2   RLX: 0.129
+       a =  2.000      CL =  0.3677
+      Cm = -0.0498     CD =  0.00552   =>   CDf =  0.00416    CDp =  0.00137
+
+ Side 1  free  transition at x/c =  0.5694   57
+ Side 2  free  transition at x/c =  0.8695   70
+
+   5   rms: 0.1925E+00   max: -.2682E+01   C at   70  2   RLX: 0.186
+       a =  2.000      CL =  0.3820
+      Cm = -0.0495     CD =  0.00555   =>   CDf =  0.00416    CDp =  0.00139
+
+ Side 1  free  transition at x/c =  0.5611   56
+ Side 2  free  transition at x/c =  0.8846   70
+
+   6   rms: 0.1181E+00   max: -.1184E+01   C at   70  2   RLX: 0.422
+       a =  2.000      CL =  0.4108
+      Cm = -0.0492     CD =  0.00561   =>   CDf =  0.00416    CDp =  0.00146
+ VISCAL:  Convergence failed
+      9.000    3.5769   0.005612   0.000000   0.000000   0.000000    0.5611     #
+
+OFS: alfa =   3.0000 cl =   0.6173 cdp =  -0.0011 cm =  -0.0601
+ Calculating wake trajectory ...
+ Calculating source influence matrix ...
+
+ Solving BL system ...
+
+ Side 1  free  transition at x/c =  0.5439   55
+ Side 2  free  transition at x/c =  0.9312   73
+
+   1   rms: 0.2279E+00   max: -.7792E+00   T at   73  2   RLX: 0.642
+       a =  3.000      CL =  0.5001
+      Cm = -0.0464     CD =  0.00580   =>   CDf =  0.00405    CDp =  0.00175
+
+ MRCHDU: Convergence failed at  75  side 2    Res =  0.2798E+01
+ MRCHDU: Convergence failed at  76  side 2    Res =  0.2122E+01
+ Side 1  free  transition at x/c =  0.4915   54
+ Side 2 forced transition at x/c =  1.0000   76
+
+   2   rms: 0.1637E+00   max: 0.1583E+01   C at   76  2   RLX: 0.948
+       a =  3.000      CL =  0.6068
+      Cm = -0.0587     CD =  0.00617   =>   CDf =  0.00430    CDp =  0.00186
+
+ MRCHDU: Convergence failed at  70  side 2    Res =  0.3061E+01
+ Side 1  free  transition at x/c =  0.4580   53
+ Side 2 forced transition at x/c =  1.0000   75
+
+   3   rms: 0.3511E-01   max: 0.3665E+00   D at   71  2
+       a =  3.000      CL =  0.6151
+      Cm = -0.0599     CD =  0.00637   =>   CDf =  0.00443    CDp =  0.00194
+
+ Side 1  free  transition at x/c =  0.4610   53
+ Side 2  free  transition at x/c =  0.9813   74
+
+   4   rms: 0.4997E-01   max: -.5026E+00   D at   75  2   RLX: 0.995
+       a =  3.000      CL =  0.5898
+      Cm = -0.0542     CD =  0.00622   =>   CDf =  0.00441    CDp =  0.00181
+
+ Side 1  free  transition at x/c =  0.4637   52
+ Side 2  free  transition at x/c =  0.9972   76
+
+   5   rms: 0.1070E-01   max: 0.1183E+00   C at   76  2
+       a =  3.000      CL =  0.5930
+      Cm = -0.0549     CD =  0.00634   =>   CDf =  0.00438    CDp =  0.00196
+
+ Side 1  free  transition at x/c =  0.4636   52
+ Side 2  free  transition at x/c =  0.9940   76
+
+   6   rms: 0.9713E-03   max: -.1303E-01   D at   76  2
+       a =  3.000      CL =  0.5927
+      Cm = -0.0549     CD =  0.00635   =>   CDf =  0.00438    CDp =  0.00197
+ VISCAL:  Convergence failed
+      9.000    3.5684   0.006350   0.000000   0.000000   0.000000    0.4636     #
+
+ Sequence halted since previous  4 points did not converge
+ Last-converged  alpha =   0.000    CL =   0.00000
+
+.OPERv   c>  
+ XFOIL   c>  

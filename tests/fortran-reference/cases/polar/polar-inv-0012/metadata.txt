@@ -1,0 +1,10 @@
+case-id: polar/polar-inv-0012
+category: polar
+purpose: Inviskide Polar NACA 0012, ASEQ -4..8 Schritt 2, mit Polar-Datei (PACC)
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: inviscid, PACC, ASEQ -4 8 2, Polar-Datei polar-inv-0012.pol
+limitations: none

@@ -1,0 +1,10 @@
+case-id: polar/polar-visc-2412
+category: polar
+purpose: Viskose Polar NACA 2412, Re=1e6 ITER 100, ASEQ 0..8 Schritt 2, mit Polar- und Dump-Datei (PACC)
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: viscous, Re=1e6, ITER 100, PACC, ASEQ 0 8 2, Polar-Datei visc2412.pol + Dump visc2412.dump
+limitations: Dump-Datei enthaelt die kompletten Druckverteilungen je Punkt

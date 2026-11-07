@@ -1,0 +1,11 @@
+case-id: design-state/gdes-lins-bad
+category: design-state
+purpose: GDES LINS interaktiv mit x/c-Gleichheit-Ablehnung und Wiederholung (xgdes.f 345-356); P4-P1-Promptvertrag.
+role: state-frame-reference
+step: C11b-P4-P1
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012, GDES, LINS, 0.5 1.0, 0.5 2.0, 0.3 1.0, 0.7 2.0, <Leerzeile>, QUIT
+limitations: Plot nicht vorhanden

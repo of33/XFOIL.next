@@ -1,0 +1,11 @@
+case-id: design-state/gdes-scal-neg
+category: design-state
+purpose: GDES SCAL (xgdes.f 277-334): positiver Faktor und negativer Y-Faktor mit Punktreihenfolgeumkehr; P4-P1.
+role: state-frame-reference
+step: C11b-P4-P1
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012, GDES, SCAL 2, SCAL 0 -1 1, <Leerzeile>, PSAV, QUIT
+limitations: Plot nicht vorhanden

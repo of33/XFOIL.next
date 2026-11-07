@@ -1,0 +1,10 @@
+case-id: aero-inviscid/inv-2412-8
+category: aero-inviscid
+purpose: Inviskide Einzelpunkt NACA 2412 bei 8 Grad
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: inviscid, Mach 0, Ncrit 9 (Defaults), alpha=8
+limitations: none

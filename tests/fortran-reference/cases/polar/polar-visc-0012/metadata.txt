@@ -1,0 +1,10 @@
+case-id: polar/polar-visc-0012
+category: polar
+purpose: Viskose Polar NACA 0012 Re=1e6 ITER 100, ASEQ 0..8 Schritt 2, mit Polar- und Dump-Datei (PACC)
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: viscous, Re=1e6, ITER 100, PACC, ASEQ 0 8 2, Polar polar-visc-0012.pol + Dump
+limitations: Dump-Datei (binär) enthaelt die Druckverteilungen je Punkt

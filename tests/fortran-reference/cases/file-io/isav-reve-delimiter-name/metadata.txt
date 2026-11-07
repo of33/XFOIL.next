@@ -1,0 +1,12 @@
+case-id: file-io/isav-reve-delimiter-name
+category: file-io
+purpose: TOP-Level-ISAV Format-/Policyvertrag gegen kanonisches Binary: NAME/NINC setzen den Header 'A B C [1]'; die zweite Zeile traegt die kanonische ISPARS-Vorgabe ' -2.0  3.0  -2.5  3.5'. REVE kehrt die Schreibreihenfolge um; DELI 1/2 pruefen comma/tab-Formate fuer die Koordinaten. Vollstaendige generated-Dateibytes sind Referenz.
+role: a34c-isav-reve-delimiter-name-reference
+step: A34-C TOP-Level ISAV
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 2412; NAME/NINC; ISAV; REVE; DELI 1/2
+fixture-origin: keine Eingabedatei; NACA-2412-Generierung (kanonisch)
+limitations: none

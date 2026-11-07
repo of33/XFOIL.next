@@ -1,0 +1,10 @@
+case-id: geometry-edit/msave-behavior
+category: geometry-edit
+purpose: MSAV ohne vorhandene MSES-Datei: deterministisches 'Old file OPEN error' (Verhaltensreferenz, kein Datei-Write)
+step: 17r4
+status: canonical-raw-only
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: none
+limitations: MSAV erfordert eine vorhandene Multielement-MSES-Datei (STATUS='OLD'); ohne diese ist kein Datei-Write moeglich

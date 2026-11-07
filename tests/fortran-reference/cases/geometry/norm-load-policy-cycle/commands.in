@@ -1,0 +1,12 @@
+PLOP
+g
+
+LOAD naca2412_buffer.dat
+naca2412buf
+NORM
+LOAD naca2412_buffer.dat
+naca2412buf
+NORM
+LOAD naca2412_buffer.dat
+naca2412buf
+QUIT

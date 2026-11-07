@@ -1,0 +1,9 @@
+NACA 0012
+GDES
+CAMB
+SCAL 2
+WRTT sc.dat
+WRTC sc2.dat
+
+
+QUIT

@@ -1,0 +1,11 @@
+case-id: design-state/gdes-entry-exit
+category: design-state
+purpose: GDES-Menue (xgdes.f 40-84) mit sofortiger Rueckkehr per Leerzeile; kanonischer Menuetext fuer den P4-P0-Zustandsrahmen.
+role: state-frame-reference
+step: C11b-P4-P0
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: GDES, <Leerzeile>, QUIT
+limitations: keine Geometrie; nur Eintritt/Austritt, keine Designoperationen

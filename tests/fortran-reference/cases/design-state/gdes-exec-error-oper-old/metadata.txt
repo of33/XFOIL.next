@@ -1,0 +1,11 @@
+case-id: design-state/gdes-exec-error-oper-old
+category: design-state
+purpose: GDES EXEC-Kapazitaetsabweisung, danach OPER ALFA 2 auf der alten Panelkontur; P4-P5.
+role: state-frame-reference
+step: C11b-P4-P5
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: LOAD ov_400.dat; GDES; EXEC; ; OPER; ALFA 2; ; QUIT
+limitations: Plot nicht vorhanden

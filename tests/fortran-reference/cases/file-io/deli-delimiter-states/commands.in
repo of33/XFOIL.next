@@ -1,0 +1,13 @@
+PLOP
+g
+
+NACA 2412
+DELI 0
+SAVE out_blank.dat
+DELI 1
+SAVE out_comma.dat
+DELI 2
+SAVE out_tab.dat
+DELI
+0
+QUIT

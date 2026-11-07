@@ -1,0 +1,10 @@
+case-id: oper-state/oper-alfa180-viscous-iter20
+category: oper-state
+purpose: ALFA 180 viskos mit ITER 20 (STFIND-Fallback, BL-Trajektorie)
+step: C11a-A34-C-OPER-Extremwinkel
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: VISC 1000000, ITER 20, ALFA 180
+limitations: none

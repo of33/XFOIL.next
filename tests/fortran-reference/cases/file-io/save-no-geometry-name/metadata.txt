@@ -1,0 +1,12 @@
+case-id: file-io/save-no-geometry-name
+category: file-io
+purpose: TOP-Level-SAVE ohne Geometrie gegen kanonisches Binary: erste Datei traegt das INIT-Namensfeld NAME(1:NNAME) mit NNAME=32 (32 Leerzeichen, keine Koordinaten); nach NAME mit leerer Antwort traegt die zweite Datei ein explizit geleertes Namensfeld (leere erste Zeile, keine Koordinaten).
+role: a34c-save-no-geometry-name-reference
+step: A34-C TOP-Level SAVE
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: SAVE ohne Geometrie; NAME ohne Argument mit leerer Antwort
+fixture-origin: keine Eingabedatei; keine Geometrie
+limitations: none

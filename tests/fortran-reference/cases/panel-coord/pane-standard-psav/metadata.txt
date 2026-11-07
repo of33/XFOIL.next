@@ -1,0 +1,10 @@
+case-id: panel-coord/pane-standard-psav
+category: panel-coord
+purpose: Panelkoordinaten nach Standard-PANE: PANE + PSAV schreibt die aktuelle (panelierte) Kontur X(1..N), 160 Punkte
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 2412, PANE (NPAN=160), PSAV
+limitations: PSAV schreibt X(1..N) (aktuelle/Panel-Kontur), nicht den Buffer

@@ -1,0 +1,6 @@
+NACA 0012
+GDES
+HIGH 0.4 0.4
+
+PSAV high.dat
+QUIT

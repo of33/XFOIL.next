@@ -1,0 +1,5 @@
+NACA 2412
+USAV after_naca.dat
+PCOP
+USAV after_pcop.dat
+QUIT

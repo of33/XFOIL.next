@@ -1,0 +1,12 @@
+case-id: file-io/mses-load-name-internal-spaces
+category: file-io
+purpose: MSES-LOAD-Kennzeile mit internen Leerzeichen im NAME-Feld: AREAD uebernimmt LINE1 als CHARACTER*48-Feld; STRIP entfernt nur fuehrende und rechtsseitige Leerzeichen, nicht interne.
+role: a34c-mses-load-internal-spaces-reference
+step: A34-C MSES LOAD Textvertrag
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: LOAD mses_internal_spaces.dat
+fixture-origin: input/mses_internal_spaces.dat (NAME 'A B  C', MSES-Domainzeile ' -1.0  2.0  -1.5  2.5')
+limitations: none

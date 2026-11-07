@@ -1,0 +1,10 @@
+case-id: polar/polar-wake2-alfa6-naca0012
+category: polar
+purpose: VPAR-WAKE-2.0-Konvergenzfall NACA 0012, VISC 1e6, ALFA 4 (Default-Wake), VPAR WAKE 2.0, ALFA 6 (C11b-G-B3)
+step: C11b-G-B3
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: viscous, Re=1e6, WAKLEN 1.0->2.0, ALFA 4 und 6, ITER 20 (Default)
+limitations: stdout enthaelt die VISCAL-Iterationsfolge FORMAT 2000/2010/2020 beider Punkte

@@ -1,0 +1,303 @@
+
+ Current airfoil nodes set from buffer airfoil nodes ( 151 )
+ Calculating unit vorticity distributions ...
+
+OFS: alfa =  -0.1344 cl =   0.4000 cdp =  -0.0007 cm =  -0.0877
+ Calculating wake trajectory ...
+ Calculating source influence matrix ...
+
+ Initializing BL ...
+    side            1  ...
+ MRCHUE: Inverse mode at  50     Hk =   4.345
+ MRCHUE: Inverse mode at  51     Hk =   5.305
+ MRCHUE: Inverse mode at  52     Hk =   5.379
+ MRCHUE: Inverse mode at  53     Hk =   2.500
+ MRCHUE: Inverse mode at  77     Hk =   2.500
+    side            2  ...
+ MRCHUE: Inverse mode at  36     Hk =   2.500
+ MRCHUE: Inverse mode at  76     Hk =   2.500
+
+ Side 1  free  transition at x/c =  0.6043   52
+ Side 2  free  transition at x/c =  0.3238   36
+
+ Side 1  free  transition at x/c =  0.6046   52
+ Side 2  free  transition at x/c =  0.3337   37
+
+ Side 1  free  transition at x/c =  0.6048   53
+ Side 2  free  transition at x/c =  0.3483   36
+
+ Side 1  free  transition at x/c =  0.6050   53
+ Side 2  free  transition at x/c =  0.3570   37
+
+ Side 1  free  transition at x/c =  0.6052   53
+ Side 2  free  transition at x/c =  0.3677   38
+
+ Side 1  free  transition at x/c =  0.6054   53
+ Side 2  free  transition at x/c =  0.3805   38
+
+ Side 1  free  transition at x/c =  0.6057   53
+ Side 2  free  transition at x/c =  0.3913   39
+
+ Side 1  free  transition at x/c =  0.6060   53
+ Side 2  free  transition at x/c =  0.4023   40
+
+ Side 1  free  transition at x/c =  0.6064   53
+ Side 2  free  transition at x/c =  0.4148   40
+
+ Side 1  free  transition at x/c =  0.6077   54
+ Side 2  free  transition at x/c =  0.4267   41
+
+ Side 1  free  transition at x/c =  0.6088   54
+ Side 2  free  transition at x/c =  0.4380   42
+
+ Side 1  free  transition at x/c =  0.6104   54
+ Side 2  free  transition at x/c =  0.4503   42
+
+ Side 1  free  transition at x/c =  0.6124   54
+ Side 2  free  transition at x/c =  0.4628   43
+
+ Side 1  free  transition at x/c =  0.6154   54
+ Side 2  free  transition at x/c =  0.4744   44
+
+ Side 1  free  transition at x/c =  0.6202   54
+ Side 2  free  transition at x/c =  0.4862   44
+
+ Side 1  free  transition at x/c =  0.6325   55
+ Side 2  free  transition at x/c =  0.4996   45
+
+ Side 1  free  transition at x/c =  0.6451   56
+ Side 2  free  transition at x/c =  0.4903   45
+
+ Side 1  free  transition at x/c =  0.6492   56
+ Side 2  free  transition at x/c =  0.4907   45
+
+ Side 1  free  transition at x/c =  0.6493   56
+ Side 2  free  transition at x/c =  0.4911   45
+ CSEQ IPOINT        1
+ CSEQ CLSPEC     4.0000000000000002E-01
+ CSEQ ADEG       8.4149127500698598E-02
+ CSEQ CL         3.9999999999997932E-01
+ CSEQ CM        -8.2428415388704823E-02
+ CSEQ CD         6.2942095984635732E-03
+ CSEQ CDF        5.0069488284579392E-03
+ CSEQ CDP        4.3693512967009281E-04
+ CSEQ NITER        19
+ CSEQ LVCONV   T
+ CSEQ RMSBL      2.1934703919611229E-06
+ CSEQ RMXBL      2.4086482872009755E-05
+ CSEQ ITRAN1       56
+ CSEQ ITRAN2       45
+ CSEQ LIPAN    T
+ CSEQ LBLINI   T
+ CSEQ LWAKE    T
+ CSEQ LWDIJ    T
+ CSEQ LADIJ    T
+ CSEQ AWAKE     -2.3451205654664536E-03
+ CSEQ AVISC      1.4686793375676974E-03
+ CSEQ MVISC      0.0000000000000000E+00
+ CSEQ MINF       0.0000000000000000E+00
+ CSEQ STARTNEXT  1.4686793375676974E-03
+
+OFS: alfa =   1.5254 cl =   0.6000 cdp =  -0.0007 cm =  -0.0903
+ Calculating wake trajectory ...
+ Calculating source influence matrix ...
+
+ Side 1  free  transition at x/c =  0.6493   56
+ Side 2  free  transition at x/c =  0.4911   45
+
+ Side 1  free  transition at x/c =  0.6479   56
+ Side 2  free  transition at x/c =  0.5032   45
+
+ Side 1  free  transition at x/c =  0.6465   56
+ Side 2  free  transition at x/c =  0.5166   46
+
+ Side 1  free  transition at x/c =  0.6452   56
+ Side 2  free  transition at x/c =  0.5304   47
+
+ Side 1  free  transition at x/c =  0.6438   56
+ Side 2  free  transition at x/c =  0.5425   48
+
+ Side 1  free  transition at x/c =  0.6423   56
+ Side 2  free  transition at x/c =  0.5547   48
+
+ Side 1  free  transition at x/c =  0.6409   56
+ Side 2  free  transition at x/c =  0.5679   49
+
+ Side 1  free  transition at x/c =  0.6396   56
+ Side 2  free  transition at x/c =  0.5823   50
+
+ Side 1  free  transition at x/c =  0.6385   55
+ Side 2  free  transition at x/c =  0.5950   51
+
+ Side 1  free  transition at x/c =  0.6371   55
+ Side 2  free  transition at x/c =  0.6074   51
+
+ Side 1  free  transition at x/c =  0.6358   55
+ Side 2  free  transition at x/c =  0.6216   52
+
+ Side 1  free  transition at x/c =  0.6343   55
+ Side 2  free  transition at x/c =  0.6375   53
+
+ Side 1  free  transition at x/c =  0.6329   55
+ Side 2  free  transition at x/c =  0.6537   54
+
+ Side 1  free  transition at x/c =  0.6315   55
+ Side 2  free  transition at x/c =  0.6708   55
+
+ Side 1  free  transition at x/c =  0.6300   55
+ Side 2  free  transition at x/c =  0.6887   56
+
+ Side 1  free  transition at x/c =  0.6284   55
+ Side 2  free  transition at x/c =  0.7073   57
+
+ Side 1  free  transition at x/c =  0.6268   55
+ Side 2  free  transition at x/c =  0.7273   58
+
+ Side 1  free  transition at x/c =  0.6250   55
+ Side 2  free  transition at x/c =  0.7524   60
+
+ Side 1  free  transition at x/c =  0.6236   55
+ Side 2  free  transition at x/c =  0.7661   61
+
+ Side 1  free  transition at x/c =  0.6222   54
+ Side 2  free  transition at x/c =  0.7797   61
+
+ Side 1  free  transition at x/c =  0.6206   54
+ Side 2  free  transition at x/c =  0.7980   63
+
+ Side 1  free  transition at x/c =  0.6189   54
+ Side 2  free  transition at x/c =  0.8118   63
+
+ Side 1  free  transition at x/c =  0.6172   54
+ Side 2  free  transition at x/c =  0.8276   64
+
+ Side 1  free  transition at x/c =  0.6153   55
+ Side 2  free  transition at x/c =  0.8474   64
+
+ Side 1  free  transition at x/c =  0.6129   55
+ Side 2  free  transition at x/c =  0.8756   66
+
+ Side 1  free  transition at x/c =  0.6106   55
+ Side 2  free  transition at x/c =  0.8987   67
+
+ Side 1  free  transition at x/c =  0.6065   55
+ Side 2  free  transition at x/c =  0.9454   70
+
+ MRCHDU: Convergence failed at  74  side 2    Res =  0.7493E+01
+ Side 1  free  transition at x/c =  0.5741   53
+ Side 2 forced transition at x/c =  1.0000   74
+
+ MRCHDU: Convergence failed at  69  side 2    Res =  0.2296E+01
+ Side 1  free  transition at x/c =  0.5747   54
+ Side 2 forced transition at x/c =  1.0000   73
+
+ Side 1  free  transition at x/c =  0.5736   54
+ Side 2  free  transition at x/c =  0.9730   71
+
+ Side 1  free  transition at x/c =  0.5576   53
+ Side 2 forced transition at x/c =  1.0000   73
+
+ Side 1  free  transition at x/c =  0.5710   53
+ Side 2  free  transition at x/c =  0.9678   71
+
+ Side 1  free  transition at x/c =  0.5603   53
+ Side 2 forced transition at x/c =  1.0000   73
+
+ Side 1  free  transition at x/c =  0.5708   53
+ Side 2  free  transition at x/c =  0.9629   70
+
+ MRCHDU: Convergence failed at  73  side 2    Res =  0.1838E+01
+ Side 1  free  transition at x/c =  0.5543   52
+ Side 2 forced transition at x/c =  1.0000   73
+
+ Side 1  free  transition at x/c =  0.5720   53
+ Side 2  free  transition at x/c =  0.9651   70
+
+ MRCHDU: Convergence failed at  73  side 2    Res =  0.1814E+01
+ Side 1  free  transition at x/c =  0.5537   52
+ Side 2 forced transition at x/c =  1.0000   73
+
+ Side 1  free  transition at x/c =  0.5711   53
+ Side 2  free  transition at x/c =  0.9927   72
+
+ Side 1  free  transition at x/c =  0.5642   53
+ Side 2  free  transition at x/c =  0.9971   73
+
+ Side 1  free  transition at x/c =  0.5652   53
+ Side 2  free  transition at x/c =  0.9938   73
+
+ Side 1  free  transition at x/c =  0.5651   53
+ Side 2  free  transition at x/c =  0.9942   73
+ CSEQ IPOINT        2
+ CSEQ CLSPEC     6.0000000000000009E-01
+ CSEQ ADEG       1.7354485710947867E+00
+ CSEQ CL         6.0000000000001352E-01
+ CSEQ CM        -8.5129710814231679E-02
+ CSEQ CD         5.6984747974721849E-03
+ CSEQ CDF        4.0358906758115893E-03
+ CSEQ CDP        7.2439229946549279E-04
+ CSEQ NITER        41
+ CSEQ LVCONV   T
+ CSEQ RMSBL      7.1342168014175352E-06
+ CSEQ RMXBL      7.4996522183389924E-05
+ CSEQ ITRAN1       53
+ CSEQ ITRAN2       73
+ CSEQ LIPAN    T
+ CSEQ LBLINI   T
+ CSEQ LWAKE    T
+ CSEQ LWDIJ    T
+ CSEQ LADIJ    T
+ CSEQ AWAKE      2.6623760223016598E-02
+ CSEQ AVISC      3.0289291564634922E-02
+ CSEQ MVISC      0.0000000000000000E+00
+ CSEQ MINF       0.0000000000000000E+00
+ CSEQ STARTNEXT  3.0289291564634922E-02
+
+OFS: alfa =   3.1894 cl =   0.8000 cdp =  -0.0007 cm =  -0.0930
+ Calculating wake trajectory ...
+ Calculating source influence matrix ...
+
+ Side 1  free  transition at x/c =  0.5651   53
+ Side 2  free  transition at x/c =  0.9942   73
+
+ Side 1  free  transition at x/c =  0.5148   51
+ Side 2 forced transition at x/c =  1.0000   72
+
+ Side 1  free  transition at x/c =  0.4596   49
+ Side 2 forced transition at x/c =  1.0000   71
+
+ Side 1  free  transition at x/c =  0.4190   46
+ Side 2 forced transition at x/c =  1.0000   71
+
+ Side 1  free  transition at x/c =  0.3874   44
+ Side 2 forced transition at x/c =  1.0000   71
+
+ Side 1  free  transition at x/c =  0.3903   44
+ Side 2 forced transition at x/c =  1.0000   71
+
+ Side 1  free  transition at x/c =  0.3901   44
+ Side 2 forced transition at x/c =  1.0000   71
+ CSEQ IPOINT        3
+ CSEQ CLSPEC     8.0000000000000004E-01
+ CSEQ ADEG       3.6477939463265745E+00
+ CSEQ CL         8.0000000000000071E-01
+ CSEQ CM        -8.2901697952837028E-02
+ CSEQ CD         7.2085007472027802E-03
+ CSEQ CDF        4.8941639528211874E-03
+ CSEQ CDP        9.9326842910920309E-04
+ CSEQ NITER         7
+ CSEQ LVCONV   T
+ CSEQ RMSBL      2.5396008451545545E-06
+ CSEQ RMXBL     -3.4950306045576484E-05
+ CSEQ ITRAN1       44
+ CSEQ ITRAN2       71
+ CSEQ LIPAN    T
+ CSEQ LBLINI   T
+ CSEQ LWAKE    T
+ CSEQ LWDIJ    T
+ CSEQ LADIJ    T
+ CSEQ AWAKE      5.5666149355169524E-02
+ CSEQ AVISC      6.3666014797716039E-02
+ CSEQ MVISC      0.0000000000000000E+00
+ CSEQ MINF       0.0000000000000000E+00
+ CSEQ STARTNEXT  6.3666014797716039E-02

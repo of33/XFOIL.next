@@ -1,0 +1,10 @@
+case-id: aero-viscous/seq-visc-clark-y
+category: aero-viscous
+purpose: Viskose Sequenz Clark Y, Re=1e6, ASEQ 0..6 Schritt 2
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: viscous, Mach 0, Ncrit 9, natuerliche Transition, Re=1000000, ITER 100, ASEQ 0 6 2
+limitations: none

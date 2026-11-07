@@ -1,0 +1,11 @@
+case-id: design-state/plop-menu-return
+category: design-state
+purpose: PLOP-Menue (OPLSET plutil.f 21-176) mit sofortiger Rueckkehr per '0'; kanonischer Menuetext und Prompt fuer den P4-P0-Zustandsrahmen.
+role: state-frame-reference
+step: C11b-P4-P0
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: PLOP, 0, QUIT
+limitations: keine Geometrie, keine Umschaltungen; nur Menuetext-Rueckgabe

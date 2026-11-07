@@ -1,0 +1,10 @@
+case-id: oper-state/oper-identical-values
+category: oper-state
+purpose: Identische erneute Werte fuer RE, MACH, TYPE und ITER
+step: C11a-A34-C-OPER-state
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: VISC 1000000, RE 1000000 doppelt, MACH 0.3 doppelt, TYPE 2 doppelt, ITER 30 doppelt
+limitations: none

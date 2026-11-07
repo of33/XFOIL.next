@@ -1,0 +1,10 @@
+case-id: geometry/naca-2412
+category: geometry
+purpose: NACA 2412 Geometrie + Plain-Coordinate-Save; kanonische Punktzahl 245, LE/TE-Ausgabe
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: none
+limitations: none

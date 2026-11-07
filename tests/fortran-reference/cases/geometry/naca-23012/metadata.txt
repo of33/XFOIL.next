@@ -1,0 +1,10 @@
+case-id: geometry/naca-23012
+category: geometry
+purpose: NACA-Fuenfstellenprofil 23012 Geometrie + Plain-Coordinate-Save; ITYPE<=25099-Zweig
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: none
+limitations: none

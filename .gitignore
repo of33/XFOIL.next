@@ -1,0 +1,45 @@
+# Build output
+/build/
+*.o
+*.d
+*.gcda
+*.gcno
+*.profraw
+*.profdata
+compile_commands.json
+
+# Editors / local VCS helpers
+.vscode/
+.idea/
+
+# Runtime artifacts written by the CLI into the repository root.
+# Root-anchored so reference data under tests/ is never matched.
+/CLARK_Y.cp
+/PGET
+/PWRT
+/fort.*
+/:00.bl
+/:100.bl
+/plot.ps
+/xplot11_logfile
+/xfoil.def
+/*.pol
+/*.dump
+/*.cp
+/transcript.txt
+/results.dat
+
+# BL boundary-layer dumps: runtime output is ignored, but the canonical
+# Fortran harness reference data under tests/ is kept. The negations must
+# follow the *.bl rule (gitignore last-match-wins) to be effective.
+*.bl
+!tests/data/core-polar-io-reference/*.bl
+!tests/fortran-reference/cases/*/*/generated/*.bl
+
+# Logo source files (SVG not for publication)
+docs/Logo/
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo

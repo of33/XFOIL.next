@@ -1,0 +1,10 @@
+PLOP
+g
+
+NACA 2412
+GDES
+ADEG 5
+eXec
+
+PSAV rotate_exec.dat
+QUIT

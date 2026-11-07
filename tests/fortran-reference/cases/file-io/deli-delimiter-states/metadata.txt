@@ -1,0 +1,12 @@
+case-id: file-io/deli-delimiter-states
+category: file-io
+purpose: TOP-Level-DELI-Policy gegen kanonisches Binary: NACA 2412, DELI 0/1/2 (stummer Argumentpfad) mit je einem SAVE (out_blank/out_comma/out_tab.dat: blank=G15.7, comma=F10.6+BSTRIP, tab), abschliessend DELI ohne Argument (Menue FORMAT 2100 mit 'currently, delimiter = 2' + ASKI-Prompt, Wert 0). Belegt: DELI ist reine Ausgabepolitik und veraendert keine Geometrie.
+role: a34c-deli-delimiter-reference
+step: A34-C TOP-Level DELI
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 2412; DELI 0/1/2; SAVE je Zustand; DELI ohne Argument
+fixture-origin: keine Eingabedatei; NACA-2412-Generierung (kanonisch)
+limitations: none

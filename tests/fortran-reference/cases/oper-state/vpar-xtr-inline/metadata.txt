@@ -1,0 +1,10 @@
+case-id: oper-state/vpar-xtr-inline
+category: oper-state
+purpose: VPAR XTR mit zwei Inline-Werten und SHOW
+step: C11a-A34-C-VPAR-state
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: XTR 0.5 0.6, SHOW
+limitations: none

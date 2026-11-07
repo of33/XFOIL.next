@@ -1,0 +1,6 @@
+NACA 0012
+NORM
+GDES
+OVER ov_plain.dat
+
+QUIT

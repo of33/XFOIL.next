@@ -1,0 +1,8 @@
+NACA 2412
+PSAV decline_target.dat
+PSAV decline_target.dat
+N
+PSAV accept_target.dat
+PSAV accept_target.dat
+Y
+QUIT

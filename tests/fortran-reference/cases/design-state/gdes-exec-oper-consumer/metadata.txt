@@ -1,0 +1,11 @@
+case-id: design-state/gdes-exec-oper-consumer
+category: design-state
+purpose: GDES SCAL+EXEC, danach OPER ALFA 2 auf der neuen Bufferkontur (Consumerkette); P4-P5.
+role: state-frame-reference
+step: C11b-P4-P5
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; GDES; SCAL 2.0 2.0; EXEC; ; OPER; ALFA 2; ; QUIT
+limitations: Plot nicht vorhanden

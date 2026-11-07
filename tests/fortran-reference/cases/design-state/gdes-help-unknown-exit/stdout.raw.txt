@@ -1,0 +1,137 @@
+
+ ===================================================
+  XFOIL Version 6.99
+  Copyright (C) 2000   Mark Drela, Harold Youngren
+
+  This software comes with ABSOLUTELY NO WARRANTY,
+    subject to the GNU General Public License.
+
+  Caveat computor
+ ===================================================
+
+ File  xfoil.def  not found
+
+   QUIT    Exit program
+
+  .OPER    Direct operating point(s)
+  .MDES    Complex mapping design routine
+  .QDES    Surface speed design routine
+  .GDES    Geometry design routine
+
+   SAVE f  Write airfoil to labeled coordinate file
+   PSAV f  Write airfoil to plain coordinate file
+   ISAV f  Write airfoil to ISES coordinate file
+   MSAV f  Write airfoil to MSES coordinate file
+   REVE    Reverse written-airfoil node ordering
+   DELI i  Change written-airfoil file delimiters
+
+   LOAD f  Read buffer airfoil from coordinate file
+   NACA i  Set NACA 4,5-digit airfoil and buffer airfoil
+   INTE    Set buffer airfoil by interpolating two airfoils
+   NORM    Buffer airfoil normalization toggle
+   HALF    Halve the number of points in buffer airfoil
+   XYCM rr Change CM reference location, currently  0.25000 0.00000
+
+   BEND    Display structural properties of current airfoil
+
+   PCOP    Set current-airfoil panel nodes directly from buffer airfoil points
+   PANE    Set current-airfoil panel nodes ( 160 ) based on curvature
+  .PPAR    Show/change paneling
+
+  .PLOP    Plotting options
+
+   WDEF f  Write  current-settings file
+   RDEF f  Reread current-settings file
+   NAME s  Specify new airfoil name
+   NINC    Increment name version number
+
+   Z       Zoom    | (available in all menus)
+   U       Unzoom  | 
+
+ XFOIL   c>   Max thickness =     0.120032  at x =   0.297
+ Max camber    =    -0.000000  at x =   0.015
+
+ Buffer airfoil set using 245 points
+
+ Blunt trailing edge.  Gap =  0.00252
+
+ Paneling parameters used...
+   Number of panel nodes       160
+   Panel bunching parameter    1.000
+   TE/LE panel density ratio   0.150
+   Refined-area/LE panel density ratio    0.200
+   Top    side refined area x/c limits  1.000 1.000
+   Bottom side refined area x/c limits  1.000 1.000
+
+ XFOIL   c>  
+ You are working with the buffer airfoil
+
+.GDES   c>  
+   <cr>     Return to Top Level
+   !        Redo previous command
+
+   GSET     Set buffer  airfoil <== current airfoil
+   eXec     Set current airfoil <== buffer  airfoil
+   SYMM     Toggle y-symmetry flag
+
+   ADEG r   Rotate about origin (degrees)
+   ARAD r   Rotate about origin (radians)
+   Tran rr  Translate
+   Scal r   Scale about origin
+   LINS rr. Linearly-varying y scale
+   DERO     Derotate (set chord line level)
+
+   TGAP rr  Change trailing edge gap
+   LERA rr  Change leading edge radius
+
+   TCPL     Toggle thickness and camber plotting
+   TFAC rr  Scale existing thickness and camber
+   TSET rr  Set new thickness and camber
+   HIGH rr  Move camber and thickness highpoints
+  .CAMB     Modify camber shape directly or via loading
+
+   BEND     Display structural properties of buffer airfoil
+
+   Flap rrr Deflect trailing edge flap
+
+   Modi     Modify contour via cursor
+   SLOP     Toggle modified-contour slope matching flag
+
+   CORN     Double point with cursor (set sharp corner)
+   ADDP     Add    point with cursor or keyboard x,y
+   MOVP     Move   point with cursor or keyboard x,y
+   DELP     Delete point with cursor
+   NMOV r   Move all points in surface-normal direction
+
+   UNIT     Normalize buffer airfoil to unit chord
+   Dist     Determine distance between 2 cursor points
+   CLIS     List curvatures
+   CPLO     Plot curvatures
+   CANG     List panel corner angles
+   CADD ri. Add points at corners exceeding angle threshold
+
+   Plot     Replot buffer airfoil
+   INPL     Replot buffer airfoil without scaling (in inches)
+   Blow     Blowup plot region
+   Rese     Reset plot scale and origin
+   Wind     Plot window adjust via cursor and keys
+
+   TSIZ r   Change tick-mark size
+   TICK     Toggle node tick-mark plotting
+   GRID     Toggle grid plotting
+   GPAR     Toggle geometric parameter plotting
+   Over f   Overlay disk file airfoil
+
+   SIZE r   Change absolute plot-object size
+  .ANNO     Annotate plot
+   HARD     Hardcopy current plot
+
+   NAME s   Specify new airfoil name
+   NINC     Increment name version number
+
+.GDES   c>   Command FOO  not recognized.  Type a " ? " for list.
+
+.GDES   c>  
+ Buffer airfoil is not identical to current airfoil
+
+ XFOIL   c>  

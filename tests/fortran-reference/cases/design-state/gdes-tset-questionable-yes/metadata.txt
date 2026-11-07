@@ -1,0 +1,11 @@
+case-id: design-state/gdes-tset-questionable-yes
+category: design-state
+purpose: GDES TSET Questionable-Pfad mit Bestaetigung (xtcam.f 1008-1016); P4-P1.
+role: state-frame-reference
+step: C11b-P4-P1
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012, GDES, TSET 0.5 0.2, y, <Leerzeile>, PSAV, QUIT
+limitations: Plot nicht vorhanden

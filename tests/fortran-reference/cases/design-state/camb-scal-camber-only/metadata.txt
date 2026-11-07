@@ -1,0 +1,11 @@
+case-id: design-state/camb-scal-camber-only
+category: design-state
+purpose: CAMB SCAL ohne Loading (CLX=CMX=0): kein 1110-Druck; P4-P2.
+role: state-frame-reference
+step: C11b-P4-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; GDES; CAMB; SETC; SCAL 2; ; ; QUIT
+limitations: Plot nicht vorhanden

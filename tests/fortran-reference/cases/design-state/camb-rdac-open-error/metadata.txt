@@ -1,0 +1,11 @@
+case-id: design-state/camb-rdac-open-error
+category: design-state
+purpose: CAMB RDAC OPEN-Fehler: 'Error opening added camber file', GO TO 500 (xtcam.f 373-375); P4-P3.
+role: state-frame-reference
+step: C11b-P4-P3
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; GDES; CAMB; RDAC; missing_file_xyz.dat; ; ; QUIT
+limitations: Plot nicht vorhanden

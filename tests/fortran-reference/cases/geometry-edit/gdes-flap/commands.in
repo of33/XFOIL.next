@@ -1,0 +1,9 @@
+PLOP
+g
+
+NACA 2412
+GDES
+Flap 0.9 0.0 10
+
+PSAV flap.dat
+QUIT

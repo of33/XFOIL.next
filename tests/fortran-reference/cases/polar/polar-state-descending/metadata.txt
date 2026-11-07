@@ -1,0 +1,10 @@
+case-id: polar/polar-state-descending
+category: polar
+purpose: Zustand: absteigende inviskide Polar NACA 2412, ASEQ 8..0 Schritt -2 (PACC)
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: inviscid, PACC, ASEQ 8 0 -2
+limitations: none

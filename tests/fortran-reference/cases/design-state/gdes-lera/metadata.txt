@@ -1,0 +1,11 @@
+case-id: design-state/gdes-lera
+category: design-state
+purpose: GDES LERA (xgdes.f 1312-1373): LE-Radius-Skalierung, New-LE-radius-Zeile, GEOPAR; P4-P1.
+role: state-frame-reference
+step: C11b-P4-P1
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012, GDES, LERA 1.5 0.3, <Leerzeile>, PSAV, QUIT
+limitations: Plot nicht vorhanden

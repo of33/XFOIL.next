@@ -1,0 +1,10 @@
+case-id: oper-state/oper-visc-toggle
+category: oper-state
+purpose: VISC ohne Argument mit Reynolds-Prompt und erneutes VISC (Toggle)
+step: C11a-A34-C-OPER-state
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: VISC, Re=1000000, VISC aus
+limitations: none

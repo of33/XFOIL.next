@@ -1,0 +1,124 @@
+
+ ===================================================
+ XFOIL.next Version 1.0.0
+ Copyright (C) 2026 Olaf Frommann
+
+ Based upon XFOIL Version 6.99
+ Copyright (C) 2000   Mark Drela, Harold Youngren
+
+ This software comes with ABSOLUTELY NO WARRANTY,
+   subject to the GNU General Public License.
+
+ Caveat computor
+ ===================================================
+
+ File  xfoil.def  not found
+
+Loading profile file: sample/CLARK_Y.dat
+Foil name : CLARK Y
+Number of points : 151
+
+   QUIT    Exit program
+
+  .OPER    Direct operating point(s)
+  .MDES    Complex mapping design routine
+  .QDES    Surface speed design routine
+  .GDES    Geometry design routine
+
+   SAVE f  Write airfoil to labeled coordinate file
+   PSAV f  Write airfoil to plain coordinate file
+   ISAV f  Write airfoil to ISES coordinate file
+   MSAV f  Write airfoil to MSES coordinate file
+   REVE    Reverse written-airfoil node ordering
+   DELI i  Change written-airfoil file delimiters
+
+   LOAD f  Read buffer airfoil from coordinate file
+   NACA i  Set NACA 4,5-digit airfoil and buffer airfoil
+   INTE    Set buffer airfoil by interpolating two airfoils
+   NORM    Buffer airfoil normalization toggle
+   HALF    Halve the number of points in buffer airfoil
+   XYCM rr Change CM reference location, currently  0.25000 0.00000
+
+   BEND    Display structural properties of current airfoil
+
+   PCOP    Set current-airfoil panel nodes directly from buffer airfoil points
+   PANE    Set current-airfoil panel nodes ( 160 ) based on curvature
+  .PPAR    Show/change paneling
+
+  .PLOP    Plotting options
+
+   WDEF f  Write  current-settings file
+   RDEF f  Reread current-settings file
+   NAME s  Specify new airfoil name
+   NINC    Increment name version number
+
+   Z       Zoom    | (available in all menus)
+   U       Unzoom  |
+
+ XFOIL   c>  
+.OPERi   c>  
+   <cr>     Return to Top Level
+   !        Redo last ALFA,CLI,CL,ASEQ,CSEQ,VELS
+
+   Visc r   Toggle Inviscid/Viscous mode
+  .VPAR     Change BL parameter(s)
+   Re   r   Change Reynolds number
+   Mach r   Change Mach number
+   Type i   Change type of Mach,Re variation with CL
+   ITER     Change viscous-solution iteration limit
+   INIT     Toggle BL initialization flag
+
+   Alfa r   Prescribe alpha
+   CLI  r   Prescribe inviscid CL
+   Cl   r   Prescribe CL
+   ASeq rrr Prescribe a sequence of alphas
+   CSeq rrr Prescribe a sequence of CLs
+
+   SEQP     Toggle polar/Cp(x) sequence plot display
+   CINC     Toggle  minimum Cp  inclusion in polar
+   HINC     Toggle hinge moment inclusion in polar
+   Pacc i   Toggle auto point accumulation to active polar
+   PGET f   Read new polar from save file
+   PWRT i   Write polar to save file
+   PSUM     Show summary of stored polars
+   PLIS i   List stored polar(s)
+   PDEL i   Delete stored polar
+   PSOR i   Sort stored polar
+   PPlo ii. Plot stored polar(s)
+   APlo ii. Plot stored airfoil(s) for each polar
+   ASET i   Copy stored airfoil into current airfoil
+   PREM ir. Remove point(s) from stored polar
+   PNAM i   Change airfoil name of stored polar
+   PPAX     Change polar plot axis limits
+
+   RGET f   Read new reference polar from file
+   RDEL i   Delete stored reference polar
+
+   GRID     Toggle Cp vs x grid overlay
+   CPIO     Toggle inviscid Cp overlay on viscous Cp(x)
+   CREF     Toggle reference Cp data overlay
+   FREF     Toggle reference CL,CD.. data display
+
+   CPx      Plot Cp vs x
+   CPV      Plot airfoil with pressure vectors (gee wiz)
+  .VPlo     BL variable plots
+  .ANNO     Annotate current plot
+   HARD     Hardcopy current plot
+   SIZE r   Change plot-object size
+   CPMI r   Change minimum Cp axis annotation
+
+   BL   i   Plot boundary layer velocity profiles
+   BLC      Plot boundary layer velocity profiles at cursor
+   BLWT r   Change velocity profile scale weight
+
+   FMOM     Calculate flap hinge moment and forces
+   FNEW rr  Set new flap hinge point
+   VELS rr  Calculate velocity components at a point
+   DUMP f   Output Ue,Dstar,Theta,Cf vs s,x,y to file
+   CPWR f   Output x vs Cp to file
+   CPMN     Report minimum surface Cp
+   NAME s   Specify new airfoil name
+   NINC     Increment name version number
+
+.OPERi   c>  
+ XFOIL   c>  

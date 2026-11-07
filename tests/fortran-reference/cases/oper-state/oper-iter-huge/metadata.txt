@@ -1,0 +1,10 @@
+case-id: oper-state/oper-iter-huge
+category: oper-state
+purpose: ITER mit uebergrossem Inline-Wert (GETFLT/INT-Grenze)
+step: C11a-A34-C-OPER-state
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: ITER 100000000000
+limitations: none

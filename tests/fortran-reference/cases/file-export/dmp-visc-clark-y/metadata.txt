@@ -1,0 +1,10 @@
+case-id: file-export/dmp-visc-clark-y
+category: file-export
+purpose: DMP-Dateiexport (BLDUMP2 xoper.f 2053-2262, 24 Spalten, PTAU/EDIS-Kumulanten) CLARK_Y Re=3e6
+step: C11b-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: viscous Re=3e6, ALFA 4, DMP mit Dateinamen, KDELIM 0
+limitations: keine

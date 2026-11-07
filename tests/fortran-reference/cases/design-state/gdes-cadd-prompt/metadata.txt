@@ -1,0 +1,11 @@
+case-id: design-state/gdes-cadd-prompt
+category: design-state
+purpose: GDES CADD (xgdes.f 503-598) ohne Inline-Argument: READR/READI-Promptkette (FORMAT 1090/1091/1092), Number-of-points-added, GEOPAR und CANG-Maximum; P4-P1-Textvertrag.
+role: state-frame-reference
+step: C11b-P4-P1
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012, GDES, CADD, 0.5, 1, -0.2, <Leerzeile>, QUIT
+limitations: kein Plotbackend; Text und Geometriezustaende ohne Plotdateien

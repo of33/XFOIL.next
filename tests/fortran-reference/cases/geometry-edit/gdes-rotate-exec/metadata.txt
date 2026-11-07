@@ -1,0 +1,11 @@
+case-id: geometry-edit/gdes-rotate-exec
+category: geometry-edit
+purpose: POSITIVE-EDIT-REFERENZ (mit eXec): GDES ADEG 5 (ROTATE) editiert den Buffer; eXec uebertraegt den rotierten Buffer (245) in die aktuelle Kontur; PSAV schreibt die BEARBEITETE Kontur.
+role: positive-edit-reference
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 2412, GDES ADEG 5, eXec, PSAV
+limitations: ADEG ruft ROTATE(XB,YB,NB,ARAD) auf (xgdes.f:234); ohne eXec bleibt die aktuelle Kontur unveraendert

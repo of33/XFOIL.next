@@ -1,0 +1,10 @@
+case-id: oper-state/oper-init-inviscid-then-bang
+category: oper-state
+purpose: Inviscider ALFA-Punkt, VISC, OPER INIT (LBLINI=true ohne viskosen Lauf), dann '!' (LRECALC-VISCAL auf QVIS-COMMON-Nullfeld)
+step: C11a-A34-C-OPER-INIT-QVIS
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 2412, ALFA 2 (inviscid), VISC 1000000, INIT, !
+limitations: none

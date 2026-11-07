@@ -1,0 +1,10 @@
+case-id: aero-viscous/aseq-nseqex
+category: aero-viscous
+purpose: ASEQ-NSEQEX-Halt NACA 2412, Re=1e6, ITER 1, ASEQ 0..10 Schritt 1: vier aufeinanderfolgende nicht konvergierende VISCAL-Punkte brechen die Sequenz (xoper.f 738-753, NSEQEX=4)
+step: 17r4
+status: canonical-raw-only
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: viscous, Mach 0, Ncrit 9, Re=1e6, ITER 1, ASEQ 0 10 1
+limitations: bewusst nicht konvergierend; Verhaltensreferenz fuer NSEQEX-Halt, nicht als stabiles numerisches Golden

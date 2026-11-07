@@ -1,0 +1,7 @@
+NACA 0012
+GDES
+SCAL 2
+SCAL 0 -1 1
+
+PSAV scal.dat
+QUIT

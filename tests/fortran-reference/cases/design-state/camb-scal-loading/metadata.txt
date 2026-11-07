@@ -1,0 +1,11 @@
+case-id: design-state/camb-scal-loading
+category: design-state
+purpose: CAMB SCAL mit CLX/CMX ungleich Null: 1110-Druck (xtcam.f 633); P4-P2.
+role: state-frame-reference
+step: C11b-P4-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; GDES; CAMB; INPP; 0.2 -0.5; 0.5 -1.0; 0.8 -0.5; ; ; SCAL 2; ; ; QUIT
+limitations: Plot nicht vorhanden

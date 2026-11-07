@@ -1,0 +1,12 @@
+case-id: file-io/isav-no-geometry
+category: file-io
+purpose: TOP-Level-ISAV ohne Geometrie gegen kanonisches Binary: IFTYP=2 schreibt zuerst das INIT-Namensfeld NAME(1:NNAME) mit NNAME=32 (32 Leerzeichen) und dann die ISPARS-Zeile ' -2.0  3.0  -2.5  3.5'; bei N=0 folgen keine Koordinaten. stdout.raw.txt traegt keinen Fehlertext.
+role: a34c-isav-no-geometry-reference
+step: A34-C TOP-Level ISAV
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: ISAV ohne Geometrie
+fixture-origin: keine Eingabedatei; keine Geometrie
+limitations: none

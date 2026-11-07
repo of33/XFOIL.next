@@ -1,0 +1,12 @@
+case-id: file-io/usav-overwrite-decline-accept
+category: file-io
+purpose: TOP-Level-USAV Ueberschreibvertrag gegen kanonisches Binary: neue Datei, dann vorhandene Datei mit Antwort N (Current airfoil not saved, Datei bleibt), dann neue Datei und vorhandene Datei mit Antwort Y (Ueberschreiben). stdout.raw.txt traegt Prompt- und Absagetexte; generated-Dateibytes belegen decline- und accept-Zustand.
+role: a34c-usav-overwrite-reference
+step: A34-C TOP-Level USAV
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 2412; USAV decline_target.dat; USAV accept_target.dat; Antworten N/Y
+fixture-origin: keine Eingabedatei; NACA-2412-Generierung (kanonisch)
+limitations: none

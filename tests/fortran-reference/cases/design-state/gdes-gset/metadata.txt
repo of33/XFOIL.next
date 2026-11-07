@@ -1,0 +1,11 @@
+case-id: design-state/gdes-gset
+category: design-state
+purpose: GDES GSET (xgdes.f 175-194): Current->Buffer, LGSAME=true, GEOPAR-Druck; P4-P1-Buffervertrag.
+role: state-frame-reference
+step: C11b-P4-P1
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012, PANE, GDES, GSET, <Leerzeile>, QUIT
+limitations: kein Plotbackend

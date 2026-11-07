@@ -1,0 +1,10 @@
+case-id: aero-inviscid/inv-clark-y-0
+category: aero-inviscid
+purpose: Inviskide Einzelpunkt Clark Y bei 0 Grad
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: inviscid, Mach 0, Ncrit 9 (Defaults), alpha=0
+limitations: none

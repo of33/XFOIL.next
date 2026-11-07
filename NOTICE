@@ -1,0 +1,51 @@
+XFOIL.next
+Copyright (C) 2026 Olaf Frommann
+https://github.com/of33/XFOIL.next
+
+XFOIL.next is based on XFOIL 6.99 by Mark Drela and Harold Youngren.
+
+The original XFOIL sources retain their own copyright and license notices.
+The original XFOIL 6.99 distribution was made available under the GNU
+General Public License, version 2 or later (GPL-2.0-or-later); the source
+file headers carry "Copyright (C) 2000 Mark Drela" (some jointly with
+Harold Youngren) and the "either version 2 of the License, or (at your
+option) any later version" clause.
+
+XFOIL.next is distributed as a whole under the GNU General Public License,
+version 3 or later (GPL-3.0-or-later). The full license text is provided in
+the file LICENSE in the repository root.
+
+Original XFOIL provenance
+------------------------
+The following files are part of the original XFOIL provenance and come from
+the XFOIL 6.99 distribution. They are kept unmodified and keep their own
+notices:
+
+  fortran-src/          original XFOIL 6.99 Fortran reference sources
+  fortran-bin/xfoil     reference binary built from fortran-src/
+  fortran-src/osmap.dat active Orr-Sommerfeld database (REAL*4)
+
+Active and inactive OSMAP artifacts
+-----------------------------------
+The active, canonical XFOIL 6.99 runtime path used by this project is:
+
+  fortran-src/osmap.f  +  fortran-src/osmap.dat
+
+The following files are inactive original artifacts of the same XFOIL 6.99
+distribution (the native-precision Orr-Sommerfeld toolchain variant). They
+are preserved as upstream originals and are covered by the integrity
+inventory fortran-src/SHA256SUMS, but they are NOT part of the active
+numerical path: they are never compiled, linked, or used as a runtime
+database by this project.
+
+  fortran-src/osmap_DP.f   inactive original artifact (not built)
+  fortran-src/osmapDP.dat  inactive original database (not loaded)
+
+Sample profiles
+---------------
+sample/CLARK_Y.dat and sample/NACA2312.dat are example airfoil coordinate
+files provided by the project owner. They are not part of the XFOIL 6.99
+upstream distribution. See sample/README.md for their provenance and use.
+
+No third-party attribution beyond the original XFOIL authorship above is
+claimed or required for this distribution.

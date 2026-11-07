@@ -1,0 +1,5 @@
+OPER
+VISC 1e6
+ALFA 2
+
+QUIT

@@ -1,0 +1,10 @@
+case-id: geometry-edit/msave-success
+category: geometry-edit
+purpose: Erfolgreicher MSAV/MSAVE-Lauf: minimale gueltige MSES-Eingabedatei, Element 1 wird durch die aktuelle Kontur (NACA 2412, 160 Punkte) ersetzt; die MSES-Datei wird am selben Ort ueberschrieben
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 2412, MSAV testfoil.msh, Element 1
+limitations: Eingabe- (input/testfoil.msh) und geaenderte Datei (generated/testfoil.msh) sind Teil der Referenz; MSAVE ueberschreibt die Datei (REWIND+WRITE), es wird nicht ergaenzt

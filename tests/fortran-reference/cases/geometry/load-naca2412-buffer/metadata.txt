@@ -1,0 +1,12 @@
+case-id: geometry/load-naca2412-buffer
+category: geometry
+purpose: FCPP037-Referenzpfad: frischer LOAD des kanonischen NACA-2412-Bufferpunktesatzes (245 Punkte, via PCOP); erfasst die von LOAD ausgegebene LE x,y-Zeile. LE-Ausgabe = negative Rundungsnull (-0.00000, -0.00000).
+role: fcpp037-reference
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: LOAD naca2412_buffer.dat (245 Punkte, Bufferkontur)
+fixture-origin: naca2412_buffer.dat = NACA 2412 -> PCOP -> PSAV (kanonischer NACA-2412-Buffer, 245 Punkte); SHA-256 cfed71b53fc3af4bb37a7f074a1dbf6e632de21d046f0effdb33ddae5b0e6673
+limitations: Nur Feststellung des konkreten Fortran-LOAD-/LEFIND/SEVAL-Ausgabewegs; keine globale Nullregel; FCPP037 bleibt bis zum C++-Zwischenwertvergleich offen

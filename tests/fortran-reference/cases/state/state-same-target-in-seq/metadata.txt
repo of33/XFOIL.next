@@ -1,0 +1,10 @@
+case-id: state/state-same-target-in-seq
+category: state
+purpose: Derselbe Zielpunkt (alpha=4) innerhalb einer Sequenz (ASEQ 0 8 4) und als Einzelpunkt (ALFA 4)
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: inviscid, ASEQ 0 8 4 + ALFA 4
+limitations: none

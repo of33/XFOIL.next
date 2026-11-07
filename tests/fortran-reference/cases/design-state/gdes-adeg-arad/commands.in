@@ -1,0 +1,7 @@
+NACA 0012
+GDES
+ADEG 5
+ARAD 0.1
+
+PSAV adegarad.dat
+QUIT

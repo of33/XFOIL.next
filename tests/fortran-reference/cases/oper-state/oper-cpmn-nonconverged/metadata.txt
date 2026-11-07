@@ -1,0 +1,10 @@
+case-id: oper-state/oper-cpmn-nonconverged
+category: oper-state
+purpose: CPMN nach nichtkonvergiertem VISCAL-Punkt
+step: C11a-A34-C-OPER-CPMN
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: VISC 1000000, INIT, !, CPMN
+limitations: none

@@ -1,0 +1,11 @@
+case-id: design-state/gdes-symm
+category: design-state
+purpose: GDES SYMM (xgdes.f 204-211): Toggletexte, ZERCAM-Meldung, Prompt .GDESs bei aktivem Zustand; P4-P1.
+role: state-frame-reference
+step: C11b-P4-P1
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012, GDES, SYMM, SYMM, <Leerzeile>, QUIT
+limitations: kein Plotbackend

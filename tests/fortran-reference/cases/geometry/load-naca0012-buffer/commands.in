@@ -1,0 +1,6 @@
+PLOP
+g
+
+LOAD naca0012_buffer.dat
+naca0012buf
+QUIT

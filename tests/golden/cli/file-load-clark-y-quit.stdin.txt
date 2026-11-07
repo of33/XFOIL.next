@@ -1,0 +1,2 @@
+LOAD sample/CLARK_Y.dat
+QUIT

@@ -1,0 +1,10 @@
+case-id: oper-state/vpar-vacc-inline
+category: oper-state
+purpose: VPAR VACC mit nichttrivialem Inline-Wert und SHOW
+step: C11a-A34-C-VPAR-state
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: VACC 0.05, SHOW
+limitations: none

@@ -1,0 +1,113 @@
+ Max thickness =     0.120032  at x =   0.297
+ Max camber    =    -0.000000  at x =   0.015
+
+ Buffer airfoil set using 245 points
+
+ Blunt trailing edge.  Gap =  0.00252
+
+ Paneling parameters used...
+   Number of panel nodes       160
+   Panel bunching parameter    1.000
+   TE/LE panel density ratio   0.150
+   Refined-area/LE panel density ratio    0.200
+   Top    side refined area x/c limits  1.000 1.000
+   Bottom side refined area x/c limits  1.000 1.000
+ Calculating unit vorticity distributions ...
+
+OFS: alfa =   2.0000 cl =   0.2416 cdp =  -0.0011 cm =  -0.0028
+CASE A TOPS BOTS  1.01957973592082585E+00  1.01966281048855256E+00
+CASE A HMOM HFX HFY  6.31548549722426439E-02 -8.09899166621076000E-03  2.41389300001960683E-01
+CASE B TOPS BOTS  3.02100718831389337E-01  1.73714182757798952E+00
+CASE B HMOM HFX HFY  2.41643257603032114E-03 -1.49385402926993007E-02  1.76958349235039406E-02
+CASE E1 TOPS BOTS  5.02773358122584946E-01  1.53646918828679335E+00
+CASE E1 HMOM HFX HFY  6.42718660686303692E-03 -1.08116997895898216E-02  4.38803807993735154E-02
+CASE E2 TOPS BOTS  5.02773358122584946E-01  1.53646918828679335E+00
+CASE E2 HMOM HFX HFY  8.87173219040935171E-03 -2.99307266028487617E-02  4.38803807993735154E-02
+CASE G TOPS BOTS  3.02100718831389337E-01  1.73714182757798952E+00
+CASE G HMOM HFX HFY  2.41643257603032114E-03 -1.49385402926993007E-02  1.76958349235039406E-02
+CASE D XOF YOF  6.99999999999999956E-01  0.00000000000000000E+00
+
+  Top    surface:  y =  0.0366     y/t = 1.0
+  Bottom surface:  y = -0.0366     y/t = 0.0
+CASE D HMOM HFX HFY  1.78712478449604990E-03 -1.02337713686714953E-02  1.76958349235039406E-02
+
+OFS: alfa =   2.0000 cl =   0.2416 cdp =  -0.0011 cm =  -0.0028
+ Calculating wake trajectory ...
+ Calculating source influence matrix ...
+
+ Solving BL system ...
+
+ Initializing BL ...
+    side            1  ...
+ MRCHUE: Inverse mode at  49     Hk =   2.500
+ MRCHUE: Inverse mode at  84     Hk =   2.500
+    side            2  ...
+ MRCHUE: Inverse mode at  62     Hk =   4.234
+ MRCHUE: Inverse mode at  63     Hk =   5.008
+ MRCHUE: Inverse mode at  64     Hk =   5.771
+ MRCHUE: Inverse mode at  65     Hk =   3.792
+ MRCHUE: Inverse mode at  66     Hk =   2.500
+
+ Side 1  free  transition at x/c =  0.4302   49
+ Side 2  free  transition at x/c =  0.7956   65
+
+   1   rms: 0.1153E+00   max: -.1584E+01   C at   49  1   RLX: 0.316
+       a =  2.000      CL =  0.2398
+      Cm = -0.0034     CD =  0.00561   =>   CDf =  0.00490    CDp =  0.00072
+
+ Side 1  free  transition at x/c =  0.4370   49
+ Side 2  free  transition at x/c =  0.8033   65
+
+   2   rms: 0.7258E-01   max: -.6233E+00   C at   49  1   RLX: 0.802
+       a =  2.000      CL =  0.2230
+      Cm =  0.0006     CD =  0.00599   =>   CDf =  0.00487    CDp =  0.00112
+
+ Side 1  free  transition at x/c =  0.4685   51
+ Side 2  free  transition at x/c =  0.8856   70
+
+   3   rms: 0.6254E-01   max: 0.1041E+01   C at   70  2
+       a =  2.000      CL =  0.2050
+      Cm =  0.0051     CD =  0.00577   =>   CDf =  0.00435    CDp =  0.00143
+
+ Side 1  free  transition at x/c =  0.4804   52
+ Side 2  free  transition at x/c =  0.8773   70
+
+   4   rms: 0.1960E-01   max: 0.2254E+00   C at   70  2
+       a =  2.000      CL =  0.2141
+      Cm =  0.0030     CD =  0.00579   =>   CDf =  0.00430    CDp =  0.00149
+
+ Side 1  free  transition at x/c =  0.4737   52
+ Side 2  free  transition at x/c =  0.8683   69
+
+   5   rms: 0.1566E-02   max: -.2111E-01   C at   52  1
+       a =  2.000      CL =  0.2142
+      Cm =  0.0030     CD =  0.00580   =>   CDf =  0.00437    CDp =  0.00143
+
+ Side 1  free  transition at x/c =  0.4742   52
+ Side 2  free  transition at x/c =  0.8676   69
+
+   6   rms: 0.2398E-04   max: -.4043E-03   C at   69  2
+       a =  2.000      CL =  0.2142
+      Cm =  0.0030     CD =  0.00580   =>   CDf =  0.00437    CDp =  0.00143
+      9.000    3.1955   0.005802   0.000000   0.000000   0.000000    0.4742     #
+CASE C TOPS BOTS  3.02100718831389337E-01  1.73714182757798952E+00
+CASE C HMOM HFX HFY  1.27207182642534054E-03 -1.23895351713690996E-02  9.11934668204253396E-03
+ Max thickness =     0.120032  at x =   0.297
+ Max camber    =     0.019999  at x =   0.403
+
+ Buffer airfoil set using 245 points
+
+ Blunt trailing edge.  Gap =  0.00252
+
+ Paneling parameters used...
+   Number of panel nodes       160
+   Panel bunching parameter    1.000
+   TE/LE panel density ratio   0.150
+   Refined-area/LE panel density ratio    0.200
+   Top    side refined area x/c limits  1.000 1.000
+   Bottom side refined area x/c limits  1.000 1.000
+ Calculating unit vorticity distributions ...
+
+OFS: alfa =   2.0000 cl =   0.4968 cdp =  -0.0011 cm =  -0.0587
+CASE F TOPS BOTS  3.04268939442671915E-01  1.74055687179285390E+00
+CASE F HMOM HFX HFY  8.63599123305021713E-03 -2.96753267117934386E-02  7.02967706507049012E-02

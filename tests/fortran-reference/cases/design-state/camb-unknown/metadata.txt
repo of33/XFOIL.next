@@ -1,0 +1,11 @@
+case-id: design-state/camb-unknown
+category: design-state
+purpose: CAMB unbekannter Befehl FORMAT 8000 (xtcam.f 770-772); P4-P2.
+role: state-frame-reference
+step: C11b-P4-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; GDES; CAMB; ZZZ; ; ; QUIT
+limitations: Plot nicht vorhanden

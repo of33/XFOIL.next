@@ -1,0 +1,11 @@
+case-id: design-state/camb-entry-exit
+category: design-state
+purpose: CAMB-Eintritt (Hilfe, Block 100/200) und <Return>-Austritt mit LGPARM-Restaurierung; P4-P2.
+role: state-frame-reference
+step: C11b-P4-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; GDES; CAMB; ; ; QUIT
+limitations: Plot nicht vorhanden

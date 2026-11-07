@@ -1,0 +1,10 @@
+case-id: oper-state/oper-cl-cl1e6-fail
+category: oper-state
+purpose: Extremer CL-Zielwert 1e6: SPECCL-Konvergenzfehler (LALFA=false)
+step: C11a-A34-C-OPER-Extremwinkel
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: CL 1.0E6
+limitations: none

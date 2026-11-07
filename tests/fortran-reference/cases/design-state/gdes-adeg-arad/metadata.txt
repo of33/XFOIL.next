@@ -1,0 +1,11 @@
+case-id: design-state/gdes-adeg-arad
+category: design-state
+purpose: GDES ADEG/ARAD (xgdes.f 215-247): Rotation ohne GEOPAR-Druck, LGSAME unveraendert; P4-P1-Numerik.
+role: state-frame-reference
+step: C11b-P4-P1
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012, GDES, ADEG 5, ARAD 0.1, <Leerzeile>, PSAV, QUIT
+limitations: Plot nicht vorhanden; Konturueber PSAV

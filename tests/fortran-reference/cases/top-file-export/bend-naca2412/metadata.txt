@@ -1,0 +1,10 @@
+case-id: top-file-export/bend-naca2412
+category: top-file-export
+purpose: TOP BEND Report (BENDUMP xgeom.f 1295-1365) NACA 2412
+step: C11b-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 2412, BEND, PEX=16
+limitations: keine

@@ -1,0 +1,37 @@
+
+ Blunt trailing edge.  Gap =  0.00252
+
+ Paneling parameters used...
+   Number of panel nodes       160
+   Panel bunching parameter    0.000
+   TE/LE panel density ratio   0.000
+   Refined-area/LE panel density ratio    0.000
+   Top    side refined area x/c limits  0.000 0.000
+   Bottom side refined area x/c limits  0.000 0.000
+ Calculating unit vorticity distributions ...
+
+ MRCL: CL too low for chosen Mach(CL) dependence
+       Aritificially limiting Mach to  0.99
+ SPECAL:  Minf convergence failed
+
+OFS: alfa =      NaN cl =      NaN cdp =      NaN cm =      NaN
+ SPECF-ALFA ALFA =       0.000000
+ SPECF-ALFA CL =            NaN
+ SPECF-ALFA CM =            NaN
+ SPECF-ALFA CDP =            NaN
+ SPECF-ALFA MINF =            NaN
+ SPECF-ALFA REINF = 3000000.000000
+ SPECF-ALFA GAM1 =            NaN
+ SPECF-ALFA QINV1 =            NaN
+ SPECF-ALFA LVCONV =  F
+ SPECF-ALFA LWAKE =  F
+ SPECCL:  CL convergence failed
+ SPECF-CL ALFA =            NaN
+ SPECF-CL CL =            NaN
+ SPECF-CL CM =            NaN
+ SPECF-CL CDP =            NaN
+ SPECF-CL MINF =       0.000000
+ SPECF-CL GAM1 =            NaN
+ SPECF-CL QINV1 =            NaN
+ SPECF-CL LVCONV =  F
+ SPECF-CL LWAKE =  F

@@ -1,0 +1,12 @@
+case-id: file-io/usav-inte-buffer-no-current
+category: file-io
+purpose: TOP-Level-USAV nach INTE aus zwei Disk-Quellen ohne vorherige aktuelle Kontur: INTE fuellt nur den Buffer (XB/YB/NB) und laesst N=0; USAV schreibt daher eine vollstaendig leere Datei. stdout.raw.txt traegt die INTE-Prompts und den Hinweis 'Execute PCOP or PANE to set new current airfoil', aber keinen USAV-Fehlertext.
+role: a34c-usav-inte-buffer-no-current-reference
+step: A34-C TOP-Level USAV
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: INTE aus inte_n0012.dat/inte_n2412.dat; Standardfraktion 0.5; leerer neuer Name; USAV
+fixture-origin: tests/data/core-c11a-cli-reference/inte_n0012.dat und inte_n2412.dat als case-input/
+limitations: none

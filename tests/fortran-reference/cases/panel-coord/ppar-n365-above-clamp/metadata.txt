@@ -1,0 +1,10 @@
+case-id: panel-coord/ppar-n365-above-clamp
+category: panel-coord
+purpose: FCPP009-Grenze UEBER der Clamp-Grenze: PPAR N 365 (> IQX-6) wird auf 364 reduziert (Meldung), PSAV 364 Punkte
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 2412, PPAR N 365 (IQX-6+1), PSAV
+limitations: 365 > IQX-6=364, daher Reduktion auf 364 mit Meldung

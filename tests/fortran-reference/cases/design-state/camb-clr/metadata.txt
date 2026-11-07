@@ -1,0 +1,11 @@
+case-id: design-state/camb-clr
+category: design-state
+purpose: CAMB CLR: LCLEAR, 100-Block erneut (xtcam.f 591-595); P4-P2.
+role: state-frame-reference
+step: C11b-P4-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; GDES; CAMB; SETC; CLR; ; ; QUIT
+limitations: Plot nicht vorhanden

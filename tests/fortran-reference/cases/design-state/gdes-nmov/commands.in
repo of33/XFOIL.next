@@ -1,0 +1,6 @@
+NACA 0012
+GDES
+NMOV 0.01
+
+PSAV nmov.dat
+QUIT

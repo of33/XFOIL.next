@@ -1,0 +1,201 @@
+
+ Current airfoil nodes set from buffer airfoil nodes ( 151 )
+ Calculating unit vorticity distributions ...
+
+OFS: alfa =  -0.1344 cl =   0.4000 cdp =  -0.0007 cm =  -0.0877
+ Calculating wake trajectory ...
+ Calculating source influence matrix ...
+
+ Initializing BL ...
+    side            1  ...
+ MRCHUE: Inverse mode at  50     Hk =   4.345
+ MRCHUE: Inverse mode at  51     Hk =   5.305
+ MRCHUE: Inverse mode at  52     Hk =   5.379
+ MRCHUE: Inverse mode at  53     Hk =   2.500
+ MRCHUE: Inverse mode at  77     Hk =   2.500
+    side            2  ...
+ MRCHUE: Inverse mode at  36     Hk =   2.500
+ MRCHUE: Inverse mode at  76     Hk =   2.500
+
+ Side 1  free  transition at x/c =  0.6043   52
+ Side 2  free  transition at x/c =  0.3238   36
+
+ Side 1  free  transition at x/c =  0.6046   52
+ Side 2  free  transition at x/c =  0.3337   37
+
+ Side 1  free  transition at x/c =  0.6048   53
+ Side 2  free  transition at x/c =  0.3483   36
+
+ Side 1  free  transition at x/c =  0.6050   53
+ Side 2  free  transition at x/c =  0.3570   37
+
+ Side 1  free  transition at x/c =  0.6052   53
+ Side 2  free  transition at x/c =  0.3677   38
+
+ Side 1  free  transition at x/c =  0.6054   53
+ Side 2  free  transition at x/c =  0.3805   38
+ CSEQ IPOINT        1
+ CSEQ CLSPEC     4.0000000000000002E-01
+ CSEQ ADEG       9.8610297991403306E-02
+ CSEQ CL         3.9878854573000982E-01
+ CSEQ CM        -8.1404935353661417E-02
+ CSEQ CD         5.8390382300920196E-03
+ CSEQ CDF        5.6455157512639098E-03
+ CSEQ CDP       -5.7490627899705509E-04
+ CSEQ NITER         6
+ CSEQ LVCONV   F
+ CSEQ RMSBL      6.3721650254938922E-01
+ CSEQ RMXBL     -1.4109211242301621E+01
+ CSEQ ITRAN1       53
+ CSEQ ITRAN2       38
+ CSEQ LIPAN    T
+ CSEQ LBLINI   T
+ CSEQ LWAKE    T
+ CSEQ LWDIJ    T
+ CSEQ LADIJ    T
+ CSEQ AWAKE     -2.3451205654664536E-03
+ CSEQ AVISC      0.0000000000000000E+00
+ CSEQ MVISC      0.0000000000000000E+00
+ CSEQ MINF       0.0000000000000000E+00
+ CSEQ STARTNEXT  1.7210743763227388E-03
+
+OFS: alfa =   1.5254 cl =   0.6000 cdp =  -0.0007 cm =  -0.0903
+ Calculating wake trajectory ...
+ Calculating source influence matrix ...
+
+ Side 1  free  transition at x/c =  0.6057   53
+ Side 2  free  transition at x/c =  0.3913   39
+
+ Side 1  free  transition at x/c =  0.6054   53
+ Side 2  free  transition at x/c =  0.4023   40
+
+ Side 1  free  transition at x/c =  0.6051   53
+ Side 2  free  transition at x/c =  0.4150   40
+
+ Side 1  free  transition at x/c =  0.6049   53
+ Side 2  free  transition at x/c =  0.4266   41
+
+ Side 1  free  transition at x/c =  0.6046   53
+ Side 2  free  transition at x/c =  0.4380   42
+
+ Side 1  free  transition at x/c =  0.6042   53
+ Side 2  free  transition at x/c =  0.4504   42
+ CSEQ IPOINT        2
+ CSEQ CLSPEC     6.0000000000000009E-01
+ CSEQ ADEG       1.6260132893824251E+00
+ CSEQ CL         4.1242276934483363E-01
+ CSEQ CM        -7.9796137093536210E-02
+ CSEQ CD         5.6916235450730742E-03
+ CSEQ CDF        5.4194334114806503E-03
+ CSEQ CDP        9.0880315918878442E-03
+ CSEQ NITER         6
+ CSEQ LVCONV   F
+ CSEQ RMSBL      2.1916743172644439E+00
+ CSEQ RMXBL     -4.7494218238836552E+01
+ CSEQ ITRAN1       53
+ CSEQ ITRAN2       42
+ CSEQ LIPAN    T
+ CSEQ LBLINI   T
+ CSEQ LWAKE    T
+ CSEQ LWDIJ    T
+ CSEQ LADIJ    T
+ CSEQ AWAKE      2.6623760223016549E-02
+ CSEQ AVISC      0.0000000000000000E+00
+ CSEQ MVISC      0.0000000000000000E+00
+ CSEQ MINF       0.0000000000000000E+00
+ CSEQ STARTNEXT  2.8379285580906671E-02
+
+OFS: alfa =   3.1894 cl =   0.8000 cdp =  -0.0007 cm =  -0.0930
+ Calculating wake trajectory ...
+ Calculating source influence matrix ...
+
+ Side 1  free  transition at x/c =  0.6039   53
+ Side 2  free  transition at x/c =  0.4630   43
+
+ Side 1  free  transition at x/c =  0.6035   53
+ Side 2  free  transition at x/c =  0.4750   44
+
+ Side 1  free  transition at x/c =  0.6031   53
+ Side 2  free  transition at x/c =  0.4872   44
+
+ Side 1  free  transition at x/c =  0.6027   53
+ Side 2  free  transition at x/c =  0.5024   45
+
+ Side 1  free  transition at x/c =  0.6023   53
+ Side 2  free  transition at x/c =  0.5174   46
+
+ Side 1  free  transition at x/c =  0.6019   53
+ Side 2  free  transition at x/c =  0.5323   47
+ CSEQ IPOINT        3
+ CSEQ CLSPEC     8.0000000000000004E-01
+ CSEQ ADEG       3.2688890322208124E+00
+ CSEQ CL         4.2524512148371418E-01
+ CSEQ CM        -7.8468475359426262E-02
+ CSEQ CD         5.4867208076256535E-03
+ CSEQ CDF        5.1572051525752942E-03
+ CSEQ CDP        2.0334152015342513E-02
+ CSEQ NITER         6
+ CSEQ LVCONV   F
+ CSEQ RMSBL      4.3256433915637542E+00
+ CSEQ RMXBL     -9.2625382056400937E+01
+ CSEQ ITRAN1       53
+ CSEQ ITRAN2       47
+ CSEQ LIPAN    T
+ CSEQ LBLINI   T
+ CSEQ LWAKE    T
+ CSEQ LWDIJ    T
+ CSEQ LADIJ    T
+ CSEQ AWAKE      5.5666149355169538E-02
+ CSEQ AVISC      0.0000000000000000E+00
+ CSEQ MVISC      0.0000000000000000E+00
+ CSEQ MINF       0.0000000000000000E+00
+ CSEQ STARTNEXT  5.7052876494584182E-02
+
+OFS: alfa =   4.8591 cl =   1.0000 cdp =  -0.0007 cm =  -0.0957
+ Calculating wake trajectory ...
+ Calculating source influence matrix ...
+
+ Side 1  free  transition at x/c =  0.6014   53
+ Side 2  free  transition at x/c =  0.5489   48
+
+ Side 1  free  transition at x/c =  0.6010   53
+ Side 2  free  transition at x/c =  0.5638   49
+
+ Side 1  free  transition at x/c =  0.6005   53
+ Side 2  free  transition at x/c =  0.5763   50
+
+ Side 1  free  transition at x/c =  0.6000   53
+ Side 2  free  transition at x/c =  0.5889   50
+
+ Side 1  free  transition at x/c =  0.5995   53
+ Side 2  free  transition at x/c =  0.6025   51
+
+ Side 1  free  transition at x/c =  0.5990   53
+ Side 2  free  transition at x/c =  0.6154   52
+ CSEQ IPOINT        4
+ CSEQ CLSPEC     1.0000000000000000E+00
+ CSEQ ADEG       4.9434135839056159E+00
+ CSEQ CL         4.3543033177905949E-01
+ CSEQ CM        -7.7071951863542168E-02
+ CSEQ CD         5.2699378553700358E-03
+ CSEQ CDF        4.8894562996317070E-03
+ CSEQ CDP        3.2415398024739667E-02
+ CSEQ NITER         6
+ CSEQ LVCONV   F
+ CSEQ RMSBL      9.5319479793200959E+00
+ CSEQ RMXBL     -2.0211361579958927E+02
+ CSEQ ITRAN1       53
+ CSEQ ITRAN2       52
+ CSEQ LIPAN    T
+ CSEQ LBLINI   T
+ CSEQ LWAKE    T
+ CSEQ LWDIJ    T
+ CSEQ LADIJ    T
+ CSEQ AWAKE      8.4807224753646021E-02
+ CSEQ AVISC      0.0000000000000000E+00
+ CSEQ MVISC      0.0000000000000000E+00
+ CSEQ MINF       0.0000000000000000E+00
+ CSEQ STARTNEXT  8.6278843326965962E-02
+
+ Sequence halted since previous  4 points did not converge
+ Last-converged  alpha =   0.000    CL =   0.00000

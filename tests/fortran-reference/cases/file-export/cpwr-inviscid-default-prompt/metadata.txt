@@ -1,0 +1,10 @@
+case-id: file-export/cpwr-inviscid-default-prompt
+category: file-export
+purpose: CPWR ohne Argument: PREFIX-Defaultvorgabe (SETFILE xfoil.f 1231-1237, FORMAT 1100) mit Leerantwort; inviscider GAM-Nullzustand
+step: C11b-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: inviscid, ALFA 2, CPWR ohne Argument, Leerantwort -> CLARK_Y.cp
+limitations: keine

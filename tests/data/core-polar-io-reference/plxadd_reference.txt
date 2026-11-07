@@ -1,0 +1,6 @@
+
+Enter  polar dump filename  OR  <return> for no file   s>  
+ New polar dump file available
+LPFILX=T PFNAMX=plxadd_case.dump                                
+ Point written to dump file plxadd_case.dump                                
+ Point written to dump file plxadd_case.dump                                

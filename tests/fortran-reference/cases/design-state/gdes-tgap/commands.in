@@ -1,0 +1,6 @@
+NACA 0012
+GDES
+TGAP 0.01 0.5
+
+PSAV tgap.dat
+QUIT

@@ -1,0 +1,6 @@
+exit-status: 0
+timed-out: 0
+duration-sec: 1
+timeout-limit-sec: 120
+binary-sha256: f5779d6954d0b8fdc152e0e0633f18732e00b7b69228d561d629bd524bba598c
+locale: LC_ALL=C

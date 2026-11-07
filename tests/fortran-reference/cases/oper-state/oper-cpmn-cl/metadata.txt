@@ -1,0 +1,10 @@
+case-id: oper-state/oper-cpmn-cl
+category: oper-state
+purpose: CPMN nach CL-Punkt
+step: C11a-A34-C-OPER-CPMN
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: CL 0.5, CPMN
+limitations: none

@@ -1,0 +1,12 @@
+case-id: geometry/norm-load-policy-cycle
+category: geometry
+purpose: TOP-Level-NORM-Policy-Zyklus gegen kanonisches Binary: LOAD bei LNORM aus (keine Normierung), NORM an (Text 'Loaded airfoil will  be normalized'), LOAD bei LNORM an ('Airfoil has been normalized'), NORM aus (Text "Loaded airfoil won't be normalized"), LOAD bei LNORM aus (keine Normierung). NORM veraendert nur die LOAD-Policy, nicht die bestehende Kontur.
+role: a34c-norm-policy-reference
+step: A34-C TOP-Level NORM
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: LOAD naca2412_buffer.dat (245 Punkte) dreimal, NORM dazwischen
+fixture-origin: naca2412_buffer.dat = NACA 2412 -> PCOP -> PSAV (kanonischer NACA-2412-Buffer, 245 Punkte); SHA-256 cfed71b53fc3af4bb37a7f074a1dbf6e632de21d046f0effdb33ddae5b0e6673
+limitations: none

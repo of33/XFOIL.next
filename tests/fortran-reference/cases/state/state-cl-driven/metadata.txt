@@ -1,0 +1,10 @@
+case-id: state/state-cl-driven
+category: state
+purpose: CL-gesteuerte viskose Rechnung NACA 2412, Re=1e6: CL 0.5 und CL 1.0
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: viscous, Re=1e6, ITER 100, CL 0.5 / CL 1.0
+limitations: none

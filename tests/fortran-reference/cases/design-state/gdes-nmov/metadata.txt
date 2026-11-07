@@ -1,0 +1,11 @@
+case-id: design-state/gdes-nmov
+category: design-state
+purpose: GDES NMOV (xgdes.f 723-756): Normalenverschiebung mit GEOPAR-Druck; P4-P1.
+role: state-frame-reference
+step: C11b-P4-P1
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012, GDES, NMOV 0.01, <Leerzeile>, PSAV, QUIT
+limitations: Plot nicht vorhanden

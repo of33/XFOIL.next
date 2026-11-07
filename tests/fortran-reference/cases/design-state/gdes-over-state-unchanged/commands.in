@@ -1,0 +1,6 @@
+NACA 0012
+GDES
+OVER ov_big.dat
+
+SAVE out.dat
+QUIT

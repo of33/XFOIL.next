@@ -1,0 +1,10 @@
+case-id: polar/polar-nonconverging
+category: polar
+purpose: Zustand: kontrolliert nicht konvergierende viskose Polar NACA 2412 Re=1e6, ALFA 25 (PACC); Polar-Datei wird mit 0 Punkten erzeugt
+step: 17r4
+status: canonical-raw-only
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: viscous, Re=1e6, ITER 100, PACC, ALFA 25
+limitations: bewusst nicht konvergierend; nicht konvergierte viskose Punkte werden NICHT in die Polar aufgenommen (xoper.f:440 LVCONV-Bedingung); Verhaltensreferenz

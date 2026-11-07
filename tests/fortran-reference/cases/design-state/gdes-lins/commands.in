@@ -1,0 +1,6 @@
+NACA 0012
+GDES
+LINS 0.2 1.5 0.8 0.5
+
+PSAV lins.dat
+QUIT

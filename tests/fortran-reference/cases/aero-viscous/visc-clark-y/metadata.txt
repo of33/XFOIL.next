@@ -1,0 +1,10 @@
+case-id: aero-viscous/visc-clark-y
+category: aero-viscous
+purpose: Viskose Einzelpunkt Clark Y, Re=1e6, alpha=4
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: viscous, Mach 0, Ncrit 9, natuerliche Transition, Re=1000000, ITER 100, alpha=4
+limitations: none

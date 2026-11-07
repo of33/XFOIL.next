@@ -1,0 +1,67 @@
+[
+  {
+    "file": "tools/gen-fortran-cases.sh",
+    "pattern": "\"[^\"]*(Polar|Sequenz|Rechnung|Fall|Zweig|kanonische|Knoten|Punkte|Punkt|Datei|Konfiguration|Grenze|Zustand|Meldung|Ausgabe|nicht|Schritt|natuerliche)[^\"]*\"",
+    "reason": "canonical reference metadata description (category D)"
+  },
+  {
+    "file": "tools/gen-fortran-cases-audit.sh",
+    "pattern": "\"[^\"]*(Polar|Panel|Kontur|Punkte|Punkt|Datei|Buffer|Meldung|Reduktion|Grenze|Schritt|nicht|aktuelle|Panel-Kontur|Dump)[^\"]*\"",
+    "reason": "canonical reference metadata description (category D)"
+  },
+  {
+    "file": "tools/check-public-docs.py",
+    "pattern": "(für|gemäß|prüfung|fälle|außerhalb|unverändert|GERMAN_CHARS|äöüÄÖÜß)",
+    "reason": "umlaut detection pattern of the documentation gate itself"
+  },
+  {
+    "file": "tests/unit/CommandLineTests.cpp",
+    "pattern": "\"ä\"",
+    "reason": "deliberate non-ASCII argument probe (test data)"
+  },
+  {
+    "file": "tools/check-public-language.py",
+    "pattern": "expect(_regions)?\\(",
+    "reason": "self-test fixtures deliberately embed German words and phrases to prove detection"
+  },
+  {
+    "file": "tools/check-public-language.py",
+    "pattern": "^(UMMLAUT|TOKEN) = re\\.compile",
+    "reason": "detection-pattern definition of the language gate itself (umlaut/token regexes)"
+  },
+  {
+    "file": "tools/check-public-language.py",
+    "pattern": "^\\s+\\(re\\.compile\\(r\"",
+    "reason": "marker/phrase detection-pattern definitions of the language gate itself"
+  },
+  {
+    "file": "tools/check-public-language.py",
+    "pattern": "\\.replace\\(\"[ÄÖÜäöüß]",
+    "reason": "umlaut transliteration table of the language gate itself"
+  },
+  {
+    "file": "tools/check-public-language.py",
+    "pattern": "\"[a-zäöüß]+\",",
+    "reason": "lexicon and hazard-word definition lists of the language gate itself"
+  },
+  {
+    "file": "tools/check-public-docs.py",
+    "pattern": "\"[a-zäöüß]+\",",
+    "reason": "German-word detection list of the documentation gate itself"
+  },
+  {
+    "file": "tests/fortran-reference/harnesses/geometry/naca_harness.f",
+    "pattern": "nach Aufruf",
+    "reason": "canonical harness label compared against tests/data/core-geometry-reference/naca_reference.txt"
+  },
+  {
+    "file": "tests/fortran-reference/harnesses/geometry/xfoil_geom_harness.f",
+    "pattern": "TECALC (offen|scharf)",
+    "reason": "canonical harness label compared against tests/data/core-geometry-reference/xfoil_geom_reference.txt"
+  },
+  {
+    "file": "tools/gen-fortran-cases.sh",
+    "pattern": "natuerliche Transition",
+    "reason": "canonical reference metadata description (category D)"
+  }
+]

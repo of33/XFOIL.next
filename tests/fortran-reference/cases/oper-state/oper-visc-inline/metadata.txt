@@ -1,0 +1,10 @@
+case-id: oper-state/oper-visc-inline
+category: oper-state
+purpose: VISC mit optionalem Reynolds-Wert und erneutes VISC
+step: C11a-A34-C-OPER-state
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: VISC 1000000, VISC aus
+limitations: none

@@ -1,0 +1,10 @@
+case-id: panel-coord/pcop-psav
+category: panel-coord
+purpose: PCOP + PSAV: Buffer-Kontur als aktuelle Kontur (N=NB=245), PSAV schreibt X(1..N)=245 Punkte
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 2412 (Buffer 245), PCOP (ABCOPY), PSAV
+limitations: PCOP setzt N=NB; PSAV schreibt die Buffer-abgeleitete Kontur

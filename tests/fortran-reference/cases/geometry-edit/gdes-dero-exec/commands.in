@@ -1,0 +1,11 @@
+PLOP
+g
+
+NACA 2412
+GDES
+ADEG 5
+DERO
+eXec
+
+PSAV dero_exec.dat
+QUIT

@@ -1,0 +1,10 @@
+case-id: polar/polar-cseq-head-naca0012
+category: polar
+purpose: CSEQ-Kopf-Rohbitfall NACA 0012, PANE, OPER, PACC mit Save- und Dump-Datei, ASEQ 0 2 1, CSEQ 0 2 1 (C11b-G-B2)
+step: C11b-G-B2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: inviscid, PACC, ASEQ 0 2 1, CSEQ 0 2 1, Polar polar-cseq-head-naca0012.pol + Dump
+limitations: Dump-Datei (binaer) enthaelt je CSEQ-Punkt den PLXADD-Kopf ALFA/CL/CM mit Rohbits

@@ -1,0 +1,40 @@
+ Max thickness =     0.120032  at x =   0.297
+ Max camber    =     0.019999  at x =   0.403
+
+ Max thickness =   0.1200  at x =   0.300
+ Max camber    =   0.0200  at x =   0.401
+
+ Max thickness =     0.120031  at x =   0.403
+ Max camber    =     0.019988  at x =   0.349
+HIP1 NB =    245
+HIP1 SBLE =   0.1025227E+01
+HIP1 CHORDB =   0.1000000E+01
+HIP1 THICKB =   0.1200307E+00
+HIP1 CAMBRB =   0.1998769E-01
+HIP1 XB1 =   0.1000000E+01
+HIP1 YB1 =   0.1260008E-02
+HIP1 XB62 =   0.3812816E+00
+HIP1 YB62 =   0.7989395E-01
+HIP1 XBMID =   0.0000000E+00
+HIP1 YBMID =   0.0000000E+00
+HIP1 XBN =   0.1000000E+01
+HIP1 YBN =  -0.1260008E-02
+
+ Max thickness =   0.1200  at x =   0.400
+ Max camber    =   0.0200  at x =   0.350
+
+ Max thickness =     0.120031  at x =   0.403
+ Max camber    =     0.019977  at x =   0.349
+HIP2 NB =    245
+HIP2 SBLE =   0.1025210E+01
+HIP2 CHORDB =   0.1000000E+01
+HIP2 THICKB =   0.1200306E+00
+HIP2 CAMBRB =   0.1997731E-01
+HIP2 XB1 =   0.1000000E+01
+HIP2 YB1 =   0.1260008E-02
+HIP2 XB62 =   0.3812816E+00
+HIP2 YB62 =   0.7989395E-01
+HIP2 XBMID =   0.0000000E+00
+HIP2 YBMID =   0.1801731E-04
+HIP2 XBN =   0.1000000E+01
+HIP2 YBN =  -0.1260008E-02

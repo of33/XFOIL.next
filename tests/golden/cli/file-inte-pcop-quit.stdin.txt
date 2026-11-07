@@ -1,0 +1,9 @@
+NACA 2412
+INTE
+C
+F
+sample/CLARK_Y.dat
+0.5
+Blend
+PCOP
+QUIT

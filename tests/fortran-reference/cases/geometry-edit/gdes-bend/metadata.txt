@@ -1,0 +1,10 @@
+case-id: geometry-edit/gdes-bend
+category: geometry-edit
+purpose: GDES BEND: strukturelle Biegeparameter des Buffer-Profils (deterministische Textausgabe)
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: none
+limitations: none

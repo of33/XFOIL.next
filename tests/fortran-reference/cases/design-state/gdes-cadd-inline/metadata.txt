@@ -1,0 +1,11 @@
+case-id: design-state/gdes-cadd-inline
+category: design-state
+purpose: GDES CADD mit Inline-Argumenten (xgdes.f 503-598): CANG-Liste, Added-count, GEOPAR, CANG-Max; P4-P1.
+role: state-frame-reference
+step: C11b-P4-P1
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012, GDES, CADD 0.5 1, <Leerzeile> (XRF-Defaults), <Leerzeile> (Menuaustritt), QUIT
+limitations: Plot nicht vorhanden

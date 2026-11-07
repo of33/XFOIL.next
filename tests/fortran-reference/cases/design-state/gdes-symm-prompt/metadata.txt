@@ -1,0 +1,11 @@
+case-id: design-state/gdes-symm-prompt
+category: design-state
+purpose: GDES SYMM aktiv: Prompt .GDESs und ASKR-Wiederholung bei ADEG ohne Argument; P4-P1-Promptvertrag.
+role: state-frame-reference
+step: C11b-P4-P1
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012, GDES, SYMM, ADEG, 5, <Leerzeile>, QUIT
+limitations: Plot nicht vorhanden

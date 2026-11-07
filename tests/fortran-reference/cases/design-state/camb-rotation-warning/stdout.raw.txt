@@ -1,0 +1,117 @@
+
+ ===================================================
+  XFOIL Version 6.99
+  Copyright (C) 2000   Mark Drela, Harold Youngren
+
+  This software comes with ABSOLUTELY NO WARRANTY,
+    subject to the GNU General Public License.
+
+  Caveat computor
+ ===================================================
+
+ File  xfoil.def  not found
+
+   QUIT    Exit program
+
+  .OPER    Direct operating point(s)
+  .MDES    Complex mapping design routine
+  .QDES    Surface speed design routine
+  .GDES    Geometry design routine
+
+   SAVE f  Write airfoil to labeled coordinate file
+   PSAV f  Write airfoil to plain coordinate file
+   ISAV f  Write airfoil to ISES coordinate file
+   MSAV f  Write airfoil to MSES coordinate file
+   REVE    Reverse written-airfoil node ordering
+   DELI i  Change written-airfoil file delimiters
+
+   LOAD f  Read buffer airfoil from coordinate file
+   NACA i  Set NACA 4,5-digit airfoil and buffer airfoil
+   INTE    Set buffer airfoil by interpolating two airfoils
+   NORM    Buffer airfoil normalization toggle
+   HALF    Halve the number of points in buffer airfoil
+   XYCM rr Change CM reference location, currently  0.25000 0.00000
+
+   BEND    Display structural properties of current airfoil
+
+   PCOP    Set current-airfoil panel nodes directly from buffer airfoil points
+   PANE    Set current-airfoil panel nodes ( 160 ) based on curvature
+  .PPAR    Show/change paneling
+
+  .PLOP    Plotting options
+
+   WDEF f  Write  current-settings file
+   RDEF f  Reread current-settings file
+   NAME s  Specify new airfoil name
+   NINC    Increment name version number
+
+   Z       Zoom    | (available in all menus)
+   U       Unzoom  | 
+
+ XFOIL   c>   Max thickness =     0.120032  at x =   0.297
+ Max camber    =    -0.000000  at x =   0.015
+
+ Buffer airfoil set using 245 points
+
+ Blunt trailing edge.  Gap =  0.00252
+
+ Paneling parameters used...
+   Number of panel nodes       160
+   Panel bunching parameter    1.000
+   TE/LE panel density ratio   0.150
+   Refined-area/LE panel density ratio    0.200
+   Top    side refined area x/c limits  1.000 1.000
+   Bottom side refined area x/c limits  1.000 1.000
+
+ XFOIL   c>  
+ You are working with the buffer airfoil
+
+.GDES   c>  
+.GDES   c>   Enabling camber,thickness plotting
+  
+ Warning: CAMB does not work well on rotated foils
+ Current chordline angle:    5.0000000000000000     
+ Proceeding anyway...
+
+   <cr>    Return to GDES
+   TFAC rr Scale existing thickness and camber
+   TSET rr Set new thickness and camber
+   HIGH rr Move camber and thickness highpoints
+   WRTT f  Write airfoil thickness x/c,t/c to file
+   WRTC f  Write airfoil camber    x/c,y/c to file
+
+   RDAC    Read   added camber  x/c,y/c from file
+   SETC    Set    added camber  x/c,y/c from camberline
+   INPC    Input  added camber  x/c,y/c from keyboard
+   MODC    Modify added camber  x/c,y/c with cursor
+   INPP    Input  added loading x/c,DCp from keyboard
+   MODP    Modify added loading x/c,DCp with cursor
+   SLOP    Toggle modified-camber,dCp slope matching flag
+   SCAL r  Scale the added camber
+   CLR     Clear the added camber
+   ADD     Add added camber to the existing camberline
+
+   DCPL    Toggle DCp plot
+   CPLI rr Change DCp axis plot limits
+
+   Blow    Blowup plot region
+   Rese    Reset plot scale and origin
+
+   SIZE r   Change absolute plot-object size
+  .ANNO     Annotate plot
+   HARD     Hardcopy current plot
+
+ Buffer airfoil thickness and camber:
+ GETMAX: Newton iteration for max camber/thickness failed.
+ Max thickness =   0.1196  at x =   0.299
+ Max camber    =  -0.0858  at x =   0.995
+
+ Added camber line incidence at LE =   0.00  deg.
+ Added camber line incidence at TE =   0.00  deg.
+ Max added camber y/c =   0.0000  at x/c =   0.000
+
+..CAMB   c>  
+.GDES   c>  
+ Buffer airfoil is not identical to current airfoil
+
+ XFOIL   c>  

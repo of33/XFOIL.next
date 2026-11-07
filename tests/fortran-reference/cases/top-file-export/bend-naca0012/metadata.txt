@@ -1,0 +1,10 @@
+case-id: top-file-export/bend-naca0012
+category: top-file-export
+purpose: TOP BEND Report symmetrisches Profil NACA 0012 (Yc-Kleinstwert-Fall)
+step: C11b-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012, BEND
+limitations: keine

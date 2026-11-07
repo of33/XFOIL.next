@@ -1,0 +1,10 @@
+case-id: oper-state/vpar-prompts
+category: oper-state
+purpose: VPAR XTR/N/VACC ohne Inline-Wert mit Prompts
+step: C11a-A34-C-VPAR-state
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: XTR,0.4,0.7,N,11,VACC,0.02
+limitations: none

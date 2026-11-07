@@ -1,0 +1,11 @@
+case-id: geometry-edit/gdes-flap-exec
+category: geometry-edit
+purpose: POSITIVE-EDIT-REFERENZ (mit eXec): GDES FLAP 0.9/0.0/10 editiert den Buffer; eXec uebertraegt den geflappten Buffer (245) in die aktuelle Kontur; PSAV schreibt die BEARBEITETE Kontur.
+role: positive-edit-reference
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 2412, GDES Flap 0.9 0.0 10, eXec, PSAV
+limitations: ohne eXec wuerde PSAV die ungeaenderte aktuelle Kontur schreiben (siehe gdes-flap)

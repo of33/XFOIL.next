@@ -1,0 +1,302 @@
+
+ ===================================================
+  XFOIL Version 6.99
+  Copyright (C) 2000   Mark Drela, Harold Youngren
+
+  This software comes with ABSOLUTELY NO WARRANTY,
+    subject to the GNU General Public License.
+
+  Caveat computor
+ ===================================================
+
+ File  xfoil.def  not found
+
+   QUIT    Exit program
+
+  .OPER    Direct operating point(s)
+  .MDES    Complex mapping design routine
+  .QDES    Surface speed design routine
+  .GDES    Geometry design routine
+
+   SAVE f  Write airfoil to labeled coordinate file
+   PSAV f  Write airfoil to plain coordinate file
+   ISAV f  Write airfoil to ISES coordinate file
+   MSAV f  Write airfoil to MSES coordinate file
+   REVE    Reverse written-airfoil node ordering
+   DELI i  Change written-airfoil file delimiters
+
+   LOAD f  Read buffer airfoil from coordinate file
+   NACA i  Set NACA 4,5-digit airfoil and buffer airfoil
+   INTE    Set buffer airfoil by interpolating two airfoils
+   NORM    Buffer airfoil normalization toggle
+   HALF    Halve the number of points in buffer airfoil
+   XYCM rr Change CM reference location, currently  0.25000 0.00000
+
+   BEND    Display structural properties of current airfoil
+
+   PCOP    Set current-airfoil panel nodes directly from buffer airfoil points
+   PANE    Set current-airfoil panel nodes ( 160 ) based on curvature
+  .PPAR    Show/change paneling
+
+  .PLOP    Plotting options
+
+   WDEF f  Write  current-settings file
+   RDEF f  Reread current-settings file
+   NAME s  Specify new airfoil name
+   NINC    Increment name version number
+
+   Z       Zoom    | (available in all menus)
+   U       Unzoom  | 
+
+ XFOIL   c>   ...............................................
+
+  G raphics-enable flag:        T
+  S ize of plot object          10.00"
+  A spect ratio of plot object   0.5500
+  P age dimensions              11.00 x  8.50"
+  M argins from page edges       0.00",  0.00"
+  F ont size (relative)          0.0150
+  W indow/screen size fraction   0.8000
+  B lowup input method:        Cursor    
+  O rientation of plot:        Landscape 
+  C olor PostScript output?     T
+  L ine colors for top,bottom    8  3
+
+      Option, Value   (or <Return>)    c>   ...............................................
+
+  G raphics-enable flag:        F
+  S ize of plot object          10.00"
+  A spect ratio of plot object   0.5500
+  P age dimensions              11.00 x  8.50"
+  M argins from page edges       0.00",  0.00"
+  F ont size (relative)          0.0150
+  W indow/screen size fraction   0.8000
+  B lowup input method:        Cursor    
+  O rientation of plot:        Landscape 
+  C olor PostScript output?     T
+  L ine colors for top,bottom    8  3
+
+      Option, Value   (or <Return>)    c>  
+ XFOIL   c>   Max thickness =     0.120032  at x =   0.297
+ Max camber    =     0.019999  at x =   0.403
+
+ Buffer airfoil set using 245 points
+
+ Blunt trailing edge.  Gap =  0.00252
+
+ Paneling parameters used...
+   Number of panel nodes       160
+   Panel bunching parameter    1.000
+   TE/LE panel density ratio   0.150
+   Refined-area/LE panel density ratio    0.200
+   Top    side refined area x/c limits  1.000 1.000
+   Bottom side refined area x/c limits  1.000 1.000
+
+ XFOIL   c>  
+ Current airfoil nodes set from buffer airfoil nodes ( 245 )
+
+ XFOIL   c>  
+.OPERi   c>  
+Enter Reynolds number   r>  
+ M  =    0.0000
+ Re =  0.1000E+07
+
+.OPERv   c>  
+.OPERv   c>   Calculating unit vorticity distributions ...
+
+OFS: alfa =   2.0000 cl =   0.4972 cdp =  -0.0011 cm =  -0.0588
+ Calculating wake trajectory ...
+ Calculating source influence matrix ...
+
+ Solving BL system ...
+
+ Initializing BL ...
+    side            1  ...
+ MRCHUE: Inverse mode at  68     Hk =   4.502
+ MRCHUE: Inverse mode at  69     Hk =   5.256
+ MRCHUE: Inverse mode at  70     Hk =   6.005
+ MRCHUE: Inverse mode at  71     Hk =   6.750
+ MRCHUE: Inverse mode at  72     Hk =   6.420
+ MRCHUE: Inverse mode at  73     Hk =   3.133
+ MRCHUE: Inverse mode at 125     Hk =   2.500
+ MRCHUE: Inverse mode at 126     Hk =   2.500
+    side            2  ...
+ MRCHUE: Inverse mode at 103     Hk =   4.087
+ MRCHUE: Inverse mode at 104     Hk =   4.494
+ MRCHUE: Inverse mode at 105     Hk =   4.889
+ MRCHUE: Inverse mode at 106     Hk =   5.273
+ MRCHUE: Inverse mode at 107     Hk =   4.675
+ MRCHUE: Inverse mode at 108     Hk =   3.009
+
+ Side 1  free  transition at x/c =  0.4571   72
+ Side 2  free  transition at x/c =  0.9058  107
+
+   1   rms: 0.1273E+00   max: -.8598E+00   T at   72  1   RLX: 0.582
+       a =  2.000      CL =  0.4681
+      Cm = -0.0528     CD =  0.00572   =>   CDf =  0.00486    CDp =  0.00086
+
+ Side 1  free  transition at x/c =  0.4787   74
+ Side 2  free  transition at x/c =  0.9355  110
+
+   2   rms: 0.1374E+00   max: -.3132E+01   C at   74  1   RLX: 0.160
+       a =  2.000      CL =  0.4661
+      Cm = -0.0523     CD =  0.00538   =>   CDf =  0.00445    CDp =  0.00093
+
+ Side 1  free  transition at x/c =  0.4800   74
+ Side 2  free  transition at x/c =  0.9436  111
+
+   3   rms: 0.8017E-01   max: -.7694E+00   C at  111  2   RLX: 0.650
+       a =  2.000      CL =  0.4722
+      Cm = -0.0532     CD =  0.00576   =>   CDf =  0.00448    CDp =  0.00128
+
+ Side 1  free  transition at x/c =  0.5042   76
+ Side 2  free  transition at x/c =  0.9464  112
+
+   4   rms: 0.4809E-01   max: -.6336E+00   C at  112  2   RLX: 0.789
+       a =  2.000      CL =  0.4494
+      Cm = -0.0482     CD =  0.00588   =>   CDf =  0.00434    CDp =  0.00154
+
+ Side 1  free  transition at x/c =  0.5273   78
+ Side 2  free  transition at x/c =  0.9591  113
+
+   5   rms: 0.2822E-01   max: -.3646E+00   D at  114  2
+       a =  2.000      CL =  0.4406
+      Cm = -0.0462     CD =  0.00581   =>   CDf =  0.00412    CDp =  0.00169
+
+ MRCHDU: Convergence failed at 118  side 2    Res =  0.1037E+02
+ MRCHDU: Convergence failed at 119  side 2    Res =  0.1320E+01
+ MRCHDU: Convergence failed at 120  side 2    Res =  0.1313E+01
+ MRCHDU: Convergence failed at 121  side 2    Res =  0.2443E+01
+ Side 1  free  transition at x/c =  0.5274   78
+ Side 2 forced transition at x/c =  1.0000  121
+
+   6   rms: 0.1087E+00   max: 0.1438E+01   C at  121  2
+       a =  2.000      CL =  0.5003
+      Cm = -0.0594     CD =  0.00571   =>   CDf =  0.00412    CDp =  0.00159
+
+ Side 1  free  transition at x/c =  0.5181   78
+ Side 2  free  transition at x/c =  0.9333  110
+
+   7   rms: 0.1126E+00   max: -.8586E+00   D at  121  2   RLX: 0.582
+       a =  2.000      CL =  0.4464
+      Cm = -0.0476     CD =  0.00593   =>   CDf =  0.00424    CDp =  0.00169
+
+ MRCHDU: Convergence failed at 114  side 2    Res =  0.4914E+01
+ MRCHDU: Convergence failed at 115  side 2    Res =  0.1447E+01
+ MRCHDU: Convergence failed at 121  side 2    Res =  0.7987E+01
+ Side 1  free  transition at x/c =  0.5244   78
+ Side 2  free  transition at x/c =  0.9812  117
+
+   8   rms: 0.6549E-01   max: 0.9207E+00   C at  117  2
+       a =  2.000      CL =  0.4426
+      Cm = -0.0465     CD =  0.00572   =>   CDf =  0.00414    CDp =  0.00158
+
+ Side 1  free  transition at x/c =  0.5271   78
+ Side 2  free  transition at x/c =  0.9753  116
+
+   9   rms: 0.1614E-01   max: 0.2392E+00   C at  116  2
+       a =  2.000      CL =  0.4475
+      Cm = -0.0476     CD =  0.00579   =>   CDf =  0.00411    CDp =  0.00167
+
+ Side 1  free  transition at x/c =  0.5265   78
+ Side 2  free  transition at x/c =  0.9682  115
+
+  10   rms: 0.2559E-02   max: -.5232E-01   D at  115  2
+       a =  2.000      CL =  0.4495
+      Cm = -0.0481     CD =  0.00579   =>   CDf =  0.00412    CDp =  0.00168
+
+ Side 1  free  transition at x/c =  0.5262   78
+ Side 2  free  transition at x/c =  0.9674  115
+
+  11   rms: 0.5984E-03   max: -.8624E-02   C at  115  2
+       a =  2.000      CL =  0.4493
+      Cm = -0.0480     CD =  0.00579   =>   CDf =  0.00412    CDp =  0.00167
+
+ Side 1  free  transition at x/c =  0.5263   78
+ Side 2  free  transition at x/c =  0.9676  115
+
+  12   rms: 0.7240E-05   max: -.9959E-04   C at  115  2
+       a =  2.000      CL =  0.4493
+      Cm = -0.0480     CD =  0.00579   =>   CDf =  0.00412    CDp =  0.00167
+      9.000    3.5854   0.005793   0.000000   0.000000   0.000000    0.5263     #
+
+.OPERv   c>  
+ XFOIL   c>  
+ Current airfoil nodes set from buffer airfoil nodes ( 245 )
+
+ XFOIL   c>  
+.OPERv   c>   Calculating unit vorticity distributions ...
+
+OFS: alfa =   3.0000 cl =   0.6178 cdp =  -0.0011 cm =  -0.0603
+ Calculating wake trajectory ...
+ Calculating source influence matrix ...
+
+ Solving BL system ...
+
+ Side 1  free  transition at x/c =  0.5263   78
+ Side 2  free  transition at x/c =  0.9676  115
+
+   1   rms: 0.1875E+00   max: 0.1510E+01   C at   78  1   RLX: 0.729
+       a =  3.000      CL =  0.5493
+      Cm = -0.0517     CD =  0.00606   =>   CDf =  0.00411    CDp =  0.00194
+
+ Side 1  free  transition at x/c =  0.4757   75
+ Side 2  free  transition at x/c =  0.9844  116
+
+   2   rms: 0.6630E+00   max: 0.9528E+01   C at  116  2   RLX: 0.095
+       a =  3.000      CL =  0.5243
+      Cm = -0.0458     CD =  0.00661   =>   CDf =  0.00436    CDp =  0.00225
+
+ MRCHDU: Convergence failed at 120  side 2    Res =  0.1980E+01
+ Side 1  free  transition at x/c =  0.4782   75
+ Side 2 forced transition at x/c =  1.0000  120
+
+   3   rms: 0.1089E+00   max: 0.1340E+01   C at  120  2
+       a =  3.000      CL =  0.6146
+      Cm = -0.0597     CD =  0.00619   =>   CDf =  0.00434    CDp =  0.00185
+
+ Side 1  free  transition at x/c =  0.4571   74
+ Side 2  free  transition at x/c =  0.9838  115
+
+   4   rms: 0.5051E-01   max: -.4696E+00   D at  119  2
+       a =  3.000      CL =  0.5812
+      Cm = -0.0522     CD =  0.00638   =>   CDf =  0.00443    CDp =  0.00195
+
+ Side 1  free  transition at x/c =  0.4662   75
+ Side 2 forced transition at x/c =  1.0000  119
+
+   5   rms: 0.7399E-01   max: 0.1289E+01   C at  119  2
+       a =  3.000      CL =  0.6156
+      Cm = -0.0599     CD =  0.00634   =>   CDf =  0.00436    CDp =  0.00198
+
+ Side 1  free  transition at x/c =  0.4599   75
+ Side 2  free  transition at x/c =  0.9746  114
+
+   6   rms: 0.6963E-01   max: -.5816E+00   D at  119  2   RLX: 0.860
+       a =  3.000      CL =  0.5867
+      Cm = -0.0535     CD =  0.00633   =>   CDf =  0.00441    CDp =  0.00193
+
+ Side 1  free  transition at x/c =  0.4645   75
+ Side 2  free  transition at x/c =  0.9942  117
+
+   7   rms: 0.1062E-01   max: 0.1067E+00   D at  123  2
+       a =  3.000      CL =  0.5920
+      Cm = -0.0547     CD =  0.00636   =>   CDf =  0.00437    CDp =  0.00199
+
+ Side 1  free  transition at x/c =  0.4643   75
+ Side 2  free  transition at x/c =  0.9947  117
+
+   8   rms: 0.4572E-03   max: -.6707E-02   D at  124  2
+       a =  3.000      CL =  0.5919
+      Cm = -0.0547     CD =  0.00636   =>   CDf =  0.00437    CDp =  0.00198
+
+ Side 1  free  transition at x/c =  0.4643   75
+ Side 2  free  transition at x/c =  0.9946  117
+
+   9   rms: 0.2455E-05   max: -.4228E-04   D at  124  2
+       a =  3.000      CL =  0.5919
+      Cm = -0.0547     CD =  0.00636   =>   CDf =  0.00437    CDp =  0.00198
+      9.000    3.5620   0.006357   0.000000   0.000000   0.000000    0.4643     #
+
+.OPERv   c>  
+ XFOIL   c>  

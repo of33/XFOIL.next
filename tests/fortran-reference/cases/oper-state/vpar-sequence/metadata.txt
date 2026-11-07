@@ -1,0 +1,10 @@
+case-id: oper-state/vpar-sequence
+category: oper-state
+purpose: VPAR-Folge nach VISC ohne Analyse mit Abschlussanzeige
+step: C11a-A34-C-VPAR-state
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: VISC 1e6, XTR 0.5 0.6, N 12, VACC 0.05, INIT, SHOW
+limitations: none

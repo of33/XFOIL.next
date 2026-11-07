@@ -1,0 +1,10 @@
+case-id: oper-state/oper-cpmn-after-panel-change
+category: oper-state
+purpose: CPMN vor und nach PANE-Panelaenderung (Fortran-Common-Relikt)
+step: C11a-A34-C-OPER-CPMN
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: ALFA 2, CPMN, PANE, OPER, CPMN
+limitations: none

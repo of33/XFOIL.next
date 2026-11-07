@@ -1,0 +1,10 @@
+case-id: oper-state/oper-cpmn-inviscid
+category: oper-state
+purpose: CPMN nach inviscidem ALFA (FORMAT 1779)
+step: C11a-A34-C-OPER-CPMN
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: ALFA 2, CPMN
+limitations: none

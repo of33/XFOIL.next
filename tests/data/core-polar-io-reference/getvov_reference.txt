@@ -1,0 +1,44 @@
+
+Enter V/Vinf vs s data filename   s>  QV    1    1.000000000000E+00    0.000000000000E+00                   NaN
+QV    2    9.500000000000E-01                   NaN                   NaN
+QV    3    9.000000000000E-01                   NaN                   NaN
+QV    4    8.500000000000E-01                   NaN                   NaN
+QV    5    8.000000000000E-01                   NaN                   NaN
+QV    6    7.500000000000E-01                   NaN                   NaN
+QV    7    7.000000000000E-01                   NaN                   NaN
+QV    8    6.500000000000E-01                   NaN                   NaN
+QV    9    6.000000000000E-01                   NaN                   NaN
+QV   10    5.500000000000E-01                   NaN                   NaN
+QV   11    5.000000000000E-01                   NaN                   NaN
+QV   12    4.500000000000E-01                   NaN                   NaN
+QV   13    4.000000000000E-01                   NaN                   NaN
+QV   14    3.500000000000E-01                   NaN                   NaN
+QV   15    3.000000000000E-01                   NaN                   NaN
+QV   16    2.500000000000E-01                   NaN                   NaN
+QV   17    2.000000000000E-01                   NaN                   NaN
+QV   18    1.500000000000E-01                   NaN                   NaN
+QV   19    1.000000000000E-01                   NaN                   NaN
+QV   20    5.000000000000E-02                   NaN                   NaN
+QV   21    0.000000000000E+00                   NaN                   NaN
+
+Enter V/Vinf vs s data filename   s>  QW    1    0.000000000000E+00
+QW    2                   NaN
+QW    3                   NaN
+QW    4                   NaN
+QW    5                   NaN
+QW    6                   NaN
+QW    7                   NaN
+QW    8                   NaN
+QW    9                   NaN
+QW   10                   NaN
+QW   11                   NaN
+QW   12                   NaN
+QW   13                   NaN
+QW   14                   NaN
+QW   15                   NaN
+QW   16                   NaN
+QW   17                   NaN
+QW   18                   NaN
+QW   19                   NaN
+QW   20                   NaN
+QW   21                   NaN

@@ -1,0 +1,10 @@
+case-id: panel-coord/ppar-n364-at-clamp
+category: panel-coord
+purpose: FCPP009-Grenze AUF der Clamp-Grenze: PPAR N 364 (= IQX-6) wird ohne Reduktion akzeptiert, PSAV 364 Punkte
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 2412, PPAR N 364 (IQX-6), PSAV
+limitations: 364 ist nicht > IQX-6, daher keine Reduktion

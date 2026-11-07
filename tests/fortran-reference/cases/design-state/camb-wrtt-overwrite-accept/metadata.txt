@@ -1,0 +1,11 @@
+case-id: design-state/camb-wrtt-overwrite-accept
+category: design-state
+purpose: CAMB WRTT vorhandene Datei, Akzept (leere Zeile = Default Y): Ueberschreiben mit Thickness-Verteilung (xtcam.f 264-291); P4-P3.
+role: state-frame-reference
+step: C11b-P4-P3
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; GDES; CAMB; WRTT; ex.dat; ; ; ; QUIT
+limitations: Plot nicht vorhanden

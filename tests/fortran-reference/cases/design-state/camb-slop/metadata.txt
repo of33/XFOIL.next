@@ -1,0 +1,11 @@
+case-id: design-state/camb-slop
+category: design-state
+purpose: CAMB SLOP: LCSLOP-Toggle mit kanonischen Meldungen (xtcam.f 686-694); P4-P2.
+role: state-frame-reference
+step: C11b-P4-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; GDES; CAMB; SLOP; SLOP; ; ; QUIT
+limitations: Plot nicht vorhanden

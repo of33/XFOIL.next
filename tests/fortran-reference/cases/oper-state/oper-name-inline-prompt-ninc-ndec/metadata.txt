@@ -1,0 +1,10 @@
+case-id: oper-state/oper-name-inline-prompt-ninc-ndec
+category: oper-state
+purpose: OPER NAME inline (interne Leerzeichen), NINC/NDEC mit leerer Promptantwort, NAME ohne Argument mit Antwort
+step: C11a-A34-C-OPER-NAME
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NAME FOO BAR, NINC, NDEC, NINC, NAME->BAZ
+limitations: none

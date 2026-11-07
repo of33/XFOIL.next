@@ -1,0 +1,11 @@
+case-id: design-state/gdes-clis
+category: design-state
+purpose: GDES CLIS (xgdes.f 601-602, CLIS xgeom.f 883-920): vollstaendige Krümmungsliste; P4-P1-Reporttext.
+role: state-frame-reference
+step: C11b-P4-P1
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012, GDES, CLIS, <Leerzeile>, QUIT
+limitations: nur Textreport

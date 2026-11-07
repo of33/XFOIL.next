@@ -1,0 +1,10 @@
+case-id: aero-inviscid/seq-inv-2412
+category: aero-inviscid
+purpose: Inviskide Sequenz NACA 2412, ASEQ -4..8 Schritt 2
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: inviscid, Mach 0, Ncrit 9 (Defaults), ASEQ -4 8 2
+limitations: none

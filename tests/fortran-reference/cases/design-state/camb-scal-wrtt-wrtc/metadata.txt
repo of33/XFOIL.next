@@ -1,0 +1,11 @@
+case-id: design-state/camb-scal-wrtt-wrtc
+category: design-state
+purpose: CAMB SCAL vor WRTT/WRTC: SCAL skaliert nur Added-Camber/Loading, nicht die Buffer-Verteilung; Dateiidentitaet gegen camb-wrtt-normal/camb-wrtc-normal als SCAL-Verbrauchernachweis; P4-P3.
+role: state-frame-reference
+step: C11b-P4-P3
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; GDES; CAMB; SCAL 2; WRTT sc.dat; WRTC sc2.dat; ; ; QUIT
+limitations: Plot nicht vorhanden

@@ -1,0 +1,162 @@
+
+ ===================================================
+  XFOIL Version 6.99
+  Copyright (C) 2000   Mark Drela, Harold Youngren
+
+  This software comes with ABSOLUTELY NO WARRANTY,
+    subject to the GNU General Public License.
+
+  Caveat computor
+ ===================================================
+
+ File  xfoil.def  not found
+
+   QUIT    Exit program
+
+  .OPER    Direct operating point(s)
+  .MDES    Complex mapping design routine
+  .QDES    Surface speed design routine
+  .GDES    Geometry design routine
+
+   SAVE f  Write airfoil to labeled coordinate file
+   PSAV f  Write airfoil to plain coordinate file
+   ISAV f  Write airfoil to ISES coordinate file
+   MSAV f  Write airfoil to MSES coordinate file
+   REVE    Reverse written-airfoil node ordering
+   DELI i  Change written-airfoil file delimiters
+
+   LOAD f  Read buffer airfoil from coordinate file
+   NACA i  Set NACA 4,5-digit airfoil and buffer airfoil
+   INTE    Set buffer airfoil by interpolating two airfoils
+   NORM    Buffer airfoil normalization toggle
+   HALF    Halve the number of points in buffer airfoil
+   XYCM rr Change CM reference location, currently  0.25000 0.00000
+
+   BEND    Display structural properties of current airfoil
+
+   PCOP    Set current-airfoil panel nodes directly from buffer airfoil points
+   PANE    Set current-airfoil panel nodes ( 160 ) based on curvature
+  .PPAR    Show/change paneling
+
+  .PLOP    Plotting options
+
+   WDEF f  Write  current-settings file
+   RDEF f  Reread current-settings file
+   NAME s  Specify new airfoil name
+   NINC    Increment name version number
+
+   Z       Zoom    | (available in all menus)
+   U       Unzoom  | 
+
+ XFOIL   c>   ...............................................
+
+  G raphics-enable flag:        T
+  S ize of plot object          10.00"
+  A spect ratio of plot object   0.5500
+  P age dimensions              11.00 x  8.50"
+  M argins from page edges       0.00",  0.00"
+  F ont size (relative)          0.0150
+  W indow/screen size fraction   0.8000
+  B lowup input method:        Cursor    
+  O rientation of plot:        Landscape 
+  C olor PostScript output?     T
+  L ine colors for top,bottom    8  3
+
+      Option, Value   (or <Return>)    c>   ...............................................
+
+  G raphics-enable flag:        F
+  S ize of plot object          10.00"
+  A spect ratio of plot object   0.5500
+  P age dimensions              11.00 x  8.50"
+  M argins from page edges       0.00",  0.00"
+  F ont size (relative)          0.0150
+  W indow/screen size fraction   0.8000
+  B lowup input method:        Cursor    
+  O rientation of plot:        Landscape 
+  C olor PostScript output?     T
+  L ine colors for top,bottom    8  3
+
+      Option, Value   (or <Return>)    c>  
+ XFOIL   c>   Max thickness =     0.120032  at x =   0.297
+ Max camber    =     0.019999  at x =   0.403
+
+ Buffer airfoil set using 245 points
+
+ Blunt trailing edge.  Gap =  0.00252
+
+ Paneling parameters used...
+   Number of panel nodes       160
+   Panel bunching parameter    1.000
+   TE/LE panel density ratio   0.150
+   Refined-area/LE panel density ratio    0.200
+   Top    side refined area x/c limits  1.000 1.000
+   Bottom side refined area x/c limits  1.000 1.000
+
+ XFOIL   c>  
+.OPERi   c>  
+Enter Reynolds number   r>  
+ M  =    0.0000
+ Re =  0.3000E+07
+
+.OPERv   c>  
+.OPERv   c>   Calculating unit vorticity distributions ...
+
+OFS: alfa =   4.0000 cl =   0.7376 cdp =  -0.0011 cm =  -0.0616
+ Calculating wake trajectory ...
+ Calculating source influence matrix ...
+
+ Solving BL system ...
+
+ Initializing BL ...
+    side            1  ...
+ MRCHUE: Inverse mode at  41     Hk =   3.072
+ MRCHUE: Inverse mode at  88     Hk =   2.500
+    side            2  ...
+ MRCHUE: Inverse mode at  68     Hk =   4.462
+ MRCHUE: Inverse mode at  69     Hk =   2.500
+
+ Side 1  free  transition at x/c =  0.2547   41
+ Side 2  free  transition at x/c =  0.9267   69
+
+   1   rms: 0.1255E+00   max: -.8539E+00   C at   69  2   RLX: 0.586
+       a =  4.000      CL =  0.7138
+      Cm = -0.0577     CD =  0.00522   =>   CDf =  0.00426    CDp =  0.00096
+
+ Side 1  free  transition at x/c =  0.2583   42
+ Side 2  free  transition at x/c =  0.9374   70
+
+   2   rms: 0.6647E-01   max: -.7424E+00   C at   70  2   RLX: 0.673
+       a =  4.000      CL =  0.6994
+      Cm = -0.0549     CD =  0.00563   =>   CDf =  0.00425    CDp =  0.00138
+
+ Side 1  free  transition at x/c =  0.2742   43
+ Side 2  free  transition at x/c =  0.9709   72
+
+   3   rms: 0.2721E-01   max: -.2426E+00   C at   72  2
+       a =  4.000      CL =  0.6803
+      Cm = -0.0503     CD =  0.00574   =>   CDf =  0.00407    CDp =  0.00167
+
+ Side 1  free  transition at x/c =  0.2863   43
+ Side 2  free  transition at x/c =  0.9764   72
+
+   4   rms: 0.7899E-02   max: -.1167E+00   C at   72  2
+       a =  4.000      CL =  0.6770
+      Cm = -0.0495     CD =  0.00570   =>   CDf =  0.00399    CDp =  0.00171
+
+ Side 1  free  transition at x/c =  0.2861   43
+ Side 2  free  transition at x/c =  0.9794   72
+
+   5   rms: 0.3236E-03   max: -.5507E-02   C at   72  2
+       a =  4.000      CL =  0.6773
+      Cm = -0.0496     CD =  0.00570   =>   CDf =  0.00398    CDp =  0.00172
+
+ Side 1  free  transition at x/c =  0.2860   43
+ Side 2  free  transition at x/c =  0.9794   72
+
+   6   rms: 0.4211E-06   max: 0.6068E-05   C at   72  2
+       a =  4.000      CL =  0.6773
+      Cm = -0.0496     CD =  0.00570   =>   CDf =  0.00398    CDp =  0.00172
+      9.000    2.8865   0.005702   0.000000   0.000000   0.000000    0.2860     #
+
+.OPERv   c>  
+ XFOIL   c>  

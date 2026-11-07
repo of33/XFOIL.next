@@ -1,0 +1,12 @@
+case-id: file-io/usav-no-geometry
+category: file-io
+purpose: TOP-Level-USAV ohne Geometrie gegen kanonisches Binary: IFTYP=-1 schreibt keinen Header; bei N=0 entsteht eine vollstaendig leere Datei (0 Bytes). stdout.raw.txt traegt nur Prompt-/Quit-Ausgabe, keinen Fehlertext.
+role: a34c-usav-no-geometry-reference
+step: A34-C TOP-Level USAV
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: USAV ohne Geometrie
+fixture-origin: keine Eingabedatei; keine Geometrie
+limitations: none

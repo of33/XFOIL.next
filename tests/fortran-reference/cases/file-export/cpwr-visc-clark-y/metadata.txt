@@ -1,0 +1,10 @@
+case-id: file-export/cpwr-visc-clark-y
+category: file-export
+purpose: CPWR-Dateiexport (CPDUMP xoper.f 2265-2346) nach viskosem Punkt an CLARK_Y Re=3e6, ALFA 4
+step: C11b-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: viscous Re=3e6, ALFA 4, CPWR mit Dateinamen, KDELIM 0
+limitations: keine

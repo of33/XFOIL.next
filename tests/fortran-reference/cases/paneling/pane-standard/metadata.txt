@@ -1,0 +1,10 @@
+case-id: paneling/pane-standard
+category: paneling
+purpose: Kanonische Standardpanelierung (PANE, 160 Knoten) auf NACA 2412
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: none
+limitations: none

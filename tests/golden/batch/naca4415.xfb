@@ -1,0 +1,18 @@
+XFOIL-BATCH 1
+[job]
+stop-on-nonconvergence = false
+[commands]
+NACA 4415
+PANE
+OPER
+VISC 100000
+MACH 0
+ITER 100
+VPAR
+N 9
+XTR 1 1
+VACC 0.01
+
+ASEQ 0 14.5 0.5
+
+QUIT

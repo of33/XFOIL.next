@@ -1,0 +1,11 @@
+case-id: design-state/camb-add-panel-unchanged
+category: design-state
+purpose: CAMB ADD mutiert nur den GDES-Buffer; aktuelle Panelkontur bleibt (SAVE-Ausgabe); P4-P2.
+role: state-frame-reference
+step: C11b-P4-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; PANE; GDES; CAMB; SETC; ADD; ; ; SAVE camb_after_add.dat; QUIT
+limitations: Plot nicht vorhanden

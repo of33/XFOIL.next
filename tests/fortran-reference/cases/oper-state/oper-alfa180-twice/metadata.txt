@@ -1,0 +1,10 @@
+case-id: oper-state/oper-alfa180-twice
+category: oper-state
+purpose: ALFA 180 inviscid zweimal (Warmstart)
+step: C11a-A34-C-OPER-Extremwinkel
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: ALFA 180, ALFA 180
+limitations: none

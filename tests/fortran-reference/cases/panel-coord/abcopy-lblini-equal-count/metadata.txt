@@ -1,0 +1,10 @@
+case-id: panel-coord/abcopy-lblini-equal-count
+category: panel-coord
+purpose: ABCOPY-LBLINI-Zweig N==NB: PCOP auf buffergleicher Panelkontur (245==245) erhaelt LBLINI; zweiter viskoser Punkt initialisiert die BL nicht erneut (genau eine 'Initializing BL'-Zeile)
+step: A34-C ABCOPY/PCOP LBLINI-Konsistenz
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 2412, Re=1e6, alpha 2 und 3, PCOP zwischen den Punkten
+limitations: none

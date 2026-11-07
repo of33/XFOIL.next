@@ -1,0 +1,10 @@
+case-id: top-file-export/msav-isav-roundtrip
+category: top-file-export
+purpose: ISAV/MSES-Rundlauf: MSAV ersetzt Element 1 der ISES-Datei (MSAVE xfoil.f 1430-1544)
+step: C11b-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 2412, ISAV single.mses, MSAV single.mses Element 1
+limitations: keine

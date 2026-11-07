@@ -1,0 +1,12 @@
+PLOP
+g
+
+LOAD CLARK_Y.dat
+OPER
+VISC
+3e6
+ALFA 4
+DUMP dump-visc-clark-y.bl
+
+
+QUIT

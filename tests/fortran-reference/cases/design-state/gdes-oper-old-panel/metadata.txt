@@ -1,0 +1,11 @@
+case-id: design-state/gdes-oper-old-panel
+category: design-state
+purpose: GDES-Aenderung laesst die aktuelle Panelkontur unveraendert; OPER konsumiert weiterhin die alte Kontur (P4-P1-Zustandsvertrag). 
+role: state-frame-reference
+step: C11b-P4-P1
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012, PANE, GDES, TRAN 0.5 0.0, <Leerzeile>, OPER, FNEW, <Leerzeile>, QUIT
+limitations: nur Panel-/Analyserahmen

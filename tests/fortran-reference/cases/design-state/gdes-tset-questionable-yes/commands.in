@@ -1,0 +1,7 @@
+NACA 0012
+GDES
+TSET 0.5 0.2
+y
+
+PSAV tsetq.dat
+QUIT

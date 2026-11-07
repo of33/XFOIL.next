@@ -1,0 +1,11 @@
+case-id: design-state/gdes-over-lnorm
+category: design-state
+purpose: GDES OVER mit LNORM=.TRUE. (TOP NORM zuvor): NORM-Pfad der Overlaykontur; P4-P4.
+role: state-frame-reference
+step: C11b-P4-P4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; NORM; GDES; OVER ov_plain.dat; ; QUIT
+limitations: Plot nicht vorhanden

@@ -1,0 +1,12 @@
+case-id: panel-coord/abcopy-366-above-limit
+category: panel-coord
+purpose: FCPP009-ABCOPY-Grenze UEBER der Grenze: LOAD einer 366-Punkt-Kontur (NB=366>IQX-5=365) erreicht ABCOPY; Grenze NB>IQX-5 ueberschritten, aktuelle Kontur wird NICHT gesetzt, Meldung 'Maximum number of panel nodes : 365'.
+role: fcpp009-abcopy-limit
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: LOAD abcopy366.dat (366 Punkte)
+fixture-origin: abcopy366.dat = NACA-2412 analytisches 4-stelliges Profil (t=0.12,m=0.04,p=0.2), kosinusverteilt, 366 Punkte, gegen den Uhrzeigersinn; erzeugt durch tools/gen-abcopy-fixtures.py; keine Duplikate, keine degenerierten Segmente, positive Flaeche; SHA-256 fb0c380de716a87ae9f5f19f35a7fdd44d2827944a662f2fbe1b7f88ba6423e3
+limitations: ABCOPY wird ueber den CLI-LOAD-Pfad erreicht (xfoil.f:207-211: LOAD -> ABCOPY); NB=366>365 wird abgewiesen, aktuelle Kontur bleibt unveraendert

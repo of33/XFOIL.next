@@ -1,0 +1,11 @@
+case-id: design-state/camb-add
+category: design-state
+purpose: CAMB ADD auf GDES-Buffer, GEOPAR-Druck, LCLEAR, GO TO 100/200 (xtcam.f 643-683); P4-P2.
+role: state-frame-reference
+step: C11b-P4-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; GDES; CAMB; SETC; ADD; ; ; QUIT
+limitations: Plot nicht vorhanden

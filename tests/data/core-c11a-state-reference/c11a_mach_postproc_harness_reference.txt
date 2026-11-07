@@ -1,0 +1,129 @@
+
+ Current airfoil nodes set from buffer airfoil nodes ( 151 )
+ Calculating unit vorticity distributions ...
+
+OFS: alfa =   2.0000 cl =   0.6571 cdp =  -0.0007 cm =  -0.0911
+ Calculating wake trajectory ...
+ Calculating source influence matrix ...
+
+ Solving BL system ...
+
+ Initializing BL ...
+    side            1  ...
+ MRCHUE: Inverse mode at  47     Hk =   4.307
+ MRCHUE: Inverse mode at  48     Hk =   4.779
+ MRCHUE: Inverse mode at  49     Hk =   2.500
+ MRCHUE: Inverse mode at  80     Hk =   2.500
+    side            2  ...
+ MRCHUE: Inverse mode at  68     Hk =   4.080
+ MRCHUE: Inverse mode at  69     Hk =   4.733
+ MRCHUE: Inverse mode at  70     Hk =   5.348
+ MRCHUE: Inverse mode at  71     Hk =   5.900
+ MRCHUE: Inverse mode at  72     Hk =   6.091
+ MRCHUE: Inverse mode at  73     Hk =   4.848
+
+ Side 1  free  transition at x/c =  0.4892   48
+ Side 2  free  transition at x/c =  0.9922   72
+
+   1   rms: 0.1992E+00   max: 0.1145E+01   D at   76  2   RLX: 0.775
+       a =  2.000      CL =  0.6665
+      Cm = -0.0933     CD =  0.00562   =>   CDf =  0.00450    CDp =  0.00111
+
+ Side 1  free  transition at x/c =  0.5425   52
+ Side 2 forced transition at x/c =  1.0000   73
+
+   2   rms: 0.4537E-01   max: 0.2911E+00   D at   52  1
+       a =  2.000      CL =  0.6518
+      Cm = -0.0901     CD =  0.00573   =>   CDf =  0.00423    CDp =  0.00150
+
+ Side 1  free  transition at x/c =  0.5477   52
+ Side 2  free  transition at x/c =  0.9988   73
+
+   3   rms: 0.6462E-02   max: -.4229E-01   D at   52  1
+       a =  2.000      CL =  0.6465
+      Cm = -0.0889     CD =  0.00585   =>   CDf =  0.00414    CDp =  0.00171
+
+ Side 1  free  transition at x/c =  0.5457   52
+ Side 2  free  transition at x/c =  1.0000   73
+
+   4   rms: 0.1522E-03   max: -.2151E-02   D at   52  1
+       a =  2.000      CL =  0.6465
+      Cm = -0.0889     CD =  0.00585   =>   CDf =  0.00414    CDp =  0.00171
+
+ Side 1  free  transition at x/c =  0.5456   52
+ Side 2  free  transition at x/c =  1.0000   73
+
+   5   rms: 0.6453E-06   max: -.4056E-05   C at   53  1
+       a =  2.000      CL =  0.6465
+      Cm = -0.0889     CD =  0.00585   =>   CDf =  0.00414    CDp =  0.00171
+      9.000    3.3039   0.005851   0.000000   0.000000   0.000000    0.5456     #
+ MP C_POINT
+ C_POINT  CL      6.4645431381471929E-01
+ C_POINT  CM     -8.8917057433402391E-02
+ C_POINT  CD      5.8509956565811275E-03
+ C_POINT  CDF     4.1410670163606359E-03
+ C_POINT  CDP     7.5171907268271518E-04
+ C_POINT  MINF    0.0000000000000000E+00
+ C_POINT  CPMINI -9.9608694841153800E-01
+ C_POINT  LVCONVT
+ MP C_AFTERMACH
+ C_AFTER  CL      6.8756173455036773E-01
+ C_AFTER  CM     -9.3640220670966695E-02
+ C_AFTER  CD      5.8445220498272478E-03
+ C_AFTER  CDF     4.1410670163606359E-03
+ C_AFTER  CDP    -2.1433374867020619E-04
+ C_AFTER  MINF    2.9999999999999999E-01
+ C_AFTER  CPMINI -1.0699120328271527E+00
+ C_AFTER  LVCONVF
+ MP C_IDENTICAL
+ C_IDENT  CL      6.8756173455036773E-01
+ C_IDENT  CM     -9.3640220670966695E-02
+ C_IDENT  CD      5.8445220498272478E-03
+ C_IDENT  CDF     4.1410670163606359E-03
+ C_IDENT  CDP    -2.1433374867020619E-04
+ C_IDENT  MINF    2.9999999999999999E-01
+ C_IDENT  CPMINI -1.0699120328271527E+00
+ C_IDENT  LVCONVF
+
+ Current airfoil nodes set from buffer airfoil nodes ( 151 )
+ Calculating unit vorticity distributions ...
+
+OFS: alfa =   2.0000 cl =   0.6571 cdp =  -0.0007 cm =  -0.0911
+ MP B_POINT
+ B_POINT  CL      6.5709867960858614E-01
+ B_POINT  CM     -9.1059837162983354E-02
+ B_POINT  CD      0.0000000000000000E+00
+ B_POINT  CDF     0.0000000000000000E+00
+ B_POINT  CDP    -6.8728827489026841E-04
+ B_POINT  MINF    0.0000000000000000E+00
+ B_POINT  CPMINI -9.9608694841153800E-01
+ B_POINT  LVCONVF
+ MP B_AFTERMACH
+ B_AFTER  CL      6.9882937318004035E-01
+ B_AFTER  CM     -9.5876212532565994E-02
+ B_AFTER  CD      0.0000000000000000E+00
+ B_AFTER  CDF     0.0000000000000000E+00
+ B_AFTER  CDP    -1.7335250771121464E-03
+ B_AFTER  MINF    2.9999999999999999E-01
+ B_AFTER  CPMINI -1.0699120328271527E+00
+ B_AFTER  LVCONVF
+
+ Current airfoil nodes set from buffer airfoil nodes ( 151 )
+ MP A_POINT
+ A_POINT  CL      0.0000000000000000E+00
+ A_POINT  CM      0.0000000000000000E+00
+ A_POINT  CD      0.0000000000000000E+00
+ A_POINT  CDF     0.0000000000000000E+00
+ A_POINT  CDP     0.0000000000000000E+00
+ A_POINT  MINF    0.0000000000000000E+00
+ A_POINT  CPMINI  0.0000000000000000E+00
+ A_POINT  LVCONVF
+ MP A_AFTERMACH
+ A_AFTER  CL     -1.5525775109992423E-16
+ A_AFTER  CM     -1.1005006745774533E-16
+ A_AFTER  CD      0.0000000000000000E+00
+ A_AFTER  CDF     0.0000000000000000E+00
+ A_AFTER  CDP     1.7564075194265172E-17
+ A_AFTER  MINF    2.9999999999999999E-01
+ A_AFTER  CPMINI  1.0235733018456523E+00
+ A_AFTER  LVCONVF

@@ -1,0 +1,11 @@
+case-id: geometry-edit/gdes-rotate-dero
+category: geometry-edit
+purpose: NEGATIVE-KONTROLLE (kein eXec): GDES ADEG 5 (ROTATE) + DERO (ROTATE) editieren nur den Buffer; die aktuelle Kontur bleibt unveraendert, daher schreibt PSAV die UNVERAENDERTE aktuelle Kontur. Kein erfolgreicher Edit und keine numerische GDES-Ausgabereferenz.
+role: negative-control
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: none
+limitations: Positive Edit-Referenz mit eXec: geometry-edit/gdes-rotate-exec und geometry-edit/gdes-dero-exec

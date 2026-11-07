@@ -1,0 +1,65 @@
+ Max thickness =     0.120032  at x =   0.297
+ Max camber    =     0.019999  at x =   0.403
+ Max thickness =     0.121076  at x =   0.308
+ Max camber    =     0.019999  at x =   0.403
+TGA NB =    245
+TGA THICKB =   0.1210763E+00
+TGA CAMBRB =   0.1999944E-01
+TGA XB1 =   0.1000000E+01
+TGA YB1 =   0.1000000E-01
+TGA XBN =   0.1000000E+01
+TGA YBN =  -0.1000000E-01
+ Max thickness =     0.124966  at x =   0.278
+ Max camber    =     0.020002  at x =   0.403
+
+ New LE radius = 0.02237
+LER NB =    245
+LER RADBLE =   0.2373429E-01
+LER THICKB =   0.1249657E+00
+LER YB1 =   0.1000286E-01
+LER YB62 =   0.8046735E-01
+ Max thickness =     0.149959  at x =   0.133
+ Max camber    =     0.024003  at x =   0.284
+SCX CHORDB =   0.1200000E+01
+SCX THICKB =   0.1499588E+00
+SCX YB1 =   0.1200343E-01
+INS NB =    245
+INS XBF =   0.7000000E+00
+INS YBF =   0.0000000E+00
+INS INSIDE =      1
+
+  Top    surface:  y =  0.0582     y/t = 1.0
+  Bottom surface:  y = -0.0265     y/t = 0.0
+GXY TOPS =   0.3035648E+00
+GXY BOTS =   0.2156970E+01
+GXY XBF =   0.7000000E+00
+GXY YBF =   0.0000000E+00
+
+  Top    surface:  y =  0.0582     y/t = 1.0
+  Bottom surface:  y = -0.0265     y/t = 0.0
+
+ Flap hinge: x,y =  0.70000  0.00000
+
+ Top breaks: x,y =    0.70752  0.05723      0.70752  0.05723
+ Bot breaks: x,y =    0.69907 -0.02659      0.70370 -0.02635
+ Max thickness =     0.150314  at x =   0.126
+ Max camber    =     0.054536  at x =   0.698
+FLP NB =    249
+FLP LBFLAP =      1
+FLP LGSYM =      0
+FLP THICKB =   0.1503139E+00
+FLP CAMBRB =   0.5453574E-01
+FLP SBLE =   0.1244451E+01
+FLP YB1 =  -0.4027339E-01
+FLP YB62 =   0.9562000E-01
+FLP YBMID =   0.0000000E+00
+FLP YBN =  -0.6391554E-01
+
+ Current airfoil nodes set from buffer airfoil nodes ( 249 )
+FEX N =    249
+FEX X1 =   0.9975267E+00
+FEX Y1 =  -0.4027339E-01
+FEX XMID =  -0.2000000E+00
+FEX YMID =   0.0000000E+00
+FEX XN =   0.9933580E+00
+FEX YN =  -0.6391554E-01

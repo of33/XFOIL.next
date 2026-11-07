@@ -1,0 +1,7 @@
+LOAD sample/CLARK_Y.dat
+NAME Trans Foil
+NINC
+
+XYCM 0.35 -0.05
+?
+QUIT

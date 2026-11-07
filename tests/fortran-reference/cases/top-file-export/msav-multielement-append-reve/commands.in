@@ -1,0 +1,11 @@
+PLOP
+g
+
+LOAD small.dat
+SMALL
+REVE
+MSAV multi.mses
+2
+
+
+QUIT

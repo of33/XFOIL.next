@@ -1,0 +1,11 @@
+case-id: design-state/plop-menu-color-prompt
+category: design-state
+purpose: PLOP-Menue 'L' ohne Inline-Argument: kanonische Farbliste (FORMAT 2200) und list-directed Farbauswahl; P4-P0-Textvertrag.
+role: state-frame-reference
+step: C11b-P4-P0
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: PLOP, l, 3 4, 0, QUIT
+limitations: keine Geometrie; reine Plotoptions-Flags/Werte, kein Plotbackend

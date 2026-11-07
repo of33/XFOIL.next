@@ -1,0 +1,6 @@
+PLOP
+g
+
+LOAD CLARK_Y.dat
+PSAV clark_y_saved.dat
+QUIT

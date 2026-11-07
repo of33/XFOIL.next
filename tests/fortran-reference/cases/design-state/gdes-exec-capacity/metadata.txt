@@ -1,0 +1,11 @@
+case-id: design-state/gdes-exec-capacity
+category: design-state
+purpose: GDES CADD ueber 365 Punkte, dann EXEC: vierzeilige ABCOPY-Kapazitaetsabweisung, Panel bleibt; P4-P5.
+role: state-frame-reference
+step: C11b-P4-P5
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; GDES; CADD 0.2 1 -1.0 2.0; EXEC; ; QUIT
+limitations: Plot nicht vorhanden

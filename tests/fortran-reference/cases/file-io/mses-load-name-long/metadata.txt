@@ -1,0 +1,12 @@
+case-id: file-io/mses-load-name-long
+category: file-io
+purpose: MSES-LOAD-Kennzeile mit laengerer NAME-Zeile als CHARACTER*48: bestaetigt, dass AREAD die erste Dateizeile auf das CHARACTER*48-NAME-Feld abschneidet und die sichtbare Kennzeile nur die ersten 48 Zeichen enthaelt.
+role: a34c-mses-load-name-long-reference
+step: A34-C MSES LOAD Textvertrag
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: LOAD mses_name_long.dat
+fixture-origin: input/mses_name_long.dat (NAME mit 60 Zeichen, MSES-Domainzeile ' -1.0  2.0  -1.5  2.5')
+limitations: none

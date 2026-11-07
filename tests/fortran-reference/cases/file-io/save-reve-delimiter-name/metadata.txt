@@ -1,0 +1,12 @@
+case-id: file-io/save-reve-delimiter-name
+category: file-io
+purpose: TOP-Level-SAVE gegen kanonisches Binary: NACA 2412 erzeugt Buffer (245 Punkte) und aktuelle Panelkontur (160 Punkte); SAVE schreibt die Panelkontur. NAME/NINC setzen den Header 'A B C [1]'. REVE kehrt die Schreibreihenfolge um; DELI 1/2 pruefen comma/tab-Formate. Vollstaendige generated-Dateibytes sind Referenz.
+role: a34c-save-reve-delimiter-name-reference
+step: A34-C TOP-Level SAVE
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 2412; NAME/NINC; REVE; DELI 1/2; SAVE
+fixture-origin: keine Eingabedatei; NACA-2412-Generierung (kanonisch)
+limitations: none

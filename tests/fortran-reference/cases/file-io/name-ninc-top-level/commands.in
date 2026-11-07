@@ -1,0 +1,27 @@
+NACA 2412
+NAME A B C
+NINC
+
+SAVE name_internal.dat
+NAME A [9]
+NINC
+
+NINC
+
+SAVE name_carry.dat
+NAME A1
+NINC
+
+SAVE name_enddigit.dat
+NAME A [007]
+NAME
+
+SAVE name_noarg_reformat.dat
+NAME AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+SAVE name_overlong.dat
+NINC
+
+SAVE name_max_ninc.dat
+NAME
+
+QUIT

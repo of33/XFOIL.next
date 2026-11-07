@@ -1,0 +1,8 @@
+LOAD ov_400.dat
+GDES
+EXEC
+
+OPER
+ALFA 2
+
+QUIT

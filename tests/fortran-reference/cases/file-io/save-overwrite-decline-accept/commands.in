@@ -1,0 +1,8 @@
+NACA 2412
+SAVE decline_target.dat
+SAVE decline_target.dat
+N
+SAVE accept_target.dat
+SAVE accept_target.dat
+Y
+QUIT

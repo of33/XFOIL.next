@@ -1,0 +1,8 @@
+NACA 2412
+USAV decline_target.dat
+USAV decline_target.dat
+N
+USAV accept_target.dat
+USAV accept_target.dat
+Y
+QUIT

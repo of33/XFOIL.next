@@ -1,0 +1,12 @@
+case-id: file-io/isav-source-pcop
+category: file-io
+purpose: TOP-Level-ISAV Quellenbestimmung gegen kanonisches Binary: NACA 2412 setzt Buffer 245 Punkte und aktuelle Panelkontur 160 Punkte; ISAV schreibt nach NACA 160 Koordinatenzeilen. PCOP/ABCOPY setzt die aktuelle Kontur auf den Buffer; ISAV schreibt danach 245 Koordinatenzeilen. Die Quelle ist eindeutig die aktuelle Panelkontur X/Y/N, nicht der Buffer. Header und ISPARS-Zeile bleiben erhalten.
+role: a34c-isav-source-pcop-reference
+step: A34-C TOP-Level ISAV
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 2412; ISAV; PCOP; ISAV
+fixture-origin: keine Eingabedatei; NACA-2412-Generierung (kanonisch)
+limitations: none

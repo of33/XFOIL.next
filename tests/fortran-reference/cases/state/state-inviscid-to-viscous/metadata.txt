@@ -1,0 +1,10 @@
+case-id: state/state-inviscid-to-viscous
+category: state
+purpose: Wechsel von inviskid zu viskos: ALFA 4 (inviscid) dann VISC Re=1e6 ITER 100 ALFA 4
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: ALFA 4 inviscid, dann VISC Re=1e6 ITER 100 ALFA 4
+limitations: none

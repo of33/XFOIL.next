@@ -1,0 +1,10 @@
+case-id: panel-coord/ppar-n200-psav
+category: panel-coord
+purpose: Panelkoordinaten nach nicht-standardmaessiger PPAR-Konfiguration (N 200) + PSAV, 200 Punkte
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 2412, PPAR N 200 (angewendet), PSAV
+limitations: PSAV schreibt X(1..N) (aktuelle/Panel-Kontur)

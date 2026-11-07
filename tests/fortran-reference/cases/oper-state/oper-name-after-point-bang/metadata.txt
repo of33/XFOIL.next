@@ -1,0 +1,10 @@
+case-id: oper-state/oper-name-after-point-bang
+category: oper-state
+purpose: OPER NAME nach Analysepunkt; stumm, COMOLD/LRECALC und '!' unveraendert
+step: C11a-A34-C-OPER-NAME
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: ALFA 2, NAME FOO, !
+limitations: none

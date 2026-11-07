@@ -1,0 +1,11 @@
+case-id: design-state/camb-redo-invalid
+category: design-state
+purpose: CAMB '!' ohne Vorgaenger: 'Previous ..CAMB command not valid' (xtcam.f 172-173); P4-P2.
+role: state-frame-reference
+step: C11b-P4-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; GDES; CAMB; !; SETC; ; ; QUIT
+limitations: Plot nicht vorhanden

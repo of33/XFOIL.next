@@ -1,0 +1,11 @@
+case-id: design-state/gdes-high
+category: design-state
+purpose: GDES HIGH (xgdes.f 470-484, HIPNT xtcam.f): Hochpunktverschiebung mit Enabling-Zeile und Berichten; P4-P1.
+role: state-frame-reference
+step: C11b-P4-P1
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012, GDES, HIGH 0.4 0.4, <Leerzeile>, PSAV, QUIT
+limitations: Plot nicht vorhanden

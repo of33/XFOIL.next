@@ -1,0 +1,25 @@
+# Manifest of the xfoil::io layer.
+# Allowed dependencies: xfoil/io and xfoil/core.
+# Forbidden: tests, filesystem/env/CLI access.
+include/xfoil/io/TextFormat.h
+include/xfoil/io/PolarText.h
+include/xfoil/io/DumpCodec.h
+include/xfoil/io/DefaultsCodec.h
+include/xfoil/io/ExportFormats.h
+include/xfoil/io/OrrSommerfeldCodec.h
+src/io/TextFormat.cpp
+src/io/PolarText.cpp
+src/io/DumpCodec.cpp
+src/io/DefaultsCodec.cpp
+src/io/ExportFormats.cpp
+src/io/OrrSommerfeldCodec.cpp
+src/io/MsesMultielementCodec.cpp
+include/xfoil/io/MsesMultielementCodec.h
+src/io/AddedCamberCodec.cpp
+include/xfoil/io/AddedCamberCodec.h
+src/io/MdesInverseFileCodec.cpp
+include/xfoil/io/MdesInverseFileCodec.h
+src/io/ThicknessCamberCodec.cpp
+include/xfoil/io/ThicknessCamberCodec.h
+src/io/OutputPathPolicy.cpp
+include/xfoil/io/OutputPathPolicy.h

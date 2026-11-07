@@ -1,0 +1,12 @@
+case-id: file-io/mses-load-multi-element
+category: file-io
+purpose: MSES-Mehrelement-LOAD: die AREAD-Kennzeile wird vor der Elementausgabe geschrieben und ist fachgleich mit MSES single; das kanonische Binary bestaetigt ITYPE 4 Pfad mit Elementabfrage.
+role: a34c-mses-load-multi-element-reference
+step: A34-C MSES LOAD Textvertrag
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: LOAD mses_multi.dat; Element 2
+fixture-origin: input/mses_multi.dat (NAME MULTIFOIL, zwei Elemente, 999.0 999.0-Trenner)
+limitations: none

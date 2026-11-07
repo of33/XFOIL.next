@@ -1,0 +1,27 @@
+
+ Enter airfoil name or <return> for default:  NACA 0012 [1]                                   
+NM NACA 0012 [1]                                                                   
+
+ Enter airfoil name or <return> for default:  NACA 0012 [4]                                   
+NM NACA 0012 [4]                                                                   
+
+ Enter airfoil name or <return> for default:  NACA 0012 [99]                                  
+NM NACA 0012 [99]                                                                  
+
+ Enter airfoil name or <return> for default:  NACA 0012 [10]                                  
+NM NACA 0012 [10]                                                                  
+
+ Enter airfoil name or <return> for default:  CLARK Y                                         
+NM CLARK Y                                                                         
+
+ Enter airfoil name or <return> for default:  CLARK Y [12]                                    
+NM CLARK Y [12]                                                                    
+
+ Enter airfoil name or <return> for default:  NACA 0012 [10]                                  
+NM NACA 0012 [10]                                                                  
+
+ Enter airfoil name or <return> for default:  NACA 0012 [9]                                   
+NM NACA 0012 [9]                                                                   
+
+ Enter airfoil name or <return> for default:   [8]                                            
+NM  [8]                                                                            

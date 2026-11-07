@@ -1,0 +1,10 @@
+case-id: top-file-export/msav-open-error
+category: top-file-export
+purpose: MSAV auf nicht vorhandener Datei: OPEN STATUS=OLD Fehlerzweig (xfoil.f 1540)
+step: C11b-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: MSAV ohne Vorlage, Exit 0, keine Dateierzeugung
+limitations: keine

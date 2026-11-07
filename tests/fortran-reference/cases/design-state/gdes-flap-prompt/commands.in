@@ -1,0 +1,9 @@
+NACA 0012
+GDES
+FLAP
+0.7
+0.0
+5
+
+PSAV flapp.dat
+QUIT

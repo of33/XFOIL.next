@@ -1,0 +1,132 @@
+# Core source manifest
+#
+# Explicit, reproducible set of the new xfoil::core files. Only these
+# files are checked as the new core by the dependency check
+# (tools/check-core-dependencies.py). Existing files under src/core/ (e.g.
+# XFoilSession.cpp, XFoilFacade.cpp, math/, geometry/) are NOT part of
+# the new core and are therefore not listed here.
+#
+# Paths are relative to the repository root. Lines starting with '#'
+# are comments. Empty lines are ignored.
+
+# Foundation
+include/xfoil/core/Limits.h
+include/xfoil/core/Matrix.h
+include/xfoil/core/Result.h
+src/core/foundation/Matrix.cpp
+
+# Numerics foundation
+include/xfoil/core/math/Diagnostic.h
+include/xfoil/core/math/FortranCompat.h
+include/xfoil/core/math/Sort.h
+include/xfoil/core/math/Spline.h
+include/xfoil/core/math/LinearAlgebra.h
+src/core/numerics/FortranCompat.cpp
+src/core/numerics/Sort.cpp
+src/core/numerics/Spline.cpp
+src/core/numerics/LinearAlgebra.cpp
+
+# Geometry and NACA core
+include/xfoil/core/geometry/GeometryTypes.h
+include/xfoil/core/geometry/Naca.h
+include/xfoil/core/geometry/LeadingEdge.h
+include/xfoil/core/geometry/GeometryParameters.h
+include/xfoil/core/geometry/Transformations.h
+include/xfoil/core/geometry/Refinement.h
+src/core/geometry_core/GeometryTypes.cpp
+src/core/geometry_core/Naca.cpp
+src/core/geometry_core/LeadingEdge.cpp
+src/core/geometry_core/GeometryParameters.cpp
+src/core/geometry_core/Transformations.cpp
+src/core/geometry_core/Refinement.cpp
+
+# Paneling and panel-geometry core
+include/xfoil/core/paneling/PanelingTypes.h
+include/xfoil/core/paneling/PanelGeometryKernels.h
+include/xfoil/core/paneling/Pangen.h
+include/xfoil/core/paneling/PanelParameters.h
+include/xfoil/core/paneling/Abcopy.h
+src/core/paneling/PanelTypes.cpp
+src/core/paneling/PanelGeometryKernels.cpp
+src/core/paneling/Pangen.cpp
+src/core/paneling/PanelParameters.cpp
+src/core/paneling/Abcopy.cpp
+
+# Inviscid solver
+include/xfoil/core/inviscid/InviscidTypes.h
+include/xfoil/core/inviscid/Compressibility.h
+include/xfoil/core/inviscid/TrailingEdge.h
+include/xfoil/core/inviscid/Stagnation.h
+include/xfoil/core/inviscid/Loads.h
+include/xfoil/core/inviscid/Influence.h
+include/xfoil/core/inviscid/SpecifiedPoint.h
+src/core/inviscid_core/Compressibility.cpp
+src/core/inviscid_core/TrailingEdge.cpp
+src/core/inviscid_core/Stagnation.cpp
+src/core/inviscid_core/Loads.cpp
+src/core/inviscid_core/Influence.cpp
+src/core/inviscid_core/SpecifiedPoint.cpp
+# Boundary-layer data model
+include/xfoil/core/boundary_layer/BoundaryLayerTypes.h
+include/xfoil/core/boundary_layer/BoundaryLayerMapping.h
+include/xfoil/core/boundary_layer/BoundaryLayerParameters.h
+include/xfoil/core/boundary_layer/BoundaryLayerStation.h
+src/core/boundary_layer_core/BoundaryLayerMapping.cpp
+src/core/boundary_layer_core/BoundaryLayerParameters.cpp
+src/core/boundary_layer_core/BoundaryLayerStation.cpp
+# Viscous and coupled solver (type scaffolding + correlation kernels)
+include/xfoil/core/boundary_layer/BoundaryLayerSolverTypes.h
+include/xfoil/core/boundary_layer/BoundaryLayerCorrelations.h
+include/xfoil/core/boundary_layer/BoundaryLayerSolverKernels.h
+include/xfoil/core/boundary_layer/NewtonSystem.h
+include/xfoil/core/boundary_layer/Coupling.h
+include/xfoil/core/boundary_layer/Update.h
+include/xfoil/core/boundary_layer/Marching.h
+include/xfoil/core/boundary_layer/Viscal.h
+include/xfoil/core/boundary_layer/BlForceReport.h
+src/core/boundary_layer_solver/BoundaryLayerCorrelations.cpp
+src/core/boundary_layer_solver/BoundaryLayerSolverKernels.cpp
+src/core/boundary_layer_solver/NewtonSystem.cpp
+src/core/boundary_layer_solver/Coupling.cpp
+src/core/boundary_layer_solver/Update.cpp
+src/core/boundary_layer_solver/Marching.cpp
+src/core/boundary_layer_solver/BlForceReport.cpp
+src/core/boundary_layer_solver/Viscal.cpp
+# Geometry-design cores (GDES/CAMB sub-paths)
+include/xfoil/core/geometry_design/CamberThickness.h
+src/core/geometry_design/CamberThickness.cpp
+include/xfoil/core/geometry_design/GeometryDesignBuffer.h
+include/xfoil/core/geometry_design/ThicknessCamberOps.h
+src/core/geometry_design/GeometryDesignBuffer.cpp
+src/core/geometry_design/ThicknessCamberOps.cpp
+include/xfoil/core/geometry_design/GeometryDesignOps.h
+src/core/geometry_design/GeometryDesignOps.cpp
+include/xfoil/core/geometry_design/CamberSession.h
+src/core/geometry_design/CamberSession.cpp
+include/xfoil/core/geometry_design/PlotFrame.h
+src/core/geometry_design/PlotFrame.cpp
+
+# Inverse methods (circle mapping, MDES/QDES/MIXED)
+include/xfoil/core/inverse/CircleKernels.h
+src/core/inverse_design/CircleKernels.cpp
+include/xfoil/core/inverse/CircleGeometry.h
+src/core/inverse_design/CircleGeometry.cpp
+include/xfoil/core/inverse/OrrSommerfeldMap.h
+src/core/inverse_design/OrrSommerfeldMap.cpp
+include/xfoil/core/inverse/WallProfileKernels.h
+src/core/inverse_design/WallProfileKernels.cpp
+include/xfoil/core/inverse/QSpecKernels.h
+src/core/inverse_design/QSpecKernels.cpp
+include/xfoil/core/inverse/InverseState.h
+src/core/inverse_design/InverseState.cpp
+include/xfoil/core/inverse/MixedInverseKernels.h
+src/core/inverse_design/MixedInverseKernels.cpp
+
+# Polar state and polar operations (0-based, file-free)
+include/xfoil/core/polar/PolarTypes.h
+include/xfoil/core/polar/PolarOps.h
+src/core/polar/PolarOps.cpp
+
+# Structured export-data projections
+include/xfoil/core/export_data/ExportData.h
+src/core/export_data/ExportData.cpp

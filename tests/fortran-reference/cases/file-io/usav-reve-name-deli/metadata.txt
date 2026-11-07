@@ -1,0 +1,12 @@
+case-id: file-io/usav-reve-name-deli
+category: file-io
+purpose: TOP-Level-USAV Format-/Policyvertrag gegen kanonisches Binary: NAME/NINC setzen den Profilnamen 'A B C [1]', der in der USAV-Datei nicht erscheint. USAV schreibt FORMAT(1X,I12,I12) ohne Header. REVE kehrt die Schreibreihenfolge um; DELI 1 hat auf den IFTYP=-1-Zweig keinen Einfluss, weil dort kein KDELIM-/Delimiterformat verwendet wird. Vollstaendige generated-Dateibytes sind Referenz.
+role: a34c-usav-reve-name-deli-reference
+step: A34-C TOP-Level USAV
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 2412; NAME/NINC; USAV; REVE; DELI 1
+fixture-origin: keine Eingabedatei; NACA-2412-Generierung (kanonisch)
+limitations: none

@@ -1,0 +1,14 @@
+PLOP
+g
+
+NACA 2412
+OPER
+VISC
+1000000
+ITER 100
+PACC
+polar-state-cl-driven.pol
+
+CSEQ 0.2 1.2 0.2
+
+QUIT

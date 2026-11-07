@@ -1,0 +1,11 @@
+NACA 2412
+NAME A B C
+NINC
+
+SAVE save_name.dat
+REVE
+DELI 1
+SAVE save_reve_comma.dat
+DELI 2
+SAVE save_tab.dat
+QUIT

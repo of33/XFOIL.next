@@ -1,0 +1,10 @@
+case-id: oper-state/oper-re-negative
+category: oper-state
+purpose: RE mit negativem Wert ohne Fortran-Zusatztext
+step: C11a-A34-C-OPER-state
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: RE -1
+limitations: none

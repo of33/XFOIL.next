@@ -1,0 +1,12 @@
+case-id: file-io/psav-reve-delimiter-name
+category: file-io
+purpose: TOP-Level-PSAV gegen kanonisches Binary: NACA 2412 erzeugt Buffer (245 Punkte) und aktuelle Panelkontur (160 Punkte); PSAV schreibt die Panelkontur ohne Header. NAME/NINC setzen den Profilnamen 'A B C [1]', der in der PSAV-Datei nicht erscheint. REVE kehrt die Schreibreihenfolge um; DELI 1/2 pruefen comma/tab-Formate. Vollstaendige generated-Dateibytes sind Referenz.
+role: a34c-psav-reve-delimiter-name-reference
+step: A34-C TOP-Level PSAV
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 2412; NAME/NINC; REVE; DELI 1/2; PSAV
+fixture-origin: keine Eingabedatei; NACA-2412-Generierung (kanonisch)
+limitations: none

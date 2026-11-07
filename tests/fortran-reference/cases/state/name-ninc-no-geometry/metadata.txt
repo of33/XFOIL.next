@@ -1,0 +1,12 @@
+case-id: state/name-ninc-no-geometry
+category: state
+purpose: TOP-Level-NAME/NINC ohne Geometrie gegen kanonisches Binary: NAME mit Inline-Argument, NINC mit leerer Antwort (NAMMOD-Vorgabe [1]) und NAME ohne Argument mit nichtleerer Promptantwort. Belegt, dass die Namenszustaende ohne gueltige Geometrie veraltet und keine numerische Geometrie erfordert.
+role: a34c-name-ninc-no-geometry-reference
+step: A34-C TOP-Level NAME/NINC
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NAME NoGeom; NINC; NAME ohne Argument mit Antwort
+fixture-origin: keine Eingabedatei; keine Geometrie
+limitations: none

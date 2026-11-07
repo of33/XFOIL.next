@@ -1,0 +1,10 @@
+case-id: oper-state/vpar-n-inline
+category: oper-state
+purpose: VPAR N mit einem Inline-Wert (beide Seiten) und SHOW
+step: C11a-A34-C-VPAR-state
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: N 12, SHOW
+limitations: none

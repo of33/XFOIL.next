@@ -1,0 +1,12 @@
+case-id: file-io/psav-no-geometry
+category: file-io
+purpose: TOP-Level-PSAV ohne Geometrie gegen kanonisches Binary: IFTYP=0 schreibt keinen NAME(1:NNAME)-Header; bei N=0 entsteht eine vollstaendig leere Datei (0 Bytes). stdout.raw.txt traegt nur Prompt-/Quit-Ausgabe, keinen Fehlertext.
+role: a34c-psav-no-geometry-reference
+step: A34-C TOP-Level PSAV
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: PSAV ohne Geometrie
+fixture-origin: keine Eingabedatei; keine Geometrie
+limitations: none

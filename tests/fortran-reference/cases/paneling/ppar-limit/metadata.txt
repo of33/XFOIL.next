@@ -1,0 +1,10 @@
+case-id: paneling/ppar-limit
+category: paneling
+purpose: Punktzahl-/Kapazitaetsgrenze: N 2000 > IQX-6 wird begrenzt (dimensionsaehngige Schleifengrenze)
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: none
+limitations: none

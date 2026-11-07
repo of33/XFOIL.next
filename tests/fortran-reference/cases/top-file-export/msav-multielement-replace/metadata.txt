@@ -1,0 +1,10 @@
+case-id: top-file-export/msav-multielement-replace
+category: top-file-export
+purpose: MSAV ersetzt Element 1 einer Zweielement-MSES-Datei durch 5-Punkt-Kontur
+step: C11b-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: small.dat geladen, MSAV multi.mses Element 1
+limitations: keine

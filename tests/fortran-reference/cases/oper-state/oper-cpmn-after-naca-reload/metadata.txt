@@ -1,0 +1,10 @@
+case-id: oper-state/oper-cpmn-after-naca-reload
+category: oper-state
+purpose: CPMN erhaelt Snapshot ueber NACA-Neusetzung
+step: C11a-A34-C-OPER-CPMN-PERSISTENZ
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: ALFA 2, CPMN, NACA 4412, OPER, CPMN
+limitations: none

@@ -1,0 +1,11 @@
+case-id: geometry-edit/gdes-tset-exec
+category: geometry-edit
+purpose: POSITIVE-EDIT-REFERENZ (mit eXec): GDES TSET 0.15/0.02 editiert den Buffer; eXec uebertraegt den geaenderten Buffer (245) in die aktuelle Kontur; PSAV schreibt die BEARBEITETE Kontur.
+role: positive-edit-reference
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 2412, GDES TSET 0.15 0.02, eXec, PSAV
+limitations: ohne eXec wuerde PSAV die ungeaenderte aktuelle Kontur schreiben (siehe gdes-tset)

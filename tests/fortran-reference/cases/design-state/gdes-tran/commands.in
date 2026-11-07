@@ -1,0 +1,6 @@
+NACA 0012
+GDES
+TRAN 0.5 0.25
+
+PSAV tran.dat
+QUIT

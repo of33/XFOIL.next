@@ -1,0 +1,11 @@
+PLOP
+g
+
+NACA 0012
+OPER
+PACC
+polar-inv-0012.pol
+
+ASEQ -4 8 2
+
+QUIT

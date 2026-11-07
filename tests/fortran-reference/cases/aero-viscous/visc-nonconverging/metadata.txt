@@ -1,0 +1,10 @@
+case-id: aero-viscous/visc-nonconverging
+category: aero-viscous
+purpose: Nicht konvergierender viskoser Fall NACA 2412, Re=1e6, alpha=25: 'VISCAL: Convergence failed' (Verhaltensreferenz)
+step: 17r4
+status: canonical-raw-only
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: viscous, Mach 0, Ncrit 9, Re=1e6, ITER 100, alpha=25
+limitations: bewusst nicht konvergierend; nur als Verhaltensreferenz, nicht als stabiles numerisches Golden

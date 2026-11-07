@@ -1,0 +1,10 @@
+case-id: geometry/clark-y-load
+category: geometry
+purpose: Geladenes Clark-Y-Profil: LOAD, Geometrieinfo, Standardpanelierung, Plain-Coordinate-Save
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: none
+limitations: none

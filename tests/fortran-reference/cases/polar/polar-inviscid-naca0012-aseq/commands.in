@@ -1,0 +1,12 @@
+PLOP
+g
+
+NACA 0012
+PANE
+OPER
+PACC
+polar-inviscid-naca0012-aseq.pol
+polar-inviscid-naca0012-aseq.dump
+ASEQ 0 4 2
+
+QUIT

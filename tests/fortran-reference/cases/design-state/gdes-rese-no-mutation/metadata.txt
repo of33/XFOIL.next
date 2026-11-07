@@ -1,0 +1,11 @@
+case-id: design-state/gdes-rese-no-mutation
+category: design-state
+purpose: GDES RESE (xgdes.f 100-105) ist plot-only (PLTINI/GOFINI/PLOTG); kanonischer Nachweis ohne Geometrieaenderung fuer P4-P0.
+role: state-frame-reference
+step: C11b-P4-P0
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012, GDES, RESE, <Leerzeile>, QUIT
+limitations: Plotbackend nicht vorhanden; nur kanonischer Text ohne Geometrie-/Panelaenderung

@@ -1,0 +1,11 @@
+case-id: design-state/camb-rdac-no-points
+category: design-state
+purpose: CAMB RDAC ohne Punkte: Null-Camber-Reset + 'No added camber points found', GO TO 100/200 (xtcam.f 342-349); P4-P3.
+role: state-frame-reference
+step: C11b-P4-P3
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; GDES; CAMB; RDAC; empty.dat; ; ; QUIT
+limitations: Plot nicht vorhanden

@@ -1,0 +1,11 @@
+case-id: design-state/gdes-name-ninc-ndec
+category: design-state
+purpose: GDES NAME/NINC/NDEC (xgdes.f 915-931, NAMMOD xoper.f): Namens-/Versionszaehler im kanonischen NAME-Feld; P4-P1.
+role: state-frame-reference
+step: C11b-P4-P1
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012, GDES, NAME TEST, NINC, NDEC, <Leerzeile>, QUIT
+limitations: keine Geometrieaenderung

@@ -1,0 +1,165 @@
+C XFOIL.next
+C
+C Copyright (C) 2026 Olaf Frommann
+C https://github.com/of33/XFOIL.next
+C
+C XFOIL.next is based on XFOIL 6.99 by Mark Drela and
+C Harold Youngren.
+C
+C This program is free software: you can redistribute it and/or modify
+C it under the terms of the GNU General Public License as published by
+C the Free Software Foundation, either version 3 of the License, or
+C (at your option) any later version.
+C
+C This program is distributed in the hope that it will be useful,
+C but WITHOUT ANY WARRANTY; without even the implied warranty of
+C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+C GNU General Public License for more details.
+C
+C You should have received a copy of the GNU General Public License
+C along with this program. If not, see <https://www.gnu.org/licenses/>.
+C
+C SPDX-License-Identifier: GPL-3.0-or-later
+
+C Fortran harness for xfoil::core::geometry - GEOPAR/NORM/AECALC/TCCALC
+C (xgeom.f). Calls the canonical routines unchanged. Fixed form;
+C lines remain <= column 72.
+      PROGRAM GEOPAR_HARNESS
+      INTEGER NSIDE, NB, IDES, I
+      REAL W1(123), W2(123), W3(123)
+      REAL XB(250), YB(250), SB(250), XBP(250), YBP(250), T(250)
+      REAL XN(250), YN(250), SN(250), XNP(250), YNP(250)
+      REAL SLE, CHORD, AREA, RADLE, ANGTE
+      REAL EI11A, EI22A, APX1A, APX2A
+      REAL EI11T, EI22T, APX1T, APX2T
+      REAL THICK, CAMBR, XTHICK, XCAMBR
+      REAL XCEN, YCEN, EI11, EI22, APX1, APX2
+      CHARACTER*48 NAME
+C
+C ==== GEOPAR NACA 0012 + AECALC/TCCALC directly ====
+      NSIDE = 123
+      IDES = 0012
+      CALL NACA4(IDES,W1,W2,W3,NSIDE,XB,YB,NB,NAME)
+      CALL SCALC(XB,YB,SB,NB)
+      CALL SEGSPL(XB,XBP,SB,NB)
+      CALL SEGSPL(YB,YBP,SB,NB)
+      CALL GEOPAR(XB,XBP,YB,YBP,SB,NB, T,
+     &            SLE,CHORD,AREA,RADLE,ANGTE,
+     &            EI11A,EI22A,APX1A,APX2A,
+     &            EI11T,EI22T,APX1T,APX2T,
+     &            THICK,CAMBR)
+      WRITE(*,9200) 'GEOPAR0012 SLE = ', SLE
+      WRITE(*,9200) 'GEOPAR0012 CHORD = ', CHORD
+      WRITE(*,9200) 'GEOPAR0012 AREA = ', AREA
+      WRITE(*,9200) 'GEOPAR0012 RADLE = ', RADLE
+      WRITE(*,9200) 'GEOPAR0012 ANGTE = ', ANGTE
+      WRITE(*,9200) 'GEOPAR0012 EI11A = ', EI11A
+      WRITE(*,9200) 'GEOPAR0012 EI22A = ', EI22A
+      WRITE(*,9200) 'GEOPAR0012 APX1A = ', APX1A
+      WRITE(*,9200) 'GEOPAR0012 APX2A = ', APX2A
+      WRITE(*,9200) 'GEOPAR0012 EI11T = ', EI11T
+      WRITE(*,9200) 'GEOPAR0012 EI22T = ', EI22T
+      WRITE(*,9200) 'GEOPAR0012 APX1T = ', APX1T
+      WRITE(*,9200) 'GEOPAR0012 APX2T = ', APX2T
+      WRITE(*,9200) 'GEOPAR0012 THICK = ', THICK
+      WRITE(*,9200) 'GEOPAR0012 CAMBR = ', CAMBR
+C
+C ---- AECALC directly (ITYPE=1 and ITYPE=2) ----
+      DO 5 I=1,NB
+        T(I) = 1.0
+    5 CONTINUE
+      CALL AECALC(NB,XB,YB,T, 1,
+     &            AREA,XCEN,YCEN,EI11,EI22,APX1,APX2)
+      WRITE(*,9200) 'AECALC0012 T1 AREA = ', AREA
+      WRITE(*,9200) 'AECALC0012 T1 XCEN = ', XCEN
+      WRITE(*,9200) 'AECALC0012 T1 YCEN = ', YCEN
+      WRITE(*,9200) 'AECALC0012 T1 EI11 = ', EI11
+      WRITE(*,9200) 'AECALC0012 T1 EI22 = ', EI22
+      WRITE(*,9200) 'AECALC0012 T1 APX1 = ', APX1
+      WRITE(*,9200) 'AECALC0012 T1 APX2 = ', APX2
+      CALL AECALC(NB,XB,YB,T, 2,
+     &            AREA,XCEN,YCEN,EI11,EI22,APX1,APX2)
+      WRITE(*,9200) 'AECALC0012 T2 AREA = ', AREA
+      WRITE(*,9200) 'AECALC0012 T2 XCEN = ', XCEN
+      WRITE(*,9200) 'AECALC0012 T2 YCEN = ', YCEN
+      WRITE(*,9200) 'AECALC0012 T2 EI11 = ', EI11
+      WRITE(*,9200) 'AECALC0012 T2 EI22 = ', EI22
+      WRITE(*,9200) 'AECALC0012 T2 APX1 = ', APX1
+      WRITE(*,9200) 'AECALC0012 T2 APX2 = ', APX2
+C
+C ---- TCCALC directly ----
+      CALL TCCALC(XB,XBP,YB,YBP,SB,NB, THICK,XTHICK, CAMBR,XCAMBR)
+      WRITE(*,9200) 'TCCALC0012 THICK = ', THICK
+      WRITE(*,9200) 'TCCALC0012 XTHICK = ', XTHICK
+      WRITE(*,9200) 'TCCALC0012 CAMBR = ', CAMBR
+      WRITE(*,9200) 'TCCALC0012 XCAMBR = ', XCAMBR
+C
+C ==== GEOPAR NACA 2412 ====
+      IDES = 2412
+      CALL NACA4(IDES,W1,W2,W3,NSIDE,XB,YB,NB,NAME)
+      CALL SCALC(XB,YB,SB,NB)
+      CALL SEGSPL(XB,XBP,SB,NB)
+      CALL SEGSPL(YB,YBP,SB,NB)
+      CALL GEOPAR(XB,XBP,YB,YBP,SB,NB, T,
+     &            SLE,CHORD,AREA,RADLE,ANGTE,
+     &            EI11A,EI22A,APX1A,APX2A,
+     &            EI11T,EI22T,APX1T,APX2T,
+     &            THICK,CAMBR)
+      WRITE(*,9200) 'GEOPAR2412 SLE = ', SLE
+      WRITE(*,9200) 'GEOPAR2412 CHORD = ', CHORD
+      WRITE(*,9200) 'GEOPAR2412 AREA = ', AREA
+      WRITE(*,9200) 'GEOPAR2412 RADLE = ', RADLE
+      WRITE(*,9200) 'GEOPAR2412 ANGTE = ', ANGTE
+      WRITE(*,9200) 'GEOPAR2412 EI11A = ', EI11A
+      WRITE(*,9200) 'GEOPAR2412 EI22A = ', EI22A
+      WRITE(*,9200) 'GEOPAR2412 APX1A = ', APX1A
+      WRITE(*,9200) 'GEOPAR2412 APX2A = ', APX2A
+      WRITE(*,9200) 'GEOPAR2412 EI11T = ', EI11T
+      WRITE(*,9200) 'GEOPAR2412 EI22T = ', EI22T
+      WRITE(*,9200) 'GEOPAR2412 APX1T = ', APX1T
+      WRITE(*,9200) 'GEOPAR2412 APX2T = ', APX2T
+      WRITE(*,9200) 'GEOPAR2412 THICK = ', THICK
+      WRITE(*,9200) 'GEOPAR2412 CAMBR = ', CAMBR
+C
+C ==== GEOPAR NACA 23012 (NACA5) ====
+      IDES = 23012
+      CALL NACA5(IDES,W1,W2,W3,NSIDE,XB,YB,NB,NAME)
+      CALL SCALC(XB,YB,SB,NB)
+      CALL SEGSPL(XB,XBP,SB,NB)
+      CALL SEGSPL(YB,YBP,SB,NB)
+      CALL GEOPAR(XB,XBP,YB,YBP,SB,NB, T,
+     &            SLE,CHORD,AREA,RADLE,ANGTE,
+     &            EI11A,EI22A,APX1A,APX2A,
+     &            EI11T,EI22T,APX1T,APX2T,
+     &            THICK,CAMBR)
+      WRITE(*,9200) 'GEOPAR23012 SLE = ', SLE
+      WRITE(*,9200) 'GEOPAR23012 CHORD = ', CHORD
+      WRITE(*,9200) 'GEOPAR23012 AREA = ', AREA
+      WRITE(*,9200) 'GEOPAR23012 RADLE = ', RADLE
+      WRITE(*,9200) 'GEOPAR23012 ANGTE = ', ANGTE
+      WRITE(*,9200) 'GEOPAR23012 EI11A = ', EI11A
+      WRITE(*,9200) 'GEOPAR23012 EI22A = ', EI22A
+      WRITE(*,9200) 'GEOPAR23012 APX1A = ', APX1A
+      WRITE(*,9200) 'GEOPAR23012 APX2A = ', APX2A
+      WRITE(*,9200) 'GEOPAR23012 EI11T = ', EI11T
+      WRITE(*,9200) 'GEOPAR23012 EI22T = ', EI22T
+      WRITE(*,9200) 'GEOPAR23012 APX1T = ', APX1T
+      WRITE(*,9200) 'GEOPAR23012 APX2T = ', APX2T
+      WRITE(*,9200) 'GEOPAR23012 THICK = ', THICK
+      WRITE(*,9200) 'GEOPAR23012 CAMBR = ', CAMBR
+C
+C ==== NORM on NACA 2412 (fresh buffer arrays) ====
+      IDES = 2412
+      CALL NACA4(IDES,W1,W2,W3,NSIDE,XN,YN,NB,NAME)
+      CALL NORM(XN, XNP, YN, YNP, SN, NB)
+      WRITE(*,9100) 'NORM2412 NB = ', NB
+      DO 70 I=1,NB
+        WRITE(*,9200) '  NORM X = ', XN(I)
+        WRITE(*,9200) '  NORM Y = ', YN(I)
+        WRITE(*,9200) '  NORM S = ', SN(I)
+   70 CONTINUE
+C
+      STOP
+ 9100 FORMAT(A, I5)
+ 9200 FORMAT(A, E30.20)
+      END

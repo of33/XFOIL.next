@@ -1,0 +1,2 @@
+PANE
+QUIT

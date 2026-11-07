@@ -1,0 +1,10 @@
+case-id: top-file-export/bend-clark-y
+category: top-file-export
+purpose: TOP BEND Report geladenes CLARK_Y-Profil
+step: C11b-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: LOAD CLARK_Y.dat, BEND
+limitations: keine

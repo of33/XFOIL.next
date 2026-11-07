@@ -1,0 +1,14 @@
+PLOP
+g
+
+NACA 2412
+OPER
+VISC
+3000000
+ITER 100
+PACC
+polar-visc-2412-re3e6.pol
+polar-visc-2412-re3e6.dump
+ASEQ 0 8 2
+
+QUIT

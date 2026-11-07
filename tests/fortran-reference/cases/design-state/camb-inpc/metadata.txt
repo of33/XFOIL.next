@@ -1,0 +1,11 @@
+case-id: design-state/camb-inpc
+category: design-state
+purpose: CAMB INPC Tastaturpunkte, Clamp/SORTDUP/FIXDUP, Block 200 (xtcam.f 397-443); P4-P2.
+role: state-frame-reference
+step: C11b-P4-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; GDES; CAMB; INPC; 0.2 0.05; 0.5 0.10; 0.8 0.05; ; ; ; QUIT
+limitations: Plot nicht vorhanden

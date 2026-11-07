@@ -1,0 +1,12 @@
+case-id: file-io/mses-load-empty-name
+category: file-io
+purpose: MSES-LOAD-Kennzeile mit leerem NAME-Feld: die erste Nicht-Kommentarzeile ist leer, die zweite Zeile enthaelt vier Domainzahlen; das kanonische Binary schreibt die MSES-Kennzeile mit CHARACTER*48-Blancauffuellung.
+role: a34c-mses-load-empty-name-reference
+step: A34-C MSES LOAD Textvertrag
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: LOAD mses_empty_name.dat
+fixture-origin: input/mses_empty_name.dat (leere erste Zeile, MSES-Domainzeile ' -1.0  2.0  -1.5  2.5')
+limitations: none

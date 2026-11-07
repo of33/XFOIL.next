@@ -1,0 +1,12 @@
+case-id: panel-coord/abcopy-365-at-limit
+category: panel-coord
+purpose: FCPP009-ABCOPY-Grenze AUF der Grenze: LOAD einer 365-Punkt-Kontur (NB=365=IQX-5) erreicht ABCOPY; Grenze NB>IQX-5 nicht ueberschritten, aktuelle Kontur wird mit 365 Punkten gesetzt, PSAV schreibt 365 Punkte.
+role: fcpp009-abcopy-limit
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: LOAD abcopy365.dat (365 Punkte), PSAV out365.dat
+fixture-origin: abcopy365.dat = NACA-2412 analytisches 4-stelliges Profil (t=0.12,m=0.04,p=0.2), kosinusverteilt, 365 Punkte, gegen den Uhrzeigersinn; erzeugt durch tools/gen-abcopy-fixtures.py; keine Duplikate, keine degenerierten Segmente, positive Flaeche; SHA-256 e195a829d38a02d800139651e6966984da74441efa92ae9f1560ba007d0cc0dd
+limitations: ABCOPY wird ueber den CLI-LOAD-Pfad erreicht (xfoil.f:207-211: LOAD -> ABCOPY); PCOP ist der gleiche ABCOPY-Aufruf, aber ein 365/366-Buffer ist nur ueber LOAD setzbar

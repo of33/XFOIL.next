@@ -1,0 +1,11 @@
+case-id: design-state/camb-high
+category: design-state
+purpose: CAMB HIGH ueber HIPNT, GO TO 100/200 (xtcam.f 252-254); P4-P2.
+role: state-frame-reference
+step: C11b-P4-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; GDES; CAMB; HIGH 0.30 0.70; ; ; QUIT
+limitations: Plot nicht vorhanden

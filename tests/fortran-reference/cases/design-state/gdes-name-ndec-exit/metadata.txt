@@ -1,0 +1,11 @@
+case-id: design-state/gdes-name-ndec-exit
+category: design-state
+purpose: GDES-Menue mit NAME/NDEC (ONAME-Versionszaehler, xgdes.f/xgeom.f NAMMOD); kanonischer Text fuer P4-P0-Zustandsrahmen.
+role: state-frame-reference
+step: C11b-P4-P0
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: GDES, NAME TEST, NDEC, <Leerzeile>, QUIT
+limitations: keine Geometrie; nur Namens-/Versionszustand, keine Designoperationen

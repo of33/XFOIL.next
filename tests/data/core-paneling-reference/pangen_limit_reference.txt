@@ -1,0 +1,3 @@
+STOP PANEL: Too many panels. Increase IQX in XFOIL.INC
+
+ Sharp leading edge

@@ -1,0 +1,10 @@
+case-id: oper-state/oper-mach-supersonic
+category: oper-state
+purpose: MACH mit ueberschall Inline-Wert und anschliessendem gueltigen Promptwert
+step: C11a-A34-C-OPER-state
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: MACH 1.0, Mach=0.3
+limitations: none

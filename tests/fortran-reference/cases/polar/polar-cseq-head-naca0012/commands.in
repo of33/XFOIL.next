@@ -1,0 +1,11 @@
+NACA 0012
+PANE
+OPER
+PACC
+s2.pol
+s2.dump
+ASEQ 0 2 1
+CSEQ 0 2 1
+
+
+QUIT

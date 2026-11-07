@@ -1,0 +1,6 @@
+NORM
+LOAD sample/CLARK_Y.dat
+REVE
+DELI 1
+SAVE build/regression-capture/t17d1-out.dat
+QUIT

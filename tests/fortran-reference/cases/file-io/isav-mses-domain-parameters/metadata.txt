@@ -1,0 +1,12 @@
+case-id: file-io/isav-mses-domain-parameters
+category: file-io
+purpose: TOP-Level-ISAV mit geaenderten ISES-/MSES-Domainparametern gegen kanonisches Binary: LOAD einer MSES-Datei uebernimmt die zweite Dateizeile als ISPARS; ISAV schreibt diese Domainzeile nach dem Profilnamen und vor den Koordinaten. Die Referenz bestaetigt, dass ISAV gespeicherte ISPARS-Werte schreibt und nicht aus Geometriedaten rekonstruiert.
+role: a34c-isav-mses-domain-parameters-reference
+step: A34-C TOP-Level ISAV
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: LOAD isav_mses_domain.dat; ISAV isav_after_mses.dat
+fixture-origin: input/isav_mses_domain.dat (MSES-Datei mit Domainzeile ' -1.0  2.0  -1.5  2.5')
+limitations: none

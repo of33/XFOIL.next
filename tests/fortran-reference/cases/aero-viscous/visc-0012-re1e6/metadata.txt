@@ -1,0 +1,10 @@
+case-id: aero-viscous/visc-0012-re1e6
+category: aero-viscous
+purpose: Viskose Einzelpunkt NACA 0012, Re=1e6, alpha=4
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: viscous, Mach 0, Ncrit 9, natuerliche Transition, Re=1000000, ITER 100, alpha=4
+limitations: none

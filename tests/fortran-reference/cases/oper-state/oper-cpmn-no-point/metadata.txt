@@ -1,0 +1,10 @@
+case-id: oper-state/oper-cpmn-no-point
+category: oper-state
+purpose: CPMN ohne Punkt: COMMON-Startwerte 0.0000
+step: C11a-A34-C-OPER-CPMN
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: CPMN
+limitations: none

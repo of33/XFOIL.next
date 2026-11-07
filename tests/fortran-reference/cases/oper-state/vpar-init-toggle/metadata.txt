@@ -1,0 +1,10 @@
+case-id: oper-state/vpar-init-toggle
+category: oper-state
+purpose: VPAR INIT Toggle einmal und wiederholt
+step: C11a-A34-C-VPAR-state
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: INIT, INIT
+limitations: none

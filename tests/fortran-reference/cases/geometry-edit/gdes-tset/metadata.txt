@@ -1,0 +1,11 @@
+case-id: geometry-edit/gdes-tset
+category: geometry-edit
+purpose: NEGATIVE-KONTROLLE (kein eXec): GDES TSET editiert nur den Buffer; die aktuelle Kontur bleibt unveraendert, daher schreibt PSAV die UNVERAENDERTE aktuelle Kontur. Kein erfolgreicher Edit und keine numerische GDES-Ausgabereferenz.
+role: negative-control
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: none
+limitations: Positive Edit-Referenz mit eXec: geometry-edit/gdes-tset-exec

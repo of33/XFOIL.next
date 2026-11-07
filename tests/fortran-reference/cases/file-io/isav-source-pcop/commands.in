@@ -1,0 +1,5 @@
+NACA 2412
+ISAV after_naca.dat
+PCOP
+ISAV after_pcop.dat
+QUIT

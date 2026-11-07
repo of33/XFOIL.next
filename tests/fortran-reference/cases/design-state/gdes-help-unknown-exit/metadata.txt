@@ -1,0 +1,11 @@
+case-id: design-state/gdes-help-unknown-exit
+category: design-state
+purpose: GDES-Menue (xgdes.f): Hilfe FORMAT 1050, unbekannter Befehl FORMAT 1100, Leerzeilen-Austritt; P4-P1-Menuevertrag.
+role: state-frame-reference
+step: C11b-P4-P1
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012, GDES, ?, FOO, <Leerzeile>, QUIT
+limitations: kein Plotbackend; nur Menuetexte

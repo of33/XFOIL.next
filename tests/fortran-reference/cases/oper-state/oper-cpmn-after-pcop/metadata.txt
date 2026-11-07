@@ -1,0 +1,10 @@
+case-id: oper-state/oper-cpmn-after-pcop
+category: oper-state
+purpose: CPMN erhaelt FCPMIN-Snapshot ueber PCOP
+step: C11a-A34-C-OPER-CPMN-PERSISTENZ
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: ALFA 2, CPMN, PCOP, OPER, CPMN
+limitations: none

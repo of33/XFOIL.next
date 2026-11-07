@@ -1,0 +1,10 @@
+case-id: paneling/ppar-nonstandard
+category: paneling
+purpose: Nicht-standardmaessige PPAR-Konfiguration (N 200, P 1.5, T 0.2) mit Anwendung und Eckwinkel-Ausgabe
+step: 17r4
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: none
+limitations: none

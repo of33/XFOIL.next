@@ -1,0 +1,8 @@
+NACA 2412
+ISAV decline_target.dat
+ISAV decline_target.dat
+N
+ISAV accept_target.dat
+ISAV accept_target.dat
+Y
+QUIT

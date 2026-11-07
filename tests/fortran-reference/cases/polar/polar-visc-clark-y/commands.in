@@ -1,0 +1,14 @@
+PLOP
+g
+
+LOAD CLARK_Y.dat
+OPER
+VISC
+1000000
+ITER 100
+PACC
+polar-visc-clark-y.pol
+polar-visc-clark-y.dump
+ASEQ 0 6 2
+
+QUIT

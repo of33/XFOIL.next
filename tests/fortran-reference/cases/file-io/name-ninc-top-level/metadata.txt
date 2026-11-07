@@ -1,0 +1,12 @@
+case-id: file-io/name-ninc-top-level
+category: file-io
+purpose: TOP-Level-NAME/NINC gegen kanonisches Binary: NACA 2412, NAME mit internen Leerzeichen, wiederholtes NINC, Klammeruebertrag 9->10, Endziffer ohne Klammer, fuehrende Nullen, NAME ohne Argument mit Klammerneuformatierung, ueberlange NAME-Eingabe (CHARACTER*48-Kuerzung), NINC an der maximalen Feldlaenge und NAME ohne Argument mit leerer Antwort. SAVE-Header belegen neuen Profilnamen bei unveraenderten Koordinaten.
+role: a34c-name-ninc-top-level-reference
+step: A34-C TOP-Level NAME/NINC
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 2412; NAME/NINC-Pfade; SAVE-Header
+fixture-origin: keine Eingabedatei; NACA-2412-Generierung (kanonisch)
+limitations: none

@@ -1,0 +1,7 @@
+
+Enter x   r>  
+Enter x   r>  
+Enter y   r>  
+ u/Uinf =   1.1284   v/Uinf =  -0.0556
+ q/Uinf =   1.1298   Cp     =  -0.2764
+

@@ -1,0 +1,11 @@
+case-id: design-state/gdes-tran
+category: design-state
+purpose: GDES TRAN (xgdes.f 250-274): Verschiebung, LGSAME=false, kein GEOPAR-Druck; P4-P1.
+role: state-frame-reference
+step: C11b-P4-P1
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012, GDES, TRAN 0.5 0.25, <Leerzeile>, PSAV, QUIT
+limitations: Plot nicht vorhanden

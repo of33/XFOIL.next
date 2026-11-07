@@ -1,0 +1,372 @@
+
+ Current airfoil nodes set from buffer airfoil nodes ( 151 )
+ Calculating unit vorticity distributions ...
+
+OFS: alfa =   2.0000 cl =   0.6571 cdp =  -0.0007 cm =  -0.0911
+ IN SPECAL_DONE
+ IN SPECAL_ALFA  3.4906585039886591E-02
+ IN SPECAL_CL    6.5709867960858614E-01
+ Calculating wake trajectory ...
+ Calculating source influence matrix ...
+
+ Initializing BL ...
+    side            1  ...
+ MRCHUE: Inverse mode at  47     Hk =   4.307
+ MRCHUE: Inverse mode at  48     Hk =   4.779
+ MRCHUE: Inverse mode at  49     Hk =   2.500
+ MRCHUE: Inverse mode at  80     Hk =   2.500
+    side            2  ...
+ MRCHUE: Inverse mode at  68     Hk =   4.080
+ MRCHUE: Inverse mode at  69     Hk =   4.733
+ MRCHUE: Inverse mode at  70     Hk =   5.348
+ MRCHUE: Inverse mode at  71     Hk =   5.900
+ MRCHUE: Inverse mode at  72     Hk =   6.091
+ MRCHUE: Inverse mode at  73     Hk =   4.848
+
+ Side 1  free  transition at x/c =  0.4892   48
+ Side 2  free  transition at x/c =  0.9922   72
+
+ Side 1  free  transition at x/c =  0.5425   52
+ Side 2 forced transition at x/c =  1.0000   73
+
+ Side 1  free  transition at x/c =  0.5477   52
+ Side 2  free  transition at x/c =  0.9988   73
+
+ Side 1  free  transition at x/c =  0.5457   52
+ Side 2  free  transition at x/c =  1.0000   73
+
+ Side 1  free  transition at x/c =  0.5456   52
+ Side 2  free  transition at x/c =  1.0000   73
+ IN ISTEP         1
+ IN NSPECAL       1
+ IN NVISCAL       1
+ IN COMOLD   ALFA
+ IN LRECALC  T
+ IN LBLINI   T
+ IN LIPAN    T
+ IN LVCONV   T
+ IN LWAKE    T
+ IN LWDIJ    T
+ IN LADIJ    T
+ IN AWAKE      3.4906585039886591E-02
+ IN AVISC      3.4906585039886591E-02
+ IN MVISC      0.0000000000000000E+00
+ IN MINF       0.0000000000000000E+00
+ IN NITER         5
+ IN ADEG       2.0000000000000000E+00
+ IN CL         6.4645431381471929E-01
+ IN CM        -8.8917057433402391E-02
+ IN CD         5.8509956565811275E-03
+ IN CDF        4.1410670163606359E-03
+ IN CDP        7.5171907268271518E-04
+ IN ITRAN1       52
+ IN ITRAN2       73
+ IN IST          79
+ IN SST        1.0375990877550341E+00
+ IN NBL1         80
+ IN NBL2         95
+ IN IPAN1_1       0
+ IN IPANTE1       1
+ IN IPAN1_2       0
+ IN IPANTE2     151
+ IN ISYS1_1       0
+ IN NSYS        173
+ IN INIT1_DONE
+ IN NSPECAL       1
+ IN NVISCAL       1
+ IN COMOLD   ALFA
+ IN LRECALC  T
+ IN LBLINI   F
+ IN LIPAN    F
+ IN LVCONV   T
+ IN LWAKE    T
+ IN LWDIJ    T
+ IN LADIJ    T
+ IN AWAKE      3.4906585039886591E-02
+ IN AVISC      3.4906585039886591E-02
+ IN MVISC      0.0000000000000000E+00
+ IN MINF       0.0000000000000000E+00
+ IN NITER        -1
+ IN ADEG       2.0000000000000000E+00
+ IN CL         6.4645431381471929E-01
+ IN CM        -8.8917057433402391E-02
+ IN CD         5.8509956565811275E-03
+ IN CDF        4.1410670163606359E-03
+ IN CDP        7.5171907268271518E-04
+ IN ITRAN1       52
+ IN ITRAN2       73
+ IN IST          79
+ IN SST        1.0375990877550341E+00
+ IN NBL1         80
+ IN NBL2         95
+ IN IPAN1_1       0
+ IN IPANTE1       1
+ IN IPAN1_2       0
+ IN IPANTE2     151
+ IN ISYS1_1       0
+ IN NSYS        173
+
+ Initializing BL ...
+    side            1  ...
+ MRCHUE: Inverse mode at  47     Hk =   4.307
+ MRCHUE: Inverse mode at  48     Hk =   4.779
+ MRCHUE: Inverse mode at  49     Hk =   2.500
+ MRCHUE: Inverse mode at  80     Hk =   2.500
+    side            2  ...
+ MRCHUE: Inverse mode at  68     Hk =   4.080
+ MRCHUE: Inverse mode at  69     Hk =   4.733
+ MRCHUE: Inverse mode at  70     Hk =   5.348
+ MRCHUE: Inverse mode at  71     Hk =   5.900
+ MRCHUE: Inverse mode at  72     Hk =   6.091
+ MRCHUE: Inverse mode at  73     Hk =   4.848
+
+ Side 1  free  transition at x/c =  0.4892   48
+ Side 2  free  transition at x/c =  0.9922   72
+
+ Side 1  free  transition at x/c =  0.5425   52
+ Side 2 forced transition at x/c =  1.0000   73
+
+ Side 1  free  transition at x/c =  0.5477   52
+ Side 2  free  transition at x/c =  0.9988   73
+
+ Side 1  free  transition at x/c =  0.5457   52
+ Side 2  free  transition at x/c =  1.0000   73
+
+ Side 1  free  transition at x/c =  0.5456   52
+ Side 2  free  transition at x/c =  1.0000   73
+ IN VISCAL_AFTER_INIT1
+ IN NSPECAL       1
+ IN NVISCAL       2
+ IN COMOLD   ALFA
+ IN LRECALC  T
+ IN LBLINI   T
+ IN LIPAN    T
+ IN LVCONV   T
+ IN LWAKE    T
+ IN LWDIJ    T
+ IN LADIJ    T
+ IN AWAKE      3.4906585039886591E-02
+ IN AVISC      3.4906585039886591E-02
+ IN MVISC      0.0000000000000000E+00
+ IN MINF       0.0000000000000000E+00
+ IN NITER         5
+ IN ADEG       2.0000000000000000E+00
+ IN CL         6.4645431381469765E-01
+ IN CM        -8.8917057433398144E-02
+ IN CD         5.8509956565799852E-03
+ IN CDF        4.1410670163833530E-03
+ IN CDP        7.5171907268325750E-04
+ IN ITRAN1       52
+ IN ITRAN2       73
+ IN IST          79
+ IN SST        1.0375990877550338E+00
+ IN NBL1         80
+ IN NBL2         95
+ IN IPAN1_1       0
+ IN IPANTE1       1
+ IN IPAN1_2       0
+ IN IPANTE2     151
+ IN ISYS1_1       0
+ IN NSYS        173
+ IN INIT2_DONE
+ IN NSPECAL       1
+ IN NVISCAL       2
+ IN COMOLD   ALFA
+ IN LRECALC  T
+ IN LBLINI   F
+ IN LIPAN    F
+ IN LVCONV   T
+ IN LWAKE    T
+ IN LWDIJ    T
+ IN LADIJ    T
+ IN AWAKE      3.4906585039886591E-02
+ IN AVISC      3.4906585039886591E-02
+ IN MVISC      0.0000000000000000E+00
+ IN MINF       0.0000000000000000E+00
+ IN NITER        -1
+ IN ADEG       2.0000000000000000E+00
+ IN CL         6.4645431381469765E-01
+ IN CM        -8.8917057433398144E-02
+ IN CD         5.8509956565799852E-03
+ IN CDF        4.1410670163833530E-03
+ IN CDP        7.5171907268325750E-04
+ IN ITRAN1       52
+ IN ITRAN2       73
+ IN IST          79
+ IN SST        1.0375990877550338E+00
+ IN NBL1         80
+ IN NBL2         95
+ IN IPAN1_1       0
+ IN IPANTE1       1
+ IN IPAN1_2       0
+ IN IPANTE2     151
+ IN ISYS1_1       0
+ IN NSYS        173
+
+ Initializing BL ...
+    side            1  ...
+ MRCHUE: Inverse mode at  47     Hk =   4.307
+ MRCHUE: Inverse mode at  48     Hk =   4.779
+ MRCHUE: Inverse mode at  49     Hk =   2.500
+ MRCHUE: Inverse mode at  80     Hk =   2.500
+    side            2  ...
+ MRCHUE: Inverse mode at  68     Hk =   4.080
+ MRCHUE: Inverse mode at  69     Hk =   4.733
+ MRCHUE: Inverse mode at  70     Hk =   5.348
+ MRCHUE: Inverse mode at  71     Hk =   5.900
+ MRCHUE: Inverse mode at  72     Hk =   6.091
+ MRCHUE: Inverse mode at  73     Hk =   4.848
+
+ Side 1  free  transition at x/c =  0.4892   48
+ Side 2  free  transition at x/c =  0.9922   72
+
+ Side 1  free  transition at x/c =  0.5425   52
+ Side 2 forced transition at x/c =  1.0000   73
+
+ Side 1  free  transition at x/c =  0.5477   52
+ Side 2  free  transition at x/c =  0.9988   73
+
+ Side 1  free  transition at x/c =  0.5457   52
+ Side 2  free  transition at x/c =  1.0000   73
+
+ Side 1  free  transition at x/c =  0.5456   52
+ Side 2  free  transition at x/c =  1.0000   73
+ IN VISCAL_AFTER_INIT2
+ IN NSPECAL       1
+ IN NVISCAL       3
+ IN COMOLD   ALFA
+ IN LRECALC  T
+ IN LBLINI   T
+ IN LIPAN    T
+ IN LVCONV   T
+ IN LWAKE    T
+ IN LWDIJ    T
+ IN LADIJ    T
+ IN AWAKE      3.4906585039886591E-02
+ IN AVISC      3.4906585039886591E-02
+ IN MVISC      0.0000000000000000E+00
+ IN MINF       0.0000000000000000E+00
+ IN NITER         5
+ IN ADEG       2.0000000000000000E+00
+ IN CL         6.4645431381469753E-01
+ IN CM        -8.8917057433398131E-02
+ IN CD         5.8509956565799765E-03
+ IN CDF        4.1410670163833504E-03
+ IN CDP        7.5171907268325078E-04
+ IN ITRAN1       52
+ IN ITRAN2       73
+ IN IST          79
+ IN SST        1.0375990877550338E+00
+ IN NBL1         80
+ IN NBL2         95
+ IN IPAN1_1       0
+ IN IPANTE1       1
+ IN IPAN1_2       0
+ IN IPANTE2     151
+ IN ISYS1_1       0
+ IN NSYS        173
+ IN INIT3_DONE
+ IN NSPECAL       1
+ IN NVISCAL       3
+ IN COMOLD   ALFA
+ IN LRECALC  T
+ IN LBLINI   F
+ IN LIPAN    F
+ IN LVCONV   T
+ IN LWAKE    T
+ IN LWDIJ    T
+ IN LADIJ    T
+ IN AWAKE      3.4906585039886591E-02
+ IN AVISC      3.4906585039886591E-02
+ IN MVISC      0.0000000000000000E+00
+ IN MINF       0.0000000000000000E+00
+ IN NITER        -1
+ IN ADEG       2.0000000000000000E+00
+ IN CL         6.4645431381469753E-01
+ IN CM        -8.8917057433398131E-02
+ IN CD         5.8509956565799765E-03
+ IN CDF        4.1410670163833504E-03
+ IN CDP        7.5171907268325078E-04
+ IN ITRAN1       52
+ IN ITRAN2       73
+ IN IST          79
+ IN SST        1.0375990877550338E+00
+ IN NBL1         80
+ IN NBL2         95
+ IN IPAN1_1       0
+ IN IPANTE1       1
+ IN IPAN1_2       0
+ IN IPANTE2     151
+ IN ISYS1_1       0
+ IN NSYS        173
+ IN INIT4_DONE
+ IN NSPECAL       1
+ IN NVISCAL       3
+ IN COMOLD   ALFA
+ IN LRECALC  T
+ IN LBLINI   T
+ IN LIPAN    F
+ IN LVCONV   T
+ IN LWAKE    T
+ IN LWDIJ    T
+ IN LADIJ    T
+ IN AWAKE      3.4906585039886591E-02
+ IN AVISC      3.4906585039886591E-02
+ IN MVISC      0.0000000000000000E+00
+ IN MINF       0.0000000000000000E+00
+ IN NITER        -1
+ IN ADEG       2.0000000000000000E+00
+ IN CL         6.4645431381469753E-01
+ IN CM        -8.8917057433398131E-02
+ IN CD         5.8509956565799765E-03
+ IN CDF        4.1410670163833504E-03
+ IN CDP        7.5171907268325078E-04
+ IN ITRAN1       52
+ IN ITRAN2       73
+ IN IST          79
+ IN SST        1.0375990877550338E+00
+ IN NBL1         80
+ IN NBL2         95
+ IN IPAN1_1       0
+ IN IPANTE1       1
+ IN IPAN1_2       0
+ IN IPANTE2     151
+ IN ISYS1_1       0
+ IN NSYS        173
+
+ Side 1  free  transition at x/c =  0.5456   52
+ Side 2  free  transition at x/c =  1.0000   73
+ IN VISCAL_AFTER_INIT4
+ IN NSPECAL       1
+ IN NVISCAL       4
+ IN COMOLD   ALFA
+ IN LRECALC  T
+ IN LBLINI   T
+ IN LIPAN    T
+ IN LVCONV   T
+ IN LWAKE    T
+ IN LWDIJ    T
+ IN LADIJ    T
+ IN AWAKE      3.4906585039886591E-02
+ IN AVISC      3.4906585039886591E-02
+ IN MVISC      0.0000000000000000E+00
+ IN MINF       0.0000000000000000E+00
+ IN NITER         1
+ IN ADEG       2.0000000000000000E+00
+ IN CL         6.4645431413207599E-01
+ IN CM        -8.8917057495291330E-02
+ IN CD         5.8509956902346267E-03
+ IN CDF        4.1410679859206862E-03
+ IN CDP        7.5171906198737463E-04
+ IN ITRAN1       52
+ IN ITRAN2       73
+ IN IST          79
+ IN SST        1.0375990877586680E+00
+ IN NBL1         80
+ IN NBL2         95
+ IN IPAN1_1       0
+ IN IPANTE1       1
+ IN IPAN1_2       0
+ IN IPANTE2     151
+ IN ISYS1_1       0
+ IN NSYS        173

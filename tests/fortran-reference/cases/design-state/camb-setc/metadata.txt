@@ -1,0 +1,11 @@
+case-id: design-state/camb-setc
+category: design-state
+purpose: CAMB SETC: Added-Camber aus Camberline, Block 200 (xtcam.f 378-394); P4-P2.
+role: state-frame-reference
+step: C11b-P4-P2
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: NACA 0012; GDES; CAMB; SETC; ; ; QUIT
+limitations: Plot nicht vorhanden

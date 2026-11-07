@@ -1,0 +1,10 @@
+case-id: oper-state/oper-type-huge
+category: oper-state
+purpose: TYPE mit uebergrossem Inline-Wert und anschliessendem gueltigen Promptwert
+step: C11a-A34-C-OPER-state
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: TYPE 100000000000, TYPE=2
+limitations: none

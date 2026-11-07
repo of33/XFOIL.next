@@ -1,0 +1,10 @@
+case-id: oper-state/oper-mach-inline
+category: oper-state
+purpose: MACH mit Inline-Wert vor Analyse
+step: C11a-A34-C-OPER-state
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: MACH 0.3
+limitations: none

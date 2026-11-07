@@ -1,0 +1,10 @@
+case-id: oper-state/oper-cpmn-viscous
+category: oper-state
+purpose: CPMN nach viskosem ALFA (FORMAT 1769)
+step: C11a-A34-C-OPER-CPMN
+status: canonical-exact
+determinism: confirmed
+timeout: 120
+locale: LC_ALL=C
+parameters: VISC 1000000, ALFA 2, CPMN
+limitations: none
