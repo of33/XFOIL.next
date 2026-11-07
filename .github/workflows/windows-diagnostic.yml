@@ -155,4 +155,3 @@ jobs:
           out=$(./build/release/xfoil.next.exe --version)
           echo "version output: [$out]"
           test "$out" = "XFOIL.next 1.0.0"
-
