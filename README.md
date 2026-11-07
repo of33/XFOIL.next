@@ -281,8 +281,8 @@ See [numerical validation](docs/numerical-validation.md) and
 ## Validation baseline
 
 Linux is the canonical platform for the bit-exact and byte-exact reference
-contracts. The 1.0.0 release tree was validated with GCC 13.3, a GCC 16
-development snapshot (Ubuntu, 2026-03-15), and Clang 18.1.3. The Fortran
+contracts. The 1.0.0 release tree was validated with GCC 13.3, the
+GCC 16.2.0 point release (side-by-side installation), and Clang 18.1.3. The Fortran
 reference and harness checks use the documented system GNU Fortran
 baseline.
 

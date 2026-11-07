@@ -32,13 +32,13 @@ byte-exact reference contracts.
 | Compiler | Version | Debug | Release | Sanitizer | Valgrind |
 |---|---:|---:|---:|---:|---:|
 | GCC | 13.3.0 | PASS | PASS | PASS | PASS |
-| GCC | 16 (Ubuntu snapshot 2026-03-15) | PASS | PASS | — | — |
+| GCC | 16.2.0 | PASS | PASS | — | — |
 | Clang | 18.1.3 | PASS | PASS | — | — |
 
-The GCC 16 validation used the Ubuntu toolchain PPA development
-snapshot (package version 16-20260315-1ubuntu1~24~ppa1); it was not a
-GCC point release. All listed builds use the repository's warning
-policy, including warnings treated as errors.
+The GCC 16 validation used the released GNU Compiler Collection point
+release GCC 16.2.0, installed side-by-side on the validation host (not
+an Ubuntu distribution package). All listed builds use the repository's
+warning policy, including warnings treated as errors.
 
 ## Reference contracts
 

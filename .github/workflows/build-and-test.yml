@@ -132,6 +132,7 @@ jobs:
           install: >-
             mingw-w64-ucrt-x86_64-gcc
             make
+            python
 
       - name: Environment contract
         shell: msys2 {0}
@@ -142,6 +143,9 @@ jobs:
           g++ --version
           gcc --version
           make --version
+          python3 --version
+          command -v python3 >/dev/null \
+            || { echo "FAIL: python3 missing in UCRT64 environment"; exit 1; }
 
       - name: Debug build (-Werror)
         shell: msys2 {0}
@@ -229,7 +233,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            g++ gfortran make python3
+            g++ gfortran make python3 xvfb
 
       - name: Environment contract
         run: |
@@ -244,6 +248,8 @@ jobs:
             || { echo "FAIL: unexpected GNU Fortran major version"; exit 1; }
           test "$(getconf GNU_LIBC_VERSION)" = "glibc 2.39" \
             || { echo "FAIL: unexpected GNU libc version"; exit 1; }
+          command -v xvfb-run >/dev/null \
+            || { echo "FAIL: xvfb-run missing (headless display server)"; exit 1; }
 
       - name: check-dependencies
         run: make check-dependencies
@@ -267,13 +273,13 @@ jobs:
         run: make session-link-check
 
       - name: Fortran reference verify
-        run: make test-reference
+        run: xvfb-run -a make test-reference
 
       - name: Fortran reference determinism
-        run: make test-reference-determinism
+        run: xvfb-run -a make test-reference-determinism
 
       - name: Harness families
-        run: make test-harnesses
+        run: xvfb-run -a make test-harnesses
 
       - name: Sanitizer build and test
         run: make test-sanitize
