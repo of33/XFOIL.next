@@ -131,7 +131,7 @@ UCRT64 shell, install the toolchain (`pacman -S mingw-w64-ucrt-x86_64-gcc
 mingw-w64-ucrt-x86_64-gcc-fortran make python`) and build with the same
 Makefile; the product binary is `build/debug/xfoil.next.exe` (or
 `build/release/xfoil.next.exe`). Confirmed on Windows 11 + MSYS2 UCRT64
-with GCC 16.1: the Debug and Release builds are clean under `-Werror`, and
+with GCC/MinGW 16.1.0 Rev5: the Debug and Release builds are clean under `-Werror`, and
 `xfoil.next.exe` starts directly in the UCRT64 console; from PowerShell
 or `cmd.exe` it also runs when `<MSYS2>\ucrt64\bin` is on `PATH` (MSYS2
 runtime DLLs). A standalone binary without the MSYS2 runtime is not part
@@ -146,8 +146,8 @@ described in [Windows](#windows).
 
 ### Supported environment
 
-Validated on **Windows 11 + MSYS2 UCRT64 + GCC/MinGW**
-(currently GCC 16.1).
+Validated on **Windows 11 + MSYS2 UCRT64 + GCC/MinGW 16.1.0 Rev5**
+(the accepted Windows 1.0.0 baseline).
 
 - MSVC is not supported and not promised;
 - Cygwin is not supported and not promised;
@@ -252,15 +252,18 @@ and performs one focused `XFOIL_DUMP_DIAG=1` PACC dump diagnostic.
 It writes separate logs (`00-environment.txt` … `50-summary.txt`), a
 machine-readable summary, and `SHA256SUMS.txt`.
 
-In addition, the GitHub Actions workflow now configures an
-MSYS2-UCRT64 Windows job (GCC/MinGW, Debug and Release under `-Werror`,
-all five test suites, the release full suite and the binary contract)
-on a `windows-2022` runner. That runner is Windows Server, not
-Windows 11, and is not an identical substitute for the separately
-validated manual Windows 11 + MSYS2 UCRT64 run; the CI job is an extra
-portability check, not a promise of MSVC, Cygwin, a standalone binary
-or a bundled runtime. Before the first publication of this workflow
-there is, by nature, no publicly visible successful GitHub run yet.
+In addition, a manual-only workflow (`windows-diagnostic.yml`,
+`workflow_dispatch`) runs the same complete suite on the
+GitHub-hosted `windows-2022` runner with the current MSYS2 UCRT64
+toolchain (currently GCC/MinGW 16.2.0 Rev4). That runner is Windows
+Server, not Windows 11, and its toolchain is not the accepted baseline;
+the workflow is a diagnostic evaluation, not a release gate, and it may
+fail while unresolved toolchain deviations remain. The accepted
+Windows validation remains the fully documented manual Windows 11 +
+MSYS2 UCRT64 + GCC/MinGW 16.1.0 Rev5 run described above; see
+`VALIDATION.md` for the hosted toolchain's measured deviations. This
+statement is not a promise of MSVC, Cygwin, a standalone binary or a
+bundled runtime.
 
 ## Numerical validation
 

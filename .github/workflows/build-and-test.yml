@@ -77,149 +77,6 @@ jobs:
       - name: Full test suite
         run: make test CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }}
 
-  windows-msys2:
-    name: Build and test (MSYS2 UCRT64)
-    runs-on: windows-2022
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          persist-credentials: false
-
-      - name: Line-ending guard (no CRLF in LF-contracted artifacts)
-        shell: python
-        run: |
-          import subprocess, sys
-          out = subprocess.check_output(["git", "ls-files", "-z", "--eol"]).decode()
-          bad = []
-          for line in out.split("\0"):
-              if not line:
-                  continue
-              meta, _, path = line.partition("\t")
-              fields = meta.split()
-              work = fields[1] if len(fields) > 1 else ""
-              if path.endswith(".bat"):
-                  continue
-              if work in ("w/crlf", "w/mixed"):
-                  bad.append(f"{path}: {meta}")
-          representatives = [
-              "tests/data/core-polar-io-reference/getdef_reference.txt",
-              "tests/data/core-polar-io-reference/nammod_reference.txt",
-              "tests/data/core-polar-io-reference/cndump_reference.txt",
-              "tests/data/core-polar-io-reference/cpdump_reference.txt",
-              "tests/data/core-polar-io-reference/bldump_reference.txt",
-              "tests/data/core-polar-io-reference/cpdump_case_reference.cp",
-              "tests/data/core-polar-io-reference/bldump_case_reference.bl",
-              "tests/data/core-polar-io-reference/polread_reference.txt",
-              "tests/fortran-reference/harnesses/polar-io/data/getvov_table.dat",
-          ]
-          for p in representatives:
-              with open(p, "rb") as f:
-                  if b"\r\n" in f.read():
-                      bad.append(f"{p}: CRLF bytes in worktree")
-          if bad:
-              print("CRLF violation in LF-contracted checkout:")
-              for item in bad:
-                  print(" ", item)
-              sys.exit(1)
-          print("line-ending guard OK")
-
-      - name: Set up MSYS2 UCRT64
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: UCRT64
-          update: false
-          install: >-
-            mingw-w64-ucrt-x86_64-gcc
-            make
-            python
-
-      - name: Environment contract
-        shell: msys2 {0}
-        run: |
-          echo "MSYSTEM=$MSYSTEM"
-          test "$MSYSTEM" = UCRT64
-          uname -a
-          g++ --version
-          gcc --version
-          make --version
-          python3 --version
-          command -v python3 >/dev/null \
-            || { echo "FAIL: python3 missing in UCRT64 environment"; exit 1; }
-
-      - name: Debug build (-Werror)
-        shell: msys2 {0}
-        run: make debug
-
-      - name: Release build (-Werror, incl. release test program)
-        shell: msys2 {0}
-        run: make release build/release/xfoil_tests
-
-      - name: Core tests (414)
-        shell: msys2 {0}
-        run: |
-          set -o pipefail
-          make test-core | tee ci-core.log
-          grep -F "0 failure(s) in 414 test(s)" ci-core.log
-
-      - name: Unit tests (1668)
-        shell: msys2 {0}
-        run: |
-          set -o pipefail
-          make test-unit | tee ci-unit.log
-          grep -F "0 failure(s) in 1668 test(s)" ci-unit.log
-
-      - name: Integration tests (245)
-        shell: msys2 {0}
-        run: |
-          set -o pipefail
-          make test-integration | tee ci-integration.log
-          grep -F "0 failure(s) in 245 test(s)" ci-integration.log
-
-      - name: Regression tests (5)
-        shell: msys2 {0}
-        run: |
-          set -o pipefail
-          make test-regression | tee ci-regression.log
-          grep -F "0 failure(s) in 5 test(s)" ci-regression.log
-
-      - name: Batch tests (47)
-        shell: msys2 {0}
-        run: |
-          set -o pipefail
-          make test-batch | tee ci-batch.log
-          grep -F "0 failure(s) in 47 test(s)" ci-batch.log
-
-      - name: Release full suite (1968)
-        shell: msys2 {0}
-        run: |
-          set -o pipefail
-          XFOIL_CLI_PATH=build/release/xfoil.next.exe \
-            ./build/release/xfoil_tests | tee ci-release-full.log
-          grep -F "0 failure(s) in 1968 test(s)" ci-release-full.log
-
-      - name: Focused PACC dump diagnostic (1, XFOIL_DUMP_DIAG=1)
-        shell: msys2 {0}
-        run: |
-          set -o pipefail
-          XFOIL_DUMP_DIAG=1 XFOIL_CLI_PATH=build/debug/xfoil.next.exe \
-            ./build/debug/xfoil_tests \
-            regression.PaccDumpByteParityMatchesFortranReference \
-            | tee ci-pacc-diagnostic.log
-          grep -F "0 failure(s) in 1 test(s)" ci-pacc-diagnostic.log
-
-      - name: Binary contract
-        shell: msys2 {0}
-        run: |
-          set -e
-          test -f build/debug/xfoil.next.exe
-          test ! -e build/debug/xfoil.exe
-          test -f build/release/xfoil.next.exe
-          test ! -e build/release/xfoil.exe
-          out=$(./build/release/xfoil.next.exe --version)
-          echo "version output: [$out]"
-          test "$out" = "XFOIL.next 1.0.0"
-
   validation:
     name: Gates, reference, harnesses, sanitizer
     runs-on: ubuntu-24.04
@@ -233,7 +90,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            g++ gfortran make python3 xvfb
+            g++ gfortran make python3 xfonts-base xvfb
 
       - name: Environment contract
         run: |
@@ -250,6 +107,13 @@ jobs:
             || { echo "FAIL: unexpected GNU libc version"; exit 1; }
           command -v xvfb-run >/dev/null \
             || { echo "FAIL: xvfb-run missing (headless display server)"; exit 1; }
+          dpkg-query -W -f='${Status}\n' xfonts-base |
+            grep -Fx 'install ok installed' \
+            || { echo "FAIL: xfonts-base not installed (X core fonts)"; exit 1; }
+          test -d /usr/share/fonts/X11 \
+            || { echo "FAIL: /usr/share/fonts/X11 missing"; exit 1; }
+          find /usr/share/fonts/X11 -type f -print -quit | grep -q . \
+            || { echo "FAIL: no X font files present"; exit 1; }
 
       - name: check-dependencies
         run: make check-dependencies
