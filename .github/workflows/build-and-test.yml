@@ -11,7 +11,7 @@ permissions:
 jobs:
   build-and-test:
     name: Build and test (${{ matrix.compiler }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     strategy:
       fail-fast: false
@@ -33,6 +33,23 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             g++ clang gfortran make valgrind python3
+
+      - name: Environment contract
+        run: |
+          set -eu
+          g++ --version | head -n1
+          clang++ --version | head -n1
+          gfortran --version | head -n1
+          make --version | head -n1
+          getconf GNU_LIBC_VERSION
+          test "$(g++ -dumpfullversion | cut -d. -f1)" = 13 \
+            || { echo "FAIL: unexpected g++ major version"; exit 1; }
+          test "$(gfortran -dumpversion | cut -d. -f1)" = 13 \
+            || { echo "FAIL: unexpected GNU Fortran major version"; exit 1; }
+          test "$(clang++ -dumpversion | cut -d. -f1)" = 18 \
+            || { echo "FAIL: unexpected clang major version"; exit 1; }
+          test "$(getconf GNU_LIBC_VERSION)" = "glibc 2.39" \
+            || { echo "FAIL: unexpected GNU libc version"; exit 1; }
 
       - name: Debug build
         run: make debug CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }}
@@ -68,6 +85,44 @@ jobs:
       - uses: actions/checkout@v5
         with:
           persist-credentials: false
+
+      - name: Line-ending guard (no CRLF in LF-contracted artifacts)
+        shell: python
+        run: |
+          import subprocess, sys
+          out = subprocess.check_output(["git", "ls-files", "-z", "--eol"]).decode()
+          bad = []
+          for line in out.split("\0"):
+              if not line:
+                  continue
+              meta, _, path = line.partition("\t")
+              fields = meta.split()
+              work = fields[1] if len(fields) > 1 else ""
+              if path.endswith(".bat"):
+                  continue
+              if work in ("w/crlf", "w/mixed"):
+                  bad.append(f"{path}: {meta}")
+          representatives = [
+              "tests/data/core-polar-io-reference/getdef_reference.txt",
+              "tests/data/core-polar-io-reference/nammod_reference.txt",
+              "tests/data/core-polar-io-reference/cndump_reference.txt",
+              "tests/data/core-polar-io-reference/cpdump_reference.txt",
+              "tests/data/core-polar-io-reference/bldump_reference.txt",
+              "tests/data/core-polar-io-reference/cpdump_case_reference.cp",
+              "tests/data/core-polar-io-reference/bldump_case_reference.bl",
+              "tests/data/core-polar-io-reference/polread_reference.txt",
+              "tests/fortran-reference/harnesses/polar-io/data/getvov_table.dat",
+          ]
+          for p in representatives:
+              with open(p, "rb") as f:
+                  if b"\r\n" in f.read():
+                      bad.append(f"{p}: CRLF bytes in worktree")
+          if bad:
+              print("CRLF violation in LF-contracted checkout:")
+              for item in bad:
+                  print(" ", item)
+              sys.exit(1)
+          print("line-ending guard OK")
 
       - name: Set up MSYS2 UCRT64
         uses: msys2/setup-msys2@v2
@@ -163,7 +218,7 @@ jobs:
 
   validation:
     name: Gates, reference, harnesses, sanitizer
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v5
@@ -175,6 +230,20 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             g++ gfortran make python3
+
+      - name: Environment contract
+        run: |
+          set -eu
+          g++ --version | head -n1
+          gfortran --version | head -n1
+          make --version | head -n1
+          getconf GNU_LIBC_VERSION
+          test "$(g++ -dumpfullversion | cut -d. -f1)" = 13 \
+            || { echo "FAIL: unexpected g++ major version"; exit 1; }
+          test "$(gfortran -dumpversion | cut -d. -f1)" = 13 \
+            || { echo "FAIL: unexpected GNU Fortran major version"; exit 1; }
+          test "$(getconf GNU_LIBC_VERSION)" = "glibc 2.39" \
+            || { echo "FAIL: unexpected GNU libc version"; exit 1; }
 
       - name: check-dependencies
         run: make check-dependencies
@@ -211,7 +280,7 @@ jobs:
 
   valgrind:
     name: Valgrind
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v5
@@ -223,6 +292,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             g++ make valgrind
+
+      - name: Environment contract
+        run: |
+          set -eu
+          g++ --version | head -n1
+          make --version | head -n1
+          getconf GNU_LIBC_VERSION
+          test "$(g++ -dumpfullversion | cut -d. -f1)" = 13 \
+            || { echo "FAIL: unexpected g++ major version"; exit 1; }
+          test "$(getconf GNU_LIBC_VERSION)" = "glibc 2.39" \
+            || { echo "FAIL: unexpected GNU libc version"; exit 1; }
 
       - name: Build debug and core targets
         run: |

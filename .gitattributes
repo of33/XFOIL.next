@@ -2,3 +2,21 @@
 # XFOIL-6.99-Prompts enden absichtlich mit zwei Leerzeichen.
 # Die CLI-Transkripte werden bytegenau verglichen.
 tests/golden/cli/*.stdout.txt -whitespace
+
+# Keep public text artifacts byte-stable across POSIX and Windows checkouts.
+* text=auto eol=lf
+
+# Windows command scripts are intentionally checked out with CRLF.
+*.bat text eol=crlf
+
+# Binary artifacts are exempt from any line-ending conversion.
+XFOIL.next.png -text
+fortran-bin/xfoil -text
+fortran-src/osmap.dat -text
+fortran-src/osmapDP.dat -text
+tests/data/core-polar-io-reference/plxadd_case_dump_reference.bin -text
+tests/data/core-polar-io-reference/plxini_case_dump_reference.bin -text
+tests/fortran-reference/cases/oper-state/oper-alfa180-viscous-iter20/stdout.raw.txt -text
+tests/fortran-reference/cases/oper-state/oper-cpmn-nonconverged/stdout.raw.txt -text
+tests/fortran-reference/cases/oper-state/oper-init-inviscid-then-bang/stdout.raw.txt -text
+*.dump -text
