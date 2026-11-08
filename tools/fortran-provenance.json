@@ -1,0 +1,508 @@
+{
+  "schema_version": 1,
+  "versions": [
+    {
+      "id": "xfoil-6.99",
+      "root": "fortran-src",
+      "metadata_paths": [
+        "SHA256SUMS"
+      ],
+      "notice_pattern": "Copyright (C) 2000",
+      "files": [
+        {
+          "path": "BLPAR.INC",
+          "sha256": "4758e32600e364e0c5d0f60c5fc6bcf479ef47d7a63cdf0d52ab8a5c14d5f850",
+          "notice_expected": false
+        },
+        {
+          "path": "CIRCLE.INC",
+          "sha256": "eef4b54829a98d64ab50575ba10933301b36d4f26f5c15f7fb1dc1b2eb33b7fa",
+          "notice_expected": false
+        },
+        {
+          "path": "PINDEX.INC",
+          "sha256": "947791198411bb36c38460214b6cc2f3204f817f55e4187e93837330cd53a20a",
+          "notice_expected": false
+        },
+        {
+          "path": "PPLOT.INC",
+          "sha256": "31bb83c02d991f2fdf3238a3904e65629e7c1f2e881432fff9af5a33e9901799",
+          "notice_expected": false
+        },
+        {
+          "path": "PXPLOT.INC",
+          "sha256": "d9ae5306f9a038c96354fc7ce922cb08aab63f9dd954ea9333a4ccc6b5ed50f9",
+          "notice_expected": false
+        },
+        {
+          "path": "README.md",
+          "sha256": "2223ae3f123b33a1503d52e4eb37e11f4bb333abfdaf79cd05c6ad29e500e850",
+          "notice_expected": false
+        },
+        {
+          "path": "XBL.INC",
+          "sha256": "de22d7c5d036ba8c02ab935a9af7671b0c790304226b744231c815648e23ceaa",
+          "notice_expected": false
+        },
+        {
+          "path": "XDES.INC",
+          "sha256": "b1cdab4b9b5b241cf616d06c77b043df601c278cb15dadc00c89eefefe8c032e",
+          "notice_expected": false
+        },
+        {
+          "path": "XFOIL.INC",
+          "sha256": "4a7cca2a99fbde9996c9be3401f5c5a414ea29073d617d7d39b39bd44e03623a",
+          "notice_expected": false
+        },
+        {
+          "path": "aread.f",
+          "sha256": "3be82e776c9c92f8872f1d5c6ef5691d51a72937cc0bb91be6dcd45f47777f15",
+          "notice_expected": false
+        },
+        {
+          "path": "blplot.f",
+          "sha256": "da496f88018a90fb57359efd650c7d099da1d3d690dd25bf336760f0b6f23e35",
+          "notice_expected": false
+        },
+        {
+          "path": "blu.f",
+          "sha256": "d228d1a4593593d7b5d930319f47cca9d1577348d8c0ce9edee65b55e1b1d7d2",
+          "notice_expected": false
+        },
+        {
+          "path": "dplot.f",
+          "sha256": "17704c2c7da56977fec65f75473ed1c52ef514219bcbcf5ae1728175bfcad7eb",
+          "notice_expected": true
+        },
+        {
+          "path": "frplot.f",
+          "sha256": "45653f7547ffc132eb0507903f4918f4779fea004099e7e228143bf8d152fe1e",
+          "notice_expected": false
+        },
+        {
+          "path": "getarg.f",
+          "sha256": "67c8527c07d0232757247ebd6956ff81d5087bfe2be266e7307e3879184c7499",
+          "notice_expected": false
+        },
+        {
+          "path": "gui.f",
+          "sha256": "b8c4e7b8563566a60be5d4a6a25562052d2fe14a3c89b74d8111eaa994f629c9",
+          "notice_expected": false
+        },
+        {
+          "path": "iopol.f",
+          "sha256": "7ab33bdac69a0cc620a4d2de18f85e75f50846337443762ed82bfa7012356e7e",
+          "notice_expected": true
+        },
+        {
+          "path": "modify.f",
+          "sha256": "bb86ef6cd7835ac873ac3b05e76aa2522a9fae57e7878231ac7aa2bfba57f0a1",
+          "notice_expected": true
+        },
+        {
+          "path": "naca.f",
+          "sha256": "54cd2de33849d52d49a14bbdb9ca9955d346ffed16df46c1a451ebb46c5360e4",
+          "notice_expected": true
+        },
+        {
+          "path": "ntcalc.f",
+          "sha256": "f47e31d970312cb4d095de9e9aea6ea305b688156f472e5c7a1bb947b24628ba",
+          "notice_expected": false
+        },
+        {
+          "path": "osmap.dat",
+          "sha256": "744d0e5a6948de9a5864a04177735d9620ccbbcb1abcb8fd1af284fd52a9b949",
+          "notice_expected": false
+        },
+        {
+          "path": "osmap.f",
+          "sha256": "3c806b1d5bd62b80d2a2180b93ea2db95cb5f56c5ec7e55c07868fa20065e719",
+          "notice_expected": false
+        },
+        {
+          "path": "osmapDP.dat",
+          "sha256": "2f6b3c63461d71da9b6cb9ca1340d77cff0cfbe767679d15b5b8556b45d948c4",
+          "notice_expected": false
+        },
+        {
+          "path": "osmap_DP.f",
+          "sha256": "175c83c50ee53a08c03b70f6a5053048fcd6dac5f70ffd50cb216506ef7ddda9",
+          "notice_expected": false
+        },
+        {
+          "path": "plutil.f",
+          "sha256": "2058b06f4a7bbacbf187b065b58bbb80db6fe05b4842dd9820a6b9022d20d8d4",
+          "notice_expected": true
+        },
+        {
+          "path": "pntops.f",
+          "sha256": "76821eb983dc95e199c50fd0d7f32ee0839a84db0ed2ebd2443a1c5014afc367",
+          "notice_expected": false
+        },
+        {
+          "path": "polfit.f",
+          "sha256": "c5f4d379ad181a3deb337edd42803b6acc062b9a4de75c77fd25d10741c2de30",
+          "notice_expected": true
+        },
+        {
+          "path": "polplt.f",
+          "sha256": "16fc336b02b92b5a2168248e637e6fd828c4f1e52f5affd60d5e4c29f30c86d1",
+          "notice_expected": true
+        },
+        {
+          "path": "pplot.f",
+          "sha256": "b68b2041864cf3d2f49ee1c3b82da863f16ac6571b482c00f86a4085d20ac3d4",
+          "notice_expected": false
+        },
+        {
+          "path": "profil.f",
+          "sha256": "69e687faafb9528b08b3714d6c1a6d17c86e13a716a3a367c0ee449b80ba815b",
+          "notice_expected": true
+        },
+        {
+          "path": "pxplot.f",
+          "sha256": "bf1e5cfb8c740251ec5b061ab25b6c31ba8dae00ec2689d0dd527abc6aeb18dd",
+          "notice_expected": false
+        },
+        {
+          "path": "sort.f",
+          "sha256": "ff0578cafa7f94c4e397cb9d79d464e0a65731e5e02980c203073c4148cc42aa",
+          "notice_expected": false
+        },
+        {
+          "path": "spline.f",
+          "sha256": "b7b1a72e9c390dd944ac45d13121220b7545768d1b1dc9db64ac879271821669",
+          "notice_expected": true
+        },
+        {
+          "path": "userio.f",
+          "sha256": "e101bbbd11147d94716fb94fb39cdd5b55897645dc864cc69056c4f4747c1e53",
+          "notice_expected": true
+        },
+        {
+          "path": "xbl.f",
+          "sha256": "ceb6d7930b354004d1be8a9748f68922ae4593305bd9c270b233c223e1fa67d9",
+          "notice_expected": true
+        },
+        {
+          "path": "xblsys.f",
+          "sha256": "da0fa508a9f4a739eac0bcdc9ff3e9f28d8f217929a0ab61b529983ca6a8d46d",
+          "notice_expected": true
+        },
+        {
+          "path": "xfoil.f",
+          "sha256": "57b14c9e0c71097ede0f7989f8d92db161265962e9de9b3f7a5320b4ef4a23fe",
+          "notice_expected": true
+        },
+        {
+          "path": "xgdes.f",
+          "sha256": "4d32ef2f75d2069e1708f32ba789940517c512369de82eaa242cf994792dcf16",
+          "notice_expected": true
+        },
+        {
+          "path": "xgeom.f",
+          "sha256": "4c1b592f0b3f612900c4d6a04474e0b53bf46a6cde2667c6c97d8e4ff3e53a5c",
+          "notice_expected": true
+        },
+        {
+          "path": "xmdes.f",
+          "sha256": "11e730087eb607d86dcc9efb9c8c4bfafc4ee799872e69498734fe1dd99e1d84",
+          "notice_expected": true
+        },
+        {
+          "path": "xoper.f",
+          "sha256": "303191f22c055480561c2a037447ae62c859c7fa70fb21b1c8a1216ff34bba22",
+          "notice_expected": true
+        },
+        {
+          "path": "xpanel.f",
+          "sha256": "77e39d06112b038673623efaf2d00ae17342cee712044661b9b46bb683c74621",
+          "notice_expected": true
+        },
+        {
+          "path": "xplots.f",
+          "sha256": "77ee1f753624067baf54c4ffe2df1afbaa54d66cb57f50b4bd05a28859920edf",
+          "notice_expected": true
+        },
+        {
+          "path": "xpol.f",
+          "sha256": "b69cd3201335ede432f0d5524bc5535fc007ecb8b63f7546758effa09c97eefe",
+          "notice_expected": true
+        },
+        {
+          "path": "xqdes.f",
+          "sha256": "e3c13b712d3c5d7c901cbd521f26a189a3890f02a49a97d054c0c846f01bbda0",
+          "notice_expected": true
+        },
+        {
+          "path": "xsolve.f",
+          "sha256": "05310a1964cec56c9662194216d1d17875feaa8bb627071c320962fd8586ecdf",
+          "notice_expected": true
+        },
+        {
+          "path": "xtcam.f",
+          "sha256": "b75569729d869065aae3f1df72362fc928a6eafc2ed0e8acf9e53ee7aa220881",
+          "notice_expected": true
+        },
+        {
+          "path": "xutils.f",
+          "sha256": "a73b6e3fe8f986ab2f70486ae544851900d9cf8c14332870f1e9cbbcae4bd3b9",
+          "notice_expected": false
+        }
+      ]
+    },
+    {
+      "id": "xfoil-6.996",
+      "root": "fortran-src/xfoil-6.996",
+      "metadata_paths": [],
+      "notice_pattern": "Copyright (C) 2000",
+      "files": [
+        {
+          "path": "BLPAR.INC",
+          "sha256": "4758e32600e364e0c5d0f60c5fc6bcf479ef47d7a63cdf0d52ab8a5c14d5f850",
+          "notice_expected": false
+        },
+        {
+          "path": "CIRCLE.INC",
+          "sha256": "eef4b54829a98d64ab50575ba10933301b36d4f26f5c15f7fb1dc1b2eb33b7fa",
+          "notice_expected": false
+        },
+        {
+          "path": "Makefile_gfortran",
+          "sha256": "ece560720547fd0ce718fa33b6bacab96b43a0fa8ee80fe21f13344cfadbfc92",
+          "notice_expected": false
+        },
+        {
+          "path": "PINDEX.INC",
+          "sha256": "8d9c210e5e2c8899aad099bba4296ad2523b634f01d81d7c071b9bb90fac9714",
+          "notice_expected": false
+        },
+        {
+          "path": "PPLOT.INC",
+          "sha256": "0e1b74eb546d618a246065856b2df54c6abee76e5d5668b81092a666d814ea50",
+          "notice_expected": false
+        },
+        {
+          "path": "PXPLOT.INC",
+          "sha256": "d9ae5306f9a038c96354fc7ce922cb08aab63f9dd954ea9333a4ccc6b5ed50f9",
+          "notice_expected": false
+        },
+        {
+          "path": "XBL.INC",
+          "sha256": "de22d7c5d036ba8c02ab935a9af7671b0c790304226b744231c815648e23ceaa",
+          "notice_expected": false
+        },
+        {
+          "path": "XDES.INC",
+          "sha256": "b1cdab4b9b5b241cf616d06c77b043df601c278cb15dadc00c89eefefe8c032e",
+          "notice_expected": false
+        },
+        {
+          "path": "XFOIL.INC",
+          "sha256": "4b12cccb24d07c30b58aed40124404d876750826a7ec4fcb94d82b424edb5107",
+          "notice_expected": false
+        },
+        {
+          "path": "aread.f",
+          "sha256": "3be82e776c9c92f8872f1d5c6ef5691d51a72937cc0bb91be6dcd45f47777f15",
+          "notice_expected": false
+        },
+        {
+          "path": "blplot.f",
+          "sha256": "f4c20e3d5457947116016a3651b81e41ba867cca90501353f789896751d42720",
+          "notice_expected": false
+        },
+        {
+          "path": "blu.f",
+          "sha256": "d228d1a4593593d7b5d930319f47cca9d1577348d8c0ce9edee65b55e1b1d7d2",
+          "notice_expected": false
+        },
+        {
+          "path": "dplot.f",
+          "sha256": "17704c2c7da56977fec65f75473ed1c52ef514219bcbcf5ae1728175bfcad7eb",
+          "notice_expected": true
+        },
+        {
+          "path": "frplot.f",
+          "sha256": "45653f7547ffc132eb0507903f4918f4779fea004099e7e228143bf8d152fe1e",
+          "notice_expected": false
+        },
+        {
+          "path": "frplot0.f",
+          "sha256": "2b86b6b25a4a30465f1113ce91144454a8aa1762b9949f748814228633d8b479",
+          "notice_expected": false
+        },
+        {
+          "path": "getarg.f",
+          "sha256": "67c8527c07d0232757247ebd6956ff81d5087bfe2be266e7307e3879184c7499",
+          "notice_expected": false
+        },
+        {
+          "path": "getosfile.c",
+          "sha256": "ef601fbb6f5e0b3c4673065d027a40399c7fa783e13c1b6bfdce5142afc11b06",
+          "notice_expected": false
+        },
+        {
+          "path": "gui.f",
+          "sha256": "b8c4e7b8563566a60be5d4a6a25562052d2fe14a3c89b74d8111eaa994f629c9",
+          "notice_expected": false
+        },
+        {
+          "path": "iopol.f",
+          "sha256": "cc4ed012c3c28be9400ee77efc1de9761985a3f309932a87a91c1e2717015ac5",
+          "notice_expected": true
+        },
+        {
+          "path": "modify.f",
+          "sha256": "5fabbcd3254b06731db4cb58f1892c52740967d79ed8a200ef0979f548a58b3a",
+          "notice_expected": true
+        },
+        {
+          "path": "naca.f",
+          "sha256": "4088836c43cf08900897f4527d2785be16544f75f145fdab9dcb68f6bfbab8ef",
+          "notice_expected": true
+        },
+        {
+          "path": "ntcalc.f",
+          "sha256": "f47e31d970312cb4d095de9e9aea6ea305b688156f472e5c7a1bb947b24628ba",
+          "notice_expected": false
+        },
+        {
+          "path": "osmap.f",
+          "sha256": "3c806b1d5bd62b80d2a2180b93ea2db95cb5f56c5ec7e55c07868fa20065e719",
+          "notice_expected": false
+        },
+        {
+          "path": "p.ftnchek",
+          "sha256": "887697b86a6489bc63b884f330cde6fe6474af29d88d5e008d80573ff9b6771f",
+          "notice_expected": false
+        },
+        {
+          "path": "plutil.f",
+          "sha256": "49f8661d848ed610046b84dc54167696021538255aa2f6dfee9315ea33a8855c",
+          "notice_expected": true
+        },
+        {
+          "path": "pntops.f",
+          "sha256": "746469aeec458338842d943d8f1520788875fd27b6e1764104bab140884a4d3e",
+          "notice_expected": false
+        },
+        {
+          "path": "polfit.f",
+          "sha256": "c5f4d379ad181a3deb337edd42803b6acc062b9a4de75c77fd25d10741c2de30",
+          "notice_expected": true
+        },
+        {
+          "path": "polplt.f",
+          "sha256": "a1b50f6d9553d367fad3d02596a16a91c842cfa3114e2a2e9fd5a9c4bc68ee7e",
+          "notice_expected": true
+        },
+        {
+          "path": "pplot.f",
+          "sha256": "b2d90d3129b5ff66d5ec7ff1b28fce6330c9f09a9a50dbf83f77f1ab7154234f",
+          "notice_expected": false
+        },
+        {
+          "path": "profil.f",
+          "sha256": "69e687faafb9528b08b3714d6c1a6d17c86e13a716a3a367c0ee449b80ba815b",
+          "notice_expected": true
+        },
+        {
+          "path": "pxplot.f",
+          "sha256": "bf1e5cfb8c740251ec5b061ab25b6c31ba8dae00ec2689d0dd527abc6aeb18dd",
+          "notice_expected": false
+        },
+        {
+          "path": "sort.f",
+          "sha256": "ff0578cafa7f94c4e397cb9d79d464e0a65731e5e02980c203073c4148cc42aa",
+          "notice_expected": false
+        },
+        {
+          "path": "spline.f",
+          "sha256": "03bb98d9cfedc530ea878d314669b153d89dff5273a8e2e33b0c38425c2d358e",
+          "notice_expected": true
+        },
+        {
+          "path": "userio.f",
+          "sha256": "a239ded06483038284f458a39e955126e465918b1ae43800f3d75d1ef99c92ab",
+          "notice_expected": true
+        },
+        {
+          "path": "x.ftnchek",
+          "sha256": "2ebc6d28ec89e4d48da322edf23e68a08d623cec8d14fecb2962cfa1eaaabd32",
+          "notice_expected": false
+        },
+        {
+          "path": "xbl.f",
+          "sha256": "b87f9e4e31b56071a373861863526fb860eb9fc4964b3d953a4ca989cbef1941",
+          "notice_expected": true
+        },
+        {
+          "path": "xblsys.f",
+          "sha256": "04f15d3e0371982293ecf575a02c7939af1f0071ff5fd7731411dd8f48471cb4",
+          "notice_expected": true
+        },
+        {
+          "path": "xfoil.f",
+          "sha256": "d607e1a205ed9a9620589aa52d3a46f07fe4f312bb5c657b8b99d8c6216378e9",
+          "notice_expected": true
+        },
+        {
+          "path": "xgdes.f",
+          "sha256": "0c55705ea4ecad1ec0d3262f8707763e8c9f7645e327669a3a45e7ec62bbe484",
+          "notice_expected": true
+        },
+        {
+          "path": "xgeom.f",
+          "sha256": "d237678cf3b6d2c7386dfd036fa0338a9212a9de1dd6d6ee1efa64d7698ee3c7",
+          "notice_expected": true
+        },
+        {
+          "path": "xmdes.f",
+          "sha256": "809af28934d12154fb57431fd4588906dc4580b99b0b7549b198007a7327466c",
+          "notice_expected": true
+        },
+        {
+          "path": "xoper.f",
+          "sha256": "339c6bfc0eb3aa18cd48cae931850125b85d8e960457e83ec957046c164871bb",
+          "notice_expected": true
+        },
+        {
+          "path": "xpanel.f",
+          "sha256": "5a0467110dd07c0bc59e09dc3d878bed03652b5e5e285bd78c017e9c6fd435eb",
+          "notice_expected": true
+        },
+        {
+          "path": "xplots.f",
+          "sha256": "a9a3ea88537dbea9bb90d072ae90f26d59c6756d602a90f3d45b74f960a4cf54",
+          "notice_expected": true
+        },
+        {
+          "path": "xpol.f",
+          "sha256": "048c491773bd896d7325fa4e00928f1c18551283fae6ed9f45b42f979c5e3f8f",
+          "notice_expected": true
+        },
+        {
+          "path": "xqdes.f",
+          "sha256": "e3c13b712d3c5d7c901cbd521f26a189a3890f02a49a97d054c0c846f01bbda0",
+          "notice_expected": true
+        },
+        {
+          "path": "xsolve.f",
+          "sha256": "a86a8e7bbd185ec6607f27fceb823e53c61685998f4bc415d641532b66a50bfb",
+          "notice_expected": true
+        },
+        {
+          "path": "xtcam.f",
+          "sha256": "7bc66b481630d1aaf6f919414aff994e8aca02d5e5479ea88eccc73774e2f90e",
+          "notice_expected": true
+        },
+        {
+          "path": "xutils.f",
+          "sha256": "a73b6e3fe8f986ab2f70486ae544851900d9cf8c14332870f1e9cbbcae4bd3b9",
+          "notice_expected": false
+        }
+      ]
+    }
+  ]
+}
