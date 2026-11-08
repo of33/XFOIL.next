@@ -17,7 +17,7 @@ alt="Build and test">
 alt="Latest stable release">
 </a>
 &nbsp;&nbsp;
-<a href="https://doi.org/10.5281/zenodo.23547993"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.23547993.svg" alt="DOI"></a>
+<a href="https://doi.org/10.5281/zenodo.24046163"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.24046163.svg" alt="DOI"></a>
 &nbsp;&nbsp;
 <a href="LICENSE">
 <img src="https://img.shields.io/badge/license-GPL--3.0--or--later-blue"
