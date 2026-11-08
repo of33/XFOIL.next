@@ -266,3 +266,50 @@ two separate normal local commits:
 
 The commits remain local under the XFOIL.next 1.1.0 publication hold. No push,
 tag or release is performed in this step.
+
+## Independent local commit acceptance — X6996-U0-C1-R1
+
+Decision: PASS
+
+- Commit A `dcc469c6be25b19dff622434319956026a6e75e6` (parent
+  `58bca7d17f847e1aef6b1c8d3d4e167f40f69945`): exactly two paths,
+  `README.md` and `XFOIL.next.png`; nine approved README replacements; DOI
+  unchanged; product version `1.0.0`; approved logo hash `4a89a54f…`; no
+  mode change; no U0 path.
+- Commit B `15bbf08581b255e82e58c9ae525bcd4c83cb1a59` (parent Commit A):
+  exactly 55 paths — 3 documents, 49 files under `fortran-src/xfoil-6.996/`,
+  1 binary, 2 tool/manifest files; no `README.md`, `XFOIL.next.png`,
+  `Makefile`, `src/**`, `include/**`, tests, goldens or references.
+- Commit B modes: docs `100644`, `fortran-src/xfoil-6.996/**` `100644`,
+  `fortran-bin/xfoil-6.996` `100755`, `tools/check-license-headers.py`
+  `100755`, `tools/fortran-provenance.json` `100644`.
+- Whitespace: Commit A reports no findings. Commit B reports 686 findings
+  (662 trailing whitespace, 24 new blank line at EOF) in 45 files; every
+  finding is inside `fortran-src/xfoil-6.996/` and every affected file is
+  byte-identical to its archive entry. No finding exists in
+  repository-owned documents, tools or the manifest; the clean
+  working-tree `git diff --check` exits 0.
+- Archive identity: 49 files, 1,154,891 bytes, 49× `100644`, 49/49
+  byte-identical to `xfoil6.996.tgz` (`0feb71b5…`); `Makefile_gfortran`
+  `ece56072…`. `dplot1.f`, `xqdes1.f`, `x.log`, `osmap.dat` and
+  `osmapDP.dat` remain absent and documented as intentional omissions.
+- Binary: `fortran-bin/xfoil-6.996` `000b0468…`, mode `100755`, diagnostic,
+  banner `XFOIL Version 7.00`, GCC/GNU Fortran 13.3.0; no canonical or
+  reproducibility claim added.
+- Provenance gate: `xfoil-6.99: 48 files, 23 notice-bearing files`;
+  `xfoil-6.996: 49 files, 23 notice-bearing files`; self-test and gate exit
+  0; no global fixed 23/46 decision.
+- 6.99 integrity: `fortran-src/SHA256SUMS` `38c6503d…`;
+  `fortran-bin/xfoil` `f5779d69…`; `sha256sum --check` green.
+- Gates: `make check-license-headers`, `check-fortran-sha`,
+  `check-release-inventory`, `check-public-docs`, `check-dependencies`,
+  `core-link-check` and `session-link-check` all exit 0.
+- Tests: `make test-core` 414/414; `make test-unit` 1668/1668.
+- Working tree before this report entry: clean, staged 0.
+- Publication hold: `origin/main` remains `58bca7d17…`; local `main` is
+  ahead by two commits (`0 2`); no push, tag or release.
+- Next step: `X6996-U1-Versioned-XFOIL-6.99-Source-Layout`.
+
+The independent audit itself changed no implementation, source, binary,
+manifest or test file. Its only repository change is this chronological
+report entry.
