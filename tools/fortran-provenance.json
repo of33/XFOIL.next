@@ -254,7 +254,9 @@
     {
       "id": "xfoil-6.996",
       "root": "fortran-src/xfoil-6.996",
-      "metadata_paths": [],
+      "metadata_paths": [
+        "SHA256SUMS"
+      ],
       "notice_pattern": "Copyright (C) 2000",
       "files": [
         {

@@ -12,10 +12,12 @@ into them. They are not compiled or linked in the normal C++ build. See
 `fortran-src/xfoil-6.99/README.md`.
 
 Integrity is pinned by `fortran-src/xfoil-6.99/SHA256SUMS` (48 entries, including the
-active and inactive OSMAP artifacts):
+active and inactive OSMAP artifacts) and by
+`fortran-src/xfoil-6.996/SHA256SUMS` (49 entries for the frozen reduced
+6.996 baseline). Both manifests are repository-owned metadata:
 
 ```sh
-make check-fortran-sha          # sha256sum --check fortran-src/xfoil-6.99/SHA256SUMS
+make check-fortran-sha          # verifies both source manifests
 ```
 
 ## `fortran-bin/xfoil`

@@ -49,7 +49,7 @@ harness builder as a compilation target.
 ## Validation assets and gates
 
 ```text
-Fortran source integrity (SHA256SUMS): 48 files
+Fortran source integrity (SHA256SUMS): 48 (6.99) + 49 (6.996) files
 Canonical reference cases:            236
 Fortran harness families:              16
 ```
@@ -57,7 +57,7 @@ Fortran harness families:              16
 Gates:
 
 ```sh
-make check-fortran-sha              # 48/48 source integrity
+make check-fortran-sha              # 48/48 and 49/49 source integrity
 make test-reference                 # 236/236 verification
 make test-reference-determinism     # 236/236 byte-deterministic reruns
 make test-harnesses                 # 16/16 harness rebuild/check

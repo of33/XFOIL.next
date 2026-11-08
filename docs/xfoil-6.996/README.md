@@ -101,6 +101,10 @@ fortran-src/
     ...
 ```
 
+Both version directories carry their own repository-owned `SHA256SUMS`:
+48 entries for `xfoil-6.99/` and 49 entries for `xfoil-6.996/`. The 6.996
+manifest is metadata, not a 50th upstream source file.
+
 The two source directories represent separate immutable upstream baselines.
 
 The source files under these directories must retain their upstream bytes.
