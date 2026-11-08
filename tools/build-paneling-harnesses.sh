@@ -28,7 +28,7 @@
 # reproducible reference data below tests/data/core-paneling-reference/.
 #
 # The harness calls the canonical routines from
-# fortran-src/{naca,xgeom,spline,xutils,xfoil,xgdes,xpanel}.f unchanged.
+# fortran-src/xfoil-6.99/{naca,xgeom,spline,xutils,xfoil,xgdes,xpanel}.f unchanged.
 # It changes no Fortran source, no raw reference and no
 # golden file.
 #
@@ -43,10 +43,10 @@
 # only, if all actually required symbols are present.
 #
 # Linked objects:
-# naca.o NACA4 (fortran-src/naca.f, unchanged)
+# naca.o NACA4 (fortran-src/xfoil-6.99/naca.f, unchanged)
 # spline.o SCALC/SEGSPL/SEVAL/DEVAL/CURV/TRISOL
-# (fortran-src/spline.f, unchanged)
-# xutils.o ATANC etc. (fortran-src/xutils.f,
+# (fortran-src/xfoil-6.99/spline.f, unchanged)
+# xutils.o ATANC etc. (fortran-src/xfoil-6.99/xutils.f,
 # unchanged)
 # xgeom_lefind_routines.o LEFIND/XLFIND/NSFIND/SOPPS (byte-faithful
 # extracted from xgeom.f)
@@ -112,41 +112,41 @@ fi
 # Byte-faithful extraction of the actually called canonical routines
 # (below build/; no Fortran source is changed).
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xgeom.f \
+  --source fortran-src/xfoil-6.99/xgeom.f \
   --routines LEFIND XLFIND NSFIND SOPPS \
   --output "${BUILD_DIR}/xgeom_lefind_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xfoil.f \
+  --source fortran-src/xfoil-6.99/xfoil.f \
   --routines PANGEN TECALC \
   --output "${BUILD_DIR}/xfoil_paneling_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xgdes.f \
+  --source fortran-src/xfoil-6.99/xgdes.f \
   --routines ABCOPY \
   --output "${BUILD_DIR}/xgdes_abcopy_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xpanel.f \
+  --source fortran-src/xfoil-6.99/xpanel.f \
   --routines APCALC NCALC \
   --output "${BUILD_DIR}/xpanel_kernels_routines.f" > /dev/null
 
 # Canonical Fortran-objects (unchanged; without xgeom.o/xfoil.o/xgdes.o/
 # xpanel.o).
 for f in naca spline xutils; do
-  "${FC}" -c "${REPO_ROOT}/fortran-src/${f}.f" -o "${BUILD_DIR}/${f}.o"
+  "${FC}" -c "${REPO_ROOT}/fortran-src/xfoil-6.99/${f}.f" -o "${BUILD_DIR}/${f}.o"
 done
 
 # Extracted routine objects (byte-faithful blocks from xgeom.f/xfoil.f/
 # xgdes.f/xpanel.f).
 for f in xgeom_lefind_routines xfoil_paneling_routines \
          xgdes_abcopy_routines xpanel_kernels_routines; do
-  "${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+  "${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
     "${BUILD_DIR}/${f}.f" -o "${BUILD_DIR}/${f}.o"
 done
 
 # link without symbol suppression: all required symbols are present beforehand.
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${HARNESS_DIR}/paneling_harness.f" -o "${BUILD_DIR}/paneling_harness.o"
 # shellcheck disable=SC2086
 # Negative check: osmap_DP.f is an inactive upstream alternative
@@ -169,7 +169,7 @@ done
 # 'Panel: Too many panels. Increase IQX in XFOIL.INC'. The Fortran STOP
 # ends in gfortran with exit code 0, so the message is checked in the
 # reference file (not the exit code).
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${HARNESS_DIR}/pangen_limit_harness.f" \
   -o "${BUILD_DIR}/pangen_limit_harness.o"
 # shellcheck disable=SC2086

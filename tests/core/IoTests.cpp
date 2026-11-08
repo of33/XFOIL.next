@@ -584,7 +584,7 @@ TEST(unit, IoVelocityRatioTableDecode) {
 }
 
 TEST(unit, IoOrrSommerfeldDecode) {
-  const std::vector<std::uint8_t> bytes = readBytes("fortran-src/osmap.dat");
+  const std::vector<std::uint8_t> bytes = readBytes("fortran-src/xfoil-6.99/osmap.dat");
   io::OsmapDecodeResult decoded = io::decodeOrrSommerfeldRaw(bytes.data(), bytes.size());
   CHECK(decoded.raw.has_value());
   if (!decoded.raw) return;

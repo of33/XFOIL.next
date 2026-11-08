@@ -28,12 +28,12 @@
 # reproducible reference data below tests/data/core-geometry-reference/.
 #
 # The harnesses call exclusively the canonical routines from
-# fortran-src/{naca,xgeom,spline,xutils,xfoil}.f unchanged. They
+# fortran-src/xfoil-6.99/{naca,xgeom,spline,xutils,xfoil}.f unchanged. They
 # do not change any Fortran source, any raw reference or any golden file.
 #
 # ROTATE/TECALC lie in xfoil.f together with PROGRAM XFOIL; xgeom.f
 # contains PLTCRV with references to a plot library not contained in
-# fortran-src. Neither is ever called in the harness and neither is
+# fortran-src/xfoil-6.99. Neither is ever called in the harness and neither is
 # linked. Instead, tools/extract-fortran-routines.py extracts the
 # actually invoked routines blocks byte-faithful from the canonical
 # sources and writes them below build/; only these objects are linked.
@@ -41,12 +41,12 @@
 # harness links only, if all actually required symbols are present.
 #
 # Linked objects:
-# naca.o NACA4/NACA5 (fortran-src/naca.f, unchanged)
+# naca.o NACA4/NACA5 (fortran-src/xfoil-6.99/naca.f, unchanged)
 # xgeom_routines.o 19 needed xgeom.f routines (byte-faithful
 # extracted, without PLTCRV)
-# spline.o spline routines (fortran-src/spline.f,
+# spline.o spline routines (fortran-src/xfoil-6.99/spline.f,
 # unchanged)
-# xutils.o ATANC etc. (fortran-src/xutils.f, unchanged)
+# xutils.o ATANC etc. (fortran-src/xfoil-6.99/xutils.f, unchanged)
 # xfoil_geom_routines.o ROTATE/TECALC (byte-faithfully extracted, without
 # PROGRAM XFOIL)
 #
@@ -106,33 +106,33 @@ fi
 # Byte-faithful extraction of the actually called canonical routines
 # (below build/; no Fortran source is changed).
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xgeom.f \
+  --source fortran-src/xfoil-6.99/xgeom.f \
   --routines LEFIND XLFIND NSFIND SOPPS NORM GEOPAR AECALC TCCALC \
              YSYM LERSCL SSS CLIS CANG INTER INTERX IJSECT AREFINE \
              SCHECK HALF \
   --output "${BUILD_DIR}/xgeom_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xfoil.f \
+  --source fortran-src/xfoil-6.99/xfoil.f \
   --routines ROTATE TECALC \
   --output "${BUILD_DIR}/xfoil_geom_routines.f" > /dev/null
 
 # Canonical Fortran-objects (unchanged; without xgeom.o/xfoil.o).
 for f in naca spline xutils; do
-  "${FC}" -c "${REPO_ROOT}/fortran-src/${f}.f" -o "${BUILD_DIR}/${f}.o"
+  "${FC}" -c "${REPO_ROOT}/fortran-src/xfoil-6.99/${f}.f" -o "${BUILD_DIR}/${f}.o"
 done
 
 # Extracted routine objects (byte-faithful blocks from xgeom.f/xfoil.f).
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${BUILD_DIR}/xgeom_routines.f" -o "${BUILD_DIR}/xgeom_routines.o"
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${BUILD_DIR}/xfoil_geom_routines.f" -o "${BUILD_DIR}/xfoil_geom_routines.o"
 
 # link without symbol suppression: all required symbols are present beforehand.
 run_harness() {
   local harness="$1"
   local name="$2"
-  "${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+  "${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
     "${HARNESS_DIR}/${harness}.f" -o "${BUILD_DIR}/${harness}.o"
   # Negative check: osmap_DP.f is an inactive upstream alternative
   # with the same OSMAP symbol as the canonical runtime implementation.

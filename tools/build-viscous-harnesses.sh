@@ -77,95 +77,95 @@ fi
 
 # Byte-faithful extraction of the viscous routines (below build/).
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xbl.f \
+  --source fortran-src/xfoil-6.99/xbl.f \
   --routines SETBL IBLSYS MRCHUE MRCHDU UPDATE DSLIM \
   --output "${BUILD_DIR}/xbl_solver_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xbl.f \
+  --source fortran-src/xfoil-6.99/xbl.f \
   --routines XIFSET BLPINI \
   --output "${BUILD_DIR}/xbl_xifset_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xsolve.f \
+  --source fortran-src/xfoil-6.99/xsolve.f \
   --routines GAUSS \
   --output "${BUILD_DIR}/xsolve_gauss_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xblsys.f \
+  --source fortran-src/xfoil-6.99/xblsys.f \
   --routines TRCHEK AXSET TRCHEK2 BLSYS TESYS BLVAR BLMID TRDIF BLDIF \
              DAMPL DAMPL2 DIL DILW HSL CFL DIT HST CFT HCT HKIN BLPRV BLKIN \
   --output "${BUILD_DIR}/xblsys_solver_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xsolve.f \
+  --source fortran-src/xfoil-6.99/xsolve.f \
   --routines BLSOLV LUDCMP BAKSUB \
   --output "${BUILD_DIR}/xsolve_bl_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xpanel.f \
+  --source fortran-src/xfoil-6.99/xpanel.f \
   --routines UICALC UECALC QVFUE GAMQV STMOVE UESET DSSET \
   --output "${BUILD_DIR}/xpanel_coupling_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xpanel.f \
+  --source fortran-src/xfoil-6.99/xpanel.f \
   --routines IBLPAN XICALC \
   --output "${BUILD_DIR}/xpanel_bl_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xfoil.f \
+  --source fortran-src/xfoil-6.99/xfoil.f \
   --routines MRCL COMSET CPCALC CLCALC CDCALC \
   --output "${BUILD_DIR}/xfoil_inviscid_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xoper.f \
+  --source fortran-src/xfoil-6.99/xoper.f \
   --routines SPECAL SPECCL MHINGE VISCAL \
   --output "${BUILD_DIR}/xoper_viscous_routines.f" > /dev/null
 
 # paneling/inviscid extractions produce, if not present.
 if [[ ! -f "${PANELING_DIR}/xfoil_paneling_routines.f" ]]; then
   python3 tools/extract-fortran-routines.py \
-    --source fortran-src/xfoil.f \
+    --source fortran-src/xfoil-6.99/xfoil.f \
     --routines PANGEN TECALC \
     --output "${PANELING_DIR}/xfoil_paneling_routines.f" > /dev/null
   python3 tools/extract-fortran-routines.py \
-    --source fortran-src/xgdes.f \
+    --source fortran-src/xfoil-6.99/xgdes.f \
     --routines ABCOPY \
     --output "${PANELING_DIR}/xgdes_abcopy_routines.f" > /dev/null
   python3 tools/extract-fortran-routines.py \
-    --source fortran-src/xpanel.f \
+    --source fortran-src/xfoil-6.99/xpanel.f \
     --routines APCALC NCALC \
     --output "${PANELING_DIR}/xpanel_kernels_routines.f" > /dev/null
   python3 tools/extract-fortran-routines.py \
-    --source fortran-src/xgeom.f \
+    --source fortran-src/xfoil-6.99/xgeom.f \
     --routines LEFIND XLFIND NSFIND SOPPS \
     --output "${PANELING_DIR}/xgeom_lefind_routines.f" > /dev/null
 fi
 
 # Remaining dependencies (byte-faithful).
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xpanel.f \
+  --source fortran-src/xfoil-6.99/xpanel.f \
   --routines PSILIN PSWLIN GGCALC QWCALC QDCALC STFIND QISET XYWAKE \
   --output "${BUILD_DIR}/xpanel_inviscid_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xgdes.f \
+  --source fortran-src/xfoil-6.99/xgdes.f \
   --routines GETXYF \
   --output "${BUILD_DIR}/xgdes_getxyf_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/userio.f \
+  --source fortran-src/xfoil-6.99/userio.f \
   --routines ASKR \
   --output "${BUILD_DIR}/userio_askr_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/userio.f \
+  --source fortran-src/xfoil-6.99/userio.f \
   --routines ASKI \
   --output "${BUILD_DIR}/userio_aski_routines.f" > /dev/null
 
 # Canonical Fortran objects (unchanged).
 for f in naca spline xutils; do
-  "${FC}" -c "${REPO_ROOT}/fortran-src/${f}.f" -o "${BUILD_DIR}/${f}.o"
+  "${FC}" -c "${REPO_ROOT}/fortran-src/xfoil-6.99/${f}.f" -o "${BUILD_DIR}/${f}.o"
 done
 
 # Extracted routine objects.
@@ -179,18 +179,18 @@ for f in xgeom_lefind_routines xfoil_paneling_routines \
   if [[ ! -f "${local_dir}/${f}.f" ]]; then
     local_dir="${PANELING_DIR}"
   fi
-  "${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+  "${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
     "${local_dir}/${f}.f" -o "${BUILD_DIR}/${f}.o"
 done
 
 for f in xbl_xifset_routines xsolve_gauss_routines xpanel_bl_routines \
          userio_aski_routines; do
-  "${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+  "${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
     "${BUILD_DIR}/${f}.f" -o "${BUILD_DIR}/${f}.o"
 done
 
 # Link without symbol suppression: all required symbols are present beforehand.
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${HARNESS_DIR}/viscous_harness.f" \
   -o "${BUILD_DIR}/viscous_harness.o"
 # Negative check: osmap_DP.f is an inactive upstream alternative

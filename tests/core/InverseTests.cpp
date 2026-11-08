@@ -423,7 +423,7 @@ TEST(unit, InverseOrrSommerfeldNtcalc) {
   // OSMAP tricubic interpolation + NTCALC amplitude integration.
   // reference: osmap_nt_reference.txt (canonical Fortran routines, REAL(4)).
   const Result<OrrSommerfeldMap> mr =
-      loadOsmapForTest("fortran-src/osmap.dat");
+      loadOsmapForTest("fortran-src/xfoil-6.99/osmap.dat");
   CHECK(mr.isOk());
   const OrrSommerfeldMap& map = mr.value();
   CHECK(map.loaded());
@@ -1099,7 +1099,7 @@ TEST(unit, InverseOrrSommerfeldRawValidation) {
   CHECK(nr.isErr());
 
   // lookup input guards: rsp<=0, wsp<=0 -> OK=false.
-  const Result<OrrSommerfeldMap> mr = loadOsmapForTest("fortran-src/osmap.dat");
+  const Result<OrrSommerfeldMap> mr = loadOsmapForTest("fortran-src/xfoil-6.99/osmap.dat");
   CHECK(mr.isOk());
   const OrrSommerfeldMap& map = mr.value();
   for (double bad : {0.0, -1.0}) {
@@ -1343,7 +1343,7 @@ TEST(unit, InverseSplqspNonMonotone) {
 
 TEST(unit, InverseOrrSommerfeldDomainClamp) {
   using namespace xfoil::core::inverse;
-  const Result<OrrSommerfeldMap> mr = loadOsmapForTest("fortran-src/osmap.dat");
+  const Result<OrrSommerfeldMap> mr = loadOsmapForTest("fortran-src/xfoil-6.99/osmap.dat");
   CHECK(mr.isOk());
   const OrrSommerfeldMap& map = mr.value();
   CHECK(map.loaded());

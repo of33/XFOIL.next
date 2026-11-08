@@ -32,7 +32,7 @@
 # linker options for symbol suppression are used.
 #
 # Linked objects:
-# naca.o NACA4 (fortran-src/naca.f, unchanged)
+# naca.o NACA4 (fortran-src/xfoil-6.99/naca.f, unchanged)
 # spline.o spline routines (unchanged)
 # xutils.o ATANC/ASKR/SETEXP etc. (unchanged)
 # xfoil_paneling_routines.o PANGEN/TECALC (extracted)
@@ -95,32 +95,32 @@ fi
 
 # Byte-faithful extraction of the boundary-layer data routines (below build/).
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xpanel.f \
+  --source fortran-src/xfoil-6.99/xpanel.f \
   --routines IBLPAN XICALC QISET \
   --output "${BUILD_DIR}/xpanel_bl_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xpanel.f \
+  --source fortran-src/xfoil-6.99/xpanel.f \
   --routines PSILIN PSWLIN GGCALC QWCALC QDCALC XYWAKE \
   --output "${BUILD_DIR}/xpanel_inviscid_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xbl.f \
+  --source fortran-src/xfoil-6.99/xbl.f \
   --routines BLPINI XIFSET \
   --output "${BUILD_DIR}/xbl_data_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xblsys.f \
+  --source fortran-src/xfoil-6.99/xblsys.f \
   --routines BLPRV BLKIN HKIN \
   --output "${BUILD_DIR}/xblsys_data_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xgdes.f \
+  --source fortran-src/xfoil-6.99/xgdes.f \
   --routines GETXYF \
   --output "${BUILD_DIR}/xgdes_getxyf_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/userio.f \
+  --source fortran-src/xfoil-6.99/userio.f \
   --routines ASKR \
   --output "${BUILD_DIR}/userio_askr_routines.f" > /dev/null
 
@@ -128,47 +128,47 @@ python3 tools/extract-fortran-routines.py \
 # produce, if not present (same byte-faithful extraction).
 if [[ ! -f "${PANELING_DIR}/xfoil_paneling_routines.f" ]]; then
   python3 tools/extract-fortran-routines.py \
-    --source fortran-src/xfoil.f \
+    --source fortran-src/xfoil-6.99/xfoil.f \
     --routines PANGEN TECALC \
     --output "${PANELING_DIR}/xfoil_paneling_routines.f" > /dev/null
   python3 tools/extract-fortran-routines.py \
-    --source fortran-src/xgdes.f \
+    --source fortran-src/xfoil-6.99/xgdes.f \
     --routines ABCOPY \
     --output "${PANELING_DIR}/xgdes_abcopy_routines.f" > /dev/null
   python3 tools/extract-fortran-routines.py \
-    --source fortran-src/xpanel.f \
+    --source fortran-src/xfoil-6.99/xpanel.f \
     --routines APCALC NCALC \
     --output "${PANELING_DIR}/xpanel_kernels_routines.f" > /dev/null
   python3 tools/extract-fortran-routines.py \
-    --source fortran-src/xgeom.f \
+    --source fortran-src/xfoil-6.99/xgeom.f \
     --routines LEFIND XLFIND NSFIND SOPPS \
     --output "${PANELING_DIR}/xgeom_lefind_routines.f" > /dev/null
 fi
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xsolve.f \
+  --source fortran-src/xfoil-6.99/xsolve.f \
   --routines LUDCMP BAKSUB \
   --output "${BUILD_DIR}/xsolve_lu_routines.f" > /dev/null
 
 # MRCL/COMSET extraction (byte-faithful) for the SETBL data part.
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xfoil.f \
+  --source fortran-src/xfoil-6.99/xfoil.f \
   --routines MRCL COMSET CPCALC CLCALC \
   --output "${BUILD_DIR}/xfoil_inviscid_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xoper.f \
+  --source fortran-src/xfoil-6.99/xoper.f \
   --routines SPECAL SPECCL MHINGE \
   --output "${BUILD_DIR}/xoper_bl_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xpanel.f \
+  --source fortran-src/xfoil-6.99/xpanel.f \
   --routines STFIND \
   --output "${BUILD_DIR}/xpanel_stfind_routines.f" > /dev/null
 
 # Canonical Fortran-objects (unchanged).
 for f in naca spline xutils; do
-  "${FC}" -c "${REPO_ROOT}/fortran-src/${f}.f" -o "${BUILD_DIR}/${f}.o"
+  "${FC}" -c "${REPO_ROOT}/fortran-src/xfoil-6.99/${f}.f" -o "${BUILD_DIR}/${f}.o"
 done
 
 # Extracted routine objects.
@@ -183,12 +183,12 @@ for f in xgeom_lefind_routines xfoil_paneling_routines \
   if [[ ! -f "${local_dir}/${f}.f" ]]; then
     local_dir="${PANELING_DIR}"
   fi
-  "${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+  "${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
     "${local_dir}/${f}.f" -o "${BUILD_DIR}/${f}.o"
 done
 
 # link without symbol suppression: all required symbols are present beforehand.
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${HARNESS_DIR}/boundary_layer_data_harness.f" \
   -o "${BUILD_DIR}/boundary_layer_data_harness.o"
 # Negative check: osmap_DP.f is an inactive upstream alternative

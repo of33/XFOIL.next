@@ -58,7 +58,7 @@ The project aims to:
   physical and numerical foundations established by the original authors.
 
 XFOIL is the work of Mark Drela and Harold Youngren. The original
-sources and their notices are retained unmodified under `fortran-src/`.
+sources and their notices are retained unmodified under `fortran-src/xfoil-6.99/`.
 See [NOTICE](NOTICE) for full attribution and provenance details.
 
 ## What it provides
@@ -267,7 +267,7 @@ bundled runtime.
 
 ## Numerical validation
 
-The Fortran sources under `fortran-src/` are the numerical authority, and
+The Fortran sources under `fortran-src/xfoil-6.99/` are the numerical authority, and
 `fortran-bin/xfoil` is the executable reference oracle. The port is checked
 against them with:
 
@@ -342,6 +342,6 @@ XFOIL.next is licensed under the GNU General Public License, version 3 or
 later (GPL-3.0-or-later); see [LICENSE](LICENSE).
 
 XFOIL.next is based on XFOIL by Mark Drela and Harold Youngren. The
-original XFOIL sources under `fortran-src/` retain their own notices
+original XFOIL sources under `fortran-src/xfoil-6.99/` retain their own notices
 (GPL-2.0-or-later) and are kept unmodified. Provenance and attribution are
 recorded in [NOTICE](NOTICE).

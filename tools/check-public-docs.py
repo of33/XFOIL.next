@@ -47,7 +47,7 @@ PUBLIC_DOCS = [
     "docs/numerical-validation.md",
     "docs/fortran-reference.md",
     "docs/known-differences.md",
-    "fortran-src/README.md",
+    "fortran-src/xfoil-6.99/README.md",
     "fortran-bin/README.txt",
     "tests/fortran-reference/README.md",
     "tests/golden/metadata.md",

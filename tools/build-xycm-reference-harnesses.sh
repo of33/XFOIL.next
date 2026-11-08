@@ -29,7 +29,7 @@
 # reference below tests/data/core-xycm-reference/.
 #
 # The harness calls exclusively the canonical routines from
-# fortran-src/{naca,xgeom,spline,xutils,xfoil,xgdes,xpanel,xoper,xsolve}.f
+# fortran-src/xfoil-6.99/{naca,xgeom,spline,xutils,xfoil,xgdes,xpanel,xoper,xsolve}.f
 # unchanged and calls CLCALC with explicit XREF/YREF; the same
 # force state on. It changes no Fortran source, no raw reference and
 # no golden file.
@@ -90,32 +90,32 @@ fi
 
 # Byte-faithful extraction of the inviscid routines (below build/).
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xfoil.f \
+  --source fortran-src/xfoil-6.99/xfoil.f \
   --routines MRCL COMSET CPCALC CLCALC \
   --output "${BUILD_DIR}/xfoil_inviscid_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xpanel.f \
+  --source fortran-src/xfoil-6.99/xpanel.f \
   --routines PSILIN PSWLIN GGCALC QWCALC QDCALC STFIND QISET XYWAKE \
   --output "${BUILD_DIR}/xpanel_inviscid_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xoper.f \
+  --source fortran-src/xfoil-6.99/xoper.f \
   --routines SPECAL SPECCL MHINGE \
   --output "${BUILD_DIR}/xoper_inviscid_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xgdes.f \
+  --source fortran-src/xfoil-6.99/xgdes.f \
   --routines GETXYF \
   --output "${BUILD_DIR}/xgdes_getxyf_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xsolve.f \
+  --source fortran-src/xfoil-6.99/xsolve.f \
   --routines LUDCMP BAKSUB \
   --output "${BUILD_DIR}/xsolve_lu_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/userio.f \
+  --source fortran-src/xfoil-6.99/userio.f \
   --routines ASKR \
   --output "${BUILD_DIR}/userio_askr_routines.f" > /dev/null
 
@@ -123,26 +123,26 @@ python3 tools/extract-fortran-routines.py \
 # produce, if not present (same byte-faithful extraction).
 if [[ ! -f "${PANELING_DIR}/xfoil_paneling_routines.f" ]]; then
   python3 tools/extract-fortran-routines.py \
-    --source fortran-src/xfoil.f \
+    --source fortran-src/xfoil-6.99/xfoil.f \
     --routines PANGEN TECALC \
     --output "${PANELING_DIR}/xfoil_paneling_routines.f" > /dev/null
   python3 tools/extract-fortran-routines.py \
-    --source fortran-src/xgdes.f \
+    --source fortran-src/xfoil-6.99/xgdes.f \
     --routines ABCOPY \
     --output "${PANELING_DIR}/xgdes_abcopy_routines.f" > /dev/null
   python3 tools/extract-fortran-routines.py \
-    --source fortran-src/xpanel.f \
+    --source fortran-src/xfoil-6.99/xpanel.f \
     --routines APCALC NCALC \
     --output "${PANELING_DIR}/xpanel_kernels_routines.f" > /dev/null
   python3 tools/extract-fortran-routines.py \
-    --source fortran-src/xgeom.f \
+    --source fortran-src/xfoil-6.99/xgeom.f \
     --routines LEFIND XLFIND NSFIND SOPPS \
     --output "${PANELING_DIR}/xgeom_lefind_routines.f" > /dev/null
 fi
 
 # Canonical Fortran-objects (unchanged, DBL-flags).
 for f in naca spline xutils; do
-  "${FC}" -c ${DBL} "${REPO_ROOT}/fortran-src/${f}.f" \
+  "${FC}" -c ${DBL} "${REPO_ROOT}/fortran-src/xfoil-6.99/${f}.f" \
     -o "${BUILD_DIR}/${f}.o"
 done
 
@@ -156,12 +156,12 @@ for f in xgeom_lefind_routines xfoil_paneling_routines \
   if [[ ! -f "${local_dir}/${f}.f" ]]; then
     local_dir="${PANELING_DIR}"
   fi
-  "${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src" \
+  "${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
     "${local_dir}/${f}.f" -o "${BUILD_DIR}/${f}.o"
 done
 
 # harness (DBL flags) and link without symbol suppression.
-"${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${HARNESS_DIR}/xycm_ref_harness.f" -o "${BUILD_DIR}/xycm_ref_harness.o"
 # Negative check: osmap_DP.f is an inactive upstream alternative
 # with the same OSMAP symbol as the canonical runtime implementation.

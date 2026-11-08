@@ -90,99 +90,99 @@ fi
 
 # Byte-faithful extraction of the BL routines (below build/).
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xbl.f \
+  --source fortran-src/xfoil-6.99/xbl.f \
   --routines SETBL IBLSYS MRCHUE MRCHDU UPDATE DSLIM \
   --output "${BUILD_DIR}/xbl_solver_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xbl.f \
+  --source fortran-src/xfoil-6.99/xbl.f \
   --routines XIFSET BLPINI \
   --output "${BUILD_DIR}/xbl_xifset_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xsolve.f \
+  --source fortran-src/xfoil-6.99/xsolve.f \
   --routines GAUSS \
   --output "${BUILD_DIR}/xsolve_gauss_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xblsys.f \
+  --source fortran-src/xfoil-6.99/xblsys.f \
   --routines TRCHEK AXSET TRCHEK2 BLSYS TESYS BLVAR BLMID TRDIF BLDIF \
              DAMPL DAMPL2 DIL DILW HSL CFL DIT HST CFT HCT HKIN BLPRV BLKIN \
   --output "${BUILD_DIR}/xblsys_solver_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xsolve.f \
+  --source fortran-src/xfoil-6.99/xsolve.f \
   --routines BLSOLV LUDCMP BAKSUB \
   --output "${BUILD_DIR}/xsolve_bl_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xpanel.f \
+  --source fortran-src/xfoil-6.99/xpanel.f \
   --routines UICALC UECALC QVFUE GAMQV STMOVE UESET DSSET \
   --output "${BUILD_DIR}/xpanel_coupling_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xpanel.f \
+  --source fortran-src/xfoil-6.99/xpanel.f \
   --routines IBLPAN XICALC \
   --output "${BUILD_DIR}/xpanel_bl_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xfoil.f \
+  --source fortran-src/xfoil-6.99/xfoil.f \
   --routines MRCL COMSET CPCALC CLCALC CDCALC NACA \
   --output "${BUILD_DIR}/xfoil_inviscid_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xgeom.f \
+  --source fortran-src/xfoil-6.99/xgeom.f \
   --routines GEOPAR AECALC TCCALC \
   --output "${BUILD_DIR}/xgeom_geopar_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xoper.f \
+  --source fortran-src/xfoil-6.99/xoper.f \
   --routines SPECAL SPECCL MHINGE VISCAL FCPMIN \
   --output "${BUILD_DIR}/xoper_viscous_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xpanel.f \
+  --source fortran-src/xfoil-6.99/xpanel.f \
   --routines PSILIN PSWLIN GGCALC QWCALC QDCALC STFIND QISET XYWAKE \
   --output "${BUILD_DIR}/xpanel_inviscid_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xgdes.f \
+  --source fortran-src/xfoil-6.99/xgdes.f \
   --routines GETXYF \
   --output "${BUILD_DIR}/xgdes_getxyf_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/userio.f \
+  --source fortran-src/xfoil-6.99/userio.f \
   --routines ASKR STRIP \
   --output "${BUILD_DIR}/userio_askr_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/userio.f \
+  --source fortran-src/xfoil-6.99/userio.f \
   --routines ASKI \
   --output "${BUILD_DIR}/userio_aski_routines.f" > /dev/null
 
 # paneling/inviscid extractions produce, if not present.
 if [[ ! -f "${PANELING_DIR}/xfoil_paneling_routines.f" ]]; then
   python3 tools/extract-fortran-routines.py \
-    --source fortran-src/xfoil.f \
+    --source fortran-src/xfoil-6.99/xfoil.f \
     --routines PANGEN TECALC \
     --output "${PANELING_DIR}/xfoil_paneling_routines.f" > /dev/null
   python3 tools/extract-fortran-routines.py \
-    --source fortran-src/xgdes.f \
+    --source fortran-src/xfoil-6.99/xgdes.f \
     --routines ABCOPY \
     --output "${PANELING_DIR}/xgdes_abcopy_routines.f" > /dev/null
   python3 tools/extract-fortran-routines.py \
-    --source fortran-src/xpanel.f \
+    --source fortran-src/xfoil-6.99/xpanel.f \
     --routines APCALC NCALC \
     --output "${PANELING_DIR}/xpanel_kernels_routines.f" > /dev/null
   python3 tools/extract-fortran-routines.py \
-    --source fortran-src/xgeom.f \
+    --source fortran-src/xfoil-6.99/xgeom.f \
     --routines LEFIND XLFIND NSFIND SOPPS \
     --output "${PANELING_DIR}/xgeom_lefind_routines.f" > /dev/null
 fi
 
 # Canonical Fortran-objects (unchanged, DBL-flags).
 for f in naca spline xutils; do
-  "${FC}" -c ${DBL} "${REPO_ROOT}/fortran-src/${f}.f" \
+  "${FC}" -c ${DBL} "${REPO_ROOT}/fortran-src/xfoil-6.99/${f}.f" \
     -o "${BUILD_DIR}/${f}.o"
 done
 
@@ -197,18 +197,18 @@ for f in xgeom_lefind_routines xfoil_paneling_routines \
   if [[ ! -f "${local_dir}/${f}.f" ]]; then
     local_dir="${PANELING_DIR}"
   fi
-  "${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src" \
+  "${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
     "${local_dir}/${f}.f" -o "${BUILD_DIR}/${f}.o"
 done
 
 for f in xbl_xifset_routines xsolve_gauss_routines xpanel_bl_routines \
          userio_aski_routines xgeom_geopar_routines; do
-  "${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src" \
+  "${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
     "${BUILD_DIR}/${f}.f" -o "${BUILD_DIR}/${f}.o"
 done
 
 # harness (DBL-flags).
-"${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${HARNESS_DIR}/c11a_state_harness.f" \
   -o "${BUILD_DIR}/c11a_state_harness.o"
 # Negative check: osmap_DP.f is an inactive upstream alternative
@@ -247,7 +247,7 @@ cp "${REPO_ROOT}/sample/CLARK_Y.dat" "${BUILD_DIR}/CLARK_Y.dat"
 
 # Two-point harness (batch sequence alpha=0.0 -> 0.5, canonical
 # VISCAL sequence semantics, per-point flags according to the batch contract).
-"${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${HARNESS_DIR}/c11a_twopoint_harness.f" \
   -o "${BUILD_DIR}/c11a_twopoint_harness.o"
 "${FC}" "${BUILD_DIR}/c11a_twopoint_harness.o" \
@@ -293,7 +293,7 @@ SHARED_OBJS=(
 # (b) NSEQEX halt Cl 0.4..1.2/0.2 with ITMAX=1. Both use ABCOPY contour
 # and canonical SPECCL/SPECAL/VISCAL routines (It24.16).
 for h in c11a_cseq_harness c11a_cseq_nseqex_harness; do
-  "${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src" \
+  "${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
     "${HARNESS_DIR}/${h}.f" -o "${BUILD_DIR}/${h}.o"
   "${FC}" "${BUILD_DIR}/${h}.o" "${SHARED_OBJS[@]}" -o "${BUILD_DIR}/${h}"
   (cd "${BUILD_DIR}" && ./${h}) > "${OUT_DIR}/${h}_reference.txt"
@@ -306,7 +306,7 @@ done
 # without ITMAX+5, sequence 0.0->14.5/0.5, ABCOPY no-PANE) with the complete
 # VISCAL iteration history (It24.16) and point output per point. Additive:
 # existing references remain unchanged; --write produces only the new file.
-"${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${HARNESS_DIR}/c11a_batch_stall_harness.f" \
   -o "${BUILD_DIR}/c11a_batch_stall_harness.o"
 "${FC}" "${BUILD_DIR}/c11a_batch_stall_harness.o" "${SHARED_OBJS[@]}" \
@@ -319,7 +319,7 @@ done
 # xbl copy (F341*/U*/H0 WRITEs, LDUMPM for ISET=341). Only the
 # xbl routines were replaced; all remaining routines stay canonical. Additive:
 # existing references remain unchanged.
-"${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${HARNESS_DIR}/c11a_mrchue341_probe.f" \
   -o "${BUILD_DIR}/c11a_mrchue341_probe.o"
 MRCHUE_OBJS=()
@@ -340,7 +340,7 @@ done
 # inviscid solution, retention of LIPAN/LBLINI, VISCAL(ITMAX) without NSEQEX.
 # Scenarios A (Alfa 2 cold/warm), B (CLI inviscid/viscous), C (Cl viscous),
 # D (CLI vs. Cl same target Cl), E (ITMAX=1 no convergence).
-"${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${HARNESS_DIR}/c11a_oper_singlepoint_harness.f" \
   -o "${BUILD_DIR}/c11a_oper_singlepoint_harness.o"
 "${FC}" "${BUILD_DIR}/c11a_oper_singlepoint_harness.o" "${SHARED_OBJS[@]}" \
@@ -353,7 +353,7 @@ done
 # (NACA 2412, PANGEN, Re=1e6) for the iteration-path comparison
 # Core vs Fortran (RMSBL/RMXBL/VMXBL/IMXBL/ISMXBL/RLX/ALFA/CL/CM/CD/
 # CDF/CDP/ITRAN/NBL/IBLTE/flags per iteration).
-"${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${HARNESS_DIR}/c11a_alfa_diag_harness.f" \
   -o "${BUILD_DIR}/c11a_alfa_diag_harness.o"
 "${FC}" "${BUILD_DIR}/c11a_alfa_diag_harness.o" "${SHARED_OBJS[@]}" \
@@ -364,7 +364,7 @@ done
 # LRECALC harness: canonical '!' / LRECALC continuation semantics (xoper.f
 # 85-92/416-542). SPECAL once, then VISCAL(ITMAX=1) repeatedly without a new
 # SPECAL (continuation on the retained state), until convergence or the limit.
-"${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${HARNESS_DIR}/c11a_lrecalc_harness.f" \
   -o "${BUILD_DIR}/c11a_lrecalc_harness.o"
 "${FC}" "${BUILD_DIR}/c11a_lrecalc_harness.o" "${SHARED_OBJS[@]}" \
@@ -378,7 +378,7 @@ done
 # station fields and mapping content (IPAN/Is/SST/NBL/ISYS/NSYS) remain
 # preserved; the next VISCAL run (COMOLD='Alfa', LRECALC=true) sets
 # LIPAN via IBLPAN again and runs with LBLINI=false via SETBL/MRCHUE.
-"${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${HARNESS_DIR}/c11a_init_harness.f" \
   -o "${BUILD_DIR}/c11a_init_harness.o"
 "${FC}" "${BUILD_DIR}/c11a_init_harness.o" "${SHARED_OBJS[@]}" \
@@ -390,7 +390,7 @@ done
 # Mach side effects (MRCL/COMSET/CPCALC/CLCALC/CDCALC, xoper.f 322-333) on
 # a present point without a new solver run. Scenarios C (viscous),
 # B (inviscid), A (no point), depending on COMMON fresh initialization (It24.16).
-"${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${HARNESS_DIR}/c11a_mach_postproc_harness.f" \
   -o "${BUILD_DIR}/c11a_mach_postproc_harness.o"
 "${FC}" "${BUILD_DIR}/c11a_mach_postproc_harness.o" "${SHARED_OBJS[@]}" \
@@ -404,7 +404,7 @@ done
 # C (viscous), B (inviscid), A (no point), depending on COMMON fresh
 # initialization (It24.16). Validates for the first time the on-demand
 # C++ derivation cpCalc(QINV/QVIS)+fcpmin against Fortran.
-"${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c ${DBL} -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${HARNESS_DIR}/c11a_mach_cp_harness.f" \
   -o "${BUILD_DIR}/c11a_mach_cp_harness.o"
 "${FC}" "${BUILD_DIR}/c11a_mach_cp_harness.o" "${SHARED_OBJS[@]}" \

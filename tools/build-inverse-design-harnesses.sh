@@ -28,7 +28,7 @@
 # reproducible reference data below tests/data/core-inverse-design-reference/.
 #
 # The harnesses call exclusively the canonical routines from
-# fortran-src/{xmdes,xqdes,ntcalc,airfoil,xpanel,xsolve,spline,sort,xutils,osmap}.f
+# fortran-src/xfoil-6.99/{xmdes,xqdes,ntcalc,airfoil,xpanel,xsolve,spline,sort,xutils,osmap}.f
 # unchanged. They change no Fortran source, no raw reference and
 # no golden file.
 #
@@ -90,115 +90,115 @@ fi
 # Byte-faithful extraction of the actually called canonical routines
 # (below build/; no Fortran source is changed).
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xmdes.f \
+  --source fortran-src/xfoil-6.99/xmdes.f \
   --routines EIWSET PIQSUM FTP CNFILT CNSYMM \
   --output "${BUILD_DIR}/xmdes_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xmdes.f \
+  --source fortran-src/xfoil-6.99/xmdes.f \
   --routines SCINIT CNCALC ZCCALC ZCNORM ZLEFIND \
   --output "${BUILD_DIR}/xmdes_mapping.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xmdes.f \
+  --source fortran-src/xfoil-6.99/xmdes.f \
   --routines QCCALC QSPINT MAPGEN \
   --output "${BUILD_DIR}/xmdes_speed.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xgeom.f \
+  --source fortran-src/xfoil-6.99/xgeom.f \
   --routines LEFIND \
   --output "${BUILD_DIR}/xgeom_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/profil.f \
+  --source fortran-src/xfoil-6.99/profil.f \
   --routines FS B3SOLV PRWALL UWALL \
   --output "${BUILD_DIR}/xprofil.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xblsys.f \
+  --source fortran-src/xfoil-6.99/xblsys.f \
   --routines CFT \
   --output "${BUILD_DIR}/xblsys_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xqdes.f \
+  --source fortran-src/xfoil-6.99/xqdes.f \
   --routines SPLQSP SMOOQ GAMQSP SYMQSP QINCOM \
   --output "${BUILD_DIR}/xqdes_kernels.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xmdes.f \
+  --source fortran-src/xfoil-6.99/xmdes.f \
   --routines DZTSET AGTSET \
   --output "${BUILD_DIR}/xmdes_setters.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xmdes.f \
+  --source fortran-src/xfoil-6.99/xmdes.f \
   --routines MAPGAM QSPCIR \
   --output "${BUILD_DIR}/xmdes_mapgam.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xpanel.f \
+  --source fortran-src/xfoil-6.99/xpanel.f \
   --routines PSILIN APCALC NCALC \
   --output "${BUILD_DIR}/xpanel_geolin.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xfoil.f \
+  --source fortran-src/xfoil-6.99/xfoil.f \
   --routines PANGEN TECALC CLCALC \
   --output "${BUILD_DIR}/xfoil_pangen.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xqdes.f \
+  --source fortran-src/xfoil-6.99/xqdes.f \
   --routines MIXED GAMLIN \
   --output "${BUILD_DIR}/xqdes_mixed.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xgdes.f \
+  --source fortran-src/xfoil-6.99/xgdes.f \
   --routines ABCOPY \
   --output "${BUILD_DIR}/xgdes_abcopy.f" > /dev/null
 
 # Canonical Fortran-objects (unchanged), if of a harness needed.
 for f in naca spline xsolve osmap ntcalc xutils; do
-  "${FC}" -c "${REPO_ROOT}/fortran-src/${f}.f" -o "${BUILD_DIR}/${f}.o"
+  "${FC}" -c "${REPO_ROOT}/fortran-src/xfoil-6.99/${f}.f" -o "${BUILD_DIR}/${f}.o"
 done
 
-# harness-glue for OSMAP (GETOSFILE missing in fortran-src/).
+# harness-glue for OSMAP (GETOSFILE missing in fortran-src/xfoil-6.99/).
 "${FC}" -c "${HARNESS_DIR}/getosfile.f" -o "${BUILD_DIR}/getosfile.o"
 
 # harness glue: link-only stub for ASKR (the non-interactive branch is never reached).
 "${FC}" -c "${HARNESS_DIR}/askr.f" -o "${BUILD_DIR}/askr.o"
 
 # harness-glue: XFOIL.INC units for MAPGAM/QSPCIR (PI conflict with CIRCLE.INC).
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${HARNESS_DIR}/mdes_panel_glue.f" -o "${BUILD_DIR}/mdes_panel_glue.o"
 
 # Extracted routine objects (byte-faithful blocks from xmdes.f/xgeom.f).
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${BUILD_DIR}/xmdes_routines.f" -o "${BUILD_DIR}/xmdes_routines.o"
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${BUILD_DIR}/xmdes_mapping.f" -o "${BUILD_DIR}/xmdes_mapping.o"
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${BUILD_DIR}/xmdes_speed.f" -o "${BUILD_DIR}/xmdes_speed.o"
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${BUILD_DIR}/xgeom_routines.f" -o "${BUILD_DIR}/xgeom_routines.o"
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${BUILD_DIR}/xprofil.f" -o "${BUILD_DIR}/xprofil.o"
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${BUILD_DIR}/xblsys_routines.f" -o "${BUILD_DIR}/xblsys_routines.o"
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${BUILD_DIR}/xqdes_kernels.f" -o "${BUILD_DIR}/xqdes_kernels.o"
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${BUILD_DIR}/xmdes_setters.f" -o "${BUILD_DIR}/xmdes_setters.o"
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${BUILD_DIR}/xmdes_mapgam.f" -o "${BUILD_DIR}/xmdes_mapgam.o"
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${BUILD_DIR}/xpanel_geolin.f" -o "${BUILD_DIR}/xpanel_geolin.o"
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${BUILD_DIR}/xfoil_pangen.f" -o "${BUILD_DIR}/xfoil_pangen.o"
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${BUILD_DIR}/xqdes_mixed.f" -o "${BUILD_DIR}/xqdes_mixed.o"
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${BUILD_DIR}/xgdes_abcopy.f" -o "${BUILD_DIR}/xgdes_abcopy.o"
 
 # harness glue: CIRCLE-side units for the MDES-INIT matrix harness.
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${HARNESS_DIR}/mdes_init_matrix_glue.f" \
   -o "${BUILD_DIR}/mdes_init_matrix_glue.o"
 
@@ -216,16 +216,16 @@ R8DIR="${BUILD_DIR}/r8"
 R8FLAGS=(-fdefault-real-8 -fdefault-double-8)
 mkdir -p "${R8DIR}"
 for f in naca spline xsolve; do
-  "${FC}" "${R8FLAGS[@]}" -c "${REPO_ROOT}/fortran-src/${f}.f" \
+  "${FC}" "${R8FLAGS[@]}" -c "${REPO_ROOT}/fortran-src/xfoil-6.99/${f}.f" \
     -o "${R8DIR}/${f}.o"
 done
 for u in xmdes_routines xmdes_mapping xmdes_speed xgeom_routines \
          xqdes_kernels xpanel_geolin xfoil_pangen xmdes_mapgam \
          xgdes_abcopy; do
-  "${FC}" "${R8FLAGS[@]}" -c -I "${REPO_ROOT}/fortran-src" \
+  "${FC}" "${R8FLAGS[@]}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
     "${BUILD_DIR}/${u}.f" -o "${R8DIR}/${u}.o"
 done
-"${FC}" "${R8FLAGS[@]}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" "${R8FLAGS[@]}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${HARNESS_DIR}/mdes_init_matrix_glue.f" \
   -o "${R8DIR}/mdes_init_matrix_glue.o"
 
@@ -233,7 +233,7 @@ run_harness() {
   local harness="$1"
   local name="$2"
   shift 2
-  "${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+  "${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
     "${HARNESS_DIR}/${harness}.f" -o "${BUILD_DIR}/${harness}.o"
   # Negative check: osmap_DP.f is an inactive upstream alternative
   # with the same OSMAP symbol as the canonical runtime implementation.
@@ -267,7 +267,7 @@ run_harness qcalc_mapgen_harness qcalc_mapgen \
   "${BUILD_DIR}/xsolve.o"
 
 # OSMAP/NTCALC harness: find the database via the OSMAP environment variable.
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${HARNESS_DIR}/osmap_nt_harness.f" -o "${BUILD_DIR}/osmap_nt_harness.o"
 # Negative check: osmap_DP.f is an inactive upstream alternative
 # with the same OSMAP symbol as the canonical runtime implementation.
@@ -279,7 +279,7 @@ run_harness qcalc_mapgen_harness qcalc_mapgen \
   "${BUILD_DIR}/ntcalc.o" \
   "${BUILD_DIR}/getosfile.o" \
   -o "${BUILD_DIR}/osmap_nt_harness"
-OSMAP="${REPO_ROOT}/fortran-src/osmap.dat" \
+OSMAP="${REPO_ROOT}/fortran-src/xfoil-6.99/osmap.dat" \
   "${BUILD_DIR}/osmap_nt_harness" > "${OUT_DIR}/osmap_nt_reference.txt"
 
 run_harness wall_profile_harness wall_profile \
@@ -324,7 +324,7 @@ run_harness mdes_init_harness mdes_init \
 # via environment variable CLARKY_DAT (existing test input file).
 CLARKY_DAT="${REPO_ROOT}/tests/fortran-reference/cases/file-export/dmp-visc-clark-y/input/CLARK_Y.dat"
 export CLARKY_DAT
-"${FC}" "${R8FLAGS[@]}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" "${R8FLAGS[@]}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${HARNESS_DIR}/mdes_init_matrix_harness.f" \
   -o "${R8DIR}/mdes_init_matrix_harness.o"
 "${FC}" "${R8DIR}/mdes_init_matrix_harness.o" \

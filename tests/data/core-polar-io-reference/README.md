@@ -2,7 +2,7 @@
 
 These files are the canonical reference outputs of the focused Fortran
 polar-io harnesses. They are produced by calling the unmodified canonical
-routines from `fortran-src/` (for example `BLDUMP`, `BLDUMP2`, `CPDUMP`,
+routines from `fortran-src/xfoil-6.99/` (for example `BLDUMP`, `BLDUMP2`, `CPDUMP`,
 `PLXINI`, `PLXADD`, `POLREAD`, ...) and are consumed byte-for-byte by the
 C++ core tests (`tests/core/IoTests.cpp`, `tests/core/PolarTests.cpp`) and
 by the harness `--check` gate.

@@ -28,7 +28,7 @@
 # reference data below tests/data/core-math-reference/.
 #
 # The harnesses call exclusively the canonical routines from
-# fortran-src/{xutils,sort,spline,xsolve}.f unchanged. They change
+# fortran-src/xfoil-6.99/{xutils,sort,spline,xsolve}.f unchanged. They change
 # no Fortran source, no raw reference and no golden file.
 #
 # Generated binaries are written only below build/.
@@ -85,7 +85,7 @@ fi
 
 # Canonical Fortran-objects (unchanged).
 for f in xutils sort spline xsolve; do
-  "${FC}" -c "${REPO_ROOT}/fortran-src/${f}.f" -o "${BUILD_DIR}/${f}.o"
+  "${FC}" -c "${REPO_ROOT}/fortran-src/xfoil-6.99/${f}.f" -o "${BUILD_DIR}/${f}.o"
 done
 
 run_harness() {

@@ -28,7 +28,7 @@
 # reference data below tests/data/core-intx-half-reference/.
 #
 # The harness calls exclusively the canonical routines from
-# fortran-src/{naca,xgeom,spline,xutils}.f unchanged. It changes
+# fortran-src/xfoil-6.99/{naca,xgeom,spline,xutils}.f unchanged. It changes
 # no Fortran source, no raw reference and no golden file.
 #
 # Precision contract: the
@@ -86,22 +86,22 @@ fi
 # Byte-faithful extraction of the actually called canonical
 # routines (below build/; no Fortran source is changed).
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xgeom.f \
+  --source fortran-src/xfoil-6.99/xgeom.f \
   --routines LEFIND XLFIND NSFIND SOPPS INTERX HALF \
   --output "${BUILD_DIR}/xgeom_intx_routines.f" > /dev/null
 
 # Canonical Fortran-objects (unchanged; canonical R8-flags).
 for f in naca spline xutils; do
-  "${FC}" "${R8FLAGS[@]}" -c "${REPO_ROOT}/fortran-src/${f}.f" \
+  "${FC}" "${R8FLAGS[@]}" -c "${REPO_ROOT}/fortran-src/xfoil-6.99/${f}.f" \
     -o "${BUILD_DIR}/${f}.o"
 done
 
-"${FC}" "${R8FLAGS[@]}" -I "${REPO_ROOT}/fortran-src" \
+"${FC}" "${R8FLAGS[@]}" -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   -c "${BUILD_DIR}/xgeom_intx_routines.f" \
   -o "${BUILD_DIR}/xgeom_intx_routines.o"
 
 # link without symbol suppression: all required symbols are present beforehand.
-"${FC}" "${R8FLAGS[@]}" -I "${REPO_ROOT}/fortran-src" \
+"${FC}" "${R8FLAGS[@]}" -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   -c "${HARNESS_DIR}/intx_half_harness.f" \
   -o "${BUILD_DIR}/intx_half_harness.o"
 # shellcheck disable=SC2086

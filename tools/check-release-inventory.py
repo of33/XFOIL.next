@@ -55,20 +55,20 @@ import sys
 
 
 EXPECTED_OSMAP_SHA = {
-    "fortran-src/osmap.f":
+    "fortran-src/xfoil-6.99/osmap.f":
         "3c806b1d5bd62b80d2a2180b93ea2db95cb5f56c5ec7e55c07868fa20065e719",
-    "fortran-src/osmap.dat":
+    "fortran-src/xfoil-6.99/osmap.dat":
         "744d0e5a6948de9a5864a04177735d9620ccbbcb1abcb8fd1af284fd52a9b949",
-    "fortran-src/osmap_DP.f":
+    "fortran-src/xfoil-6.99/osmap_DP.f":
         "175c83c50ee53a08c03b70f6a5053048fcd6dac5f70ffd50cb216506ef7ddda9",
-    "fortran-src/osmapDP.dat":
+    "fortran-src/xfoil-6.99/osmapDP.dat":
         "2f6b3c63461d71da9b6cb9ca1340d77cff0cfbe767679d15b5b8556b45d948c4",
 }
 
 REQUIRED_FILES = [
     "LICENSE",
     "NOTICE",
-    "fortran-src/SHA256SUMS",
+    "fortran-src/xfoil-6.99/SHA256SUMS",
     "fortran-bin/xfoil",
     "sample/CLARK_Y.dat",
     "sample/NACA2312.dat",

@@ -28,7 +28,7 @@
 # reproducible reference data below tests/data/core-polar-io-reference/.
 #
 # The harnesses call exclusively the canonical routines from
-# fortran-src/{xpol,iopol,xoper,xfoil,xmdes,xgdes,xpanel,xgeom,xqdes,
+# fortran-src/xfoil-6.99/{xpol,iopol,xoper,xfoil,xmdes,xgdes,xpanel,xgeom,xqdes,
 # xblsys,spline,sort,userio}.f unchanged. They change no
 # Fortran source, no raw reference and no golden file.
 #
@@ -116,74 +116,74 @@ cp "${REPO_ROOT}/tests/fortran-reference/cases/polar/polar-visc-2412/generated/v
 
 # Byte-faithful extraction of the called canonical routines.
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xpol.f \
+  --source fortran-src/xfoil-6.99/xpol.f \
   --routines PLRSET APCOPY PLRINI PLXINI PLRADD PLXADD PLRSRT PLRCOP PRFCOP PLRSUM PRFSUM BOTTOM BOTTOMX \
   --output "${BUILD_DIR}/xpol_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/iopol.f \
+  --source fortran-src/xfoil-6.99/iopol.f \
   --routines POLREAD POLWRIT POLREF \
   --output "${BUILD_DIR}/iopol_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xoper.f \
+  --source fortran-src/xfoil-6.99/xoper.f \
   --routines NAMMOD MHINGE BLDUMP BLDUMP2 CPDUMP \
   --output "${BUILD_DIR}/xoper_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xfoil.f \
+  --source fortran-src/xfoil-6.99/xfoil.f \
   --routines TECALC COMSET MRCL GETDEF WRTDEF \
   --output "${BUILD_DIR}/xfoil_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xmdes.f \
+  --source fortran-src/xfoil-6.99/xmdes.f \
   --routines CNDUMP \
   --output "${BUILD_DIR}/xmdes_cndump.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xmdes.f \
+  --source fortran-src/xfoil-6.99/xmdes.f \
   --routines GETVOV \
   --output "${BUILD_DIR}/xmdes_getvov.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xgdes.f \
+  --source fortran-src/xfoil-6.99/xgdes.f \
   --routines GETXYF \
   --output "${BUILD_DIR}/xgdes_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xpanel.f \
+  --source fortran-src/xfoil-6.99/xpanel.f \
   --routines NCALC APCALC \
   --output "${BUILD_DIR}/xpanel_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xgeom.f \
+  --source fortran-src/xfoil-6.99/xgeom.f \
   --routines LEFIND \
   --output "${BUILD_DIR}/xgeom_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xqdes.f \
+  --source fortran-src/xfoil-6.99/xqdes.f \
   --routines QINCOM SPLQSP \
   --output "${BUILD_DIR}/xqdes_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xblsys.f \
+  --source fortran-src/xfoil-6.99/xblsys.f \
   --routines HKIN \
   --output "${BUILD_DIR}/xblsys_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/spline.f \
+  --source fortran-src/xfoil-6.99/spline.f \
   --routines SCALC SEGSPL SEVAL SPLIND SINVRT DEVAL D2VAL TRISOL \
   --output "${BUILD_DIR}/spline_routines.f" > /dev/null
 
 # Canonical unmodified source files.
-"${FC}" -c "${FFLAGS[@]}" "${REPO_ROOT}/fortran-src/userio.f" -o "${BUILD_DIR}/userio.o"
-"${FC}" -c "${FFLAGS[@]}" "${REPO_ROOT}/fortran-src/sort.f" -o "${BUILD_DIR}/sort.o"
+"${FC}" -c "${FFLAGS[@]}" "${REPO_ROOT}/fortran-src/xfoil-6.99/userio.f" -o "${BUILD_DIR}/userio.o"
+"${FC}" -c "${FFLAGS[@]}" "${REPO_ROOT}/fortran-src/xfoil-6.99/sort.f" -o "${BUILD_DIR}/sort.o"
 
 # Extracted routine objects.
 for f in xpol_routines iopol_routines xoper_routines xfoil_routines \
          xmdes_cndump xmdes_getvov xgdes_routines xpanel_routines xgeom_routines \
          xqdes_routines xblsys_routines spline_routines; do
-  "${FC}" -c "${FFLAGS[@]}" -I "${REPO_ROOT}/fortran-src" \
+  "${FC}" -c "${FFLAGS[@]}" -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
     "${BUILD_DIR}/${f}.f" -o "${BUILD_DIR}/${f}.o"
 done
 
@@ -213,7 +213,7 @@ run_harness() {
     stdin_file="$1"
     shift
   fi
-  "${FC}" -c "${FFLAGS[@]}" -I "${REPO_ROOT}/fortran-src" \
+  "${FC}" -c "${FFLAGS[@]}" -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
     "${HARNESS_DIR}/${harness}.f" -o "${BUILD_DIR}/${harness}.o"
   # Negative check: osmap_DP.f is an inactive upstream alternative
   # with the same OSMAP symbol as the canonical runtime implementation.

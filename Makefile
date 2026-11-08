@@ -606,7 +606,7 @@ check-public-docs:
 # fortran-bin/xfoil is used; test-harnesses need gfortran).
 # ---------------------------------------------------------------------------
 check-fortran-sha:
-	sha256sum --check fortran-src/SHA256SUMS
+	sha256sum --check fortran-src/xfoil-6.99/SHA256SUMS
 
 test-reference:
 	tools/fortran-ref.sh all-verify

@@ -4,23 +4,23 @@ The numerical reference basis is the canonical XFOIL 6.99 Fortran
 implementation. It is used to validate the C++ port and is never derived
 from C++ output.
 
-## `fortran-src/`
+## `fortran-src/xfoil-6.99/`
 
 The original XFOIL 6.99 Fortran sources. They are the highest domain
 authority and are kept content-unmodified; C++ changes are not back-ported
 into them. They are not compiled or linked in the normal C++ build. See
-`fortran-src/README.md`.
+`fortran-src/xfoil-6.99/README.md`.
 
-Integrity is pinned by `fortran-src/SHA256SUMS` (48 entries, including the
+Integrity is pinned by `fortran-src/xfoil-6.99/SHA256SUMS` (48 entries, including the
 active and inactive OSMAP artifacts):
 
 ```sh
-make check-fortran-sha          # sha256sum --check fortran-src/SHA256SUMS
+make check-fortran-sha          # sha256sum --check fortran-src/xfoil-6.99/SHA256SUMS
 ```
 
 ## `fortran-bin/xfoil`
 
-The reference oracle: a Linux x86-64 binary built from `fortran-src/`. It is
+The reference oracle: a Linux x86-64 binary built from `fortran-src/xfoil-6.99/`. It is
 used only to generate and verify canonical reference artifacts. It is not the
 product binary. Its SHA-256 is pinned in `fortran-bin/SHA256SUMS`:
 
@@ -97,9 +97,9 @@ The manifest carries a documented `role` field (default `-`):
 
 ## Active and inactive OSMAP
 
-Active canonical path: `fortran-src/osmap.f` + `fortran-src/osmap.dat`
+Active canonical path: `fortran-src/xfoil-6.99/osmap.f` + `fortran-src/xfoil-6.99/osmap.dat`
 (REAL*4). Inactive upstream originals, preserved and SHA-pinned but never
-built or loaded: `fortran-src/osmap_DP.f` + `fortran-src/osmapDP.dat`.
+built or loaded: `fortran-src/xfoil-6.99/osmap_DP.f` + `fortran-src/xfoil-6.99/osmapDP.dat`.
 
 ## Harness builds
 

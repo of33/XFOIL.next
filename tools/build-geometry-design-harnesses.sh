@@ -28,7 +28,7 @@
 # reproducible reference data below tests/data/core-geometry-design-reference/.
 #
 # The harnesses call exclusively the canonical routines from
-# fortran-src/{xtcam,xgeom,spline,sort,naca,xutils}.f unchanged. They
+# fortran-src/xfoil-6.99/{xtcam,xgeom,spline,sort,naca,xutils}.f unchanged. They
 # do not change any Fortran source, any raw reference or any golden file.
 #
 # GETCAM/GETMAX/CPCAM lie in xtcam.f together with CAMB (menu/plot logic
@@ -39,11 +39,11 @@
 # linked. No linker options for symbol suppression are used.
 #
 # Linked objects:
-# naca.o NACA4 (fortran-src/naca.f, unchanged)
+# naca.o NACA4 (fortran-src/xfoil-6.99/naca.f, unchanged)
 # xgeom_routines.o XLFIND/SOPPS (byte-faithfully extracted)
 # spline.o SCALC/SEGSPL/SEVAL/DEVAL/D2VAL (unchanged)
-# sort.o SORTOL (fortran-src/sort.f, unchanged)
-# xutils.o ATANC etc. (fortran-src/xutils.f, unchanged)
+# sort.o SORTOL (fortran-src/xfoil-6.99/sort.f, unchanged)
+# xutils.o ATANC etc. (fortran-src/xfoil-6.99/xutils.f, unchanged)
 # xtcam_routines.o GETCAM/GETMAX/CPCAM (byte-faithfully extracted)
 #
 # Generated binaries are written only below build/.
@@ -97,32 +97,32 @@ fi
 # Byte-faithful extraction of the actually called canonical routines
 # (below build/; no Fortran source is changed).
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xtcam.f \
+  --source fortran-src/xfoil-6.99/xtcam.f \
   --routines GETCAM GETMAX CPCAM THKCAM TCBUF TCSCAL TCSET HIPNT ZERCAM \
   --output "${BUILD_DIR}/xtcam_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xgdes.f \
+  --source fortran-src/xfoil-6.99/xgdes.f \
   --routines TGAP LERAD SCLXY FLAP INSIDE GETXYF ABCOPY \
   --output "${BUILD_DIR}/xgdes_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xfoil.f \
+  --source fortran-src/xfoil-6.99/xfoil.f \
   --routines ROTATE TECALC \
   --output "${BUILD_DIR}/xfoil_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/plutil.f \
+  --source fortran-src/xfoil-6.99/plutil.f \
   --routines SCALIT \
   --output "${BUILD_DIR}/plutil_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xpanel.f \
+  --source fortran-src/xfoil-6.99/xpanel.f \
   --routines APCALC NCALC \
   --output "${BUILD_DIR}/xpanel_routines.f" > /dev/null
 
 python3 tools/extract-fortran-routines.py \
-  --source fortran-src/xgeom.f \
+  --source fortran-src/xfoil-6.99/xgeom.f \
   --routines XLFIND SOPPS LEFIND GEOPAR AECALC TCCALC YSYM CANG NORM AREFINE SSS LERSCL SCHECK \
   --output "${BUILD_DIR}/xgeom_routines.f" > /dev/null
 
@@ -130,21 +130,21 @@ python3 tools/extract-fortran-routines.py \
 # (referenced by TCSCAL/TCSET, but never
 # called in the harness path NINPUT=2).
 for f in naca spline sort xutils userio; do
-  "${FC}" -c "${REPO_ROOT}/fortran-src/${f}.f" -o "${BUILD_DIR}/${f}.o"
+  "${FC}" -c "${REPO_ROOT}/fortran-src/xfoil-6.99/${f}.f" -o "${BUILD_DIR}/${f}.o"
 done
 
 # Extracted routine objects (byte-faithful blocks from xtcam.f/xgeom.f).
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${BUILD_DIR}/xtcam_routines.f" -o "${BUILD_DIR}/xtcam_routines.o"
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${BUILD_DIR}/xgeom_routines.f" -o "${BUILD_DIR}/xgeom_routines.o"
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${BUILD_DIR}/xfoil_routines.f" -o "${BUILD_DIR}/xfoil_routines.o"
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${BUILD_DIR}/xgdes_routines.f" -o "${BUILD_DIR}/xgdes_routines.o"
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${BUILD_DIR}/xpanel_routines.f" -o "${BUILD_DIR}/xpanel_routines.o"
-"${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+"${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
   "${BUILD_DIR}/plutil_routines.f" -o "${BUILD_DIR}/plutil_routines.o"
 # Plot stubs (numerically irrelevant PLTAIR/PLNEWP no-ops).
 "${FC}" -c "${HARNESS_DIR}/plot_stubs.f" -o "${BUILD_DIR}/plot_stubs.o"
@@ -152,7 +152,7 @@ done
 run_harness() {
   local harness="$1"
   local name="$2"
-  "${FC}" -c -I "${REPO_ROOT}/fortran-src" \
+  "${FC}" -c -I "${REPO_ROOT}/fortran-src/xfoil-6.99" \
     "${HARNESS_DIR}/${harness}.f" -o "${BUILD_DIR}/${harness}.o"
   # Negative check: osmap_DP.f is an inactive upstream alternative
   # with the same OSMAP symbol as the canonical runtime implementation.

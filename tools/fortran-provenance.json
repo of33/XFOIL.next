@@ -3,7 +3,7 @@
   "versions": [
     {
       "id": "xfoil-6.99",
-      "root": "fortran-src",
+      "root": "fortran-src/xfoil-6.99",
       "metadata_paths": [
         "SHA256SUMS"
       ],

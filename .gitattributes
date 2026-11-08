@@ -12,8 +12,8 @@ tests/golden/cli/*.stdout.txt -whitespace
 # Binary artifacts are exempt from any line-ending conversion.
 XFOIL.next.png -text
 fortran-bin/xfoil -text
-fortran-src/osmap.dat -text
-fortran-src/osmapDP.dat -text
+fortran-src/xfoil-6.99/osmap.dat -text
+fortran-src/xfoil-6.99/osmapDP.dat -text
 tests/data/core-polar-io-reference/plxadd_case_dump_reference.bin -text
 tests/data/core-polar-io-reference/plxini_case_dump_reference.bin -text
 tests/fortran-reference/cases/oper-state/oper-alfa180-viscous-iter20/stdout.raw.txt -text

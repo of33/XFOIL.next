@@ -28,8 +28,8 @@
 # reproducible reference data below tests/data/core-blf-reference/.
 #
 # The harness calls the canonical routines from
-# fortran-src/ unchanged. For this, all
-# fortran-src source files except the main program routine in
+# fortran-src/xfoil-6.99/ unchanged. For this, all
+# fortran-src/xfoil-6.99 source files except the main program routine in
 # xfoil.f are compiled; the non-main routines of xfoil.f are
 # extracted byte-faithfully with
 # tools/extract-fortran-routines.py. No
@@ -58,7 +58,7 @@ HARNESS_DIR="${REPO_ROOT}/tests/fortran-reference/harnesses/blf"
 DATA_DIR="${REPO_ROOT}/tests/data/core-blf-reference"
 BUILD_DIR="${REPO_ROOT}/build/core-blf-harness"
 FC="${FC:-gfortran}"
-R8FLAGS=(-fdefault-real-8 -fdefault-double-8 -fallow-argument-mismatch -I"${REPO_ROOT}/fortran-src")
+R8FLAGS=(-fdefault-real-8 -fdefault-double-8 -fallow-argument-mismatch -I"${REPO_ROOT}/fortran-src/xfoil-6.99")
 
 MODE=""
 case "${1:-}" in
@@ -91,15 +91,15 @@ ROUTINES=()
 while IFS= read -r name; do
   ROUTINES+=("${name}")
 done < <(grep -E '^      SUBROUTINE [A-Z][A-Z0-9]*' \
-  "${REPO_ROOT}/fortran-src/xfoil.f" | sed -E 's/^      SUBROUTINE ([A-Z][A-Z0-9]*).*/\1/' | sort -u)
+  "${REPO_ROOT}/fortran-src/xfoil-6.99/xfoil.f" | sed -E 's/^      SUBROUTINE ([A-Z][A-Z0-9]*).*/\1/' | sort -u)
 python3 "${REPO_ROOT}/tools/extract-fortran-routines.py" \
-  --source "${REPO_ROOT}/fortran-src/xfoil.f" \
+  --source "${REPO_ROOT}/fortran-src/xfoil-6.99/xfoil.f" \
   --routines "${ROUTINES[@]}" \
   --output "${BUILD_DIR}/xfoil_all_subroutines.f" > /dev/null
 
 # Compile all canonical source files except xfoil.f directly.
 OBJS=()
-for src in "${REPO_ROOT}"/fortran-src/*.f; do
+for src in "${REPO_ROOT}"/fortran-src/xfoil-6.99/*.f; do
   base="$(basename "${src}")"
   if [[ "${base}" == "xfoil.f" ]]; then
     continue

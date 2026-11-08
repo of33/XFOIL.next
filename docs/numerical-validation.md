@@ -5,7 +5,7 @@ Fortran implementation.
 
 ## Authority
 
-The Fortran sources under `fortran-src/` are the numerical authority. The
+The Fortran sources under `fortran-src/xfoil-6.99/` are the numerical authority. The
 precompiled `fortran-bin/xfoil` is the executable reference oracle for
 deterministic visible output and generated files.
 
@@ -23,7 +23,7 @@ The reference binary was built with GCC 11.4.0 using `-O` (equivalent to
 sources contain no `DOUBLE PRECISION` declarations.
 
 The one explicit `REAL*4` special case is the Orr-Sommerfeld database
-`fortran-src/osmap.dat`, which is read as native single precision on the
+`fortran-src/xfoil-6.99/osmap.dat`, which is read as native single precision on the
 active path. This is a documented, directly proven exception, not a general
 rule.
 
@@ -32,15 +32,15 @@ rule.
 The active, canonical runtime path is:
 
 ```text
-fortran-src/osmap.f  +  fortran-src/osmap.dat
+fortran-src/xfoil-6.99/osmap.f  +  fortran-src/xfoil-6.99/osmap.dat
 ```
 
 The native-precision toolchain variant is preserved as an upstream original
 but is inactive: it is never compiled, linked, or loaded.
 
 ```text
-fortran-src/osmap_DP.f   (inactive, not built)
-fortran-src/osmapDP.dat  (inactive, not loaded)
+fortran-src/xfoil-6.99/osmap_DP.f   (inactive, not built)
+fortran-src/xfoil-6.99/osmapDP.dat  (inactive, not loaded)
 ```
 
 A static check confirms that `osmap_DP` appears in no build source, rule, or

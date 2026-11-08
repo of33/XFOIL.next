@@ -27,15 +27,15 @@
 #
 # Binding contract:
 #
-# fortran-src/osmap.f active XFOIL 6.99 runtime path
-# fortran-src/osmap.dat active REAL*4 database
-# fortran-src/osmap_DP.f inactive original artifact; never
+# fortran-src/xfoil-6.99/osmap.f active XFOIL 6.99 runtime path
+# fortran-src/xfoil-6.99/osmap.dat active REAL*4 database
+# fortran-src/xfoil-6.99/osmap_DP.f inactive original artifact; never
 # compiled or linked automatically
-# fortran-src/osmapDP.dat inactive DP database; never used as the active
+# fortran-src/xfoil-6.99/osmapDP.dat inactive DP database; never used as the active
 # OSMAP database
 #
 # The check examines only the active build selection. The bare
-# existence of fortran-src/osmap_DP.f or fortran-src/osmapDP.dat is
+# existence of fortran-src/xfoil-6.99/osmap_DP.f or fortran-src/xfoil-6.99/osmapDP.dat is
 # explicitly allowed and is not flagged.
 #
 # Call:

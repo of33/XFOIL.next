@@ -6,7 +6,7 @@ artifacts for the C++ port. It is NOT the product binary; the product binary
 is built from the C++ sources.
 
 Platform:  Linux x86-64.
-Source:    built from the canonical sources under fortran-src/.
+Source:    built from the canonical sources under fortran-src/xfoil-6.99/.
 Purpose:   reference and differential validation only.
 
 Integrity:
@@ -22,9 +22,9 @@ Reproducibility:
   The reference build used GCC 11.4.0 with -O (equivalent to -O1) and
   -fdefault-real-8 (default REAL(8)). The sources contain no DOUBLE
   PRECISION declarations, so -fdefault-double-8 has no effect on this binary.
-  The active Orr-Sommerfeld path is fortran-src/osmap.f + fortran-src/osmap.dat
-  (REAL*4); the native-precision variant fortran-src/osmap_DP.f +
-  fortran-src/osmapDP.dat is an inactive upstream original and is not built
+  The active Orr-Sommerfeld path is fortran-src/xfoil-6.99/osmap.f + fortran-src/xfoil-6.99/osmap.dat
+  (REAL*4); the native-precision variant fortran-src/xfoil-6.99/osmap_DP.f +
+  fortran-src/xfoil-6.99/osmapDP.dat is an inactive upstream original and is not built
   into or loaded by this binary.
 
 License and provenance:

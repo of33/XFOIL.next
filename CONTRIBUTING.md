@@ -70,7 +70,7 @@ test suite fully green.
 
 ## Numerical changes
 
-The Fortran sources under `fortran-src/` are the numerical authority, and
+The Fortran sources under `fortran-src/xfoil-6.99/` are the numerical authority, and
 `fortran-bin/xfoil` is the executable reference oracle.
 
 - Prove a numerical change against Fortran first. Do not change formulas,
@@ -128,5 +128,5 @@ build. Do not invent non-canonical replacement grammar for cursor commands.
 
 Every hand-written project source carries the project GPL-3.0-or-later header
 with an `SPDX-License-Identifier` declaration. The header gate enforces this
-and verifies that the original Fortran sources under `fortran-src/` remain
+and verifies that the original Fortran sources under `fortran-src/xfoil-6.99/` remain
 unmodified. Run `make check-license-headers` after adding or editing files.

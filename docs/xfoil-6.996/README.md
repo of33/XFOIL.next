@@ -85,14 +85,14 @@ External archive provenance must instead be recorded through:
 The external archives may be retained in the private audit area but are not
 part of the public release inventory.
 
-## Proposed source layout
+## Source layout
 
-The target layout is:
+The layout is:
 
 ```text
 fortran-src/
-  README.md
   xfoil-6.99/
+    README.md
     SHA256SUMS
     ...
   xfoil-6.996/

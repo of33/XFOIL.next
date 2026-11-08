@@ -11,7 +11,7 @@ fortran-bin/xfoil
   SHA-256: f5779d6954d0b8fdc152e0e0633f18732e00b7b69228d561d629bd524bba598c
 ```
 
-The Fortran sources under `fortran-src/` remain the highest domain authority.
+The Fortran sources under `fortran-src/xfoil-6.99/` remain the highest domain authority.
 The binary is the executable reference oracle.
 
 The reference basis is independent of any C++ golden files under
@@ -151,7 +151,7 @@ The Fortran sources themselves remain untouched.
   temporary directory and compare.
 - `generate` **overwrites** reference artifacts and may be used **only after
   domain authorization**.
-- The Fortran sources under `fortran-src/` remain the **higher domain
+- The Fortran sources under `fortran-src/xfoil-6.99/` remain the **higher domain
   authority**.
 - The binary `fortran-bin/xfoil` is the **executable reference oracle** for
   deterministic visible output and generated files.
@@ -159,7 +159,7 @@ The Fortran sources themselves remain untouched.
   domain reference.
 - Batch goldens remain **protected** (unchanged).
 
-See also `docs/fortran-reference.md` and `fortran-src/README.md`.
+See also `docs/fortran-reference.md` and `fortran-src/xfoil-6.99/README.md`.
 
 ## Leading edge (LE x,y)
 
