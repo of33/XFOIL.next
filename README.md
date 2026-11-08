@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-<strong>A modern C++ implementation of XFOIL 6.99 for aerodynamic analysis and design</strong>
+<strong>A modern C++ implementation of XFOIL for aerodynamic analysis and design</strong>
 </p>
 
 <p align="center">
@@ -29,17 +29,17 @@ alt="GPL-3.0-or-later">
 
 **Version 1.0.0**
 
-XFOIL.next implements the complete canonical non-graphical XFOIL 6.99
+XFOIL.next implements the complete canonical non-graphical XFOIL
 functionality in modern C++.
 
-It is a C++20 port of the canonical XFOIL 6.99 Fortran implementation by
+It is a C++20 port of the canonical XFOIL Fortran implementation by
 Mark Drela and Harold Youngren. The numerical behaviour is validated
 directly against the original Fortran sources and the reference Fortran
 binary.
 
 ## Motivation
 
-XFOIL.next builds on the enduring aerodynamic work embodied in XFOIL 6.99.
+XFOIL.next builds on the enduring aerodynamic work embodied in XFOIL.
 Its purpose is to provide a modern, reliable, and understandable C++
 foundation for teaching, continued development, and straightforward use,
 while preserving full respect for the original authors' scientific and
@@ -57,13 +57,13 @@ The project aims to:
 - provide a solid base for future development without altering the
   physical and numerical foundations established by the original authors.
 
-XFOIL 6.99 is the work of Mark Drela and Harold Youngren. The original
+XFOIL is the work of Mark Drela and Harold Youngren. The original
 sources and their notices are retained unmodified under `fortran-src/`.
 See [NOTICE](NOTICE) for full attribution and provenance details.
 
 ## What it provides
 
-- the complete canonical non-graphical XFOIL 6.99 command set: airfoil and
+- the complete canonical non-graphical XFOIL command set: airfoil and
   panel geometry, NACA generation and file import, inviscid and viscous
   analysis, boundary-layer / transition / wake / interaction numerics,
   single-point and alpha/CL sequences, polar accumulation and reference
@@ -88,7 +88,7 @@ Plotting is not available in this build.
 ```
 
 The numerical, textual, and file-related parts of mixed commands are kept.
-This is a port of XFOIL 6.99, not an independent re-derivation of the
+This is a port of XFOIL, not an independent re-derivation of the
 solver, and it is not a bit-identical reproduction of every Fortran build
 variant (see [known differences](docs/known-differences.md)).
 
@@ -341,7 +341,7 @@ commitments. Order and scope may change as technical evaluation proceeds.
 XFOIL.next is licensed under the GNU General Public License, version 3 or
 later (GPL-3.0-or-later); see [LICENSE](LICENSE).
 
-XFOIL.next is based on XFOIL 6.99 by Mark Drela and Harold Youngren. The
-original XFOIL 6.99 sources under `fortran-src/` retain their own notices
+XFOIL.next is based on XFOIL by Mark Drela and Harold Youngren. The
+original XFOIL sources under `fortran-src/` retain their own notices
 (GPL-2.0-or-later) and are kept unmodified. Provenance and attribution are
 recorded in [NOTICE](NOTICE).
