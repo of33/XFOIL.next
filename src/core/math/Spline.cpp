@@ -35,6 +35,8 @@
 
 #include "xfoil/math/LinearAlgebra.h"
 
+#include "xfoil/core/Limits.h"
+
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -45,8 +47,9 @@
 namespace xfoil::math::spline {
 namespace {
 
-// Fixed workspace limit for the spline-coefficient arrays.
-constexpr int kMaxSplinePoints = 600;
+// Fortran: PARAMETER (NMAX=2500) in SPLINE/SPLIND.
+constexpr int kMaxSplinePoints =
+    static_cast<int>(xfoil::core::splineWorkspaceCapacity);
 
 // 1-based element access on spans and fixed arrays: the domain
 // indices are restricted to 1..pointCount by the size check,
@@ -177,9 +180,10 @@ bool cubicSplineDerivatives(std::span<const double> values,
     return false;
   }
 
-  std::array<double, 601> a{};
-  std::array<double, 601> b{};
-  std::array<double, 601> c{};
+  // 1-based spans use index 0 as reserved padding.
+  std::array<double, xfoil::core::splineWorkspaceCapacity + 1> a{};
+  std::array<double, xfoil::core::splineWorkspaceCapacity + 1> b{};
+  std::array<double, xfoil::core::splineWorkspaceCapacity + 1> c{};
 
   double dsm = 0.0;
   double dsp = 0.0;

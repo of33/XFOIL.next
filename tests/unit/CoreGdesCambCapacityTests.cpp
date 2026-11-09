@@ -155,10 +155,8 @@ TEST(unit, CoreGdesExecHandlerCapacityTexts) {
         std::string::npos);
 }
 
-TEST(unit, CoreCambInpcAcceptsPointsAboveOldLimit) {
-  // S01 accepts more than the old 740-point INPC block. The full 2*IQX
-  // path depends on the S02 spline NMAX raise, so this focused test uses
-  // the current spline limit and terminates the block with a blank line.
+TEST(unit, CoreCambInpcAcceptsFullTwoIqxPath) {
+  // S02b enables the full 2*IQX=1202 INPC block now that NMAX=2500.
   auto session = std::make_unique<session::SessionComposition>();
   {
     std::ostringstream setup;
@@ -166,14 +164,17 @@ TEST(unit, CoreCambInpcAcceptsPointsAboveOldLimit) {
     (void)session::initializeGeometryDesign(*session);
   }
   std::ostringstream menu;
-  constexpr std::size_t kPoints = 1000;  // old INPC cap 740 < 1000 <= S02 NMAX
+  const std::size_t kPoints = xfoil::limits::overlayCoordinateCapacity;
+  CHECK_EQ(kPoints, std::size_t{1202});
   menu << "INPC\n";
   for (std::size_t i = 0; i < kPoints; ++i) {
     const double x = static_cast<double>(i) /
                      static_cast<double>(kPoints - 1);
     menu << x << " " << 0.01 * std::sin(6.0 * x) << "\n";
   }
-  menu << "\nCLR\n\n";  // blank ends INPC; CLR resets added camber
+  // At 1202 points the canonical DO loop ends without consuming a blank
+  // terminator; the next line is the menu command. CLR resets added camber.
+  menu << "CLR\n\n";
   std::istringstream in(menu.str());
   std::ostringstream out;
   const auto status = cli::handleCamberDesignCore(*session, in, out);

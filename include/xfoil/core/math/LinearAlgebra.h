@@ -77,7 +77,7 @@ void cgauss(std::span<std::complex<double>> z,
 // Fortran: SUBROUTINE LUDCMP(NSIZ,N,A,INDX)
 // Splits an N x N matrix into LU factors (in-place, flat row-major,
 // n*n) with partial pivoting and implicit scaling. indx (n) holds
-// the 0-based pivot indices. n <= 500 (Fortran NVX).
+// the 0-based pivot indices. n <= 515 (Fortran NVX).
 void ludcmp(std::span<double> a, std::size_t n, std::span<int> indx);
 
 // Fortran: SUBROUTINE BAKSUB(NSIZ,N,A,INDX,B)

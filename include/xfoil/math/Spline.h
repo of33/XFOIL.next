@@ -63,7 +63,7 @@ bool averagedDerivatives(
 // Implements SPLIND (fortran-src/spline.f:63): cubic spline derivatives
 // with specified or special boundary conditions (998/-998/999/-999
 // convention). Returns false for invalid span sizes, pointCount < 2 or
-// pointCount > 600 (the module's fixed workspace limit).
+// pointCount > 2500 (the module's fixed workspace limit).
 [[nodiscard]]
 bool cubicSplineDerivatives(
     std::span<const double> values,

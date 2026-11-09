@@ -41,6 +41,7 @@
 #include <span>
 
 #include "xfoil/Limits.h"
+#include "xfoil/core/Limits.h"
 
 namespace xfoil::math::linear_algebra {
 namespace {
@@ -250,15 +251,13 @@ SolveStatus factorLuInPlace(RealMatrixRows matrix,
   }
 
   // Fixed scaling workspace; active indices are 1..equationCount.
-  // The last usable index is
-  // surfaceNodeStorage - 1, so equationCount > surfaceNodeStorage - 1
-  // is invalid (the real maximum equation count lies well
-  // below it). No heap use in the solver hot paths.
-  if (static_cast<std::size_t>(equationCount) >=
-      xfoil::limits::surfaceNodeStorage) {
+  // Fortran LUDCMP uses NVX=515, so the last usable index is 515 and
+  // equationCount 516 is the first invalid value.
+  if (static_cast<std::size_t>(equationCount) >
+      xfoil::core::linearSolverWorkspaceCapacity) {
     return SolveStatus::invalidDimension;
   }
-  std::array<double, xfoil::limits::surfaceNodeStorage> scaling{};
+  std::array<double, xfoil::core::linearSolverWorkspaceCapacity + 1> scaling{};
 
   // Adopted from LUDCMP (fortran-src/xsolve.f:174). Operation order unchanged;
   // pivot comparison with >= (selects the later row on a tie).

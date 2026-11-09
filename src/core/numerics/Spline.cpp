@@ -31,22 +31,25 @@
 // Fortran 1..N <-> C++ 0..N-1
 // Fortran 2..N-1 <-> C++ 1..N-2
 // Fortran A(I) <-> C++ a[i] (i = I-1)
-// The local Fortran work arrays (NMAX=1000 for SPLINE/SPLIND,
-// KMAX=32 for SPLNXY) are held as std::array of the same size;
-// the valid Fortran path (N <= NMAX) is unchanged.
+// The local Fortran work arrays (NMAX=2500 for SPLINE/SPLIND,
+// KMAX=32 for SPLNXY) use the same active limits. The large spline
+// workspace is heap-backed; the small SPLNXY scratch stays fixed.
 
 #include "xfoil/core/math/Spline.h"
+
+#include "xfoil/core/Limits.h"
 
 #include <array>
 #include <cmath>
 #include <stdexcept>
+#include <vector>
 
 namespace xfoil::core::math {
 
 namespace {
 
-// Fortran: PARAMETER (NMAX=1000) in SPLINE/SPLIND.
-constexpr std::size_t kSplineMax = 1000;
+// Fortran: PARAMETER (NMAX=2500) in SPLINE/SPLIND.
+constexpr std::size_t kSplineMax = xfoil::core::splineWorkspaceCapacity;
 // Fortran: PARAMETER (KMAX=32) in SPLNXY.
 constexpr std::size_t kSplineNxyMax = 32;
 
@@ -114,12 +117,12 @@ void spline(std::span<const double> x, std::span<const double> s,
   }
   if (n > kSplineMax) {
     throw std::invalid_argument(
-        "xfoil::core::math::spline: N > NMAX (1000)");
+        "xfoil::core::math::spline: N > NMAX (2500)");
   }
 
-  std::array<double, kSplineMax> a{};
-  std::array<double, kSplineMax> b{};
-  std::array<double, kSplineMax> c{};
+  std::vector<double> a(kSplineMax);
+  std::vector<double> b(kSplineMax);
+  std::vector<double> c(kSplineMax);
 
   // Fortran: DO I=2, N-1 -> i = 1..n-2
   for (std::size_t i = 1; i + 1 < n; ++i) {
@@ -157,12 +160,12 @@ void splind(std::span<const double> x, std::span<const double> s,
   }
   if (n > kSplineMax) {
     throw std::invalid_argument(
-        "xfoil::core::math::splind: N > NMAX (1000)");
+        "xfoil::core::math::splind: N > NMAX (2500)");
   }
 
-  std::array<double, kSplineMax> a{};
-  std::array<double, kSplineMax> b{};
-  std::array<double, kSplineMax> c{};
+  std::vector<double> a(kSplineMax);
+  std::vector<double> b(kSplineMax);
+  std::vector<double> c(kSplineMax);
 
   for (std::size_t i = 1; i + 1 < n; ++i) {
     const double dsm = s[i] - s[i - 1];

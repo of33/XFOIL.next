@@ -484,26 +484,37 @@ TEST(unit, SplineFunctionsRejectTooSmallSpans) {
                                               0));
 }
 
-TEST(unit, CubicSplineRejectsBeyondFortranWorkspace) {
-  // pointCount > 600 (the module's fixed workspace limit) returns
-  // false. Dynamic vectors in the test avoid huge stack allocation.
-  const int n = 601;
-  std::vector<double> values(static_cast<std::size_t>(n) + 1, 0.0);
-  std::vector<double> derivatives(static_cast<std::size_t>(n) + 1, 0.0);
-  std::vector<double> parameter(static_cast<std::size_t>(n) + 1, 0.0);
+TEST(unit, CubicSplineWorkspaceLimits) {
+  // XFOIL 6.996: NMAX=2500. Dynamic vectors avoid huge stack allocation.
+  for (const int n : {600, 601, 1000, 1001, 1202, 2499, 2500}) {
+    std::vector<double> values(static_cast<std::size_t>(n) + 1, 0.0);
+    std::vector<double> derivatives(static_cast<std::size_t>(n) + 1, 0.0);
+    std::vector<double> parameter(static_cast<std::size_t>(n) + 1, 0.0);
+    for (int i = 1; i <= n; i++) {
+      const double index = static_cast<double>(i);
+      values[static_cast<std::size_t>(i)] = index;
+      parameter[static_cast<std::size_t>(i)] = index;
+    }
+    CHECK(spline::cubicSplineDerivatives(values, derivatives, parameter, n,
+                                         -999.0, -999.0));
+    CHECK(std::isfinite(derivatives[1]));
+    CHECK(std::isfinite(derivatives[static_cast<std::size_t>(n)]));
+  }
 
+  // 2501 is the first invalid point count.
+  const int n = 2501;
+  std::vector<double> values(static_cast<std::size_t>(n) + 1, 0.0);
+  std::vector<double> derivatives(static_cast<std::size_t>(n) + 1, 7.0);
+  std::vector<double> parameter(static_cast<std::size_t>(n) + 1, 0.0);
   for (int i = 1; i <= n; i++) {
     const double index = static_cast<double>(i);
     values[static_cast<std::size_t>(i)] = index;
     parameter[static_cast<std::size_t>(i)] = index;
   }
-
   CHECK_FALSE(spline::cubicSplineDerivatives(values, derivatives, parameter, n,
                                              -999.0, -999.0));
-
-  // pointCount == 600 still lies within the valid workspace.
-  CHECK(spline::cubicSplineDerivatives(values, derivatives, parameter, 600,
-                                       -999.0, -999.0));
+  CHECK_EQ(derivatives[1], 7.0);
+  CHECK_EQ(derivatives[static_cast<std::size_t>(n)], 7.0);
 }
 
 // end: tests/unit/SplineTests.cpp

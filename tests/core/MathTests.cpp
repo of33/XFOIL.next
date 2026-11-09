@@ -39,6 +39,8 @@
 
 #include "TestSupport.h"
 
+#include <algorithm>
+#include <cmath>
 #include <complex>
 #include <cstddef>
 #include <vector>
@@ -431,6 +433,57 @@ TEST(unit, MathSplindZeroThirdDeriv) {
   }
 }
 
+TEST(unit, MathSplineWorkspaceLimits) {
+  // XFOIL 6.996: NMAX=2500 for SPLINE and SPLIND.
+  for (const std::size_t n : {std::size_t{1000}, std::size_t{1001},
+                              std::size_t{1202}, std::size_t{2499},
+                              std::size_t{2500}}) {
+    std::vector<double> s(n);
+    std::vector<double> x(n);
+    std::vector<double> xs(n, 0.0);
+    for (std::size_t i = 0; i < n; ++i) {
+      s[i] = static_cast<double>(i);
+      x[i] = s[i] * s[i];
+    }
+    spline(x, s, xs);
+    CHECK(std::isfinite(xs.front()));
+    CHECK(std::isfinite(xs.back()));
+
+    std::fill(xs.begin(), xs.end(), 0.0);
+    splind(x, s, xs, 2.0, 12.0);
+    CHECK_NEAR(xs.front(), 2.0, 1.0e-12, 0.0);
+    CHECK_NEAR(xs.back(), 12.0, 1.0e-12, 0.0);
+  }
+
+  const std::size_t tooLarge = 2501;
+  std::vector<double> s(tooLarge);
+  std::vector<double> x(tooLarge);
+  std::vector<double> xs(tooLarge, 7.0);
+  for (std::size_t i = 0; i < tooLarge; ++i) {
+    s[i] = static_cast<double>(i);
+    x[i] = s[i] * s[i];
+  }
+  bool splineThrew = false;
+  try {
+    spline(x, s, xs);
+  } catch (const std::invalid_argument&) {
+    splineThrew = true;
+  }
+  CHECK(splineThrew);
+  CHECK_EQ(xs.front(), 7.0);
+  CHECK_EQ(xs.back(), 7.0);
+
+  bool splindThrew = false;
+  try {
+    splind(x, s, xs, 2.0, 12.0);
+  } catch (const std::invalid_argument&) {
+    splindThrew = true;
+  }
+  CHECK(splindThrew);
+  CHECK_EQ(xs.front(), 7.0);
+  CHECK_EQ(xs.back(), 7.0);
+}
+
 // ---
 // SPLINA
 // ---
@@ -774,16 +827,40 @@ TEST(unit, MathLudcmpZeroSizeThrows) {
   CHECK(threw);
 }
 
-TEST(unit, MathLudcmpOverNvxThrows) {
-  std::vector<double> a(501 * 501, 1.0);
-  std::vector<int> indx(501, 0);
+TEST(unit, MathLudcmpNvxLimits) {
+  // XFOIL 6.996: NVX=515. Valid systems through 515; 516 is rejected
+  // before any matrix or pivot mutation.
+  for (const std::size_t n : {std::size_t{500}, std::size_t{501},
+                              std::size_t{514}, std::size_t{515}}) {
+    std::vector<double> a(n * n, 0.0);
+    std::vector<int> indx(n, -1);
+    for (std::size_t i = 0; i < n; ++i) {
+      a[i * n + i] = 1.0;
+    }
+    ludcmp(a, n, indx);
+    for (std::size_t i = 0; i < n; ++i) {
+      CHECK_EQ(indx[i], static_cast<int>(i));
+    }
+    std::vector<double> b(n, 1.0);
+    baksub(a, n, indx, b);
+    CHECK_NEAR(b.front(), 1.0, 1.0e-14, 0.0);
+    CHECK_NEAR(b.back(), 1.0, 1.0e-14, 0.0);
+  }
+
+  const std::size_t tooLarge = 516;
+  std::vector<double> a(tooLarge * tooLarge, 7.0);
+  std::vector<int> indx(tooLarge, -1);
   bool threw = false;
   try {
-    ludcmp(a, 501, indx);  // N > NVX (500)
+    ludcmp(a, tooLarge, indx);
   } catch (const std::invalid_argument&) {
     threw = true;
   }
   CHECK(threw);
+  CHECK_EQ(a.front(), 7.0);
+  CHECK_EQ(a.back(), 7.0);
+  CHECK_EQ(indx.front(), -1);
+  CHECK_EQ(indx.back(), -1);
 }
 
 TEST(unit, MathBaksubInvalidPivotThrows) {

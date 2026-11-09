@@ -78,6 +78,14 @@ inline constexpr std::size_t referencePointCapacity = 128;
 // Camber/thickness table capacity.
 inline constexpr std::size_t camberTableCapacity = 4808;
 
+// spline.f: PARAMETER (NMAX=2500) in SPLINE and SPLIND.
+// Spline coefficient workspace limit (valid point count <= capacity).
+inline constexpr std::size_t splineWorkspaceCapacity = 2500;
+
+// xsolve.f: PARAMETER (NVX=515) in LUDCMP.
+// LU scaling workspace limit (valid equation count <= capacity).
+inline constexpr std::size_t linearSolverWorkspaceCapacity = 515;
+
 // CIRCLE.INC: PARAMETER (ICX=257)
 // Circle-plane point capacity (2^n + 1).
 inline constexpr std::size_t circlePointCapacity = 257;

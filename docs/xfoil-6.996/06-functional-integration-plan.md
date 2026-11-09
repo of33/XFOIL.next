@@ -102,8 +102,10 @@ The unpatched mode of the same adapter produces `O-6996-U`.
   algorithm work.
 - File-format changes require explicit migration and roundtrip decisions.
 - No global user-facing "6.99 mode" or "6.996 mode" is introduced.
-- Windows behavior remains on the existing accepted baseline unless a slice
-  explicitly changes a numeric or file contract and performs its manual check.
+- Windows uses one focused test run per accepted slice after the Linux
+  acceptance is green; it is expanded only when a finding or Windows-specific
+  scope requires it. The complete Windows matrix is run cumulatively before
+  the 1.1.0 final acceptance.
 - The product banner remains `XFOIL.next`; it is not changed to `XFOIL 7`.
 
 ## Integration principles
@@ -120,6 +122,13 @@ The unpatched mode of the same adapter produces `O-6996-U`.
 10. Every slice names its 6.99 regression cases and its 6.996 target cases.
 11. Golden or format-contract changes require a separate, justified pass.
 12. Compiler and toolchain migration remain outside this integration.
+
+### Windows test policy
+
+- One focused Windows test run per slice after its Linux acceptance is green.
+- Expand beyond that focused run only for a finding or Windows-specific scope.
+- Run the complete Windows matrix cumulatively before the 1.1.0 final
+  acceptance.
 
 ## Dependency graph
 
@@ -473,7 +482,7 @@ broader suite when the slice changes a shared contract.
 | `G-BL-SIDEFILE` | Automatic `:00.bl` side file | Retain 6.99 file; adopt 6.996 absence; replace with an explicit export contract | `S09`, `S13`, `S17` |
 | `G-OSMAP` | OSMAP data provenance/format | Proven 6.99 compatibility; new data contract; defer | `S22` |
 | `G-PLOT-HEADLESS` | Headless plot backend | Keep external plot library; prove a stub; defer | `S21`, CI/build scope |
-| `G-WINDOWS` | Windows contract per slice | Manual validation when numeric/file contracts change | any changed numeric/file slice |
+| `G-WINDOWS` | Windows contract per slice | Focused Windows run per accepted slice; expand only on findings/Windows-specific scope; cumulative full matrix before 1.1.0 | any changed numeric/file slice |
 
 ## Exact first implementation step
 

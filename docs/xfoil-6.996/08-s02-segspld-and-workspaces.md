@@ -1,6 +1,7 @@
 # S02 - SEGSPLD fix and spline/solver workspaces
 
-Status: `S02a` PASS; `S02b` not started. S02 overall IN PROGRESS.
+Status: PASS - S02a and S02b are separate, completed stages; both are
+accepted. `X6996-S02: PASS`.
 
 ## Scope
 
@@ -20,9 +21,10 @@ split into two independent implementation stages:
   - Update the full 1202-point `CAMB`/`INPC` path and its capacity tests.
   - Keep the S02a contract unchanged.
 
-S02b is deliberately not part of this implementation stage. In particular,
-S02a does not change any workspace capacity, `IQX`, `NPX`, or the existing
-1202-point blocker.
+S02a and S02b were separate implementation stages. S02a was completed first
+without changing any workspace capacity, `IQX`, `NPX`, or the then-existing
+1202-point blocker. S02b was completed afterwards and did not change the S02a
+SEGSPLD contract.
 
 ## S02a Fortran contract
 
@@ -110,16 +112,18 @@ remain unchanged.
 - `H-S02-SEGSPLD` compares 6.99 and 6.996 and confirms the expected difference.
 - `make test-core`, full suites, GCC/Clang Debug/Release, ASan/UBSan,
   Valgrind, reference, determinism and harness gates pass.
-- Windows focused spline/unit/core evidence is recorded.
+- Windows focused spline/unit/core evidence was recorded.
 - No Fortran, binary, Golden or existing reference file changes.
-- S02b remains open and its workspace capacities remain untouched.
+- S02b is complete; its workspace capacities were changed only after S02a
+  was accepted, and the S02a contract remains unchanged.
 
 ## Commit boundary
 
-S02a is one local commit:
+S02a and S02b each have one local commit:
 
 ```text
 Integrate XFOIL 6.996 SEGSPLD fix
+Integrate XFOIL 6.996 solver workspace limits
 ```
 
-No push, tag or release. S02 remains IN PROGRESS until S02b is complete.
+No push, tag or release. S02 is complete and PASS.

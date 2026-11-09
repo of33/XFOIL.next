@@ -322,6 +322,30 @@ TEST(unit, LuFactorRejectsDependentRows) {
   SolveStatus::singularMatrix);
 }
 
+TEST(unit, LuFactorNvxBoundary) {
+  // XFOIL 6.996 NVX=515: 515 is valid, 516 is rejected before mutation.
+  const int dim = 516;
+  std::vector<std::vector<double>> data(
+      static_cast<std::size_t>(dim) + 1,
+      std::vector<double>(static_cast<std::size_t>(dim) + 1, 0.0));
+  std::vector<std::span<double>> rows;
+  rows.reserve(data.size());
+  for (auto& row : data) {
+    rows.emplace_back(row);
+  }
+  std::vector<int> pivots(static_cast<std::size_t>(dim) + 1, 0);
+  for (int i = 1; i <= dim; ++i) {
+    data[static_cast<std::size_t>(i)][static_cast<std::size_t>(i)] = 1.0;
+  }
+
+  CHECK(la::factorLuInPlace(rows, pivots, 515) == SolveStatus::success);
+  CHECK_EQ(pivots[1], 1);
+  CHECK_EQ(pivots[515], 515);
+
+  CHECK(la::factorLuInPlace(rows, pivots, 516) ==
+        SolveStatus::invalidDimension);
+}
+
 TEST(unit, LuFactorRejectsZeroRow) {
   double matrix[3][3] = {{0.0, 0.0, 0.0}, {0.0, 1.0, 2.0}, {0.0, 0.0, 0.0}};
   std::array<int, 3> pivots{0, 0, 0};

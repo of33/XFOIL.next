@@ -36,6 +36,8 @@
 
 #include "xfoil/core/math/LinearAlgebra.h"
 
+#include "xfoil/core/Limits.h"
+
 #include <array>
 #include <cmath>
 #include <complex>
@@ -198,14 +200,15 @@ void cgauss(std::span<std::complex<double>> z,
 }
 
 void ludcmp(std::span<double> a, std::size_t n, std::span<int> indx) {
-  constexpr std::size_t kLudcmpMax = 500;  // Fortran NVX
+  constexpr std::size_t kLudcmpMax =
+      xfoil::core::linearSolverWorkspaceCapacity;  // Fortran NVX
   if (n == 0) {
     throw std::invalid_argument(
         "xfoil::core::math::ludcmp: N == 0 (invalid quantity)");
   }
   if (n > kLudcmpMax) {
     throw std::invalid_argument(
-        "xfoil::core::math::ludcmp: N > NVX (500)");
+        "xfoil::core::math::ludcmp: N > NVX (515)");
   }
   std::size_t an;
   if (!productFits(n, n, an) || an > a.size() || n > indx.size()) {

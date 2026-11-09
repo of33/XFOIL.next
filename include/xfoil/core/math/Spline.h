@@ -39,7 +39,7 @@
 // Fortran. No hidden 1-based convention, no artificial
 // sentinel slots. No raw-pointer API.
 //
-// Note: The local Fortran work arrays (NMAX=1000 for SPLINE/SPLIND,
+// Note: The local Fortran work arrays (NMAX=2500 for SPLINE/SPLIND,
 // KMAX=32 for SPLNXY) are held in the core as std::array of the same
 // size, so that the valid Fortran path (N <= NMAX) stays
 // unchanged.
@@ -61,7 +61,7 @@ namespace xfoil::core::math {
 // Fortran: SUBROUTINE SPLINE(X,XS,S,N)
 // Computes the spline coefficients XS for X(S) with zero
 // second-derivative boundary conditions. Solves the tridiagonal system via
-// triSol. N = x.size (>= 2, <= 1000 as Fortran NMAX).
+// triSol. N = x.size (>= 2, <= 2500 as Fortran NMAX).
 void spline(std::span<const double> x, std::span<const double> s,
             std::span<double> xs);
 
@@ -69,7 +69,7 @@ void spline(std::span<const double> x, std::span<const double> s,
 // Spline coefficients with specified first derivatives or
 // zero-second/zero-third-derivative boundary conditions. XS1, XS2 == 999.0
 // selects zero-second, == -999.0 zero-third, otherwise the specified value.
-// N >= 2, N <= 1000.
+// N >= 2, N <= 2500.
 void splind(std::span<const double> x, std::span<const double> s,
             std::span<double> xs, double xs1, double xs2);
 
