@@ -283,3 +283,71 @@ Decision: PASS
   contract for the polar-dump path is defined.
 
 `X6996-U5-R1: PASS`
+
+## Polar-dump write-after-EOF diagnosis — X6996-U5-D1
+
+Decision: PASS
+
+- Failure site: `PLXINI` in `xpol.f` opens a nonexistent unformatted dump,
+  the first `READ` reaches EOF at line 435 and jumps to label 60, and the
+  header write at line 522 follows without `REWIND`, `BACKSPACE` or reopening
+  unit 11. The unit is therefore still positioned after its EOF marker when
+  the write is attempted.
+- Focused reproduction: a minimal GCC 13.3 Fortran program with the same
+  open/read/EOF/write sequence exits 2 with a 0-byte file. Adding `REWIND`
+  after the EOF branch, or closing and reopening the unit, makes the same
+  program exit 0 and write a valid record.
+- Binary results: the existing diagnostic binary and all four B1/B2 rebuilds
+  reproducibly exit 2 with a 0-byte dump, no timeout, the same normalized
+  stderr and the same failing statement. The existing 6.99 binary (build
+  comment GCC 11.4) exits 0 and writes a 53160-byte dump. The identical
+  `PLXINI` text is present in the 6.99 and 6.996 sources. This is a latent
+  source defect exposed by the GCC 13.3 runtime, not a 6.996-only statement
+  change.
+- Patch candidates tested externally:
+  - preferred: `REWIND(LU)` immediately before the header write at label 60;
+  - alternative: close unit 11 and reopen it with `STATUS='UNKNOWN'`,
+    `FORM='UNFORMATTED'` before writing.
+  The patched builds are byte-reproducible; the preferred build has SHA-256
+  `031d667f3990c326b5b90d448fbdd10327b127a4e56d249fd6fcec71b55a69ce`
+  and the reopen variant
+  `6a088d0eccedb802875a10f58cdb85f6306215f926740dd1c700bd91e67c50ed`.
+  A second clean build of the preferred variant was byte-identical.
+- Both variants produce byte-identical dump output for a new file, an
+  existing empty file, a second append pass and a 6.99-seeded file. The new
+  dump is 77000 bytes (`d2b0b6803cc0ea0e1500a2a7ed748310d05d75f7e9a86edbe5f91034f0980e6f`),
+  the second pass is 150000 bytes
+  (`5d08380b603dea07854a2e5d1487aa3b4c7aa3d8bc70ed4c2fb99a5f742d1b22`),
+  and the 6.99-seeded append is 126160 bytes. Record markers and payloads
+  parse consistently. The 6.99 binary can read a preferred-variant dump and
+  append to it (127440 bytes).
+- Regression: the preferred patched binary was run over all 33 U4 cases.
+  Only `a07-polar-visc` differs from the diagnostic binary, in the intended
+  abort-to-success change; the other 32 cases match exit code, stdout,
+  generated-file set and normalized stderr.
+- Secondary observation: once the dump aborts are bypassed, the viscous polar
+  save in `a07-polar-visc` shows a header/data order mismatch. The header is
+  `Top_Xtr Bot_Xtr Top_Itr Bot_Itr`, while the row order is
+  `Top_Xtr Top_Itr Bot_Xtr Bot_Itr`. This is separate from the dump path, is
+  not classified or accepted here, and requires its own behavior case before
+  promotion.
+- Frozen sources remain byte-identical to upstream: no patch was applied to
+  `fortran-src/xfoil-6.996/xpol.f`; no source, binary, Golden, reference,
+  tolerance or product-version change was made. The 6.99 and 6.996 source
+  manifests remain 48/48 and 49/49.
+- Recommended patch contract: use the minimal `REWIND(LU)` fix as a
+  repository-owned overlay, not as a frozen-source edit, for example
+  `patches/xfoil-6.996/0001-rewind-polar-dump-unit-before-header.patch` or an
+  equivalent reproducible application in the build adapter. Close/reopen is a
+  verified byte-identical alternative but is not preferred.
+- Remaining promotion criteria: implement and review the patch-overlay
+  contract, reproduce the patched binary from frozen sources plus the
+  overlay, rerun the U4 corpus, exercise new/empty/append/mismatch polar-dump
+  paths, classify the polar-save column order, and complete independent
+  acceptance. `X6996-U6-Functional-Integration-Plan` remains blocked until
+  this patch/oracle contract is defined.
+- This is a docs-only change from clean HEAD
+  `417326595f801071b7a0563819c127b68b3502e6`. The local commit is
+  `Record XFOIL 6.996 polar-dump diagnosis`; no push, tag or release follows.
+
+`X6996-U5-D1: PASS`
