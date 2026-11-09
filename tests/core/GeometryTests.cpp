@@ -51,6 +51,7 @@
 
 #include "TestSupport.h"
 
+#include <cmath>
 #include <cstddef>
 #include <string>
 #include <vector>
@@ -666,6 +667,93 @@ TEST(unit, GeometrySssN2412) {
   // reference: SSS2412 DEL=0.0 ISIDE=1 S1 = S2 = 0.29749619960784912109
   CHECK_NEAR(bp2.s1, 0.29749619960784912, kFortranAbsTol, kFortranRelTol);
   CHECK_NEAR(bp2.s2, bp2.s1, 0.0, 1.0);
+}
+
+TEST(unit, GeometryNormUsesChordVectorAndShiftsLeToOrigin) {
+  // Rotated/translated ellipse. 6.996 normalizes by the LE-TE chord
+  // vector, not by the x extents of the 6.99 NORM.
+  constexpr std::size_t n = 41;
+  constexpr double pi = 3.14159265358979323846;
+  constexpr double angle = 20.0 * pi / 180.0;
+  const double ca = std::cos(angle);
+  const double sa = std::sin(angle);
+  std::vector<double> x(n);
+  std::vector<double> y(n);
+  for (std::size_t i = 0; i < n; ++i) {
+    const double t = 2.0 * pi * static_cast<double>(i) /
+                     static_cast<double>(n - 1);
+    const double x0 = 0.5 + 0.5 * std::cos(t);
+    const double y0 = 0.10 * std::sin(t);
+    x[i] = 3.0 + x0 * ca - y0 * sa;
+    y[i] = -2.0 + x0 * sa + y0 * ca;
+  }
+  std::vector<double> xp(n, 0.0);
+  std::vector<double> yp(n, 0.0);
+  std::vector<double> s(n, 0.0);
+  scalc(x, y, s);
+  segspl(x, s, xp);
+  segspl(y, s, yp);
+  const LeadingEdgeResult le = lefind(x, xp, y, yp, s);
+  CHECK(le.status == LeStatus::completed);
+  CHECK_NEAR(le.sle, 1.049423950339961, kFortranAbsTol, kFortranRelTol);
+
+  norm(x, xp, y, yp, s);
+  // reference: external H-S03 harness, 6.996 NORM.
+  CHECK_NEAR(x[0], 9.396926207859084e-1, 1.0e-12, 0.0);
+  CHECK_NEAR(y[0], 3.420201433256688e-1, 1.0e-12, 0.0);
+  CHECK_NEAR(x[20], 0.0, 1.0e-12, 0.0);
+  CHECK_NEAR(y[20], 0.0, 1.0e-12, 0.0);
+  CHECK_NEAR(s[20], 1.049423950339961, 1.0e-12, 0.0);
+
+  const GeometryMetrics metrics = geopar(x, xp, y, yp, s);
+  CHECK_NEAR(metrics.chord, 1.0, 1.0e-12, 0.0);
+  CHECK_NEAR(metrics.area, 1.564344650402310e-1, 1.0e-6, 1.0e-5);
+}
+
+TEST(unit, GeometryLefindSmallNGuard) {
+  // 6.996 IF(N.LT.5) I=N/2; N=4 uses the discrete midpoint index.
+  constexpr std::size_t n = 4;
+  constexpr double pi = 3.14159265358979323846;
+  std::vector<double> x(n);
+  std::vector<double> y(n);
+  for (std::size_t i = 0; i < n; ++i) {
+    const double t = 2.0 * pi * static_cast<double>(i) /
+                     static_cast<double>(n - 1);
+    x[i] = 0.5 + 0.5 * std::cos(t);
+    y[i] = 0.10 * std::sin(t);
+  }
+  std::vector<double> xp(n, 0.0);
+  std::vector<double> yp(n, 0.0);
+  std::vector<double> s(n, 0.0);
+  scalc(x, y, s);
+  segspl(x, s, xp);
+  segspl(y, s, yp);
+  const LeadingEdgeResult le = lefind(x, xp, y, yp, s);
+  CHECK(le.status == LeStatus::completed);
+  CHECK_NEAR(le.sle, 8.415859839056992e-1, 1.0e-12, 0.0);
+}
+
+TEST(unit, GeometryXlfindZeroSecondDerivativeFallsBack) {
+  const std::vector<double> x = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0};
+  const std::vector<double> y(6, 0.0);
+  std::vector<double> xp(6, 0.0);
+  std::vector<double> yp(6, 0.0);
+  std::vector<double> s(6, 0.0);
+  scalc(x, y, s);
+  segspl(x, s, xp);
+  segspl(y, s, yp);
+  const LeadingEdgeResult xl = xlfind(x, xp, y, yp, s);
+  CHECK(xl.status == LeStatus::limitReached);
+  CHECK_NEAR(xl.sle, s[2], 0.0, 0.0);
+}
+
+TEST(unit, GeometryCangUsesAtan2Quadrant) {
+  // 6.996 CANG uses ATAN2(CRS,DOT), preserving angles beyond +-90 deg.
+  const std::vector<double> x = {0.0, 1.0, 0.0, 1.0};
+  const std::vector<double> y = {0.0, 0.0, 1.0, 1.0};
+  const CornerAngleReport r = cang(x, y);
+  CHECK_EQ(r.maxIndex, std::size_t{1});
+  CHECK_NEAR(r.maxAngle, 135.0000023028518, 1.0e-9, 0.0);
 }
 
 TEST(unit, GeometryCangN0012) {

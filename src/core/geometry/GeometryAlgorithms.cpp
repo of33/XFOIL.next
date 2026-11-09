@@ -85,8 +85,8 @@ CornerAngleResult findMaximumCornerAngle(
   for (int i = 2; i <= pointCount - 1; i++) {
     double dx1 = atOneBased(x, i) - atOneBased(x, i - 1);
     double dy1 = atOneBased(y, i) - atOneBased(y, i - 1);
-    double dx2 = atOneBased(x, i) - atOneBased(x, i + 1);
-    double dy2 = atOneBased(y, i) - atOneBased(y, i + 1);
+    double dx2 = atOneBased(x, i + 1) - atOneBased(x, i);
+    double dy2 = atOneBased(y, i + 1) - atOneBased(y, i);
 
     // --- allow for doubled points
     if (dx1 == 0.0 && dy1 == 0.0) {
@@ -108,15 +108,13 @@ CornerAngleResult findMaximumCornerAngle(
       if (i + 2 > pointCount) {
         return {};
       }
-      dx2 = atOneBased(x, i) - atOneBased(x, i + 2);
-      dy2 = atOneBased(y, i) - atOneBased(y, i + 2);
+      dx2 = atOneBased(x, i + 2) - atOneBased(x, i);
+      dy2 = atOneBased(y, i + 2) - atOneBased(y, i);
     }
 
-    const double crossp = (dx2 * dy1 - dy2 * dx1) /
-                          std::sqrt((dx1 * dx1 + dy1 * dy1) *
-                                    (dx2 * dx2 + dy2 * dy2));
-    // The asin argument is not clamped.
-    const double angleAtPoint = std::asin(crossp) * (180.0 / kPi);
+    const double crs = dx1 * dy2 - dy1 * dx2;
+    const double dot = dx1 * dx2 + dy1 * dy2;
+    const double angleAtPoint = std::atan2(crs, dot) * (180.0 / kPi);
     if (std::fabs(angleAtPoint) > std::fabs(angle)) {
       angle = angleAtPoint;
       index = i;
@@ -233,7 +231,7 @@ LeadingEdgeResult findLeadingEdge(
   result.leadingEdgeX = Limits::quiet_NaN();
   result.leadingEdgeY = Limits::quiet_NaN();
 
-  if (pointCount < 5 ||
+  if (pointCount < 4 ||
       !hasUsableSpans(x.size(), xDerivatives.size(), pointCount) ||
       !hasUsableSpans(y.size(), yDerivatives.size(), pointCount) ||
       parameter.size() < static_cast<std::size_t>(pointCount) + 1) {
@@ -250,25 +248,26 @@ LeadingEdgeResult findLeadingEdge(
   result.trailingEdgeY = yte;
 
   // --- get first guess for sle
-  int i = 3;
+  int i = (pointCount < 5) ? pointCount / 2 : 3;
   bool bracketFound = false;
-  for (; i <= pointCount - 2; i++) {
-    const double dxte = atOneBased(x, i) - xte;
-    const double dyte = atOneBased(y, i) - yte;
-    const double dx = atOneBased(x, i + 1) - atOneBased(x, i);
-    const double dy = atOneBased(y, i + 1) - atOneBased(y, i);
-    const double dotp = dxte * dx + dyte * dy;
-    if (dotp < 0.0) {
-      bracketFound = true;
-      break;
+  if (pointCount >= 5) {
+    for (; i <= pointCount - 2; i++) {
+      const double dxte = atOneBased(x, i) - xte;
+      const double dyte = atOneBased(y, i) - yte;
+      const double dxm = atOneBased(x, i) - atOneBased(x, i - 1);
+      const double dym = atOneBased(y, i) - atOneBased(y, i - 1);
+      const double dxp = atOneBased(x, i + 1) - atOneBased(x, i);
+      const double dyp = atOneBased(y, i + 1) - atOneBased(y, i);
+      const double dotm = dxte * dxm + dyte * dym;
+      const double dotp = dxte * dxp + dyte * dyp;
+      if (dotm > 0.0 && dotp <= 0.0) {
+        bracketFound = true;
+        break;
+      }
     }
-  }
-
-  // No start index found: controlled failure without using
-  // the last loop index (deviation from the Fortran LEFIND
-  // fallthrough, which would have continued with s[n - 1]).
-  if (!bracketFound) {
-    return result;
+    if (!bracketFound) {
+      return result;
+    }
   }
 
   double sle = atOneBased(parameter, i);
@@ -390,6 +389,13 @@ LeftmostPointResult findLeftmostPoint(
     // --- drive dxds to zero
     const double res = dxds;
     const double ress = dxdd;
+
+    // --- Fortran 6.996: zero second derivative -> controlled fallback
+    if (ress == 0.0) {
+      result.success = false;
+      result.parameter = atOneBased(parameter, i);
+      return result;
+    }
 
     // --- Newton delta for sle
     double dsle = -res / ress;

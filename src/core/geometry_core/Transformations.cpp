@@ -495,12 +495,11 @@ CornerAngleReport cang(std::span<const double> x, std::span<const double> y) {
   for (std::size_t i = 1; i + 1 < n; ++i) {
     double dx1 = x[i] - x[i - 1];
     double dy1 = y[i] - y[i - 1];
-    double dx2 = x[i] - x[i + 1];
-    double dy2 = y[i] - y[i + 1];
+    double dx2 = x[i + 1] - x[i];
+    double dy2 = y[i + 1] - y[i];
 
-    // Fortran: allow doubled points; X(I-2)/X(I+2) fallback only for
-    // an existing neighbor index (Fortran out-of-bounds not replicated; for
-    // a null vector the angle is NaN and takes part in the max comparison).
+    // Fortran 6.996: allow doubled points; X(I-2)/X(I+2) fallback only
+    // for an existing neighbor index (Fortran out-of-bounds not replicated).
     if (dx1 == 0.0 && dy1 == 0.0) {
       if (i >= 2) {
         dx1 = x[i] - x[i - 2];
@@ -509,18 +508,16 @@ CornerAngleReport cang(std::span<const double> x, std::span<const double> y) {
     }
     if (dx2 == 0.0 && dy2 == 0.0) {
       if (i + 2 <= n - 1) {
-        dx2 = x[i] - x[i + 2];
-        dy2 = y[i] - y[i + 2];
+        dx2 = x[i + 2] - x[i];
+        dy2 = y[i + 2] - y[i];
       }
     }
 
-    // Fortran: CROSSP = (DX2*DY1 - DY2*DX1)
-    // / SQRT((DX1**2 + DY1**2) * (DX2**2 + DY2**2))
-    // ANGL = ASIN(CROSSP)*(180.0/3.1415926)
-    const double crossp =
-        (dx2 * dy1 - dy2 * dx1) /
-        std::sqrt((dx1 * dx1 + dy1 * dy1) * (dx2 * dx2 + dy2 * dy2));
-    const double angl = std::asin(crossp) * (180.0 / 3.1415926);
+    // Fortran 6.996: CRS = DX1*DY2-DY1*DX2; DOT = DX1*DX2+DY1*DY2;
+    // ANGL = ATAN2(CRS,DOT)*(180/pi).
+    const double crs = dx1 * dy2 - dy1 * dx2;
+    const double dot = dx1 * dx2 + dy1 * dy2;
+    const double angl = std::atan2(crs, dot) * (180.0 / 3.1415926);
 
     report.angles.push_back(angl);
     if (std::abs(angl) > std::abs(report.maxAngle)) {

@@ -82,18 +82,20 @@ LeadingEdgeResult lefind(std::span<const double> x,
   const double xte = 0.5 * (x[0] + x[n - 1]);
   const double yte = 0.5 * (y[0] + y[n - 1]);
 
-  // Fortran: DO 10 I=3,N-2 ... GO TO 11; end without hit: I = N-1
-  // (regular) or I = 3 (zero pass). Both cases land at
-  // SLE = S(I); 0-based indices: hit k -> index k, zero pass
-  // -> index 2, regular end -> index n-2.
-  std::size_t i = n - 2;
+  // Fortran 6.996: IF(N.LT.5) I = N/2 before the guess loop.
+  // 0-based safe equivalent: pointCount 4 -> index 1; pointCount 3
+  // keeps the safe discrete fallback index 1.
+  std::size_t i = (n < 5) ? ((n >= 4) ? n / 2 - 1 : 1) : n - 2;
   for (std::size_t k = 2; k + 2 < n; ++k) {  // Fortran I = 3..N-2
     const double dxte = x[k] - xte;
     const double dyte = y[k] - yte;
-    const double dx = x[k + 1] - x[k];
-    const double dy = y[k + 1] - y[k];
-    const double dotp = dxte * dx + dyte * dy;
-    if (dotp < 0.0) {
+    const double dxm = x[k] - x[k - 1];
+    const double dym = y[k] - y[k - 1];
+    const double dxp = x[k + 1] - x[k];
+    const double dyp = y[k + 1] - y[k];
+    const double dotm = dxte * dxm + dyte * dym;
+    const double dotp = dxte * dxp + dyte * dyp;
+    if (dotm > 0.0 && dotp <= 0.0) {
       i = k;
       break;
     }
@@ -183,6 +185,13 @@ LeadingEdgeResult xlfind(std::span<const double> x,
 
     const double res = dxds;
     const double ress = dxdd;
+
+    // Fortran 6.996: IF(RESS.EQ.0.0) GO TO 21
+    if (ress == 0.0) {
+      result.sle = s[i];
+      result.status = LeStatus::limitReached;
+      return result;
+    }
 
     double dsle = -res / ress;
     dsle = std::max(dsle, -0.01 * std::abs(dslen));

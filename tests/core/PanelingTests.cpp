@@ -422,12 +422,12 @@ TEST(unit, PanelingPangenCornerInsertion) {
   CHECK_EQ(r.value().cornersInserted, 1);
   CHECK_EQ(p.x.size(), std::size_t{161});
   CHECK_EQ(p.y.size(), std::size_t{161});
-  CHECK_NEAR(p.sle, 1.0267851352691650391, kLeAbsTol, kLeRelTol);
+  CHECK_NEAR(p.sle, 1.0267846584320068359, kLeAbsTol, kLeRelTol);
   CHECK_NEAR(p.chord, 1.0, kFortranAbsTol, kFortranRelTol);
   CHECK_EQ(p.x[0], 1.0);
   CHECK_NEAR(p.y[0], 1.2600078480318189e-3, kFortranAbsTol, kFortranRelTol);
-  CHECK_NEAR(p.x[1], 0.99179816246032714844, kFortranAbsTol, kFortranRelTol);
-  CHECK_NEAR(p.y[1], 2.9480566736310720444e-3, kFortranAbsTol,
+  CHECK_NEAR(p.x[1], 0.98986285924911499023, kFortranAbsTol, kFortranRelTol);
+  CHECK_NEAR(p.y[1], 3.3436061348766088486e-3, kFortranAbsTol,
              kFortranRelTol);
 }
 

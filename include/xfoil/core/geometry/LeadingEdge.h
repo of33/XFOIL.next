@@ -89,6 +89,8 @@ struct OppositePointResult {
 // Fortran: SUBROUTINE LEFIND(SLE,X,XP,Y,YP,S,N)
 // Locates the spline LE position. Defining condition: the tangent at the
 // LE point is perpendicular to the line connecting it to the TE point.
+// 6.996 first-guess bracket: previous and forward chord dot products
+// (DOTM > 0 and DOTP <= 0); N < 5 uses the discrete midpoint index.
 // N >= 3; x/xp/y/yp must be at least n long.
 LeadingEdgeResult lefind(std::span<const double> x,
                          std::span<const double> xp,

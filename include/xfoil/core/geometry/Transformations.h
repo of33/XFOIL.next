@@ -168,7 +168,8 @@ CurvatureReport clis(std::span<const double> x,
                      std::span<const double> s);
 
 // Fortran: SUBROUTINE CANG(X,Y,N,IPRINT,IMAX,AMAX)
-// Panel node corner angle (without stdout output). The Fortran display
+// Panel node corner angle via ATAN2(CRS,DOT) (without stdout output).
+// The Fortran display
 // (IPRINT) controls only the display. N >= 3 (Fortran I=2..N-1).
 CornerAngleReport cang(std::span<const double> x, std::span<const double> y);
 

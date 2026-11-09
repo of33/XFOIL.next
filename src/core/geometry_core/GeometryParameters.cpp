@@ -83,19 +83,23 @@ void norm(std::span<double> x, std::span<double> xp, std::span<double> y,
   math::segspl(y, s, yp);
   const LeadingEdgeResult le = lefind(x, xp, y, yp, s);
 
-  // Fortran: XMAX = 0.5*(X(1)+X(N)); XMIN = SEVAL(SLE,...);
-  // YMIN = SEVAL(SLE,Y,...); FUDGE = 1.0/(XMAX-XMIN)
-  const double xmax = 0.5 * (x[0] + x[n - 1]);
-  const double xmin = math::seval(le.sle, x, xp, s);
-  const double ymin = math::seval(le.sle, y, yp, s);
-  const double fudge = 1.0 / (xmax - xmin);
+  // Fortran 6.996: chord vector from LE to TE midpoint.
+  const double xte = 0.5 * (x[0] + x[n - 1]);
+  const double yte = 0.5 * (y[0] + y[n - 1]);
+  const double xle = math::seval(le.sle, x, xp, s);
+  const double yle = math::seval(le.sle, y, yp, s);
+  const double chord =
+      std::sqrt((xte - xle) * (xte - xle) + (yte - yle) * (yte - yle));
+  const double xshift = -xle;
+  const double yshift = -yle;
+  const double scale = 1.0 / chord;
 
-  // Fortran: DO 40 I=1,N ; X=(X-XMIN)*FUDGE; Y=(Y-YMIN)*FUDGE; S=S*FUDGE
-  // XP/YP be as in Fortran not after scaled.
+  // Fortran: DO 40 I=1,N ; X=(X+XSHIFT)*SCALE; Y=(Y+YSHIFT)*SCALE;
+  // S=S*SCALE. XP/YP remain as set by SEGSPL before scaling.
   for (std::size_t i = 0; i < n; ++i) {
-    x[i] = (x[i] - xmin) * fudge;
-    y[i] = (y[i] - ymin) * fudge;
-    s[i] = s[i] * fudge;
+    x[i] = (x[i] + xshift) * scale;
+    y[i] = (y[i] + yshift) * scale;
+    s[i] = s[i] * scale;
   }
 }
 

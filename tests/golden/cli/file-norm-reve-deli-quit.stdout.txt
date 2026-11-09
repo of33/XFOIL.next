@@ -63,7 +63,7 @@
  Max thickness =     0.117056  at x =   0.281
  Max camber    =     0.035026  at x =   0.419
 
-  LE  x,y  =   0.00000  -0.00000  |   Chord =   1.00000
+  LE  x,y  =  -0.00000  -0.00000  |   Chord =   1.00000
   TE  x,y  =   1.00000   0.00119  |
 
  Current airfoil nodes set from buffer airfoil nodes ( 151 )

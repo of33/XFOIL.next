@@ -1,0 +1,10 @@
+
+ You are working with the buffer airfoil
+
+.GDES   c>  
+ Plain airfoil file
+ Max thickness =     0.120001  at x =  -0.691
+ Max camber    =     0.001189  at x =  -0.038
+
+.GDES   c>  
+ Buffer airfoil is not identical to current airfoil

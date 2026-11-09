@@ -1,0 +1,2 @@
+# GDES prompt lines intentionally end with two spaces; the fixture is byte-exact.
+*.txt -whitespace

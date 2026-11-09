@@ -362,8 +362,22 @@ TEST(unit, CoreGdesOverLabeledMatchesFortran) {
   checkAgainstReference("design-state/gdes-over-labeled");
 }
 
-TEST(unit, CoreGdesOverLnormMatchesFortran) {
-  checkAgainstReference("design-state/gdes-over-lnorm");
+TEST(unit, CoreGdesOverLnormMatchesXfoil6996S03) {
+  // S03 target fixture: 6.996 NORM/LEFIND finds the overlay LE and
+  // normalizes the overlay contour. The canonical 6.99 reference stays
+  // untouched under tests/fortran-reference.
+  std::ostringstream setupOut;
+  std::string actual;
+  runHandlerCase("design-state/gdes-over-lnorm", setupOut, actual);
+  const std::string expected = readFile(
+      "tests/data/core-gdes-menu-reference/6.996-s03/"
+      "gdes-over-lnorm.segment.txt");
+  if (actual != expected) {
+    std::cerr << "\n=== design-state/gdes-over-lnorm 6.996-s03 ===\n"
+              << "--- expected ---\n" << expected
+              << "\n--- actual ---\n" << actual << "\n--- end ---\n";
+  }
+  CHECK(actual == expected);
 }
 
 TEST(unit, CoreGdesOverMsesSingleMatchesFortran) {

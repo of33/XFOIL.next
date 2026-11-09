@@ -23,7 +23,8 @@
 
 // File: tests/core/CoreIntxHalfBitTests.cpp
 // bit-level proof for the canonical INTERX/HALF kernels against the
-// Fortran oracle tests/data/core-intx-half-reference/intx_half_reference.txt
+// Fortran oracle tests/data/core-intx-half-reference/6.996-s03/intx_half_reference.txt
+// (S03: 6.996 LEFIND/XLFIND; the 6.99 reference remains canonical).
 // (harness tests/fortran-reference/harnesses/intx-half/intx_half_harness.f,
 // built canonically with -fdefault-real-8 -fdefault-double-8; unqualified
 // REAL = REAL(8) = C++ double).
@@ -250,7 +251,7 @@ void runHalfChain(std::vector<double>& x, std::vector<double>& y,
 
 TEST(core, IntxHalfBitAgainstFortranHarness) {
   const Oracle orc = loadOracle(
-      "tests/data/core-intx-half-reference/intx_half_reference.txt");
+      "tests/data/core-intx-half-reference/6.996-s03/intx_half_reference.txt");
 
   // I3: LE parameter and XLE from SEVAL bit-identical.
   CHECK_EQ(orc.sle.size(), std::size_t{4});

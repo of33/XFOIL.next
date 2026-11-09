@@ -534,15 +534,15 @@ TEST(unit, MdesExecMapgenAndGeoparRecords) {
   CHECK_NEAR(exec.metrics.cambr, 0.019997, 5e-6, 5e-6);
 }
 
-// QDES REST: LEFIND event only for the actual limitReached branch
-// (NACA buffer 245 vs panel 160); numerical contract unchanged.
+// QDES REST: the 6.996 LEFIND bracket finds the LE for the NACA
+// buffer/panel pair, so the limitReached event stays clear.
 TEST(unit, QdesRestLefindEventFlag) {
   SessionComposition s;
   setupPangenAirfoil(s, 2412);
   configureOper(s);
   const auto rest = session::restoreQdesCurrentFromBuffer(s);
   CHECK(rest.isOk());
-  CHECK(rest.leadingEdgeNotFound);
+  CHECK_FALSE(rest.leadingEdgeNotFound);
   CHECK(s.design.lgSame);
 }
 

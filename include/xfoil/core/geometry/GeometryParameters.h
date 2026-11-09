@@ -113,9 +113,10 @@ struct GeometryMetrics {
 // use. Invalid sizes throw std::invalid_argument.
 
 // Fortran: SUBROUTINE NORM(X,XP,Y,YP,S,N)
-// Scales the contour to unit chord (in-place): SCALC/SEGSPL,
-// LEFIND, then x/y/s rescaling. XP/YP remain as set by SEGSPL before
-// the scaling (canonical Fortran behavior). N >= 2.
+// Scales the contour to unit chord (in-place): SCALC/SEGSPL, LEFIND,
+// then shift to the LE and scaling by the LE-TE chord-vector length.
+// XP/YP remain as set by SEGSPL before the scaling (canonical Fortran
+// behavior). N >= 2.
 void norm(std::span<double> x, std::span<double> xp, std::span<double> y,
           std::span<double> yp, std::span<double> s);
 

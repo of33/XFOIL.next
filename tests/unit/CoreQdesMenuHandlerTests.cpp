@@ -253,11 +253,9 @@ TEST(unit, QdesMenuRestCommits) {
   std::istringstream in("REST\n\n");
   std::ostringstream out;
   (void)cli::handleQdesCore(s, in, out);
- // NACA buffer (245) vs panel (160) -> LEFIND Newton runs
-  // (xgeom.f 84, oracle g1 3x): warning at execution time.
-  CHECK(out.str() == std::string(kEntryText) + kPrompt +
-                     " LEFIND:  LE point not found.  Continuing...\n" +
-                     kPrompt);
+ // 6.996 LEFIND bracket finds the LE for the NACA buffer/panel
+  // pair; no limit-reached warning at execution time.
+  CHECK(out.str() == std::string(kEntryText) + kPrompt + kPrompt);
   CHECK(s.paneling.panelingValid);
 }
 
@@ -336,10 +334,8 @@ TEST(unit, QdesMenuRestTextlessCommit) {
   std::istringstream in("REST\n\n");
   std::ostringstream out;
   (void)cli::handleQdesCore(s, in, out);
- // NACA buffer (245) vs panel (160) -> LEFIND Newton runs
-  // (xgeom.f 84, oracle g1 3x): warning at execution time.
-  CHECK(out.str() == std::string(kEntryText) + kPrompt +
-                     " LEFIND:  LE point not found.  Continuing...\n" +
-                     kPrompt);
+ // 6.996 LEFIND bracket finds the LE for the NACA buffer/panel
+  // pair; no limit-reached warning at execution time.
+  CHECK(out.str() == std::string(kEntryText) + kPrompt + kPrompt);
   CHECK(s.paneling.panelingValid);
 }

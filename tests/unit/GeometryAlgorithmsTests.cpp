@@ -131,6 +131,16 @@ TEST(unit, MaximumCornerAngleFindsKnownCorner) {
   CHECK_NEAR(result.angleDegrees, expected, 1e-12, 0.0);
 }
 
+TEST(unit, MaximumCornerAngleUsesAtan2Quadrant) {
+  const std::vector<double> x = {0.0, 0.0, 1.0, 0.0, 1.0};
+  const std::vector<double> y = {0.0, 0.0, 0.0, 1.0, 1.0};
+  const auto result = xfoil::geometry::findMaximumCornerAngle(x, y, 4);
+  CHECK(result.success);
+  CHECK_EQ(result.pointIndex, 2);
+  const double expected = std::atan2(1.0, -1.0) * (180.0 / kPi);
+  CHECK_NEAR(result.angleDegrees, expected, 1e-12, 0.0);
+}
+
 TEST(unit, MaximumCornerAngleRejectsTooFewPoints) {
   const std::vector<double> x = {0.0, 0.0, 1.0};
   const std::vector<double> y = {0.0, 0.0, 1.0};
@@ -334,9 +344,32 @@ TEST(unit, FindLeadingEdgeRejectsTooFewPoints) {
   const SymmetricContour contour = buildRoundedLeadingEdgeContour(41);
 
   const auto result = xfoil::geometry::findLeadingEdge(
-      contour.x, contour.xp, contour.y, contour.yp, contour.s, 4);
+      contour.x, contour.xp, contour.y, contour.yp, contour.s, 3);
 
   CHECK(!result.success);
+}
+
+TEST(unit, FindLeadingEdgeSmallNGuardUsesMidpoint) {
+  // 6.996 LEFIND small-N guard; N=4 uses the discrete midpoint index.
+  constexpr int n = 4;
+  constexpr double pi = 3.14159265358979323846;
+  std::vector<double> x(n + 1, 0.0);
+  std::vector<double> y(n + 1, 0.0);
+  std::vector<double> s(n + 1, 0.0);
+  for (int i = 1; i <= n; ++i) {
+    const double t = 2.0 * pi * static_cast<double>(i - 1) /
+                     static_cast<double>(n - 1);
+    x[static_cast<std::size_t>(i)] = 0.5 + 0.5 * std::cos(t);
+    y[static_cast<std::size_t>(i)] = 0.10 * std::sin(t);
+  }
+  CHECK(xfoil::math::spline::calculateArcLength(x, y, s, n));
+  std::vector<double> xp(n + 1, 0.0);
+  std::vector<double> yp(n + 1, 0.0);
+  CHECK(xfoil::math::spline::segmentedSplineDerivatives(x, xp, s, n));
+  CHECK(xfoil::math::spline::segmentedSplineDerivatives(y, yp, s, n));
+  const auto result = xfoil::geometry::findLeadingEdge(x, xp, y, yp, s, n);
+  CHECK(result.success);
+  CHECK_NEAR(result.parameter, 8.415859839056992e-1, 1e-12, 0.0);
 }
 
 TEST(unit, FindLeadingEdgeRejectsMissingBracket) {

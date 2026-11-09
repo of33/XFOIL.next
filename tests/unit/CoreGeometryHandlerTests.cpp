@@ -1551,8 +1551,8 @@ TEST(unit, CorePparApplySmallCountN4MatchesFortran) {
   CHECK_EQ(static_cast<int>(status),
            static_cast<int>(app::cli::PparApplyCoreStatus::applied));
   CHECK(out.str().find(
-            " Maximum panel corner angle = 87.097   at  i,x,y  =   2"
-            "   0.1197   0.0600\n") != std::string::npos);
+            " Maximum panel corner angle = 93.403   at  i,x,y  =   3"
+            "   0.1181  -0.0396\n") != std::string::npos);
 }
 
 // deterministic full-text output: an identical Apply sequence returns

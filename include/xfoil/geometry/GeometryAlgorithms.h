@@ -72,7 +72,8 @@ struct LeftmostPointResult {
 // Implements CANG (fortran-src/xgeom.f:1111): largest bend angle (by magnitude) of the
 // polyline x(1..pointCount), y(1..pointCount). Initial values:
 // angle 0.0 for index 1, loop over i = 2..pointCount - 1,
-// duplicate points are resolved via neighbors i-2 or i+2.
+// angle via ATAN2(CRS,DOT), duplicate points are resolved via neighbors
+// i-2 or i+2.
 // Requires pointCount >= 3 and spans of at least
 // pointCount + 1 elements. If a duplicate point lies so close to the edge that
 // the formula would use an index outside the domain-specific active
@@ -127,14 +128,14 @@ bool calculateNormals(
 // defined by (x - xte, y - yte) . (x', y') = 0 with the
 // trailing-edge midpoint (xte, yte) = ((x[1] + x[n]) / 2,
 // (y[1] + y[n]) / 2). Adopted: tolerance 0.00001 * (s[n] - s[1]),
-// start-index search from 3 to pointCount - 2 via the first
-// sign change of the dot product, at most 50 Newton iterations with
+// start-index search from 3 to pointCount - 2 via the 6.996 condition
+// DOTM > 0 and DOTP <= 0, at most 50 Newton iterations with
 // unchanged residual/derivative formula and step limit
 // +-0.02 * |xchord + ychord|, success for |dsle| < tolerance, fallback to
 // the discrete initial value.
 //
-// Requires pointCount >= 5 and spans of at least
-// pointCount + 1 elements; otherwise success == false. The trailing-edge values are
+// Requires pointCount >= 4 (6.996 small-N midpoint guard) and spans of at
+// least pointCount + 1 elements; otherwise success == false. The trailing-edge values are
 // set as soon as they are computable. If the search finds no valid
 // start index, controlled success == false is returned, without
 // using the last loop index. A sharp leading edge
