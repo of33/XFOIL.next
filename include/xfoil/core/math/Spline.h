@@ -154,8 +154,9 @@ void segspl(std::span<const double> x, std::span<const double> s,
             std::span<double> xs);
 
 // Fortran: SUBROUTINE SEGSPLD(X,XS,S,N,XS1,XS2)
-// segmented spline like segspl, with specified end derivatives
-// XS1, XS2 per segment. N >= 2.
+// segmented spline like segspl, with specified global end derivatives
+// XS1, XS2. Internal segment joints use the zero-third-derivative condition
+// as in XFOIL 6.996. N >= 2.
 void segsplD(std::span<const double> x, std::span<const double> s,
              std::span<double> xs, double xs1, double xs2);
 

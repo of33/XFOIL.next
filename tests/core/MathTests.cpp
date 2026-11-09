@@ -547,6 +547,84 @@ TEST(unit, MathSegsplD) {
   }
 }
 
+TEST(unit, MathSegsplDGlobalEndpointsOnly) {
+  // XFOIL 6.996 SEGSPLD: explicit end derivatives apply only at the
+  // global first/last point. The interior joint uses zero third derivative.
+  const std::vector<double> s = {0.0, 1.0, 2.0, 2.0, 3.0};
+  const std::vector<double> x = {0.0, 1.0, 1.0, 1.0, 2.0};
+  std::vector<double> xs(5, 0.0);
+
+  segsplD(x, s, xs, 2.0, 12.0);
+  const std::vector<double> expected = {
+      2.0, 1.0 / 3.0, -1.0 / 3.0, -10.0, 12.0};
+  for (std::size_t i = 0; i < expected.size(); ++i) {
+    CHECK_NEAR(xs[i], expected[i], 1.0e-14, 0.0);
+  }
+
+  // The exact joint selects the right segment's one-sided derivative.
+  CHECK_NEAR(deval(2.0, x, xs, s), -10.0, 1.0e-14, 0.0);
+  // Left/right neighborhoods retain the respective segment derivatives.
+  CHECK_NEAR(deval(1.999999, x, xs, s), -0.3333326666666666, 1.0e-6, 0.0);
+  CHECK_NEAR(deval(2.000001, x, xs, s), -9.999977999999999, 1.0e-6, 0.0);
+  CHECK_NEAR(seval(2.0, x, xs, s), 1.0, 1.0e-14, 0.0);
+  CHECK_NEAR(d2val(2.0, x, xs, s), 22.0, 1.0e-12, 0.0);
+
+  // Non-segmented control: both explicit endpoint derivatives are used.
+  const std::vector<double> sControl = {0.0, 1.0, 2.0, 3.0};
+  const std::vector<double> xControl = {0.0, 1.0, 1.5, 2.5};
+  std::vector<double> xsControl(4, 0.0);
+  segsplD(xControl, sControl, xsControl, 2.0, 12.0);
+  const std::vector<double> expectedControl = {
+      2.0, 7.0 / 6.0, -13.0 / 6.0, 12.0};
+  for (std::size_t i = 0; i < expectedControl.size(); ++i) {
+    CHECK_NEAR(xsControl[i], expectedControl[i], 1.0e-14, 0.0);
+  }
+}
+
+TEST(unit, MathSegsplDRejectsInvalidInputsWithoutMutation) {
+  // Size/minimum and duplicated global-end checks happen before any
+  // segment solve; the output span remains untouched.
+  const std::vector<double> tinyS = {0.0};
+  const std::vector<double> tinyX = {1.0};
+  std::vector<double> tinyOut = {42.0};
+  bool tinyThrew = false;
+  try {
+    segsplD(tinyX, tinyS, tinyOut, 2.0, 12.0);
+  } catch (const std::invalid_argument&) {
+    tinyThrew = true;
+  }
+  CHECK(tinyThrew);
+  CHECK_EQ(tinyOut[0], 42.0);
+
+  const std::vector<double> firstDupS = {0.0, 0.0, 1.0};
+  const std::vector<double> firstDupX = {0.0, 1.0, 2.0};
+  std::vector<double> firstDupOut = {7.0, 8.0, 9.0};
+  bool firstThrew = false;
+  try {
+    segsplD(firstDupX, firstDupS, firstDupOut, 2.0, 12.0);
+  } catch (const std::invalid_argument&) {
+    firstThrew = true;
+  }
+  CHECK(firstThrew);
+  CHECK_EQ(firstDupOut[0], 7.0);
+  CHECK_EQ(firstDupOut[1], 8.0);
+  CHECK_EQ(firstDupOut[2], 9.0);
+
+  const std::vector<double> lastDupS = {0.0, 1.0, 1.0};
+  const std::vector<double> lastDupX = {0.0, 1.0, 2.0};
+  std::vector<double> lastDupOut = {7.0, 8.0, 9.0};
+  bool lastThrew = false;
+  try {
+    segsplD(lastDupX, lastDupS, lastDupOut, 2.0, 12.0);
+  } catch (const std::invalid_argument&) {
+    lastThrew = true;
+  }
+  CHECK(lastThrew);
+  CHECK_EQ(lastDupOut[0], 7.0);
+  CHECK_EQ(lastDupOut[1], 8.0);
+  CHECK_EQ(lastDupOut[2], 9.0);
+}
+
 TEST(unit, MathSegsplDuplicatedFirstThrows) {
   const std::vector<double> s = {0.0, 0.0, 1.0};
   const std::vector<double> x = {0.0, 0.0, 1.0};

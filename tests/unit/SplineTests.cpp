@@ -233,6 +233,81 @@ TEST(unit, SegmentedSplineAcceptsInnerDuplicateParameter) {
   }
 }
 
+TEST(unit, SegmentedSplineUsesExplicitDerivativesOnlyAtGlobalEnds) {
+  // XFOIL 6.996 SEGSPLD: explicit end derivatives apply only at the
+  // global first/last point. The interior joint uses zero third derivative.
+  const double sData[5] = {0.0, 1.0, 2.0, 2.0, 3.0};
+  const double xData[5] = {0.0, 1.0, 1.0, 1.0, 2.0};
+  auto s = makeOneBased(sData, 5);
+  auto x = makeOneBased(xData, 5);
+  std::vector<double> xs(6, 0.0);
+
+  CHECK(spline::segmentedSplineDerivativesWithEndpoints(x, xs, s, 5, 2.0,
+                                                        12.0));
+  const double expected[5] = {2.0, 1.0 / 3.0, -1.0 / 3.0, -10.0, 12.0};
+  for (int i = 1; i <= 5; i++) {
+    CHECK_NEAR(xs[static_cast<std::size_t>(i)], expected[i - 1], 1e-12, 0.0);
+  }
+
+  // The exact joint selects the right segment's one-sided derivative.
+  CHECK_NEAR(spline::firstDerivative(2.0, x, xs, s, 5), -10.0, 1e-12, 0.0);
+  CHECK_NEAR(spline::firstDerivative(1.999999, x, xs, s, 5),
+             -0.3333326666666666, 1e-6, 0.0);
+  CHECK_NEAR(spline::firstDerivative(2.000001, x, xs, s, 5),
+             -9.999977999999999, 1e-6, 0.0);
+  CHECK_NEAR(spline::evaluate(2.0, x, xs, s, 5), 1.0, 1e-12, 0.0);
+  CHECK_NEAR(spline::secondDerivative(2.0, x, xs, s, 5), 22.0, 1e-12, 0.0);
+
+  // Non-segmented control: both explicit endpoint derivatives are used.
+  const double sControlData[4] = {0.0, 1.0, 2.0, 3.0};
+  const double xControlData[4] = {0.0, 1.0, 1.5, 2.5};
+  auto sControl = makeOneBased(sControlData, 4);
+  auto xControl = makeOneBased(xControlData, 4);
+  std::vector<double> xsControl(5, 0.0);
+  CHECK(spline::segmentedSplineDerivativesWithEndpoints(
+      xControl, xsControl, sControl, 4, 2.0, 12.0));
+  const double expectedControl[4] = {2.0, 7.0 / 6.0, -13.0 / 6.0, 12.0};
+  for (int i = 1; i <= 4; i++) {
+    CHECK_NEAR(xsControl[static_cast<std::size_t>(i)], expectedControl[i - 1],
+               1e-12, 0.0);
+  }
+}
+
+TEST(unit, SegmentedSplineWithEndpointsRejectsWithoutMutation) {
+  // The bool API rejects invalid sizes and duplicated global ends before
+  // solving any segment; the derivative span remains untouched.
+  const double tinySData[1] = {0.0};
+  const double tinyXData[1] = {1.0};
+  auto tinyS = makeOneBased(tinySData, 1);
+  auto tinyX = makeOneBased(tinyXData, 1);
+  std::vector<double> tinyOut(2, 42.0);
+  CHECK_FALSE(spline::segmentedSplineDerivativesWithEndpoints(
+      tinyX, tinyOut, tinyS, 1, 2.0, 12.0));
+  CHECK_EQ(tinyOut[1], 42.0);
+
+  const double firstDupSData[3] = {0.0, 0.0, 1.0};
+  const double firstDupXData[3] = {0.0, 1.0, 2.0};
+  auto firstDupS = makeOneBased(firstDupSData, 3);
+  auto firstDupX = makeOneBased(firstDupXData, 3);
+  std::vector<double> firstDupOut(4, 7.0);
+  CHECK_FALSE(spline::segmentedSplineDerivativesWithEndpoints(
+      firstDupX, firstDupOut, firstDupS, 3, 2.0, 12.0));
+  for (int i = 1; i <= 3; i++) {
+    CHECK_EQ(firstDupOut[static_cast<std::size_t>(i)], 7.0);
+  }
+
+  const double lastDupSData[3] = {0.0, 1.0, 1.0};
+  const double lastDupXData[3] = {0.0, 1.0, 2.0};
+  auto lastDupS = makeOneBased(lastDupSData, 3);
+  auto lastDupX = makeOneBased(lastDupXData, 3);
+  std::vector<double> lastDupOut(4, 9.0);
+  CHECK_FALSE(spline::segmentedSplineDerivativesWithEndpoints(
+      lastDupX, lastDupOut, lastDupS, 3, 2.0, 12.0));
+  for (int i = 1; i <= 3; i++) {
+    CHECK_EQ(lastDupOut[static_cast<std::size_t>(i)], 9.0);
+  }
+}
+
 TEST(unit, SegmentedSplineRejectsDuplicatedFirstPoint) {
   const double sData[4] = {1.0, 1.0, 2.0, 3.0};
   const double xData[4] = {0.0, 1.0, 2.0, 3.0};

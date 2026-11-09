@@ -286,8 +286,19 @@ bool segmentedSplineDerivativesWithEndpoints(
   for (int iseg = 2; iseg <= pointCount - 2; iseg++) {
     if (atOneBased(parameter, iseg) == atOneBased(parameter, iseg + 1)) {
       const int nseg = iseg - iseg0 + 1;
+      // XFOIL 6.996: explicit end derivatives apply only at the global
+      // first/last point; internal segment joints use the zero-third
+      // derivative condition.
+      double firstSegmentDerivative = -999.0;
+      double lastSegmentDerivative = -999.0;
+      if (iseg0 == 1) {
+        firstSegmentDerivative = firstEndpointDerivative;
+      }
+      if (iseg0 + nseg - 1 == pointCount) {
+        lastSegmentDerivative = lastEndpointDerivative;
+      }
       if (!splineSegment(values, derivatives, parameter, iseg0, nseg,
-                         firstEndpointDerivative, lastEndpointDerivative)) {
+                         firstSegmentDerivative, lastSegmentDerivative)) {
         return false;
       }
       iseg0 = iseg + 1;
@@ -295,8 +306,16 @@ bool segmentedSplineDerivativesWithEndpoints(
   }
   const int nseg = pointCount - iseg0 + 1;
 
+  double firstSegmentDerivative = -999.0;
+  double lastSegmentDerivative = -999.0;
+  if (iseg0 == 1) {
+    firstSegmentDerivative = firstEndpointDerivative;
+  }
+  if (iseg0 + nseg - 1 == pointCount) {
+    lastSegmentDerivative = lastEndpointDerivative;
+  }
   if (!splineSegment(values, derivatives, parameter, iseg0, nseg,
-                     firstEndpointDerivative, lastEndpointDerivative)) {
+                     firstSegmentDerivative, lastSegmentDerivative)) {
     return false;
   }
 

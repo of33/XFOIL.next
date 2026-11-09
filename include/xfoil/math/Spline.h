@@ -85,7 +85,8 @@ bool segmentedSplineDerivatives(
     int pointCount);
 
 // Implements SEGSPLD (fortran-src/spline.f:562): as segmentedSplineDerivatives with
-// specified end derivatives.
+// specified end derivatives at the global first/last point. Internal segment
+// joints use the zero-third-derivative condition as in XFOIL 6.996.
 [[nodiscard]]
 bool segmentedSplineDerivativesWithEndpoints(
     std::span<const double> values,

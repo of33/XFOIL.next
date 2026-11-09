@@ -562,14 +562,33 @@ void segsplD(std::span<const double> x, std::span<const double> s,
   for (std::size_t iseg = 2; iseg + 1 < n; ++iseg) {
     if (s[iseg - 1] == s[iseg]) {
       const std::size_t nseg = iseg - iseg0 + 1;
+      // XFOIL 6.996: explicit end derivatives apply only at the global
+      // first/last point; internal segment joints use the zero-third
+      // derivative condition.
+      double xs1t = -999.0;
+      double xs2t = -999.0;
+      if (iseg0 == 1) {
+        xs1t = xs1;
+      }
+      if (iseg0 + nseg - 1 == n) {
+        xs2t = xs2;
+      }
       splind(x.subspan(iseg0 - 1, nseg), s.subspan(iseg0 - 1, nseg),
-             xs.subspan(iseg0 - 1, nseg), xs1, xs2);
+             xs.subspan(iseg0 - 1, nseg), xs1t, xs2t);
       iseg0 = iseg + 1;
     }
   }
   const std::size_t nseg = n - iseg0 + 1;
+  double xs1t = -999.0;
+  double xs2t = -999.0;
+  if (iseg0 == 1) {
+    xs1t = xs1;
+  }
+  if (iseg0 + nseg - 1 == n) {
+    xs2t = xs2;
+  }
   splind(x.subspan(iseg0 - 1, nseg), s.subspan(iseg0 - 1, nseg),
-         xs.subspan(iseg0 - 1, nseg), xs1, xs2);
+         xs.subspan(iseg0 - 1, nseg), xs1t, xs2t);
 }
 
 }  // namespace xfoil::core::math
