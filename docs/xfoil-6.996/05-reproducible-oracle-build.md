@@ -217,8 +217,53 @@ the U4 case; the 6.996 binary and all rebuilds use GCC 13.3. The element-column
 payload is not the trigger: the failure occurs before a point is written. This
 is classified as a latent source defect exposed by the GCC 13.3 runtime, with
 the 6.996 append-path changes as a close source context but not the immediate
-statement. It remains unresolved and is a promotion blocker; the empty dump is
-not accepted as target behavior.
+statement. Without a patch overlay it remains a promotion blocker; the empty
+dump is not accepted as target behavior.
+
+## Polar-dump patch overlay
+
+The fix is a repository-owned overlay, not an edit of the frozen upstream
+source. The patch lives at:
+
+```text
+patches/xfoil-6.996/0001-rewind-polar-dump-unit-before-header.patch
+```
+
+It changes only `xpol.f` and adds exactly:
+
+```fortran
+      REWIND(LU)
+```
+
+at label 60, immediately before the new dump header write. The frozen
+`fortran-src/xfoil-6.996/` bytes remain identical to upstream.
+
+The build adapter keeps two explicit modes:
+
+- unpatched: reproduce the upstream source and the known diagnostic binary;
+- `--apply-polar-dump-patch`: copy the frozen source set to the external build
+  root, verify the exact `xpol.f` input hash, apply the patch with
+  `patch --batch --fuzz=0 --forward`, and build the patched variant.
+
+The adapter checks:
+
+- the `xpol.f` hash in `fortran-src/xfoil-6.996/SHA256SUMS`;
+- the same hash in `tools/fortran-provenance.json`;
+- the frozen file's actual hash;
+- the patch-file hash;
+- the patched `xpol.f` output hash;
+- that only `xpol.f` changed and the patch tree contains no extra files;
+- that exactly one `REWIND(LU)` was inserted at the expected header-write
+  site.
+
+Build manifests record the source baseline, patch path, patch status, patch
+hash, frozen input hash, build input hash, patched output hash and binary
+hashes. The patched binary remains external and is not copied into
+`fortran-bin/`.
+
+The overlay is a candidate contract until the independent P1 audit accepts it.
+The polar-save column-order finding is a separate file-format issue and is not
+part of this patch.
 
 ## OSMAP build and runtime policy
 
@@ -245,6 +290,9 @@ byte-reproducible. It:
 - records compiler, flags, source manifest, plot-library hash and object
   hashes;
 - applies `-fallow-argument-mismatch` only to `xgdes.f` and `blplot.f`;
+- supports an unpatched build and an explicit `--apply-polar-dump-patch` build
+  that copies the frozen source to the external root before applying the
+  repository-owned overlay;
 - never downloads, never modifies sources, never copies into `fortran-bin/`;
 - creates a build manifest in the external build root;
 - fails clearly for missing prerequisites or an in-repository build root.
@@ -261,19 +309,22 @@ The 6.996 binary may be promoted only after:
 2. the plot/headless link contract is settled;
 3. compiler and flags are fully documented;
 4. the U4 corpus is reproduced from a promoted build;
-5. the polar-dump abort is fixed or explicitly accepted as a known defect;
+5. the polar-dump abort is fixed by the accepted repository-owned patch
+   overlay or explicitly accepted as a known defect;
 6. the OSMAP contract is understood;
 7. binary provenance and hashes are documented;
 8. independent acceptance is complete.
 
-U5 does not promote the binary. The byte-reproducible build is established,
-but the polar-dump defect remains a blocker.
+U5 does not promote the binary. The byte-reproducible build is established;
+the polar-dump overlay is a candidate pending independent P1 acceptance. The
+polar-save column-order mismatch remains a separate target-contract issue.
 
 ## Open questions
 
-- Should upstream `PLXINI` be fixed with a rewind/reopen before header writing?
-- Should a patched build be accepted as a diagnostic variant, or must upstream
-  source remain unchanged?
+- Is the minimal `REWIND(LU)` overlay accepted as the polar-dump oracle fix?
+  (P1 candidate: yes, with the frozen source unchanged.)
+- Should the patched build become the normal 6.996 oracle build only after the
+  P1 audit?
 - Can a headless plot stub be proven behaviorally equivalent to the real plot
   library, or must the external plot library remain mandatory?
 - What compiler built the canonical 6.99 binary, and should its build contract

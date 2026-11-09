@@ -1,0 +1,37 @@
+# XFOIL.next
+#
+# Copyright (C) 2026 Olaf Frommann
+# https://github.com/of33/XFOIL.next
+#
+# XFOIL.next is based on XFOIL 6.99 by Mark Drela and
+# Harold Youngren.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Apply only to frozen XFOIL 6.996 xpol.f.
+# Input SHA-256:  048c491773bd896d7325fa4e00928f1c18551283fae6ed9f45b42f979c5e3f8f
+# Output SHA-256: f29b6b04b8a18052c8a2996fae12174931243145a3e9677ff4c22fefc84b528d
+#
+--- a/xpol.f
++++ b/xpol.f
+@@ -519,6 +519,7 @@
+ C
+ C---- the polar dump file doesn't exist, so write new header
+    60 CONTINUE
++      REWIND(LU)
+       WRITE(LU) NAME, 'XFOIL   ', VERSION
+       WRITE(LU) MINF1, REINF1/1.0E6, ACRIT(1), ACRIT(2)
+       WRITE(LU) MATYP, RETYP
