@@ -94,9 +94,9 @@ TEST(unit, MsesCodecSixthElementIsIgnoredLikeFortran) {
 
 TEST(unit, MsesCodecOverflowWithinOneElement) {
   // An element without the 999.0 marker within the capacity
-  // 2*IQX+1 = 741 pairs canonically triggers STOP 'LOAD: Array overflow'.
+  // 2*IQX+1 = 1203 pairs canonically triggers STOP 'LOAD: Array overflow'.
   std::string text = "NAME\nISPARS\n";
-  for (int pair = 0; pair < 742; ++pair) {
+  for (int pair = 0; pair < 1204; ++pair) {
     text += " 0.0 0.0\n";
   }
   const auto decoded = xfoil::io::decodeMsesMultielement(text);

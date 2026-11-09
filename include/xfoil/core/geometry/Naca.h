@@ -36,8 +36,9 @@
 // from the Fortran. No raw-pointer API, no dependency on app or CLI.
 //
 // NACA (xfoil.f) is modelled as a core operation, not as a CLI dialog:
-// the dialog (ASKI) and PANGEN are not part of it. NSIDE is set to
-// the canonical value IQX/3 = 123 (buffer point count NB = 245).
+// the dialog (ASKI) and PANGEN are not part of it. S01 deliberately
+// retains the XFOIL 6.99 NSIDE contract of 123 (buffer point count
+// NB = 245); the 6.996 NACA point-count change belongs to a later slice.
 
 #pragma once
 
@@ -93,7 +94,7 @@ Result<NacaResult> naca4(int ides, std::size_t nside);
 Result<Naca5Result> naca5(int ides, std::size_t nside);
 
 // Fortran: SUBROUTINE NACA(IDES1) without dialog and without PANGEN.
-// NSIDE = IQX/3 = 123 (canonical fixed), NB = 245. ITYPE rules as in
+// NSIDE = 123 (retained 6.99 contract in S01), NB = 245. ITYPE rules as in
 // xfoil.f: IDES<=9999 -> NACA4, IDES<=25099 -> NACA5, otherwise
 // 'This designation not implemented.' as a controlled error.
 // IDES <= 0 corresponds to the Fortran dialog case and also returns

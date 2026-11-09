@@ -46,7 +46,7 @@ namespace xfoil::core::paneling {
 
 // Fortran: GETPAN parameter branching
 // Sets a paneling parameter from values (without menu/prompt).
-// child==panelCount: 1 value; Fortran clamp NPAN > IQX-6 (364) -> 364 +
+// child==panelCount: 1 value; Fortran clamp NPAN > IQX-6 (595) -> 595 +
 // clamped=true. child in {bunchingParam, teToLeDensityRatio,
 // refinementDensityRatio}: 1 value. child==upperRefinementRange/
 // lowerRefinementRange: exactly 2 values (XSREF1/2 or XPREF1/2).

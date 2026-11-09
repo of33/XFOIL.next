@@ -532,7 +532,7 @@ struct DesignSessionState {
 // index-0 cell, consistently 0-based. Fixed Fortran capacities are
 // only documented bounds (IPX = limits::qspecDistributionCapacity = 5,
 // ICX = core::inverse::kCircleMaxPoints = 257, IQX =
-// limits::surfaceSystemCapacity = 370); active lengths (nsp, nqsp) are
+// limits::surfaceSystemCapacity = 601); active lengths (nsp, nqsp) are
 // tracked separately from the capacity.
 //
 // Validity/provenance contract (canonical write sites):

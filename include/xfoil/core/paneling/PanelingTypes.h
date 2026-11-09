@@ -39,26 +39,26 @@
 // - PangenResult: PANGEN initial group incl. structured diagnostics.
 // - AbcopyResult: ABCOPY initial group (buffer -> current contour).
 //
-// Capacity limits (canonical, separate):
-// - kMaxPanelingPanelCount = IQX-6 = 364: exclusively the GETPAN/PPAR
-// input boundary (Fortran NPAN > IQX-6 -> NPAN = IQX-6, xfoil.f:2218-2219;
-// only occurrence of IQX-6). It does not apply to the direct
-// PANGEN call.
-// - kMaxAbcopyNodeCount = IQX-5 = 365: ABCOPY boundary (Fortran
-// NB > IQX-5 -> current contour is not set).
-// - kMaxPanelNodeCount = IQX-1 = 369: independent PANGEN safety limit
-// including corner-point insertion (Fortran STOP 'PANEL: Too many
-// panels...' after N = N+1, xfoil.f:2025; only occurrence of IQX-1).
-// The pure PANGEN kernel processes NPAN=365..369 directly (intermediate
-// indices: NN = IPFAC*(N-1)+1 = 1821..1841 <= 2220 = 6*IQX Newton arrays,
-// <= 7400 = 5*IBX SNEW, coordinate arrays IZX = 418 >= 369). Above
-// 369 no canonical safety semantics exists.
+// Capacity limits (canonical, separate; derived from core IQX=601):
+// - kMaxPanelingPanelCount = IQX-6 = 595: exclusively the GETPAN/PPAR
+//   input boundary (Fortran NPAN > IQX-6 -> NPAN = IQX-6, xfoil.f:2218-2219;
+//   only occurrence of IQX-6). It does not apply to the direct
+//   PANGEN call.
+// - kMaxAbcopyNodeCount = IQX-5 = 596: ABCOPY boundary (Fortran
+//   NB > IQX-5 -> current contour is not set).
+// - kMaxPanelNodeCount = IQX-1 = 600: independent PANGEN safety limit
+//   including corner-point insertion (Fortran STOP 'PANEL: Too many
+//   panels...' after N = N+1, xfoil.f:2025; only occurrence of IQX-1).
+// The pure PANGEN kernel processes NPAN=596..600 directly within the
+// 6*IQX Newton arrays, 5*IBX SNEW storage and IZX=IQX+IWX coordinate
+// arrays. Above 600 no canonical safety semantics exists.
 
 #pragma once
 
 #include <array>
 #include <vector>
 
+#include "xfoil/core/Limits.h"
 #include "xfoil/core/geometry/LeadingEdge.h"
 #include "xfoil/core/math/Diagnostic.h"
 
@@ -66,15 +66,18 @@ namespace xfoil::core::paneling {
 
 // GETPAN/PPAR input boundary (Fortran NPAN > IQX-6 -> NPAN = IQX-6,
 // xfoil.f:2218-2219). Does not apply to the direct PANGEN call.
-inline constexpr int kMaxPanelingPanelCount = 364;
+inline constexpr int kMaxPanelingPanelCount =
+    static_cast<int>(surfaceSystemCapacity - 6);  // 595
 
 // ABCOPY boundary (Fortran NB > IQX-5 -> current contour is not set).
-inline constexpr int kMaxAbcopyNodeCount = 365;
+inline constexpr int kMaxAbcopyNodeCount =
+    static_cast<int>(surfaceSystemCapacity - 5);  // 596
 
 // Independent PANGEN safety limit including corner-point insertion
-// (Fortran STOP after N = N+1, xfoil.f:2025). Above 369 no
+// (Fortran STOP after N = N+1, xfoil.f:2025). Above 600 no
 // canonical safety semantics exists.
-inline constexpr int kMaxPanelNodeCount = 369;
+inline constexpr int kMaxPanelNodeCount =
+    static_cast<int>(surfaceSystemCapacity - 1);  // 600
 
 // Paneling parameters. Defaults are the Fortran INIT values
 // (xfoil.f INIT: NPAN=160, CVPAR=1.0, CTERAT=0.15, CTRRAT=0.2,
@@ -102,7 +105,7 @@ enum class PanelParameterKind {
 // (Fortran WRITE of the 1200 formats is structured).
 struct ParameterChangeResult {
   PanelingParameters parameters;
-  bool clamped{false};  // true: panelCount was limited to 364
+  bool clamped{false};  // true: panelCount was limited to 595
 };
 
 // Current panel contour of the new cores (Fortran X,XP,Y,YP,S,N,SLE,

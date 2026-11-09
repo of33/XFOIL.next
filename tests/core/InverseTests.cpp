@@ -1190,17 +1190,17 @@ xfoil::core::inverse::MixedInverseState makeSyntheticMixed(int n) {
 
 TEST(unit, InverseMixedCapacity) {
   using namespace xfoil::core::inverse;
-  // N + 5 > IQX (370) -> controlled capacity error.
-  auto over = makeSyntheticMixed(kMixedMaxN + 1);  // 366
+  // N + 5 > IQX (601) -> controlled capacity error.
+  auto over = makeSyntheticMixed(kMixedMaxN + 1);  // 597
   const Status sOver = mixedInverse(over, 0);
   CHECK(sOver.isErr());
   CHECK_EQ(static_cast<int>(sOver.error().code),
            static_cast<int>(xfoil::core::ErrorCode::capacityExceeded));
-  // Maximum valid N = 365 (N+5 = 370) -> boundary passed.
-  auto maxOk = makeSyntheticMixed(kMixedMaxN);  // 365
+  // Maximum valid N = 596 (N+5 = 601) -> boundary passed.
+  auto maxOk = makeSyntheticMixed(kMixedMaxN);  // 596
   CHECK(mixedInverse(maxOk, 0).isOk());
   // under it also valid.
-  auto below = makeSyntheticMixed(kMixedMaxN - 1);  // 364
+  auto below = makeSyntheticMixed(kMixedMaxN - 1);  // 595
   CHECK(mixedInverse(below, 0).isOk());
 }
 

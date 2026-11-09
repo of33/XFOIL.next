@@ -32,6 +32,7 @@
 #include <cmath>
 #include <limits>
 
+#include "xfoil/core/Limits.h"
 #include "xfoil/core/boundary_layer/BoundaryLayerCorrelations.h"
 #include "xfoil/core/inviscid/Compressibility.h"
 #include "xfoil/io/TextFormat.h"
@@ -41,7 +42,7 @@ namespace {
 
 constexpr std::size_t sz(int v) { return static_cast<std::size_t>(v); }
 
-constexpr std::size_t kIqx = 370;
+constexpr std::size_t kIqx = xfoil::core::surfaceSystemCapacity;
 
 char delimiterChar(DumpDelimiter d) {
   switch (d) {

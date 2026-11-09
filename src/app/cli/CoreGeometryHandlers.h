@@ -71,7 +71,7 @@ std::vector<xfoil::Point2D> currentAirfoilCoordinatesCore(
 // panel contour was set from the buffer (origin abcopy,
 // panelSourceRevision == bufferRevision). bufferUnavailable: no valid
 // buffer (canonical ABCOPY buffer message). capacityExceeded: buffer points
-// exceed the ABCOPY boundary (NB > IQX-5 = 365); canonical
+// exceed the ABCOPY boundary (NB > IQX-5 = 596); canonical
 // four-line rejection. For each error value the session state stays
 // unchanged (no partial mutation).
 enum class PcopCoreStatus {
@@ -132,9 +132,9 @@ enum class PparParameterCoreStatus {
 
 // PPAR parameter command (xfoil.f GETPAN N/P/T/R/XT/XB): sets a
 // panel parameter via the confirmed session use case setPanelParameter
-// (incl. canonical clamp NPAN>364). Canonical (GETPAN GO TO 12): no
+// (incl. canonical clamp NPAN>595). Canonical (GETPAN GO TO 12): no
 // panel regeneration, no tables from pressure, no analysis invalidation;
-// effect only at the next PANGEN/apply. For NPAN>364 the
+// effect only at the next PANGEN/apply. For NPAN>595 the
 // format-1200 message is output. XT/XB are transactional value pairs.
 PparParameterCoreStatus applyPparParameterCore(
     xfoil::session::SessionComposition& session,

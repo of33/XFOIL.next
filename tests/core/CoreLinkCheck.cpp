@@ -74,7 +74,7 @@ int main() {
   using namespace xfoil::core::math;
   using namespace xfoil::core::boundary_layer;
 
-  if (surfaceSystemCapacity != 370) {
+  if (surfaceSystemCapacity != 601) {
     return 1;
   }
   if (bufferCapacity != 4 * surfaceSystemCapacity) {
@@ -267,7 +267,7 @@ int main() {
                                     paneling::PanelParameterKind::panelCount,
                                     vals);
   if (!par.isOk() || !par.value().clamped ||
-      par.value().parameters.panelCount != 364) {
+      par.value().parameters.panelCount != 595) {
     return 1;
   }
 
@@ -432,7 +432,7 @@ int main() {
   {
     const std::array<int, 2> nbl{3, 3};
     const boundary_layer::BlsysMapping map =
-        boundary_layer::iblsys(nbl, 370);
+        boundary_layer::iblsys(nbl, 601);
     if (map.nsys != 6) {
       return 1;
     }

@@ -32,7 +32,7 @@
 // points exactly as in the Fortran, and computes the panel geometry
 // (splines, normals, LE position, TE geometry, panel angle).
 //
-// Capacity limit (canonical): NB > IQX-5 = 365 is rejected in a
+// Capacity limit (canonical): NB > IQX-5 = 596 is rejected in a
 // controlled way; the current contour is then not set. The Fortran flap
 // and solver flags are session state held outside the kernel.
 //
@@ -49,7 +49,7 @@ namespace xfoil::core::paneling {
 
 // Fortran: SUBROUTINE ABCOPY(LCONF)
 // Sets the current panel contour from the buffer contour. buffer must
-// contain 2..365 points (smaller: 'ABCOPY: Buffer airfoil not
+// contain 2..596 points (smaller: 'ABCOPY: Buffer airfoil not
 // available.'; larger: Fortran rejection without setting the contour).
 // The LCONF parameter controls only the confirmation output in Fortran
 // and is not present in the kernel (not represented).

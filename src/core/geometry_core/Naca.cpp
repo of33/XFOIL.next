@@ -228,7 +228,7 @@ Result<Naca5Result> naca5(int ides, std::size_t nside) {
 }
 
 Result<NacaAirfoilResult> nacaAirfoil(int ides) {
-  // Fortran NACA (xfoil.f): NSIDE = IQX/3 = 123 (integer division).
+  // Fortran NACA (xfoil.f): S01 retains the 6.99 NSIDE = 123 contract.
   constexpr std::size_t nside = 123;
 
   // Fortran: ITYPE = 0; IF(IDES.LE.25099) ITYPE = 5;

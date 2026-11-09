@@ -96,9 +96,18 @@ AirfoilBuffer makeBuffer2412() {
   return AirfoilBuffer(n.value().xb, n.value().yb, n.value().name);
 }
 
-// 365-point contour (Fortran NACA: NSIDE=183 -> NB=2*183-1=365=IQX-5).
+// 365-point contour (Fortran NACA extraction: NB=365, the old IQX-5).
 AirfoilBuffer makeBuffer365() {
   const Result<NacaResult> n = naca4(2412, 183);
+  if (!n.isOk()) {
+    return AirfoilBuffer();
+  }
+  return AirfoilBuffer(n.value().xb, n.value().yb, n.value().name);
+}
+
+// 599-point contour for the new PANGEN upper boundary (NPAN=600).
+AirfoilBuffer makeBuffer599() {
+  const Result<NacaResult> n = naca4(2412, 300);
   if (!n.isOk()) {
     return AirfoilBuffer();
   }
@@ -463,7 +472,7 @@ TEST(unit, PanelingAbcopyDuplicateStrip) {
   CHECK_NEAR(p.x[2], 0.99480420351028442383, kFortranAbsTol, kFortranRelTol);
 }
 
-// reference: paneling_reference.txt ABC365 (NB = IQX-5 = 365, accepted at
+// reference: paneling_reference.txt ABC365 (old 6.99 IQX-5 = 365, accepted at
 // the boundary).
 TEST(unit, PanelingAbcopy365AtLimit) {
   const Result<AbcopyResult> r = abcopy(makeBuffer365());
@@ -475,13 +484,13 @@ TEST(unit, PanelingAbcopy365AtLimit) {
   CHECK_NEAR(p.chord, 1.0, kFortranAbsTol, kFortranRelTol);
 }
 
-// reference: paneling_reference.txt ABC366 (NB > IQX-5): controlled
-// rejection, the current contour is not set.
-TEST(unit, PanelingAbcopy366AboveLimit) {
-  AirfoilBuffer buffer = makeBuffer365();
-  buffer.x.push_back(buffer.x.back());
-  buffer.y.push_back(buffer.y.back());
-  CHECK_EQ(buffer.x.size(), std::size_t{366});
+// New ABCOPY upper boundary: NB = IQX-5 = 596 is accepted; NB = 597 is
+// rejected without setting the current contour.
+TEST(unit, PanelingAbcopy597AboveLimit) {
+  AirfoilBuffer buffer = makeBuffer599();
+  buffer.x.resize(597);
+  buffer.y.resize(597);
+  CHECK_EQ(buffer.x.size(), std::size_t{597});
   const Result<AbcopyResult> r = abcopy(buffer);
   CHECK(r.isErr());
   CHECK(r.error().code == ErrorCode::capacityExceeded);
@@ -518,28 +527,28 @@ TEST(unit, PanelingPangenBufferTooSmall) {
   CHECK(r2.error().code == ErrorCode::invalidArgument);
 }
 
-// Fortran: GETPAN clamp NPAN > IQX-6 -> NPAN = 364 + message.
+// Fortran: GETPAN clamp NPAN > IQX-6 -> NPAN = 595 + message.
 TEST(unit, PanelingApplyPanelParameterClamp) {
   const std::array<double, 1> above{2000.0};
   const Result<ParameterChangeResult> rAbove = applyPanelParameter(
       PanelingParameters{}, PanelParameterKind::panelCount, above);
   CHECK(rAbove.isOk());
   CHECK(rAbove.value().clamped);
-  CHECK_EQ(rAbove.value().parameters.panelCount, 364);
+  CHECK_EQ(rAbove.value().parameters.panelCount, 595);
 
-  const std::array<double, 1> atClamp{365.0};
+  const std::array<double, 1> atClamp{596.0};
   const Result<ParameterChangeResult> rAt = applyPanelParameter(
       PanelingParameters{}, PanelParameterKind::panelCount, atClamp);
   CHECK(rAt.isOk());
   CHECK(rAt.value().clamped);
-  CHECK_EQ(rAt.value().parameters.panelCount, 364);
+  CHECK_EQ(rAt.value().parameters.panelCount, 595);
 
-  const std::array<double, 1> within{364.0};
+  const std::array<double, 1> within{595.0};
   const Result<ParameterChangeResult> rWithin = applyPanelParameter(
       PanelingParameters{}, PanelParameterKind::panelCount, within);
   CHECK(rWithin.isOk());
   CHECK_FALSE(rWithin.value().clamped);
-  CHECK_EQ(rWithin.value().parameters.panelCount, 364);
+  CHECK_EQ(rWithin.value().parameters.panelCount, 595);
 }
 
 // Fortran: GETPAN parameter branching P/T/R/XT/XB.
@@ -796,26 +805,46 @@ TEST(unit, PanelingGeometryMakeInvariant) {
   CHECK(threw);
 }
 
-// capacity limits (canonical, XFOIL.INC IQX=370).
+// capacity limits (canonical, XFOIL.INC IQX=601).
 TEST(unit, PanelingCapacityLimits) {
-  CHECK_EQ(kMaxPanelingPanelCount, 364);
-  CHECK_EQ(kMaxAbcopyNodeCount, 365);
-  CHECK_EQ(kMaxPanelNodeCount, 369);
+  CHECK_EQ(kMaxPanelingPanelCount, 595);
+  CHECK_EQ(kMaxAbcopyNodeCount, 596);
+  CHECK_EQ(kMaxPanelNodeCount, 600);
 }
 
-// pangen rejects panelCount > 369 (canonical PANGEN guard IQX-1 = 369;
-// the first disallowed case is 370).
-TEST(unit, PanelingPangenAboveCapacity) {
+// pangen accepts the former 6.99 boundary values (370, 371) and the new
+// canonical upper boundary 600.
+TEST(unit, PanelingPangenIqxBoundaryAccepted) {
+  for (const int n : {370, 371}) {
+    PanelingParameters params;
+    params.panelCount = n;
+    const Result<PangenResult> r = pangen(makeBuffer2412(), params);
+    CHECK(r.isOk());
+    CHECK_EQ(r.value().panel.x.size(), static_cast<std::size_t>(n));
+  }
   PanelingParameters params;
-  params.panelCount = 370;
-  const Result<PangenResult> r = pangen(makeBuffer2412(), params);
-  CHECK(r.isErr());
-  CHECK(r.error().code == ErrorCode::capacityExceeded);
+  params.panelCount = 600;
+  const Result<PangenResult> r = pangen(makeBuffer599(), params);
+  CHECK(r.isOk());
+  CHECK_EQ(r.value().panel.x.size(), std::size_t{600});
 }
 
-// direct PANGEN call for NPAN=365: IQX-6=364 is only the GETPAN/PPAR
-// input boundary; the pure PANGEN kernel handles 365 directly (Fortran
-// driver verification, NACA 2412, defaults).
+// pangen rejects panelCount > 600 (canonical PANGEN guard IQX-1 = 600;
+// the first disallowed cases are 601 and 602).
+TEST(unit, PanelingPangenAboveCapacity) {
+  for (const int n : {601, 602}) {
+    PanelingParameters params;
+    params.panelCount = n;
+    const Result<PangenResult> r = pangen(makeBuffer599(), params);
+    CHECK(r.isErr());
+    CHECK(r.error().code == ErrorCode::capacityExceeded);
+  }
+}
+
+// direct PANGEN call for NPAN=365 (a 6.99 boundary; still valid with the
+// new 6.996 IQX contract). IQX-6 is only the GETPAN/PPAR input boundary;
+// the pure PANGEN kernel handles 365 directly (Fortran driver
+// verification, NACA 2412, defaults).
 TEST(unit, PanelingPangen365Direct) {
   PanelingParameters params;
   params.panelCount = 365;
@@ -833,8 +862,8 @@ TEST(unit, PanelingPangen365Direct) {
              kFortranRelTol);
 }
 
-// direct PANGEN call for NPAN=369 (canonical protection limit
-// IQX-1 = 369 inclusive; Fortran driver verification).
+// direct PANGEN call for NPAN=369 (old 6.99 protection boundary,
+// still inside the new IQX-1 = 600 limit; Fortran driver verification).
 TEST(unit, PanelingPangen369Direct) {
   PanelingParameters params;
   params.panelCount = 369;
@@ -852,25 +881,25 @@ TEST(unit, PanelingPangen369Direct) {
              kFortranRelTol);
 }
 
-// the GETPAN/PPAR input boundary (IQX-6 = 364) does not apply to the
-// direct PANGEN call: 365..369 are all accepted.
+// the GETPAN/PPAR input boundary (IQX-6 = 595) does not apply to the
+// direct PANGEN call: 596..600 are all accepted.
 TEST(unit, PanelingSeparatedLimits) {
-  // direct PANGEN call: 364..369 all permitted.
-  for (const int panelCount : {364, 365, 366, 367, 368, 369}) {
+  // direct PANGEN call: 596..600 all permitted.
+  for (const int panelCount : {596, 597, 598, 599, 600}) {
     PanelingParameters params;
     params.panelCount = panelCount;
-    const Result<PangenResult> r = pangen(makeBuffer2412(), params);
+    const Result<PangenResult> r = pangen(makeBuffer599(), params);
     CHECK(r.isOk());
     CHECK_EQ(r.value().panel.x.size(),
              static_cast<std::size_t>(panelCount));
   }
-  // GETPAN/PPAR input boundary: 365 -> clamp to 364.
-  const std::array<double, 1> at365{365.0};
+  // GETPAN/PPAR input boundary: 596 -> clamp to 595.
+  const std::array<double, 1> at596{596.0};
   const Result<ParameterChangeResult> par = applyPanelParameter(
-      PanelingParameters{}, PanelParameterKind::panelCount, at365);
+      PanelingParameters{}, PanelParameterKind::panelCount, at596);
   CHECK(par.isOk());
   CHECK(par.value().clamped);
-  CHECK_EQ(par.value().parameters.panelCount, 364);
+  CHECK_EQ(par.value().parameters.panelCount, 595);
 }
 
 // PangenResult structure: diagnostics empty on regular completion.
@@ -969,11 +998,11 @@ TEST(unit, PanelingPangenSharpLeRegion) {
   CHECK_NEAR(p.x[1], 0.99181747436523437500, kFortranAbsTol, kFortranRelTol);
 }
 
-// reference: paneling_reference.txt pangen_limit_reference.txt
-// (protection case IQX-1 = 369: controlled error without partial state).
+// protection case IQX-1 = 600: corner insertion must not exceed the
+// capacity; controlled error without partial state.
 TEST(unit, PanelingPangenIqx1Protection) {
   PanelingParameters params;
-  params.panelCount = 364;
+  params.panelCount = 600;
   const Result<PangenResult> r = pangen(makeBufferManyDoubled(), params);
   CHECK(r.isErr());
   CHECK(r.error().code == ErrorCode::capacityExceeded);
@@ -1018,7 +1047,7 @@ TEST(unit, PanelingPsaReferencePpar200) {
 }
 
 // canonical PSAV-reference comparison: panel-coord/ppar-n364-at-clamp and
-// ppar-n365-above-clamp (clamp at 364).
+// ppar-n365-above-clamp (historical 6.99 clamp values).
 TEST(unit, PanelingPsaReferencePpar364Clamp) {
   PanelingParameters params;
   params.panelCount = 364;

@@ -180,6 +180,31 @@ TEST(unit, SessionPolarRemovePointsToleranceAndElimination) {
   CHECK(session.polar.accumulating);
 }
 
+TEST(unit, SessionPolarCapacityBoundaryNpx) {
+  // NPX boundary values: 12 (old limit), 13/19 (between), 20 (new limit);
+  // the next append is rejected without partial mutation.
+  CHECK_EQ(core::polar::maxPolarSlots, std::size_t{20});
+  for (const std::size_t n : {std::size_t{12}, std::size_t{13},
+                              std::size_t{19}, std::size_t{20}}) {
+    SessionComposition session;
+    for (std::size_t i = 0; i < n; ++i) {
+      const auto added =
+          session::appendPolarSlot(session, makePolar("P", {0.0}), "f");
+      CHECK(!added.capacityExceeded);
+    }
+    CHECK_EQ(session.polar.slots.size(), n);
+    const auto next =
+        session::appendPolarSlot(session, makePolar("Q", {}), "g");
+    if (n < core::polar::maxPolarSlots) {
+      CHECK(!next.capacityExceeded);
+      CHECK_EQ(session.polar.slots.size(), n + 1);
+    } else {
+      CHECK(next.capacityExceeded);
+      CHECK_EQ(session.polar.slots.size(), n);
+    }
+  }
+}
+
 TEST(unit, SessionPolarIncludeToggles) {
   SessionComposition session;
   CHECK(!session.polar.includeCpMin);

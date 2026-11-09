@@ -737,7 +737,9 @@ def self_test():
         def write(base, rel, text):
             path = base / rel
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(text, encoding="utf-8")
+            # Write exact LF bytes: Windows text mode would translate to
+            # CRLF and make the self-test's SHA-256 fixtures mismatch.
+            path.write_bytes(text.encode("utf-8"))
 
         def body(rel):
             return f"// File: {rel}\nint main() {{ return 0; }}\n"
@@ -1098,25 +1100,49 @@ def self_test():
                     "notice_expected": True}]}]},
             "merr-dotdot-file")
 
-        # Symlink inside a version root.
-        base = build_case([
-            ("V", "fortran-src", [], [("a.f", notice, True)])])
-        os.symlink(base / "fortran-src/a.f", base / "fortran-src/link.f")
-        _, problems = run_case(base)
-        expect("symlink inside version root is reported",
-               any("V: symlink inside version root: link.f" in p
-                   for p in problems))
+        # Symlink creation needs an OS privilege that is not granted by
+        # default on Windows (WinError 1314). Probe once and skip only
+        # these two environment-dependent cases when unavailable.
+        symlink_target = root / "symlink-probe-target"
+        symlink_link = root / "symlink-probe-link"
+        symlink_target.write_bytes(b"probe\n")
+        try:
+            os.symlink(symlink_target, symlink_link)
+        except (OSError, NotImplementedError) as error:
+            if not (os.name == "nt"
+                    and getattr(error, "winerror", None) == 1314):
+                raise
+            symlink_supported = False
+            print(f"selftest SKIP: symlink checks (Windows symlink privilege: {error})")
+        else:
+            symlink_supported = True
+            symlink_link.unlink()
+        finally:
+            symlink_target.unlink()
 
-        # Symlink escaping the version root.
-        base = build_case([
-            ("V", "fortran-src", [], [("a.f", notice, True)])])
-        outside = base / "outside.f"
-        outside.write_text(no_notice, encoding="utf-8")
-        os.symlink(outside, base / "fortran-src/escape.f")
-        _, problems = run_case(base)
-        expect("symlink escaping the version root is reported",
-               any("V: symlink inside version root: escape.f" in p
-                   for p in problems))
+        if symlink_supported:
+            # Symlink inside a version root.
+            base = build_case([
+                ("V", "fortran-src", [], [("a.f", notice, True)])])
+            os.symlink(base / "fortran-src/a.f", base / "fortran-src/link.f")
+            _, problems = run_case(base)
+            expect("symlink inside version root is reported",
+                   any("V: symlink inside version root: link.f" in p
+                       for p in problems))
+
+            # Symlink escaping the version root.
+            base = build_case([
+                ("V", "fortran-src", [], [("a.f", notice, True)])])
+            outside = base / "outside.f"
+            outside.write_bytes(no_notice.encode("utf-8"))
+            os.symlink(outside, base / "fortran-src/escape.f")
+            _, problems = run_case(base)
+            expect("symlink escaping the version root is reported",
+                   any("V: symlink inside version root: escape.f" in p
+                       for p in problems))
+        else:
+            print("selftest SKIP: symlink inside version root is reported")
+            print("selftest SKIP: symlink escaping the version root is reported")
 
         # Missing metadata file.
         base = build_case(nested_layout())

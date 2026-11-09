@@ -138,13 +138,13 @@ struct ReferencePolarDataset {
   std::array<std::vector<ReferencePolarPoint>, referenceBlockCount> blocks;
 };
 
-// Canonical capacities (XFOIL.INC: NAX=800, NPX=12, NFX=128).
+// Canonical capacities (XFOIL.INC: NAX=800, NPX=20, NFX=128).
 inline constexpr std::size_t maxPolarPoints = polarPointCapacity;
 inline constexpr std::size_t maxPolarSlots = polarSetCapacity;
 inline constexpr std::size_t maxReferencePoints = referencePointCapacity;
 
 static_assert(maxPolarPoints == 800);
-static_assert(maxPolarSlots == 12);
+static_assert(maxPolarSlots == 20);
 static_assert(maxReferencePoints == 128);
 
 }  // namespace xfoil::core::polar

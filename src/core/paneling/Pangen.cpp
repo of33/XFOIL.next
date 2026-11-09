@@ -39,7 +39,7 @@
 // - Newton loop: max 20 iterations; endpoints fixed; RTF fudge I=2/I=NN-1;
 // sharp-LE fix I=NN1; RLX adaptation in the loop; ends when |DMAX| < 1e-3.
 // - Corner node insertion with shift and adjacent node fixes;
-// N > IQX-1 = 369 is a STOP in Fortran and becomes a
+// N > IQX-1 = 600 is a STOP in Fortran and becomes a
 // controlled error here.
 // - The session flags and flap state of the Fortran are session state
 // held outside the kernel. TECALC is used only for the geometry part
@@ -56,6 +56,7 @@
 #include <utility>
 #include <vector>
 
+#include "xfoil/core/Limits.h"
 #include "xfoil/core/Result.h"
 #include "xfoil/core/geometry/LeadingEdge.h"
 #include "xfoil/core/math/Spline.h"
@@ -72,11 +73,11 @@ using math::triSol;
 
 namespace {
 
-// Fortran: IQX = 370 (XFOIL.INC); corner node boundary IQX-1 = 369. The
-// work vectors preserve the Fortran capacity (IQX, 0-based 370
+// Fortran: IQX = 601 (XFOIL.INC); corner node boundary IQX-1 = 600. The
+// work vectors preserve the Fortran capacity (IQX, 0-based 601
 // slots), so that the shift for the corner node insertion always
 // has room for the new node.
-constexpr std::size_t kPanelCapacity = 370;
+constexpr std::size_t kPanelCapacity = xfoil::core::surfaceSystemCapacity;
 
 // Fortran: Newton iteration limit.
 constexpr int kMaxNewtonIterations = 20;
@@ -105,19 +106,18 @@ Result<PangenResult> pangen(const geometry::AirfoilBuffer& buffer,
                     "pangen: panelCount must be at least 2 "));
   }
   // Capacity protection: the canonical PANGEN protection semantics end at
-  // IQX-1 = 369 (Fortran STOP 'PANEL: Too many panels...', xfoil.f:2025 —
-  // the only explicit panel-count bound in PANGEN). IQX-6 = 364
+  // IQX-1 = 600 (Fortran STOP 'PANEL: Too many panels...', xfoil.f:2025 —
+  // the only explicit panel-count bound in PANGEN). IQX-6 = 595
   // applies only to the GETPAN/PPAR input boundary
-  // (xfoil.f:2218-2219) and does not apply to a direct PANGEN call:
-  // Fortran processes NPAN=365..369 directly (NN = IPFAC*(N-1)+1 =
-  // 1821..1841 <= 2220 = 6*IQX Newton arrays, <= 7400 = 5*IBX SNEW,
-  // coordinate arrays IZX = 418 >= 369). Above 369 there is no
-  // canonical protection semantics any more.
+  // (xfoil.f:2218-2219) and does not apply to a direct PANGEN call.
+  // NPAN=596..600 are processed directly within the 6*IQX Newton
+  // arrays, 5*IBX SNEW storage and IZX=IQX+IWX coordinate arrays.
+  // Above 600 there is no canonical protection semantics any more.
   if (params.panelCount > kMaxPanelNodeCount) {
     return Result<PangenResult>::fail(
         Error::make(ErrorCode::capacityExceeded,
                     "pangen: panelCount exceeds the canonical "
-                    "PANGEN protection limit (369)"));
+                    "PANGEN protection limit (600)"));
   }
 
   PangenResult out;

@@ -74,8 +74,8 @@ struct MsesDecodeResult {
 };
 
 // Decodes the whole file text per MSAVE read logic.
-// Canonical bounds: NEX=5 elements, per element at most 2*IQX+1 = 741
-// coordinate pairs (IQX=370, XFOIL.INC). A ninth element or
+// Canonical bounds: NEX=5 elements, per element at most 2*IQX+1 = 1203
+// coordinate pairs (IQX=601, XFOIL.INC). A ninth element or
 // an element without a 999.0 marker within the capacity leads to status
 // overflow. Unreadable data lines correspond to the canonical
 // READ error that Fortran does not handle and are reported as readError

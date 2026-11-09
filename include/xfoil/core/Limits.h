@@ -42,41 +42,41 @@
 
 namespace xfoil::core {
 
-// XFOIL.INC: PARAMETER (IQX=370, IPX=5, ISX=2)
+// XFOIL.INC: PARAMETER (IQX=601, IPX=5, ISX=2)
 // Surface system dimension IQX, among others for GAM(IQX).
-inline constexpr std::size_t surfaceSystemCapacity = 370;
+inline constexpr std::size_t surfaceSystemCapacity = 601;
 // Number of QSPEC distributions.
 inline constexpr std::size_t qspecDistributionCapacity = 5;
 // Number of airfoil sides (suction and pressure side).
 inline constexpr std::size_t sideCount = 2;
 
-// XFOIL.INC: PARAMETER (IWX=IQX/8+2) -> 370/8+2 = 48
+// XFOIL.INC: PARAMETER (IWX=IQX/8+2) -> 601/8+2 = 77
 // Wake-panel capacity.
-inline constexpr std::size_t wakeCapacity = 48;
+inline constexpr std::size_t wakeCapacity = 77;
 
-// XFOIL.INC: PARAMETER (IBX=4*IQX) -> 4*370 = 1480
+// XFOIL.INC: PARAMETER (IBX=4*IQX) -> 4*601 = 2404
 // Buffer contour capacity.
-inline constexpr std::size_t bufferCapacity = 1480;
+inline constexpr std::size_t bufferCapacity = 2404;
 
-// XFOIL.INC: PARAMETER (IZX=IQX+IWX) -> 370+48 = 418
+// XFOIL.INC: PARAMETER (IZX=IQX+IWX) -> 601+77 = 678
 // Panel + wake capacity (current contour incl. wake).
-inline constexpr std::size_t panelAndWakeCapacity = 418;
+inline constexpr std::size_t panelAndWakeCapacity = 678;
 
-// XFOIL.INC: PARAMETER (IVX=IQX/2+IWX+50) -> 185+48+50 = 283
+// XFOIL.INC: PARAMETER (IVX=IQX/2+IWX+50) -> 300+77+50 = 427
 // Boundary-layer capacity per airfoil side (incl. wake).
-inline constexpr std::size_t boundaryLayerCapacity = 283;
+inline constexpr std::size_t boundaryLayerCapacity = 427;
 
-// XFOIL.INC: PARAMETER (NAX=800, NPX=12, NFX=128)
+// XFOIL.INC: PARAMETER (NAX=800, NPX=20, NFX=128)
 // Polar-point capacity.
 inline constexpr std::size_t polarPointCapacity = 800;
-// Number of polars and reference polars.
-inline constexpr std::size_t polarSetCapacity = 12;
+// Number of polars and reference polars (NPX).
+inline constexpr std::size_t polarSetCapacity = 20;
 // Reference polar-point capacity.
 inline constexpr std::size_t referencePointCapacity = 128;
 
-// XFOIL.INC: PARAMETER (NTX=2*IBX) -> 2*1480 = 2960
+// XFOIL.INC: PARAMETER (NTX=2*IBX) -> 2*2404 = 4808
 // Camber/thickness table capacity.
-inline constexpr std::size_t camberTableCapacity = 2960;
+inline constexpr std::size_t camberTableCapacity = 4808;
 
 // CIRCLE.INC: PARAMETER (ICX=257)
 // Circle-plane point capacity (2^n + 1).

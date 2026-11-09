@@ -24,7 +24,7 @@
 // file: tests/unit/DatFileReaderTests.cpp
 // unit tests for the DAT file reader extracted from the application layer.
 // the AREAD-compatible path (readCoordinateFile) limits
-// the point count to the AREAD capacity (maxInputCoordinates=1480);
+// the point count to the AREAD capacity (maxInputCoordinates=2404);
 // the maximum successful real-point count is 1479. The domain
 // boundary is additionally checked in the session layer.
 
@@ -347,7 +347,7 @@ TEST(unit, DatReaderCoordinateFileRejectsEmptyElementAfterFinalMarker) {
   CHECK(result.coordinates.empty());
 }
 
-// Buffer semantics: max NB=1479, capacity=1480 ----------
+// Buffer semantics: max NB=2403, capacity=2404 ----------
 
 namespace {
 
@@ -361,19 +361,19 @@ std::string MakeLabeledFoil(const std::string& name, int pointCount) {
 
 }  // namespace
 
-TEST(unit, DatReaderCoordinateFileAcceptsMaxPointCount1479) {
-  // maximum successful real-point count NB = 1479 (AREAD capacity 1480).
-  const TempDatFile file("coord-max-1479.dat", MakeLabeledFoil("MAX 1479", 1479));
+TEST(unit, DatReaderCoordinateFileAcceptsMaxPointCount2403) {
+  // maximum successful real-point count NB = 2403 (AREAD capacity 2404).
+  const TempDatFile file("coord-max-2403.dat", MakeLabeledFoil("MAX 2403", 2403));
   CHECK(file.created());
   const auto result = DatFileReader::readCoordinateFile(file.path(), 0);
   CHECK(result.success());
-  CHECK_EQ(result.coordinates.size(), std::size_t{1479});
+  CHECK_EQ(result.coordinates.size(), std::size_t{2403});
 }
 
-TEST(unit, DatReaderCoordinateFileRejects1480RealCoordinates) {
-  // 1480 real coordinates without EOF/separator pair = capacity overflow.
-  const TempDatFile file("coord-overflow-1480.dat",
-                         MakeLabeledFoil("OVERFLOW 1480", 1480));
+TEST(unit, DatReaderCoordinateFileRejects2404RealCoordinates) {
+  // 2404 real coordinates without EOF/separator pair = capacity overflow.
+  const TempDatFile file("coord-overflow-2404.dat",
+                         MakeLabeledFoil("OVERFLOW 2404", 2404));
   CHECK(file.created());
   const auto result = DatFileReader::readCoordinateFile(file.path(), 0);
   CHECK_FALSE(result.success());

@@ -51,6 +51,7 @@
 #include <optional>
 #include <span>
 
+#include "xfoil/core/Limits.h"
 #include "xfoil/core/Result.h"
 #include "xfoil/core/geometry_design/GeometryDesignBuffer.h"
 #include "xfoil/core/math/Diagnostic.h"
@@ -58,8 +59,8 @@
 
 namespace xfoil::core::geometry_design {
 
-// IBX = 4*IQX = 1480 (XFOIL.INC): capacity of the buffer contour.
-inline constexpr std::size_t kIbx = 1480;
+// IBX = 4*IQX = 2404 (XFOIL.INC): capacity of the buffer contour.
+inline constexpr std::size_t kIbx = xfoil::core::bufferCapacity;
 
 // Fortran: GDES 'GSET' (xgdes.f 175-194). Buffer := current contour
 // (NB=N, XB/YB copy, LGSAME=true, SCALC/SEGSPL x2, GEOPAR; for LGSYM

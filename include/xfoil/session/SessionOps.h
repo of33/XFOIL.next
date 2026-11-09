@@ -264,7 +264,7 @@ SessionOperationStatus copyBufferToCurrent(SessionComposition& session);
 // (xgdes.f 961-1035). This use-case encapsulation is the product
 // route for EXEC; it checks the
 // canonical ABCOPY preconditions before the commit (NB <= 1: buffer not available;
-// NB > IQX-5 = 365: capacity limit) and only then runs the
+// NB > IQX-5 = 596: capacity limit) and only then runs the
 // confirmed copyBufferToCurrent commit. Success sets LGSAME and
 // transfers LBFLAP/XBF/YBF -> LFLAP/XOF/YOF (xgdes.f 982-988).
 // Error without any partial mutation: panel contour, analysis, revisions and

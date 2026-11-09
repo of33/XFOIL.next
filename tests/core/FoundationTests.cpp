@@ -63,33 +63,33 @@ bool throwsExactly(const Func& func) {
 // ---
 
 // compile-time checks of the canonical Fortran values.
-static_assert(xfoil::core::surfaceSystemCapacity == 370);
+static_assert(xfoil::core::surfaceSystemCapacity == 601);
 static_assert(xfoil::core::qspecDistributionCapacity == 5);
 static_assert(xfoil::core::sideCount == 2);
-static_assert(xfoil::core::wakeCapacity == 48);
-static_assert(xfoil::core::bufferCapacity == 1480);
-static_assert(xfoil::core::panelAndWakeCapacity == 418);
-static_assert(xfoil::core::boundaryLayerCapacity == 283);
+static_assert(xfoil::core::wakeCapacity == 77);
+static_assert(xfoil::core::bufferCapacity == 2404);
+static_assert(xfoil::core::panelAndWakeCapacity == 678);
+static_assert(xfoil::core::boundaryLayerCapacity == 427);
 static_assert(xfoil::core::polarPointCapacity == 800);
-static_assert(xfoil::core::polarSetCapacity == 12);
+static_assert(xfoil::core::polarSetCapacity == 20);
 static_assert(xfoil::core::referencePointCapacity == 128);
-static_assert(xfoil::core::camberTableCapacity == 2960);
+static_assert(xfoil::core::camberTableCapacity == 4808);
 static_assert(xfoil::core::circlePointCapacity == 257);
 static_assert(xfoil::core::mappingCoefficientCapacity == 64);
 
 TEST(unit, CoreLimitsMatchFortranValues) {
   using namespace xfoil::core;
-  CHECK_EQ(surfaceSystemCapacity, std::size_t{370});
+  CHECK_EQ(surfaceSystemCapacity, std::size_t{601});
   CHECK_EQ(qspecDistributionCapacity, std::size_t{5});
   CHECK_EQ(sideCount, std::size_t{2});
-  CHECK_EQ(wakeCapacity, std::size_t{48});
-  CHECK_EQ(bufferCapacity, std::size_t{1480});
-  CHECK_EQ(panelAndWakeCapacity, std::size_t{418});
-  CHECK_EQ(boundaryLayerCapacity, std::size_t{283});
+  CHECK_EQ(wakeCapacity, std::size_t{77});
+  CHECK_EQ(bufferCapacity, std::size_t{2404});
+  CHECK_EQ(panelAndWakeCapacity, std::size_t{678});
+  CHECK_EQ(boundaryLayerCapacity, std::size_t{427});
   CHECK_EQ(polarPointCapacity, std::size_t{800});
-  CHECK_EQ(polarSetCapacity, std::size_t{12});
+  CHECK_EQ(polarSetCapacity, std::size_t{20});
   CHECK_EQ(referencePointCapacity, std::size_t{128});
-  CHECK_EQ(camberTableCapacity, std::size_t{2960});
+  CHECK_EQ(camberTableCapacity, std::size_t{4808});
   CHECK_EQ(circlePointCapacity, std::size_t{257});
   CHECK_EQ(mappingCoefficientCapacity, std::size_t{64});
 }
@@ -110,9 +110,9 @@ TEST(unit, CoreLimitsAreNotPlusOnePadded) {
   // No blanket +1 storage quantities: the capacities are exactly the
   // Fortran values (no index-0 padding).
   using namespace xfoil::core;
-  CHECK_NE(surfaceSystemCapacity, std::size_t{371});
-  CHECK_NE(panelAndWakeCapacity, std::size_t{419});
-  CHECK_NE(bufferCapacity, std::size_t{1481});
+  CHECK_NE(surfaceSystemCapacity, std::size_t{602});
+  CHECK_NE(panelAndWakeCapacity, std::size_t{679});
+  CHECK_NE(bufferCapacity, std::size_t{2405});
   CHECK_NE(qspecDistributionCapacity, std::size_t{6});
   CHECK_NE(sideCount, std::size_t{3});
 }

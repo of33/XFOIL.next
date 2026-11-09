@@ -243,7 +243,7 @@ PcopCoreStatus handlePcopCore(session::SessionComposition& session,
   const auto status = session::copyBufferToCurrent(session);
   if (!status.ok) {
     // For a valid buffer (NB>=2) the only ABCOPY rejection is the
-    // capacity limit NB > IQX-5 = 365 (xgdes.f:968). copyBufferToCurrent
+    // capacity limit NB > IQX-5 = 596 (xgdes.f:968). copyBufferToCurrent
     // mutates only after a successful core::paneling::abcopy; contour,
     // parameters, buffer and analysis remain unchanged.
     emitAbcopyCapacityError(out, core::paneling::kMaxAbcopyNodeCount,
@@ -310,7 +310,7 @@ PparParameterCoreStatus applyPparParameterCore(
   }
   if (kind == core::paneling::PanelParameterKind::panelCount &&
       values.size() == 1) {
-    // Fortran clamp NPAN > IQX-6 (364): format 1200. Detection without a second
+    // Fortran clamp NPAN > IQX-6 (595): format 1200. Detection without a second
     // threshold copy by comparing requested vs. stored value.
     const int requested = static_cast<int>(values[0]);
     const int stored = session::panelingParameters(session).panelCount;
@@ -3073,7 +3073,7 @@ void emitCambBlock200(std::ostream& out,
 // INPC/INPP read block (xtcam.f 410-429/472-492): READ(*,1000) LINE;
 // a blank line ends it; a faulty line prints 'try again' and re-reads
 // the same digit. Two list-directed reals per line.
-// Loop limit 2*IQX = 740 (xtcam.f 414/472 DO I=1,2*IQX): after 740
+// Loop limit 2*IQX = 1202 (xtcam.f 414/472 DO I=1,2*IQX): after 1202
 // points the READ chain ends without consuming the next line.
 bool readCamberInputPoints(std::istream& in, std::ostream& out,
                            std::vector<core::geometry_design::CamberInputPoint>&

@@ -378,8 +378,25 @@ TEST(unit, CoreGdesOverRedoMatchesFortran) {
   checkAgainstReference("design-state/gdes-over-redo");
 }
 
-TEST(unit, CoreGdesOverOverflowMatchesFortran) {
-  checkAgainstReference("design-state/gdes-over-overflow");
+TEST(unit, CoreGdesOverOverflowMatchesFortranExceptCapacityToken) {
+  // The 6.99 reference reports the old 2*IQX=740 buffer cap. S01 raises
+  // that cap to 1203; all other bytes remain the canonical reference.
+  std::ostringstream setupOut;
+  std::string actual;
+  runHandlerCase("design-state/gdes-over-overflow", setupOut, actual);
+  const fs::path dir = fs::absolute(
+      fs::path("tests/fortran-reference/cases") /
+      "design-state/gdes-over-overflow");
+  std::string expected = referenceGdesSegment(
+      readFile(dir / "stdout.raw.txt"));
+  const std::string oldToken = "Maximum number of points:  740";
+  const std::string newToken = "Maximum number of points: 1202";
+  const std::size_t pos = expected.find(oldToken);
+  CHECK(pos != std::string::npos);
+  if (pos != std::string::npos) {
+    expected.replace(pos, oldToken.size(), newToken);
+  }
+  CHECK(actual == expected);
 }
 
 // OVER changes neither buffer nor panel: SAVE after the GDES exit still
@@ -416,8 +433,16 @@ TEST(unit, CoreGdesExecSuccessMatchesFortran) {
   checkAgainstReference("design-state/gdes-exec-success");
 }
 
-TEST(unit, CoreGdesExecCapacityMatchesFortran) {
-  checkAgainstReference("design-state/gdes-exec-capacity");
+TEST(unit, CoreGdesExecOldCapacityCaseNowAccepted) {
+  // The 6.99 reference rejects the 399-point buffer at IQX-5=365. With S01
+  // the same case is inside the new ABCOPY limit, so the old capacity
+  // message must no longer appear.
+  std::ostringstream setupOut;
+  std::string actual;
+  runHandlerCase("design-state/gdes-exec-capacity", setupOut, actual);
+  CHECK(!actual.empty());
+  CHECK(actual.find("Maximum number of panel nodes") == std::string::npos);
+  CHECK(actual.find("Current airfoil cannot be set.") == std::string::npos);
 }
 
 }  // namespace

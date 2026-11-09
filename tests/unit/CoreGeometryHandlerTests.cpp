@@ -298,7 +298,7 @@ TEST(unit, CoreNacaHandlerPangenFailureNoMutation) {
   const std::vector<double> bufferBefore = composition.geometry.buffer.x;
   const std::vector<double> panelBefore = composition.paneling.panel.x;
   const std::uint64_t revBefore = composition.geometry.bufferRevision;
-  composition.paneling.parameters.panelCount = 370;  // test injection (>369)
+  composition.paneling.parameters.panelCount = 601;  // test injection (>600)
 
   std::ostringstream out;
   app::cli::handleNacaCore(composition, out, 12);
@@ -529,19 +529,22 @@ TEST(unit, CorePcopHandlerNoBufferNoMutation) {
   CHECK(composition.paneling.panel.x.empty());
 }
 
-// capacity exceedance (NB > IQX-5 = 365, test injection): canonical
-// four-line rejection (reference panel-coord/abcopy-366-above-limit),
-// panel contour unchanged.
+// capacity exceedance (NB > IQX-5 = 596, test injection): canonical
+// four-line rejection, panel contour unchanged.
 TEST(unit, CorePcopHandlerCapacityNoMutation) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
   app::cli::handleNacaCore(composition, nacaSink, 2412);  // panel 160
   const std::vector<double> panelXBefore = composition.paneling.panel.x;
-  // Stretch the buffer to 366 points (only the capacity check matters).
-  composition.geometry.buffer.x.resize(
-      366, composition.geometry.buffer.x.back());
-  composition.geometry.buffer.y.resize(
-      366, composition.geometry.buffer.y.back());
+  // Stretch the buffer above the new limit (only the capacity check matters).
+  const std::size_t limit = static_cast<std::size_t>(
+      core::paneling::kMaxAbcopyNodeCount);
+  while (composition.geometry.buffer.x.size() <= limit) {
+    composition.geometry.buffer.x.push_back(
+        1.0 + 0.001 * static_cast<double>(
+                        composition.geometry.buffer.x.size()));
+    composition.geometry.buffer.y.push_back(0.0);
+  }
 
   std::ostringstream out;
   const app::cli::PcopCoreStatus status =
@@ -549,8 +552,8 @@ TEST(unit, CorePcopHandlerCapacityNoMutation) {
   CHECK_EQ(static_cast<int>(status),
            static_cast<int>(app::cli::PcopCoreStatus::capacityExceeded));
   const std::string expected =
-      " Maximum number of panel nodes  :          365\n"
-      " Number of buffer airfoil points:          366\n"
+      " Maximum number of panel nodes  :          596\n"
+      " Number of buffer airfoil points:          597\n"
       " Current airfoil cannot be set.\n"
       " Try executing PANE at Top Level instead.\n";
   CHECK_EQ(out.str(), expected);
@@ -894,14 +897,14 @@ TEST(unit, CorePaneHandlerInvalidParamsNoMutation) {
   CHECK_EQ(composition.paneling.parameters.panelCount, 1);
 }
 
-// capacity limit (panelCount>369, set directly): canonical
+// capacity limit (panelCount>600, set directly): canonical
 // too-many-panels diagnostic without partial mutation.
 TEST(unit, CorePaneHandlerCapacityNoMutation) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
   app::cli::handleNacaCore(composition, nacaSink, 2412);
   const std::vector<double> panelXBefore = composition.paneling.panel.x;
-  composition.paneling.parameters.panelCount = 370;  // test injection
+  composition.paneling.parameters.panelCount = 601;  // test injection (>600)
 
   std::ostringstream out;
   const app::cli::PaneCoreStatus status =
@@ -922,7 +925,7 @@ TEST(unit, CorePaneHandlerErrorAfterValidPangenKeepsPanel) {
   app::cli::handlePaneCore(composition, firstOut);  // valid pangen-panel
   const std::vector<double> panelXBefore = composition.paneling.panel.x;
   const auto originBefore = composition.paneling.origin;
-  composition.paneling.parameters.panelCount = 370;  // next call fails
+  composition.paneling.parameters.panelCount = 601;  // next call fails (>600)
 
   std::ostringstream out;
   const app::cli::PaneCoreStatus status =
@@ -1028,14 +1031,14 @@ TEST(unit, CorePparParameterNChangesNoReprintNoPangen) {
   CHECK_EQ(composition.paneling.panelSourceRevision, panelSrcRevBefore);
 }
 
-// N above IQX-6 (364): canonical clamp to 364 plus format-1200 message
+// N above IQX-6 (595): canonical clamp to 595 plus format-1200 message
 // (xfoil.f:2218-2221), otherwise no panel regeneration.
 TEST(unit, CorePparParameterNClampEmitsFortranMessage) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
   app::cli::handleNacaCore(composition, nacaSink, 2412);
 
-  const double value = 400.0;
+  const double value = 600.0;
   std::ostringstream out;
   const app::cli::PparParameterCoreStatus status =
       app::cli::applyPparParameterCore(
@@ -1045,9 +1048,9 @@ TEST(unit, CorePparParameterNClampEmitsFortranMessage) {
   CHECK_EQ(static_cast<int>(status),
            static_cast<int>(app::cli::PparParameterCoreStatus::appliedClamped));
   const std::string expected =
-      "  Number of panel nodes reduced to array limit: 364\n";
+      "  Number of panel nodes reduced to array limit: 595\n";
   CHECK_EQ(out.str(), expected);
-  CHECK_EQ(session::panelingParameters(composition).panelCount, 364);
+  CHECK_EQ(session::panelingParameters(composition).panelCount, 595);
 }
 
 // N < 2: controlled rejection without partial mutation (core contract).
@@ -1262,7 +1265,7 @@ TEST(unit, CorePparParameterTextDeterministic) {
     session::SessionComposition composition;
     std::ostringstream nacaSink;
     app::cli::handleNacaCore(composition, nacaSink, 2412);
-    const double value = 500.0;
+    const double value = 600.0;
     std::ostringstream out;
     app::cli::applyPparParameterCore(
         composition, core::paneling::PanelParameterKind::panelCount,
@@ -1274,7 +1277,7 @@ TEST(unit, CorePparParameterTextDeterministic) {
   const std::string third = runOnce();
   CHECK(first == second);
   CHECK(second == third);
-  CHECK_EQ(first, "  Number of panel nodes reduced to array limit: 364\n");
+  CHECK_EQ(first, "  Number of panel nodes reduced to array limit: 595\n");
 }
 
 // --- PPAR Apply/PANGEN producer ------------------------------
@@ -1465,14 +1468,14 @@ TEST(unit, CorePparApplyInvalidParamsNoMutation) {
   CHECK_EQ(composition.paneling.parameters.panelCount, 1);
 }
 
-// capacity limit (panelCount>369, set directly): canonical
+// capacity limit (panelCount>600, set directly): canonical
 // too-many-panels diagnostic without partial mutation.
 TEST(unit, CorePparApplyCapacityNoMutation) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
   app::cli::handleNacaCore(composition, nacaSink, 2412);
   const std::vector<double> panelXBefore = composition.paneling.panel.x;
-  composition.paneling.parameters.panelCount = 370;  // test injection
+  composition.paneling.parameters.panelCount = 601;  // test injection (>600)
 
   std::ostringstream out;
   const app::cli::PparApplyCoreStatus status =

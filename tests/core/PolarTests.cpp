@@ -81,7 +81,7 @@ TEST(unit, PolarTypesDefaults) {
   ReferencePolarDataset ref;
   CHECK_EQ(ref.blocks.size(), 4u);
   CHECK_EQ(maxPolarPoints, 800u);
-  CHECK_EQ(maxPolarSlots, 12u);
+  CHECK_EQ(maxPolarSlots, 20u);
   CHECK_EQ(maxReferencePoints, 128u);
   CHECK_EQ(polarColumnCount, 13u);
   CHECK_EQ(sideColumnCount, 4u);

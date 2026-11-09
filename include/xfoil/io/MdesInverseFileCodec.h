@@ -37,11 +37,14 @@
 #include <string>
 #include <vector>
 
+#include "xfoil/core/Limits.h"
+
 namespace xfoil::io {
 
-// IQX = 370 (XFOIL.INC 23): GETVOV reads at most IQX pairs
+// IQX = 601 (XFOIL.INC 23): GETVOV reads at most IQX pairs
 // (DO K = 1, IQX).
-inline constexpr std::size_t kGetvovPointLimit = 370;
+inline constexpr std::size_t kGetvovPointLimit =
+    xfoil::core::surfaceSystemCapacity;
 
 // An (s, V/Vinf) pair in raw form (arc length s unnormalized,
 // V/Vinf dimensionless). The normalization s -> 1-(s-SSTART)/SSPAN is

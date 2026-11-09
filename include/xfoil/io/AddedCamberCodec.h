@@ -34,11 +34,14 @@
 #include <iosfwd>
 #include <vector>
 
+#include "xfoil/core/Limits.h"
+
 namespace xfoil::io {
 
-// NTX = 2*IBX = 8*IQX = 2960 (XFOIL.INC parameter). Fortran reads
+// NTX = 2*IBX = 8*IQX = 4808 (XFOIL.INC parameter). Fortran reads
 // at most NTX pairs (DO K = 1, NTX).
-inline constexpr std::size_t kAddedCamberPointLimit = 2960;
+inline constexpr std::size_t kAddedCamberPointLimit =
+    xfoil::core::camberTableCapacity;
 
 struct AddedCamberPoint {
   double x{0.0};

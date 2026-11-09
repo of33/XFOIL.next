@@ -323,8 +323,8 @@ TEST(integration, PparNChangesPanelCount) {
 }
 
 TEST(integration, PparNClampsToFortranArrayLimit) {
-  // canonical GETPAN boundary (xfoil.f 2218-2221, IBX=4*IQX=364):
-  // 'Number of panel nodes reduced to array limit: 364' (I4).
+  // canonical GETPAN boundary (xfoil.f 2218-2221, IQX-6=595):
+  // 'Number of panel nodes reduced to array limit: 595' (I4).
   const auto result = runSession(
       "NACA 2412\nPPAR\n"
       "N 5000\n"   // via the limit
@@ -332,9 +332,9 @@ TEST(integration, PparNClampsToFortranArrayLimit) {
 
   CHECK_EQ(result.exitCode, 0);
   CHECK(contains(result.outputText,
-                 "Number of panel nodes reduced to array limit: 364"));
+                 "Number of panel nodes reduced to array limit: 595"));
   CHECK(contains(result.outputText,
-                 "  N  i   Number of panel nodes       364\n"));
+                 "  N  i   Number of panel nodes       595\n"));
 }
 
 TEST(integration, PparPChangesBunchingParameter) {

@@ -51,14 +51,15 @@
 #include <span>
 #include <vector>
 
+#include "xfoil/core/Limits.h"
 #include "xfoil/core/Result.h"
 #include "xfoil/core/geometry/LeadingEdge.h"
 #include "xfoil/core/geometry_design/GeometryDesignBuffer.h"
 
 namespace xfoil::core::geometry_design {
 
-// NTX = 2*IBX = 8*IQX = 2960 (XFOIL.INC PARAMETER). NCAM = MIN(201, NTX).
-inline constexpr std::size_t kNtx = 2960;
+// NTX = 2*IBX = 8*IQX = 4808 (XFOIL.INC PARAMETER). NCAM = MIN(201, NTX).
+inline constexpr std::size_t kNtx = xfoil::core::camberTableCapacity;
 inline constexpr std::size_t kNcamMax = 201;
 
 // Input point for INPC (x/c, y/c) or INPP (x/c, DCp), each

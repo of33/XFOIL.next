@@ -37,19 +37,19 @@
 #include "xfoil/Types.h"
 
 // Compile-time checks.
-static_assert(xfoil::limits::surfaceNodeDimension == 370);
-static_assert(xfoil::limits::bufferNodeDimension == 1480);
-static_assert(xfoil::limits::maxInputCoordinates == 1480);
+static_assert(xfoil::limits::surfaceNodeDimension == 601);
+static_assert(xfoil::limits::bufferNodeDimension == 2404);
+static_assert(xfoil::limits::maxInputCoordinates == 2404);
 
 TEST(unit, LimitsMatchCanonicalDimensions) {
-  CHECK_EQ(xfoil::limits::surfaceNodeDimension, std::size_t{370});
-  CHECK_EQ(xfoil::limits::halfSurfaceNodeDimension, std::size_t{185});
-  CHECK_EQ(xfoil::limits::wakeNodeDimension, std::size_t{48});
+  CHECK_EQ(xfoil::limits::surfaceNodeDimension, std::size_t{601});
+  CHECK_EQ(xfoil::limits::halfSurfaceNodeDimension, std::size_t{300});
+  CHECK_EQ(xfoil::limits::wakeNodeDimension, std::size_t{77});
   CHECK_EQ(xfoil::limits::qspecDistributionDimension, std::size_t{5});
   CHECK_EQ(xfoil::limits::sideDimension, std::size_t{2});
-  CHECK_EQ(xfoil::limits::bufferNodeDimension, std::size_t{1480});
-  CHECK_EQ(xfoil::limits::panelWakeNodeDimension, std::size_t{418});
-  CHECK_EQ(xfoil::limits::boundaryLayerNodeDimension, std::size_t{283});
+  CHECK_EQ(xfoil::limits::bufferNodeDimension, std::size_t{2404});
+  CHECK_EQ(xfoil::limits::panelWakeNodeDimension, std::size_t{678});
+  CHECK_EQ(xfoil::limits::boundaryLayerNodeDimension, std::size_t{427});
   CHECK_EQ(xfoil::limits::circlePlanePointDimension, std::size_t{257});
   CHECK_EQ(xfoil::limits::mappingCoefficientDimension, std::size_t{64});
   CHECK_EQ(xfoil::limits::quarterMappingCoefficientDimension, std::size_t{16});
@@ -59,19 +59,19 @@ TEST(unit, LimitsMatchCanonicalDimensions) {
 TEST(unit, NamespacedLimitsMatchCanonicalLimits) {
   // semantic Fortran dimensions (category A) with direct
   // value pins.
-  CHECK_EQ(xfoil::limits::surfaceNodeDimension, std::size_t{370});
-  CHECK_EQ(xfoil::limits::halfSurfaceNodeDimension, std::size_t{185});
-  CHECK_EQ(xfoil::limits::wakeNodeDimension, std::size_t{48});
+  CHECK_EQ(xfoil::limits::surfaceNodeDimension, std::size_t{601});
+  CHECK_EQ(xfoil::limits::halfSurfaceNodeDimension, std::size_t{300});
+  CHECK_EQ(xfoil::limits::wakeNodeDimension, std::size_t{77});
   CHECK_EQ(xfoil::limits::qspecDistributionDimension, std::size_t{5});
   CHECK_EQ(xfoil::limits::sideDimension, std::size_t{2});
-  CHECK_EQ(xfoil::limits::bufferNodeDimension, std::size_t{1480});
-  CHECK_EQ(xfoil::limits::panelWakeNodeDimension, std::size_t{418});
-  CHECK_EQ(xfoil::limits::boundaryLayerNodeDimension, std::size_t{283});
+  CHECK_EQ(xfoil::limits::bufferNodeDimension, std::size_t{2404});
+  CHECK_EQ(xfoil::limits::panelWakeNodeDimension, std::size_t{678});
+  CHECK_EQ(xfoil::limits::boundaryLayerNodeDimension, std::size_t{427});
   CHECK_EQ(xfoil::limits::circlePlanePointDimension, std::size_t{257});
   CHECK_EQ(xfoil::limits::mappingCoefficientDimension, std::size_t{64});
   CHECK_EQ(xfoil::limits::quarterMappingCoefficientDimension, std::size_t{16});
   CHECK_EQ(xfoil::limits::midpointCount, std::size_t{100});
-  CHECK_EQ(xfoil::limits::maxInputCoordinates, std::size_t{1480});
+  CHECK_EQ(xfoil::limits::maxInputCoordinates, std::size_t{2404});
 }
 
 TEST(unit, StorageConstantsMatchFachdimensionRelations) {
@@ -79,10 +79,10 @@ TEST(unit, StorageConstantsMatchFachdimensionRelations) {
  // semantic domain dimensions.
   CHECK_EQ(xfoil::limits::surfaceNodeStorage,
            xfoil::limits::surfaceNodeDimension + 1);
-  CHECK_EQ(xfoil::limits::surfaceNodeStorage, std::size_t{371});
+  CHECK_EQ(xfoil::limits::surfaceNodeStorage, std::size_t{602});
   CHECK_EQ(xfoil::limits::panelWakeNodeStorage,
            xfoil::limits::panelWakeNodeDimension + 1);
-  CHECK_EQ(xfoil::limits::panelWakeNodeStorage, std::size_t{419});
+  CHECK_EQ(xfoil::limits::panelWakeNodeStorage, std::size_t{679});
   CHECK_EQ(xfoil::limits::qspecDistributionStorage,
            xfoil::limits::qspecDistributionDimension + 1);
   CHECK_EQ(xfoil::limits::qspecDistributionStorage, std::size_t{6});
@@ -90,17 +90,17 @@ TEST(unit, StorageConstantsMatchFachdimensionRelations) {
   CHECK_EQ(xfoil::limits::sideStorage, std::size_t{3});
   CHECK_EQ(xfoil::limits::camberNodeStorage,
            xfoil::limits::bufferNodeDimension + 1);
-  CHECK_EQ(xfoil::limits::camberNodeStorage, std::size_t{1481});
+  CHECK_EQ(xfoil::limits::camberNodeStorage, std::size_t{2405});
   CHECK_EQ(xfoil::limits::bufferNodeStorage,
            xfoil::limits::bufferNodeDimension);
-  CHECK_EQ(xfoil::limits::bufferNodeStorage, std::size_t{1480});
+  CHECK_EQ(xfoil::limits::bufferNodeStorage, std::size_t{2404});
   // Wake/BL reserves stay larger than the semantic domains.
   CHECK(xfoil::limits::wakeNodeStorage >
         xfoil::limits::wakeNodeDimension + 1);
-  CHECK_EQ(xfoil::limits::wakeNodeStorage, std::size_t{50});
+  CHECK_EQ(xfoil::limits::wakeNodeStorage, std::size_t{79});
   CHECK(xfoil::limits::boundaryLayerNodeStorage >
         xfoil::limits::boundaryLayerNodeDimension + 1);
-  CHECK_EQ(xfoil::limits::boundaryLayerNodeStorage, std::size_t{302});
+  CHECK_EQ(xfoil::limits::boundaryLayerNodeStorage, std::size_t{446});
   CHECK_EQ(xfoil::limits::snewNodeStorage,
            5 * xfoil::limits::bufferNodeDimension + 1);
   CHECK_EQ(xfoil::limits::workNodeStorage,
@@ -108,24 +108,24 @@ TEST(unit, StorageConstantsMatchFachdimensionRelations) {
 }
 
 TEST(unit, BufferSemanticsAndReaderCapacity) {
- // Buffer semantics: AREAD/reader capacity = IBX = 1480,
-  // maximum successful real-point count NB = 1479, GETCAM output index =
-  // NB + 1 = 1480.
+  // Buffer semantics: AREAD/reader capacity = IBX = 2404,
+  // maximum successful real-point count NB = 2403, GETCAM output index =
+  // NB + 1 = 2404.
   CHECK_EQ(xfoil::limits::maxInputCoordinates,
            xfoil::limits::bufferNodeDimension);
-  CHECK_EQ(xfoil::limits::maxInputCoordinates, std::size_t{1480});
-  CHECK_EQ(xfoil::limits::bufferNodeStorage, std::size_t{1480});
-  CHECK_EQ(xfoil::limits::bufferNodeStorage - 1, std::size_t{1479});
-  // camberNodeStorage must safely hold the GETCAM output index 1480.
-  CHECK(xfoil::limits::camberNodeStorage > 1480);
-  CHECK_EQ(xfoil::limits::camberNodeStorage, std::size_t{1481});
+  CHECK_EQ(xfoil::limits::maxInputCoordinates, std::size_t{2404});
+  CHECK_EQ(xfoil::limits::bufferNodeStorage, std::size_t{2404});
+  CHECK_EQ(xfoil::limits::bufferNodeStorage - 1, std::size_t{2403});
+  // camberNodeStorage must safely hold the GETCAM output index 2404.
+  CHECK(xfoil::limits::camberNodeStorage > 2404);
+  CHECK_EQ(xfoil::limits::camberNodeStorage, std::size_t{2405});
 }
 
 TEST(unit, MixedInverseCapacityConstantsMatchCanonicalDerivation) {
-  CHECK_EQ(xfoil::limits::maxRegularPanelNodes, std::size_t{365});
+  CHECK_EQ(xfoil::limits::maxRegularPanelNodes, std::size_t{596});
   CHECK_EQ(xfoil::limits::mixedInverseExtraUnknowns, std::size_t{5});
-  CHECK_EQ(xfoil::limits::mixedInverseMaximumSystemIndex, std::size_t{370});
-  CHECK_EQ(xfoil::limits::mixedInverseSystemStorage, std::size_t{371});
+  CHECK_EQ(xfoil::limits::mixedInverseMaximumSystemIndex, std::size_t{601});
+  CHECK_EQ(xfoil::limits::mixedInverseSystemStorage, std::size_t{602});
 
  // Derivation from the semantic domain dimension IQX.
   CHECK_EQ(xfoil::limits::maxRegularPanelNodes,
@@ -140,10 +140,10 @@ TEST(unit, MixedInverseCapacityConstantsMatchCanonicalDerivation) {
 }
 
 // Compile-time limits of the mixed inverse system.
-static_assert(xfoil::limits::maxRegularPanelNodes == 365);
+static_assert(xfoil::limits::maxRegularPanelNodes == 596);
 static_assert(xfoil::limits::mixedInverseExtraUnknowns == 5);
-static_assert(xfoil::limits::mixedInverseMaximumSystemIndex == 370);
-static_assert(xfoil::limits::mixedInverseSystemStorage == 371);
+static_assert(xfoil::limits::mixedInverseMaximumSystemIndex == 601);
+static_assert(xfoil::limits::mixedInverseSystemStorage == 602);
 
 TEST(unit, PointAndVectorDefaultInitializeToZero) {
   constexpr xfoil::Point2D point{};

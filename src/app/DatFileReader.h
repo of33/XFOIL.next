@@ -114,7 +114,7 @@ class DatFileReader {
   // element marker and reports elementSelectionRequired; after a
   // selection the same path is read again with the chosen element
   // number. maxPoints corresponds to the NMAX argument of the
-  // respective AREAD call (LOAD: IBX=1480, OVER: 2*IQX=740).
+  // respective AREAD call (LOAD: IBX=2404, OVER: 2*IQX=1202).
   [[nodiscard]]
   static CoordinateFileReadResult readCoordinateFile(
       const std::filesystem::path& path,

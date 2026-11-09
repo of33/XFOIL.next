@@ -33,12 +33,13 @@
 // - element boundary: first value of the pair exactly 999.0 (Fortran checks
 // only XTMP);
 // - canonical bounds: NEX=5 elements, per element at most
-// 2*IQX+1 = 741 pairs (IQX=370 from XFOIL.INC);
+// 2*IQX+1 = 1203 pairs (IQX=601 from XFOIL.INC);
 // - the remainder IEL of the element count is returned as residualElement
 // (ASKI default for an empty answer).
 
 #include "xfoil/io/MsesMultielementCodec.h"
 
+#include "xfoil/core/Limits.h"
 #include "xfoil/io/TextFormat.h"
 
 #include <cstdlib>
@@ -49,9 +50,10 @@ namespace xfoil::io {
 namespace {
 
 // Canonical MSAVE bounds (xfoil.f 1437-1438: Parameter(NEX=5),
-// XTMP(2*IQX,NEX) with IQX=370 from XFOIL.INC).
+// XTMP(2*IQX,NEX) with IQX=601 from XFOIL.INC).
 constexpr int kMaxElements = 5;
-constexpr int kMaxPairsPerElement = 2 * 370 + 1;
+constexpr int kMaxPairsPerElement =
+    2 * static_cast<int>(xfoil::core::surfaceSystemCapacity) + 1;
 
 // Right trim as in the backward loop DO NN1=80,2,-1 in MSAVE:
 // last non-empty position from 80 downward, at least 1.

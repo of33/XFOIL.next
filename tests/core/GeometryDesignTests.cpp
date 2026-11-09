@@ -59,6 +59,7 @@
 #include "xfoil/core/geometry_design/PlotFrame.h"
 #include "xfoil/core/geometry_design/ThicknessCamberOps.h"
 #include "xfoil/core/paneling/Abcopy.h"
+#include "xfoil/core/paneling/PanelingTypes.h"
 #include "xfoil/core/math/Spline.h"
 
 namespace {
@@ -723,13 +724,14 @@ TEST(unit, GeometryDesignExecInvalidationIsStructuredOnly) {
 }
 
 TEST(unit, GeometryDesignExecCapacityErrorKeepsContour) {
-  // D: capacity error (NB > 365) -> EXEC fails, buffer and the
+  // D: capacity error (NB > IQX-5 = 596) -> EXEC fails, buffer and the
   // previously produced panel contour remain unchanged.
   GeometryDesignBuffer b = designBuffer(2412);
   const Result<paneling::AbcopyResult> p0 = executeGeometryBuffer(b);
   CHECK(p0.isOk());
-  // Extend the buffer to 400 points (circle, uniform).
-  const std::size_t n = 400;
+  // Extend the buffer to the first disallowed node count (circle, uniform).
+  const std::size_t n =
+      static_cast<std::size_t>(paneling::kMaxAbcopyNodeCount) + 1;
   GeometryDesignBuffer big;
   big.x.resize(n);
   big.y.resize(n);

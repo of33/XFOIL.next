@@ -35,7 +35,7 @@
 // Formulas, operation order, and special cases (sharp LE/TE, blunt
 // TE, corner node insertion, Newton continuation after 20 iterations) are
 // adopted exactly from the Fortran. The Fortran STOP for too many panels
-// (N > IQX-1 = 369) becomes a controlled error; the Newton limit
+// (N > IQX-1 = 600) becomes a controlled error; the Newton limit
 // is returned as structured diagnostics (limitReached) and the
 // routine continues with the canonical Fortran behavior.
 //

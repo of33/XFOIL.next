@@ -29,6 +29,7 @@
 
 #include "app/cli/CoreGeometryHandlers.h"
 #include "app/cli/CoreOperHandlers.h"
+#include "xfoil/core/paneling/PanelingTypes.h"
 #include "xfoil/session/SessionOps.h"
 #include "xfoil/session/SessionState.h"
 
@@ -127,8 +128,10 @@ TEST(unit, CoreGdesExecFailureKeepsOldPanelAndAnalysis) {
   // therefore checked directly through the session use case with a
   // subsequently inflated buffer.
   auto big = s.geometry.buffer;
-  for (int i = 0; i < 200; ++i) {
-    big.x.push_back(1.0 + 0.001 * static_cast<double>(i));
+  const std::size_t limit = static_cast<std::size_t>(
+      xfoil::core::paneling::kMaxAbcopyNodeCount);
+  while (big.x.size() <= limit) {
+    big.x.push_back(1.0 + 0.001 * static_cast<double>(big.x.size()));
     big.y.push_back(0.0);
   }
   (void)session::setBufferGeometry(s, big);

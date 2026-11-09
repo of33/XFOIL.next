@@ -79,30 +79,50 @@ xfoil::core::geometry::AirfoilBuffer makeCornerBuffer(std::size_t nb,
 
 }  // namespace
 
-TEST(unit, CoreGdesExecCapacityBoundary365) {
-  // NB = 365 (IQX-5) is still allowed; NB = 366 is rejected with the
-  // four-line ABCOPY message. panel contour and analysis remain
-  // unchanged.
+TEST(unit, CoreGdesExecCapacityBoundaryIqx5) {
+  // NB = IQX-5 = 596 is still allowed; NB = 597 is rejected with the
+  // four-line ABCOPY message. The valid panel contour remains unchanged
+  // on rejection.
+  const std::size_t limit =
+      static_cast<std::size_t>(xfoil::core::paneling::kMaxAbcopyNodeCount);
+
+  auto atLimit = makeCornerBuffer(398, 10);  // 597 points, trimmed to limit
+  CHECK_EQ(atLimit.x.size(), limit + 1);
+  atLimit.x.resize(limit);
+  atLimit.y.resize(limit);
   auto sessionOk = std::make_unique<session::SessionComposition>();
   {
     std::ostringstream setup;
     cli::handleNacaCore(*sessionOk, setup, 12);
   }
-  auto big = makeCornerBuffer(244, 10);
+  CHECK(session::setBufferGeometry(*sessionOk, std::move(atLimit)).success());
+  const auto okStatus = session::executeGeometryDesignBuffer(*sessionOk);
+  CHECK(okStatus.ok);
+  CHECK_EQ(okStatus.bufferPointCount, limit);
+  CHECK_EQ(sessionOk->paneling.panel.x.size(), limit);
+
+  auto big = makeCornerBuffer(398, 10);  // 597 > 596
+  CHECK_EQ(big.x.size(), limit + 1);
   auto sessionBig = std::make_unique<session::SessionComposition>();
   {
     std::ostringstream setup;
     cli::handleNacaCore(*sessionBig, setup, 12);
-    (void)session::setBufferGeometry(*sessionBig, big);
+  }
+  CHECK(session::setBufferGeometry(*sessionBig, std::move(big)).success());
+  // The panel was invalidated by the buffer replacement; regenerate it from
+  // the oversized buffer so atomic preservation of a valid panel can be
+  // checked.
+  {
+    std::ostringstream paneOut;
+    CHECK(cli::handlePaneCore(*sessionBig, paneOut) ==
+          cli::PaneCoreStatus::applied);
   }
   const std::size_t panelBefore = sessionBig->paneling.panel.x.size();
   const bool panelValidBefore = sessionBig->paneling.panelingValid;
   const auto status = session::executeGeometryDesignBuffer(*sessionBig);
   CHECK(status.capacityExceeded);
   CHECK(!status.ok);
-  CHECK_EQ(status.maxPointCount,
-           static_cast<std::size_t>(xfoil::core::paneling::
-                                        kMaxAbcopyNodeCount));
+  CHECK_EQ(status.maxPointCount, limit);
   CHECK_EQ(sessionBig->paneling.panel.x.size(), panelBefore);
   CHECK_EQ(sessionBig->paneling.panelingValid, panelValidBefore);
   CHECK(!sessionBig->design.lgSame);
@@ -116,7 +136,7 @@ TEST(unit, CoreGdesExecHandlerCapacityTexts) {
     cli::handleNacaCore(*session, setup, 12);
     (void)session::setBufferGeometry(
         *session,
-        makeCornerBuffer(244, 10));
+        makeCornerBuffer(398, 10));  // 597 > IQX-5
   }
   std::istringstream in("EXEC\n\n");
   std::ostringstream out;
@@ -125,7 +145,9 @@ TEST(unit, CoreGdesExecHandlerCapacityTexts) {
   const std::string text = out.str();
   CHECK(text.find(" Maximum number of panel nodes  :") !=
         std::string::npos);
-  CHECK(text.find("365") != std::string::npos);
+  CHECK(text.find(std::to_string(
+            xfoil::core::paneling::kMaxAbcopyNodeCount)) !=
+        std::string::npos);
   CHECK(text.find(" Number of buffer airfoil points:") !=
         std::string::npos);
   CHECK(text.find(" Current airfoil cannot be set.") != std::string::npos);
@@ -133,9 +155,10 @@ TEST(unit, CoreGdesExecHandlerCapacityTexts) {
         std::string::npos);
 }
 
-TEST(unit, CoreCambInpcPointLimitIs2Iqx) {
-  // xtcam.f 414: DO I=1,2*IQX. After 740 points the READ chain ends,
-  // and the next line is again a menu command (here CLR).
+TEST(unit, CoreCambInpcAcceptsPointsAboveOldLimit) {
+  // S01 accepts more than the old 740-point INPC block. The full 2*IQX
+  // path depends on the S02 spline NMAX raise, so this focused test uses
+  // the current spline limit and terminates the block with a blank line.
   auto session = std::make_unique<session::SessionComposition>();
   {
     std::ostringstream setup;
@@ -143,14 +166,14 @@ TEST(unit, CoreCambInpcPointLimitIs2Iqx) {
     (void)session::initializeGeometryDesign(*session);
   }
   std::ostringstream menu;
-  const std::size_t limit = 2 * xfoil::limits::surfaceNodeDimension;
+  constexpr std::size_t kPoints = 1000;  // old INPC cap 740 < 1000 <= S02 NMAX
   menu << "INPC\n";
-  for (std::size_t i = 0; i < limit; ++i) {
-    const double x = static_cast<double>(i) / static_cast<double>(limit - 1);
+  for (std::size_t i = 0; i < kPoints; ++i) {
+    const double x = static_cast<double>(i) /
+                     static_cast<double>(kPoints - 1);
     menu << x << " " << 0.01 * std::sin(6.0 * x) << "\n";
   }
-  // line 741: menu command, no point and no 'try again'.
-  menu << "CLR\n\n";
+  menu << "\nCLR\n\n";  // blank ends INPC; CLR resets added camber
   std::istringstream in(menu.str());
   std::ostringstream out;
   const auto status = cli::handleCamberDesignCore(*session, in, out);
@@ -162,7 +185,7 @@ TEST(unit, CoreCambInpcPointLimitIs2Iqx) {
 }
 
 TEST(unit, CoreCambRdacCodecPointLimitIsNtx) {
-  // AddedCamberCodec: DO K=1,NTX (NTX=2960); pairs beyond that limit
+  // AddedCamberCodec: DO K=1,NTX (NTX=4808); pairs beyond that limit
   // are discarded with truncatedByPointLimit.
   std::ostringstream file;
   file << "camber file header\n";

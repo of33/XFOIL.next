@@ -285,7 +285,7 @@ inline void emitPparTable(std::ostream& out, int npan, double cvpar,
       << "\n  Z oom\n  U nzoom\n  H ardcopy\n";
 }
 
-// GETPAN Format 1200 (xfoil.f:2218-2221): NPAN via IQX-6 (364) limited.
+// GETPAN Format 1200 (xfoil.f:2218-2221): NPAN via IQX-6 (595) limited.
 // 1X + literal with leading space, I4 of the limited value. It is only
 // triggered by the parameter change itself, not by the pressure tables.
 inline void emitPparPanelCountClamped(std::ostream& out, int limitedValue) {

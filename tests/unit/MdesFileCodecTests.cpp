@@ -110,10 +110,10 @@ TEST(unit, GetvovCodecParseErrorFlag) {
   CHECK_EQ(data.points.size(), 2u);
 }
 
-// GETVOV codec: IQX boundary (370 pairs).
+// GETVOV codec: IQX boundary (601 pairs).
 TEST(unit, GetvovCodecPointLimit) {
   std::ostringstream gen;
-  for (int k = 0; k < 371; ++k) {
+  for (int k = 0; k < 602; ++k) {
     gen << (0.5 * k) << " 1.0\n";
   }
   std::istringstream in(gen.str());

@@ -840,7 +840,35 @@ def run_self_test():
     failures = 0
     tmpdir = tempfile.mkdtemp(prefix="core-dep-selftest-")
     try:
+        # Symlink creation needs an OS privilege that is not granted by
+        # default on Windows (WinError 1314). Probe once and skip only the
+        # environment-dependent symlink scenario when unavailable.
+        symlink_target = os.path.join(tmpdir, "symlink-probe-target.h")
+        symlink_link = os.path.join(tmpdir, "symlink-probe-link.h")
+        with open(symlink_target, "w", encoding="utf-8") as handle:
+            handle.write("int f() { return 1; }\n")
+        try:
+            os.symlink(symlink_target, symlink_link)
+        except (OSError, NotImplementedError) as error:
+            if not (os.name == "nt"
+                    and getattr(error, "winerror", None) == 1314):
+                raise
+            symlink_supported = False
+            symlink_failure = str(error)
+        else:
+            symlink_supported = True
+            symlink_failure = ""
+        finally:
+            if os.path.lexists(symlink_link):
+                os.remove(symlink_link)
+            os.remove(symlink_target)
+
         for name, files, manifest_entries, expected in scenarios:
+            if name == "symlink from core root to outside" and not symlink_supported:
+                sys.stdout.write(
+                    "Self-Test SKIP: %s (cannot create symlink: %s)\n"
+                    % (name, symlink_failure))
+                continue
             # Path-safe directory names: replace every character except
             # alphanumeric, '-' and '_'. Prevents '..'/'/' interactions.
             safe = re.sub(r'[^A-Za-z0-9_-]', '_', name)

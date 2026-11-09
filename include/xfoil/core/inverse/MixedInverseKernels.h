@@ -43,13 +43,15 @@
 #include <span>
 #include <vector>
 
+#include "xfoil/core/Limits.h"
 #include "xfoil/core/Result.h"
 
 namespace xfoil::core::inverse {
 
-// Fortran IQX = 370; Mixed-inverse boundary N + 5 <= IQX, maximum N = 365.
-inline constexpr int kMixedIqx = 370;
-inline constexpr int kMixedMaxN = kMixedIqx - 5;  // 365
+// Fortran IQX = 601; Mixed-inverse boundary N + 5 <= IQX, maximum N = 596.
+inline constexpr int kMixedIqx =
+    static_cast<int>(xfoil::core::surfaceSystemCapacity);
+inline constexpr int kMixedMaxN = kMixedIqx - 5;  // 596
 
 // Fortran COMMON/XFOIL.INC/: mixed-inverse state (one QSPEC column).
 struct MixedInverseState {

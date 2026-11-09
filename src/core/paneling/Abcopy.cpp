@@ -29,7 +29,7 @@
 //
 // Formulas, operation order and special cases are adopted exactly from
 // Fortran:
-// - NB <= 1 or NB > IQX-5 = 365: controlled rejection without setting
+// - NB <= 1 or NB > IQX-5 = 596: controlled rejection without setting
 // the current contour (Fortran messages are returned in structured
 // form).
 // - The duplicate-point distance loop preserves the exact Fortran
