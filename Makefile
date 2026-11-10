@@ -272,6 +272,7 @@ CORE_TEST_SRCS := \
 	tests/core/GeometryDesignTests.cpp \
 	tests/core/InverseTests.cpp \
 	tests/core/QdcalcRegressionTests.cpp \
+	tests/core/QdcalcSharpTeTests.cpp \
 	tests/core/MrchueRecoveryTests.cpp \
 	tests/core/ClarkYViscousCoreTests.cpp \
 	tests/core/SessionStateHeaderProbe.cpp \

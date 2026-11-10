@@ -68,6 +68,10 @@ double invPi() {
 
 namespace {
 
+// Fortran GGCALC/QDCALC: control point just ahead of a sharp TE, as a
+// fraction of the smaller adjacent panel (xpanel.f BWT = 0.1).
+constexpr double kBwt = 0.1;
+
 // Fortran COMMON/CR11/: HOPI = 0.5/PI, QOPI = 0.25/PI (xfoil.f INIT).
 double hopi() {
   return 0.5 / invPi();
@@ -1004,10 +1008,6 @@ Result<InfluenceSystem> ggCalc(const paneling::PanelGeometry& panel,
   system.qinvu1.assign(m, 0.0);
   system.qinvu2.assign(m, 0.0);
 
-  // Fortran: BWT = 0.1 (distance of the internal control point in front of
-  // the sharp TE).
-  constexpr double kBwt = 0.1;
-
   // Fortran: GAM/GAMU are initialized to 0 in GGCALC; the
   // influence coefficients DZDG/DZDM are SIG-independent.
   std::vector<double> gam0(n, 0.0);
@@ -1254,11 +1254,41 @@ SourceInfluenceResult qdCalc(const InfluenceSystem& system,
     }
   }
 
-  // Fortran: Kutta and SHARP lines without direct source influence.
+  // Fortran: Kutta row has no direct source influence.
   for (std::size_t j0 = n; j0 < cols; ++j0) {
     bij[n * cols + j0] = 0.0;
-    if (panel.sharpTe) {
-      bij[(n - 1) * cols + j0] = 0.0;
+  }
+
+  // Fortran 6.996: sharp-TE row N is the zero-velocity condition on the
+  // TE bisector control point (xpanel.f QDCALC, BUG FIX 15 Apr 17).
+  if (panel.sharpTe) {
+    const double ag1 = std::atan2(-panel.yp[0], -panel.xp[0]);
+    const double ag2 = math::atanC(panel.yp[n - 1], panel.xp[n - 1], ag1);
+    const double abis = 0.5 * (ag1 + ag2);
+    const double cbis = std::cos(abis);
+    const double sbis = std::sin(abis);
+    const double ds1 = std::sqrt((panel.x[0] - panel.x[1]) *
+                                     (panel.x[0] - panel.x[1]) +
+                                 (panel.y[0] - panel.y[1]) *
+                                     (panel.y[0] - panel.y[1]));
+    const double ds2 = std::sqrt((panel.x[n - 1] - panel.x[n - 2]) *
+                                     (panel.x[n - 1] - panel.x[n - 2]) +
+                                 (panel.y[n - 1] - panel.y[n - 2]) *
+                                     (panel.y[n - 1] - panel.y[n - 2]));
+    const double dsmin = std::min(ds1, ds2);
+    const double xbis = panel.xte - kBwt * dsmin * cbis;
+    const double ybis = panel.yte - kBwt * dsmin * sbis;
+
+    PswLinInputs bis;
+    bis.xi = xbis;
+    bis.yi = ybis;
+    bis.nxi = -sbis;
+    bis.nyi = cbis;
+    bis.alfa = alfa;
+    bis.nodeWake = false;
+    const PswLinResult pb = pswLin(bis, wctx);
+    for (std::size_t j0 = 0; j0 < nw; ++j0) {
+      bij[(n - 1) * cols + n + j0] = -pb.dqdm[j0];
     }
   }
 
