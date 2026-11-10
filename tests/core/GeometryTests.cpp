@@ -194,16 +194,127 @@ TEST(unit, GeometryNaca5IllegalDesignationFails) {
   CHECK(r.isErr());
   const std::string& msg = r.error().message;
   CHECK(msg.find("Illegal 5-digit designation") != std::string::npos);
+  CHECK(naca5(2110, kNside, true).isErr());
 }
 
 TEST(unit, GeometryNaca4OutOfRangeFails) {
   CHECK(naca4(12345, kNside).isErr());
   CHECK(naca4(-1, kNside).isErr());
+  CHECK(naca4(12345, kNside, true).isErr());
+  CHECK(naca4(-1, kNside, true).isErr());
 }
 
 TEST(unit, GeometryNacaTooSmallNsideFails) {
   CHECK(naca4(12, 1).isErr());
   CHECK(naca5(23012, 1).isErr());
+  CHECK(naca4(12, 1, true).isErr());
+  CHECK(naca5(23012, 1, true).isErr());
+}
+
+TEST(unit, NacaLtesContracts) {
+  // External 6.996 H-S04-NACA-LTES target values. Normal cases use the
+  // unchanged 6.99 open-TE contract; sharp cases set LTES and use XTES.
+  struct Case {
+    const char* name;
+    int ides;
+    bool sharp;
+    double thickness;
+    double xThickness;
+    double camber;
+    double xCamber;
+    double midY;
+    double lowerMidY;
+  };
+  const Case cases[] = {
+      {"NACA 0012", 12, false, 1.2003207898370065e-1,
+       2.9749550101842870e-1, -5.8980598183211441e-17,
+       1.4776720928247184e-2, 5.8311508418170989e-2,
+       -5.8672581611098097e-2},
+      {"NACA 0012", 12, true, 1.2003449863607675e-1,
+       2.9749550101842981e-1, 6.9388939039072284e-17,
+       8.8083310663491843e-1, 5.8187602518426570e-2,
+       -5.8564012249496103e-2},
+      {"NACA 2412", 2412, false, 1.2003208369899164e-1,
+       2.9749567771631857e-1, 1.9999450869281215e-2,
+       4.0318958280910333e-1, 7.8303889594485448e-2,
+       -3.8716379080363739e-2},
+      {"NACA 2412", 2412, true, 1.2003450290498287e-1,
+       2.9749566856972637e-1, 1.9999452316196244e-2,
+       4.0318958149393869e-1, 7.8179983694741023e-2,
+       -3.8607809718761738e-2},
+      {"NACA 23012", 23012, false, 1.2003208797899201e-1,
+       2.9749588969381840e-1, 1.8381723477353389e-2,
+       1.4621022974616818e-1, 7.1734237853458921e-2,
+       -4.5008887450011623e-2},
+      {"NACA 23012", 23012, true, 1.2003450763826617e-1,
+       2.9749509609299629e-1, 1.8381727916315555e-2,
+       1.4621029441886532e-1, 7.1610331953714496e-2,
+       -4.4900318088409621e-2},
+  };
+
+  for (const Case& c : cases) {
+    const Result<NacaAirfoilResult> r = nacaAirfoil(c.ides, c.sharp);
+    CHECK(r.isOk());
+    if (!r.isOk()) {
+      continue;
+    }
+    const NacaAirfoilResult& out = r.value();
+    CHECK(out.buffer.name == c.name);
+    CHECK_EQ(out.buffer.x.size(), kBufferCount);
+    CHECK_EQ(out.buffer.y.size(), kBufferCount);
+    CHECK_NEAR(out.buffer.x.front(), 1.0, 0.0, 0.0);
+    CHECK_NEAR(out.buffer.x.back(), 1.0, 0.0, 0.0);
+    CHECK_NEAR(out.buffer.y.front(),
+               c.sharp ? 0.0 : 1.2599999999999777e-3, 1.0e-15, 0.0);
+    CHECK_NEAR(out.buffer.y.back(),
+               c.sharp ? 0.0 : -1.2599999999999777e-3, 1.0e-15, 0.0);
+    CHECK_NEAR(out.buffer.y.front() - out.buffer.y.back(),
+               c.sharp ? 0.0 : 2.5199999999999554e-3, 1.0e-15, 0.0);
+    CHECK_NEAR(out.buffer.x[122], 0.0, 0.0, 0.0);
+    CHECK_NEAR(out.buffer.y[122], 0.0, 0.0, 0.0);
+    CHECK_NEAR(out.buffer.x[60], 3.9219291414903468e-1, 1.0e-12, 0.0);
+    CHECK_NEAR(out.buffer.y[60], c.midY, 1.0e-12, 0.0);
+    CHECK_NEAR(out.buffer.x[183], 3.8128156646177092e-1, 1.0e-12, 0.0);
+    CHECK_NEAR(out.buffer.y[183], c.lowerMidY, 1.0e-12, 0.0);
+    CHECK_NEAR(out.metrics.thick, c.thickness, kFortranAbsTol,
+               kFortranRelTol);
+    CHECK_NEAR(out.metrics.thickX, c.xThickness, kFortranAbsTol,
+               kFortranRelTol);
+    CHECK_NEAR(out.metrics.chord, 1.0, kFortranAbsTol, kFortranRelTol);
+    CHECK_NEAR(out.metrics.cambr, c.camber, 1.0e-15, 0.0);
+    if (c.ides != 12) {
+      CHECK_NEAR(out.metrics.cambrX, c.xCamber, kFortranAbsTol,
+                 kFortranRelTol);
+    }
+    double twiceArea = 0.0;
+    bool finite = true;
+    for (std::size_t i = 0; i < out.buffer.x.size(); ++i) {
+      finite = finite && std::isfinite(out.buffer.x[i]) &&
+               std::isfinite(out.buffer.y[i]);
+      if (i + 1 < out.buffer.x.size()) {
+        twiceArea += out.buffer.x[i] * out.buffer.y[i + 1] -
+                     out.buffer.x[i + 1] * out.buffer.y[i];
+      }
+    }
+    CHECK(finite);
+    CHECK(twiceArea > 0.0);
+    CHECK(!(out.buffer.x.front() == out.buffer.x.back() &&
+            out.buffer.y.front() == out.buffer.y.back()));
+  }
+
+  // The 399-point buffer is a deferred G-NACA-BUFFER decision; the
+  // kernel accepts NSIDE=200 while the existing NACA command keeps 245.
+  const Result<NacaResult> n399 = naca4(12, 200, false);
+  const Result<NacaResult> n399s = naca4(12, 200, true);
+  CHECK(n399.isOk());
+  CHECK(n399s.isOk());
+  CHECK_EQ(n399.value().xb.size(), std::size_t{399});
+  CHECK_EQ(n399s.value().xb.size(), std::size_t{399});
+  CHECK_NEAR(n399.value().yb.front() - n399.value().yb.back(),
+             2.5199999999999554e-3, 1.0e-15, 0.0);
+  CHECK_NEAR(n399s.value().yb.front() - n399s.value().yb.back(),
+             0.0, 1.0e-15, 0.0);
+  CHECK_EQ(nacaAirfoil(12).value().buffer.x.size(), kBufferCount);
 }
 
 TEST(unit, GeometryNaca4FirstLastZeroBased) {

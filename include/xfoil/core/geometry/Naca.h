@@ -52,12 +52,15 @@
 
 namespace xfoil::core::geometry {
 
-// Fortran: SUBROUTINE NACA4(IDES,XX,YT,YC,NSIDE,XB,YB,NB,NAME)
+// Fortran 6.996: SUBROUTINE NACA4(IDES,XX,YT,YC,NSIDE,XB,YB,NB,NAME,LTES)
 // Four-digit NACA airfoil. XX/YT/YC are the NSIDE-wide side arrays
 // (0..NSIDE-1), XB/YB the buffer contour with NB = 2*NSIDE-1 points
 // (0..2*NSIDE-2). ides must lie in 0..9999; NACA4 requires this
 // limit from its caller NACA (digit access); directly invalid
 // identifiers yield a controlled error. nside >= 2.
+// sharpTrailingEdge is the Fortran LTES: true stretches the thickness
+// argument by XTES = 1.0089304113651427, false preserves the standard
+// 6.99 open-TE distribution. Camber and buffer ordering are unchanged.
 struct NacaResult {
   std::vector<double> xx;  // side array XX (Fortran 1..NSIDE)
   std::vector<double> yt;  // Thickness distribution YT
@@ -67,11 +70,12 @@ struct NacaResult {
   std::string name;        // e.g. "NACA 0012" (Name(1:9) after padding)
 };
 
-// Fortran: SUBROUTINE NACA5(IDES,XX,YT,YC,NSIDE,XB,YB,NB,NAME)
+// Fortran 6.996: SUBROUTINE NACA5(IDES,XX,YT,YC,NSIDE,XB,YB,NB,NAME,LTES)
 // Five-digit NACA airfoil. For an invalid identifier (N543 not
 // 210..250) Fortran sets IDES=0 and returns no points; here
 // the same case is returned as a controlled error with the Fortran
-// message text (no partial mutation).
+// message text (no partial mutation). sharpTrailingEdge has the same
+// LTES meaning as in naca4.
 struct Naca5Result {
   std::vector<double> xx;
   std::vector<double> yt;
@@ -89,18 +93,25 @@ struct NacaAirfoilResult {
   GeometryMetrics metrics;
 };
 
-Result<NacaResult> naca4(int ides, std::size_t nside);
+Result<NacaResult> naca4(int ides, std::size_t nside,
+                         bool sharpTrailingEdge = false);
 
-Result<Naca5Result> naca5(int ides, std::size_t nside);
+Result<Naca5Result> naca5(int ides, std::size_t nside,
+                          bool sharpTrailingEdge = false);
 
-// Fortran: SUBROUTINE NACA(IDES1) without dialog and without PANGEN.
-// NSIDE = 123 (retained 6.99 contract in S01), NB = 245. ITYPE rules as in
-// xfoil.f: IDES<=9999 -> NACA4, IDES<=25099 -> NACA5, otherwise
-// 'This designation not implemented.' as a controlled error.
+// Fortran 6.996: SUBROUTINE NACA(IDES1,LTES) without dialog and without
+// PANGEN. The existing NACA command keeps NSIDE = 123 (NB = 245); the
+// 6.996 399-point buffer is the deferred G-NACA-BUFFER decision (S04/S15).
+// ITYPE rules as in xfoil.f: IDES<=9999 -> NACA4, IDES<=25099 -> NACA5,
+// otherwise 'This designation not implemented.' as a controlled error.
 // IDES <= 0 corresponds to the Fortran dialog case and also returns
 // a controlled error. The geometry parameters follow from the
 // SCALC/SEGSPL/LEFIND/GEOPAR chain as in the Fortran calling context.
-Result<NacaAirfoilResult> nacaAirfoil(int ides);
+// sharpTrailingEdge is the Fortran LTES; the existing NACA command passes
+// false, while a future NACS command can pass true without CLI registration
+// in this slice.
+Result<NacaAirfoilResult> nacaAirfoil(int ides,
+                                      bool sharpTrailingEdge = false);
 
 }  // namespace xfoil::core::geometry
 

@@ -53,6 +53,11 @@ inline char digitChar(int n) {
   return static_cast<char>('0' + n);
 }
 
+// Fortran 6.996 NACA4/NACA5: DATA XTES / 1.00893041136514270931482193883054 /
+// X = XX*XTES makes the thickness distribution vanish at a sharp TE.
+constexpr double kSharpTrailingEdgeX =
+    1.00893041136514270931482193883054;
+
 // Canonical buffer construction from the side arrays (identical in NACA4
 // and NACA5):
 // Fortran DO 20 I=NSIDE,1,-1 : upper side from LE to TE, YC+YT
@@ -107,7 +112,8 @@ inline double chordX(std::size_t i, std::size_t nside) {
 
 }  // namespace
 
-Result<NacaResult> naca4(int ides, std::size_t nside) {
+Result<NacaResult> naca4(int ides, std::size_t nside,
+                         bool sharpTrailingEdge) {
   if (ides < 0 || ides > 9999) {
     return Result<NacaResult>::fail(Error::make(
         ErrorCode::invalidArgument,
@@ -139,7 +145,8 @@ Result<NacaResult> naca4(int ides, std::size_t nside) {
   for (std::size_t i = 0; i < nside; ++i) {  // Fortran DO 10 I=1,NSIDE
     const double xx = chordX(i, nside);
     r.xx[i] = xx;
-    r.yt[i] = thickness(xx, t);
+    const double x = sharpTrailingEdge ? xx * kSharpTrailingEdgeX : xx;
+    r.yt[i] = thickness(x, t);
     if (xx < p) {  // Fortran: XX(I) .LT. P
       r.yc[i] = m / (p * p) * (2.0 * p * xx - xx * xx);
     } else {
@@ -157,7 +164,8 @@ Result<NacaResult> naca4(int ides, std::size_t nside) {
   return Result<NacaResult>::ok(std::move(r));
 }
 
-Result<Naca5Result> naca5(int ides, std::size_t nside) {
+Result<Naca5Result> naca5(int ides, std::size_t nside,
+                         bool sharpTrailingEdge) {
   if (nside < 2) {
     return Result<Naca5Result>::fail(
         Error::make(ErrorCode::invalidArgument,
@@ -207,7 +215,8 @@ Result<Naca5Result> naca5(int ides, std::size_t nside) {
   for (std::size_t i = 0; i < nside; ++i) {  // Fortran DO 10 I=1,NSIDE
     const double xx = chordX(i, nside);
     r.xx[i] = xx;
-    r.yt[i] = thickness(xx, t);
+    const double x = sharpTrailingEdge ? xx * kSharpTrailingEdgeX : xx;
+    r.yt[i] = thickness(x, t);
     if (xx < m) {  // Fortran: XX(I) .LT. M
       const double xx2 = xx * xx;
       const double xx3 = xx2 * xx;
@@ -227,8 +236,10 @@ Result<Naca5Result> naca5(int ides, std::size_t nside) {
   return Result<Naca5Result>::ok(std::move(r));
 }
 
-Result<NacaAirfoilResult> nacaAirfoil(int ides) {
-  // Fortran NACA (xfoil.f): S01 retains the 6.99 NSIDE = 123 contract.
+Result<NacaAirfoilResult> nacaAirfoil(int ides, bool sharpTrailingEdge) {
+  // Fortran NACA (xfoil.f): the existing NACA command retains the
+  // 6.99 NSIDE = 123 / NB = 245 contract. The 6.996 399-point buffer is
+  // the deferred G-NACA-BUFFER decision (S04/S15), not a kernel change.
   constexpr std::size_t nside = 123;
 
   // Fortran: ITYPE = 0; IF(IDES.LE.25099) ITYPE = 5;
@@ -252,7 +263,7 @@ Result<NacaAirfoilResult> nacaAirfoil(int ides) {
 
   // Fortran: IF(ITYPE.EQ.4) CALL NACA4(...); IF(ITYPE.EQ.5) CALL NACA5(...)
   if (itype == 4) {
-    const Result<NacaResult> nr = naca4(ides, nside);
+    const Result<NacaResult> nr = naca4(ides, nside, sharpTrailingEdge);
     if (nr.isErr()) {
       // Fortran: IF(IDES.EQ.0) RETURN (no buffer set)
       return Result<NacaAirfoilResult>::fail(nr.error());
@@ -281,7 +292,7 @@ Result<NacaAirfoilResult> nacaAirfoil(int ides) {
     return Result<NacaAirfoilResult>::ok(std::move(out));
   }
 
-  const Result<Naca5Result> nr = naca5(ides, nside);
+  const Result<Naca5Result> nr = naca5(ides, nside, sharpTrailingEdge);
   if (nr.isErr()) {
     // Fortran: IF(IDES.EQ.0) RETURN (no buffer set)
     return Result<NacaAirfoilResult>::fail(nr.error());
