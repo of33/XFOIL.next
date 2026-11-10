@@ -74,7 +74,13 @@ CorrelationValue turbulentSkinFriction(
   gm1 = gam - 1.0;
   fc = sqrt(1.0 + 0.5 * gm1 * msq);
   grt = log(rt / fc);
-  grt = std::max(grt, 3.0);
+  double grt_rt = 1.0 / rt;
+  double grt_msq = -0.25 * gm1 / (fc * fc);
+  if (grt < 3.0) {
+    grt = 3.0;
+    grt_rt = 0.0;
+    grt_msq = 0.0;
+  }
 
   gex = -1.74 - 0.31 * hk;
 
@@ -90,9 +96,10 @@ CorrelationValue turbulentSkinFriction(
       (-1.33 * cfo - 0.31 * log(grt / 2.3026) * cfo -
        0.00011 * (1.0 - thk * thk) / 0.875) /
       fc;
-  result.reynoldsDerivative = gex * cfo / (fc * grt) / rt;
-  result.machSquaredDerivative = gex * cfo / (fc * grt) * (-0.25 * gm1 / fc / fc) -
-       0.25 * gm1 * (result.value) / fc / fc;
+  result.reynoldsDerivative = gex * cfo / (fc * grt) * grt_rt;
+  result.machSquaredDerivative =
+      gex * cfo / (fc * grt) * grt_msq -
+      0.25 * gm1 * (result.value) / fc / fc;
   return result;
 }
 

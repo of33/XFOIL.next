@@ -155,6 +155,127 @@ TEST(unit, CftDirectFortran) {
              kFortranRelTol);
 }
 
+
+namespace {
+
+double cftStep(double value) {
+  const double magnitude = std::fabs(value);
+  return (magnitude > 1.0 ? magnitude : 1.0) * 1.0e-5;
+}
+
+void checkCft(const xfoil::core::boundary_layer::CorrelationValue& r,
+              double value, double hk, double rt, double msq) {
+  CHECK_NEAR(r.value, value, 1.0e-12, 1.0e-12);
+  CHECK_NEAR(r.shapeDerivative, hk, 1.0e-12, 1.0e-12);
+  CHECK_NEAR(r.reynoldsDerivative, rt, 1.0e-12, 1.0e-12);
+  CHECK_NEAR(r.machSquaredDerivative, msq, 1.0e-12, 1.0e-12);
+}
+
+}  // namespace
+
+// XFOIL 6.996 CFT clamp: GRT below 3 uses the clamped value and zeroes
+// both GRT derivatives. Values: H-S09-CFT TURB_INCOMP_BELOW.
+TEST(unit, CftClampedGrtBelowClamp) {
+  const auto r = xfoil::core::boundary_layer::cft(
+      1.8, 20.06545138626448, 0.0, blparConstants().cffac);
+  checkCft(r, 1.4902006698021190e-02, -2.1058061986980445e-02, 0.0,
+           -1.4902006698021186e-03);
+  CHECK_EQ(r.reynoldsDerivative, 0.0);
+  CHECK(std::isfinite(r.value));
+  CHECK(std::isfinite(r.shapeDerivative));
+  CHECK(std::isfinite(r.machSquaredDerivative));
+}
+
+// Immediately below the clamp: same clamped value, RT derivative zero.
+TEST(unit, CftClampedGrtJustBelowClamp) {
+  const auto r = xfoil::core::boundary_layer::cft(
+      1.8, 20.08553690310213, 0.0, blparConstants().cffac);
+  checkCft(r, 1.4902006698021190e-02, -2.1058061986980445e-02, 0.0,
+           -1.4902006698021186e-03);
+}
+
+// Exactly GRT=3: the strict Fortran `GRT .LT. 3.0` branch is inactive,
+// so the unclamped chain rule remains valid at the boundary.
+TEST(unit, CftClampedGrtAtBoundary) {
+  const auto r = xfoil::core::boundary_layer::cft(
+      1.8, 20.085536923187668, 0.0, blparConstants().cffac);
+  checkCft(r, 1.4902006698021190e-02, -2.1058061986980445e-02,
+           -5.6848506473499555e-04, -3.4836789400057044e-04);
+  CHECK(std::isfinite(r.reynoldsDerivative));
+}
+
+TEST(unit, CftClampedGrtJustAboveClamp) {
+  const auto r = xfoil::core::boundary_layer::cft(
+      1.8, 20.08553694327321, 0.0, blparConstants().cffac);
+  checkCft(r, 1.4902006686602864e-02, -2.1058061972397898e-02,
+           -5.6848506354155589e-04, -3.4836789411399273e-04);
+}
+
+TEST(unit, CftClampedGrtClearlyAboveClamp) {
+  const auto r = xfoil::core::boundary_layer::cft(
+      1.8, 403.4287934927351, 0.0, blparConstants().cffac);
+  checkCft(r, 3.0267192449410637e-03, -4.9412647012446230e-03,
+           -2.8776547514796056e-06, -1.8657904604630092e-04);
+}
+
+TEST(unit, CftClampedGrtCompressibleClamp) {
+  const auto r = xfoil::core::boundary_layer::cft(
+      1.8, 20.658646608493395, 0.3, blparConstants().cffac);
+  checkCft(r, 1.4474108426541240e-02, -2.0453397896597027e-02, 0.0,
+           -1.3654819270321923e-03);
+  CHECK_EQ(r.reynoldsDerivative, 0.0);
+  CHECK_NE(std::fabs(r.machSquaredDerivative), 0.0);
+}
+
+TEST(unit, CftClampedGrtWakeClamp) {
+  const auto r = xfoil::core::boundary_layer::cft(
+      1.2, 20.085506814945255, 0.01, blparConstants().cffac);
+  checkCft(r, 3.4742778217684366e-02, -4.9061618140888820e-02, 0.0,
+           -3.4673431354974410e-03);
+}
+
+TEST(unit, CftClampedGrtLaminarShapeInput) {
+  const auto r = xfoil::core::boundary_layer::cft(
+      2.2, 20.06545138626448, 0.0, blparConstants().cffac);
+  checkCft(r, 8.4631356149768092e-03, -1.1988548117988350e-02, 0.0,
+           -8.4631356149768072e-04);
+}
+
+// Away from the non-differentiable clamp boundary, the analytic derivatives
+// still satisfy the central-difference contract. No symmetric difference is
+// asserted exactly at GRT=3.
+TEST(unit, CftClampedGrtFiniteDifferenceAwayFromClamp) {
+  const double hk = 1.8;
+  const double rt = 100.0;
+  const double msq = 0.01;
+  const auto r = xfoil::core::boundary_layer::cft(
+      hk, rt, msq, blparConstants().cffac);
+  const double hHk = cftStep(hk);
+  const double hRt = cftStep(rt);
+  const double hMsq = cftStep(msq);
+  CHECK_NEAR(r.shapeDerivative,
+             (xfoil::core::boundary_layer::cft(
+                  hk + hHk, rt, msq, blparConstants().cffac).value -
+              xfoil::core::boundary_layer::cft(
+                  hk - hHk, rt, msq, blparConstants().cffac).value) /
+                 (2.0 * hHk),
+             1.0e-9, 1.0e-5);
+  CHECK_NEAR(r.reynoldsDerivative,
+             (xfoil::core::boundary_layer::cft(
+                  hk, rt + hRt, msq, blparConstants().cffac).value -
+              xfoil::core::boundary_layer::cft(
+                  hk, rt - hRt, msq, blparConstants().cffac).value) /
+                 (2.0 * hRt),
+             1.0e-9, 1.0e-5);
+  CHECK_NEAR(r.machSquaredDerivative,
+             (xfoil::core::boundary_layer::cft(
+                  hk, rt, msq + hMsq, blparConstants().cffac).value -
+              xfoil::core::boundary_layer::cft(
+                  hk, rt, msq - hMsq, blparConstants().cffac).value) /
+                 (2.0 * hMsq),
+             1.0e-9, 1.0e-5);
+}
+
 // reference: viscous_reference.txt HCT1 (HK=2.2, MSQ=0.01).
 TEST(unit, HctDirectFortran) {
   const auto r = xfoil::core::boundary_layer::hct(2.2, 0.01);

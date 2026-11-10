@@ -1,0 +1,82 @@
+XFOIL 6.996 S09 CFT-clamp target fixtures
+==========================================
+
+Version:            XFOIL 6.996 CFT clamp (S09)
+Purpose:            versioned 6.996-S09 target contract for the existing
+                    6.99 FMOM/VELS and PACC-dump expectations
+Oracle policy:      external, reproducible patched oracle; repository
+                    fortran-src/**, fortran-bin/**, patches/** untouched
+Source baseline:    fortran-src/xfoil-6.99
+Only CFT change:    xblsys.f CFT block replaced byte-faithfully by the
+                    fortran-src/xfoil-6.996 CFT block
+Panel settings:     NPAN=160, CVPAR=1.0, CTERAT=0.15, CTRRAT=0.2
+                    (explicit old geometry; isolates the S09 CFT change;
+                    no S07 defaults and no NACA-399 activation)
+Dump workarounds:   external xpol.f only: REWIND before new dump header and
+                    ACCESS='APPEND' instead of BOTTOMX; this is the already
+                    separated polar-dump defect, not a CFT change
+Source hashes:
+  xblsys.f          04f15d3e0371982293ecf575a02c7939af1f0071ff5fd7731411dd8f48471cb4
+  xpol.f            24c358b4e48b8d8ca30afd3c9ca1c2570e077b0962826b1e6e73cb893a1433b6
+Harness binaries:
+  fmom_harness      856fb328bd7e0c639664afae9aaf617587b6432f0e5e926a2610f5448e918c4f
+  vels_harness      137c4c8295d99a81369d8232acbec08016a6701f0d4373db2e641736145f54a9
+  xfoil (PACC)      cb0b9d5dcc54d0c6bb2acaa2ef22eb777d62c16e3e42f068302e60846f10a794
+
+Fixture hashes:
+  fmom_reference.txt
+                    f1bac6bd8501302e15d2045ecf600e02d36b1f902a797a49dbebd9cc230b0ddb
+  vels_reference.txt
+                    237a643628c69a5b971ebb9ec4bd5291000c023941d17eb04fe73d2dc1991323
+  polar-visc-clark-y.dump
+                    bee8fbd6d197ae74a204f813a6a9f262b7981cc6c795a3b7313933d381063543
+
+Case IDs:
+  fmom_reference.txt: existing FMOM harness cases; S09 consumer is case C
+                      (NACA 0012, viscous, hinge 0.7/-0.05, CPV branch)
+  vels_reference.txt: existing VELS harness cases; S09 consumer is case G
+                      (NACA 0012, viscous alfa 2, point 0.5/0.1)
+  polar-visc-clark-y.dump: existing PACC case
+                      polar/polar-visc-clark-y, Clark Y Re=1e6, ITER=100,
+                      ASEQ 0 6 2
+
+Generation:
+  FMOM/VELS:
+    external audit path:
+      /local/Olaf/Entwicklung/.audit-xfoil-next/xfoil-6.996/s09/oracle/
+      fmom-vels-699-cft/
+    build-harness.sh --write, derived from
+      tools/build-fmom-vels-harnesses.sh with the external patched source
+    outputs: data/fmom_reference.txt, data/vels_reference.txt
+    repeatability: a second independent harness build/run produced
+      byte-identical fmom_reference.txt and vels_reference.txt
+      (SHA-256 values above)
+
+  PACC dump:
+    binary:
+      /local/Olaf/Entwicklung/.audit-xfoil-next/xfoil-6.996/s09/oracle/
+      xfoil-699-cft/bin/xfoil
+    working copy contains commands.in with the same PACC/ASEQ case as
+      tests/fortran-reference/cases/polar/polar-visc-clark-y/commands.in,
+      except that the .pol save filename is left empty so the known 6.99
+      save-file defect cannot interfere. The dump bytes are identical to
+      the C++ product run of the canonical commands.in (including .pol).
+    two independent runs: file set identical, size 40816 bytes, SHA-256
+      bee8fbd6d197ae74a204f813a6a9f262b7981cc6c795a3b7313933d381063543,
+      byte-identical.
+
+Batch target scope:
+  The batch goldens are C++-integrated S09 targets, not full 6.996-oracle
+  outputs. The canonical S08 C++ baseline already includes integrated S01-S08
+  slices. A full 6.996 batch oracle additionally contains not-yet-integrated
+  slices and does not reproduce the C++ baseline; see the S09 report's
+  oracle-limitation section. S09's only product change is the CFT block.
+
+Old 6.99 fixtures remain canonical and unchanged:
+  tests/data/core-fmom-vels-reference/fmom_reference.txt
+                    c9ae293397ce2b04533b97bf4f0eaca1a4f8b82ec1b71027153a0e669f321686
+  tests/data/core-fmom-vels-reference/vels_reference.txt
+                    df58c3f49d771e269229775ccf45b56077633496ca6953711cc3dffb3dc1f562
+  tests/fortran-reference/cases/polar/polar-visc-clark-y/generated/
+  polar-visc-clark-y.dump
+                    9d1c61dd8964d48c459ab86e9a32657b0fd04931d69cd9631cc30e3b09e3910f

@@ -307,9 +307,14 @@ CorrelationValue cft(double hk, double rt, double msq, double cffac) {
   // Fortran: FC = SQRT(1.0 + 0.5*GM1*MSQ)
   const double fc = std::sqrt(1.0 + 0.5 * gm1 * msq);
   // Fortran: GRT = LOG(RT/FC)
-  // GRT = MAX(GRT,3.0)
   double grt = std::log(rt / fc);
-  grt = std::max(grt, 3.0);
+  double grtRt = 1.0 / rt;
+  double grtMsq = -0.25 * gm1 / (fc * fc);
+  if (grt < 3.0) {
+    grt = 3.0;
+    grtRt = 0.0;
+    grtMsq = 0.0;
+  }
   // Fortran: GEX = -1.74 - 0.31*HK
   const double gex = -1.74 - 0.31 * hk;
   // Fortran: ARG = -1.33*HK
@@ -330,11 +335,11 @@ CorrelationValue cft(double hk, double rt, double msq, double cffac) {
       (-1.33 * cfo - 0.31 * std::log(grt / 2.3026) * cfo -
        1.1e-4 * (1.0 - thk * thk) / 0.875) /
       fc;
-  // Fortran: CF_RT = GEX*CFO/(FC*GRT) / RT
-  out.reynoldsDerivative = gex * cfo / (fc * grt) / rt;
-  // Fortran: CF_MSQ = GEX*CFO/(FC*GRT) * (-0.25*GM1/FC**2) - 0.25*GM1*CF/FC**2
-  out.machSquaredDerivative = gex * cfo / (fc * grt) * (-0.25 * gm1 / (fc * fc)) -
-                              0.25 * gm1 * out.value / (fc * fc);
+  // Fortran: CF_RT = GEX*CFO/(FC*GRT) * GRT_RT
+  out.reynoldsDerivative = gex * cfo / (fc * grt) * grtRt;
+  // Fortran: CF_MSQ = GEX*CFO/(FC*GRT) * GRT_MSQ - 0.25*GM1*CF/FC**2
+  out.machSquaredDerivative =
+      gex * cfo / (fc * grt) * grtMsq - 0.25 * gm1 * out.value / (fc * fc);
   return out;
 }
 

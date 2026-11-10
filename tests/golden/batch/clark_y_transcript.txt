@@ -1174,7 +1174,7 @@ OFS: alfa =   8.5000 cl =   1.4333 cdp =  -0.0006 cm =  -0.1020
  Side 1  free  transition at x/c =  0.3586   74
  Side 2 forced transition at x/c =  1.0000  104
 
-   3   rms: 0.2574E+00   max: 0.2130E+01   T at    2  2   RLX: 0.560
+   3   rms: 0.2574E+00   max: 0.2130E+01   D at    2  2   RLX: 0.560
        a =  8.500      CL =  1.3745
       Cm = -0.1191     CD =  0.01673   =>   CDf =  0.01047    CDp =  0.00626
 
@@ -1453,7 +1453,7 @@ OFS: alfa =   9.5000 cl =   1.5513 cdp =  -0.0006 cm =  -0.1038
  Side 1  free  transition at x/c =  0.2751   68
  Side 2 forced transition at x/c =  1.0000  102
 
-   6   rms: 0.1647E+00   max: -.1101E+01   D at    2  2   RLX: 0.454
+   6   rms: 0.1647E+00   max: -.1101E+01   T at    2  2   RLX: 0.454
        a =  9.500      CL =  1.4111
       Cm = -0.0935     CD =  0.02234   =>   CDf =  0.00925    CDp =  0.01309
 
@@ -1632,7 +1632,7 @@ OFS: alfa =  10.5000 cl =   1.6689 cdp =  -0.0006 cm =  -0.1056
  Side 1  free  transition at x/c =  0.1945   62
  Side 2 forced transition at x/c =  1.0000  100
 
-   4   rms: 0.3149E+00   max: 0.2293E+01   T at    2  1   RLX: 0.513
+   4   rms: 0.3149E+00   max: 0.2293E+01   D at    2  1   RLX: 0.513
        a = 10.500      CL =  1.6038
       Cm = -0.1373     CD =  0.01912   =>   CDf =  0.01145    CDp =  0.00767
 
@@ -1804,14 +1804,14 @@ OFS: alfa =  10.5000 cl =   1.6689 cdp =  -0.0006 cm =  -0.1056
  Side 1  free  transition at x/c =  0.2247   64
  Side 2 forced transition at x/c =  1.0000  101
 
-  14   rms: 0.1114E-02   max: -.8848E-02   D at   66  1
+  14   rms: 0.1113E-02   max: -.8848E-02   D at   66  1
        a = 10.500      CL =  1.3386
       Cm = -0.0464     CD =  0.02957   =>   CDf =  0.00831    CDp =  0.02126
 
  Side 1  free  transition at x/c =  0.2250   64
  Side 2 forced transition at x/c =  1.0000  101
 
-  15   rms: 0.5222E-04   max: -.2757E-03   D at  141  1
+  15   rms: 0.5221E-04   max: -.2757E-03   D at  141  1
        a = 10.500      CL =  1.3387
       Cm = -0.0464     CD =  0.02957   =>   CDf =  0.00830    CDp =  0.02127
       9.000    5.8321   0.029569   0.004064   0.007112   0.003048    0.2250     #

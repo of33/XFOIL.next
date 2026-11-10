@@ -67,7 +67,7 @@ void reportFailure(const std::string& message) {
 
 }  // namespace
 
-TEST(regression, PaccDumpByteParityMatchesFortranReference) {
+TEST(regression, PaccDumpByteParityMatchesXfoil6996S09Target) {
   const char* configuredPath = std::getenv("XFOIL_CLI_PATH");
   const std::string program =
       configuredPath != nullptr ? configuredPath : "build/debug/xfoil.next";
@@ -131,10 +131,14 @@ TEST(regression, PaccDumpByteParityMatchesFortranReference) {
                     artifact);
       continue;
     }
-    if (!readBytes(std::string(kCaseDir) + "/generated/" + artifact,
-                   expected)) {
+    const std::string expectedPath =
+        std::string(artifact) == "polar-visc-clark-y.dump"
+            ? std::string(
+                  "tests/data/xfoil-6.996/s09/polar-visc-clark-y.dump")
+            : std::string(kCaseDir) + "/generated/" + artifact;
+    if (!readBytes(expectedPath, expected)) {
       reportFailure(std::string("reference artifact not readable: ") +
-                    artifact);
+                    artifact + " (" + expectedPath + ")");
       continue;
     }
 #ifdef _WIN32

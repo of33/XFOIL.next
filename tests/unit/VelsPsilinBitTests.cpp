@@ -82,10 +82,11 @@ void readFour(const std::vector<std::string>& tokens, std::size_t start,
   d = std::stod(tokens[start + 3]);
 }
 
-HarnessValues readHarnessReference() {
+HarnessValues readHarnessReference(
+    const std::string& path =
+        "tests/data/core-fmom-vels-reference/vels_reference.txt") {
   HarnessValues hv;
-  std::ifstream in(
-      "tests/data/core-fmom-vels-reference/vels_reference.txt");
+  std::ifstream in(path);
   CHECK(static_cast<bool>(in));
   // harness points for the ABC lines (vels_harness.f 38-47).
   const double abcX[5] = {0.5, 0.3, 0.5, 0.5, 1.2};
@@ -235,8 +236,9 @@ TEST(unit, VelsVelocityAsymmetricBitAgainstHarness) {
 }
 
 // V5: viscous PSILIN branch after VISCAL.
-TEST(unit, VelsVelocityViscousBitAgainstHarness) {
-  const HarnessValues hv = readHarnessReference();
+TEST(unit, VelsVelocityViscousBitAgainstS09Oracle) {
+  const HarnessValues hv = readHarnessReference(
+      "tests/data/xfoil-6.996/s09/vels_reference.txt");
   // harness case G uses the NACA 2412 contour of case F
   // (LVISC=.TRUE., SPECAL+VISCAL for alfa 2).
   auto composition = nacaSession(2412, true, 2.0);

@@ -96,10 +96,11 @@ void readThree(const std::string& line, HarnessCase& hc) {
   hc.hfy = std::stod(tokens[7]);
 }
 
-HarnessValues readHarnessReference() {
+HarnessValues readHarnessReference(
+    const std::string& path =
+        "tests/data/core-fmom-vels-reference/fmom_reference.txt") {
   HarnessValues hv;
-  std::ifstream in(
-      "tests/data/core-fmom-vels-reference/fmom_reference.txt");
+  std::ifstream in(path);
   CHECK(static_cast<bool>(in));
   std::string line;
   while (std::getline(in, line)) {
@@ -274,8 +275,9 @@ TEST(unit, FmomHingeLoadsNearSurfaceAndTeBaseBitAgainstHarness) {
 }
 
 // M7: viscous CPV branch (case C).
-TEST(unit, FmomHingeLoadsViscousCpvBitAgainstHarness) {
-  const HarnessValues hv = readHarnessReference();
+TEST(unit, FmomHingeLoadsViscousCpvBitAgainstS09Oracle) {
+  const HarnessValues hv = readHarnessReference(
+      "tests/data/xfoil-6.996/s09/fmom_reference.txt");
   auto composition = nacaSessionNoPane(12, true);
   setFlap(composition, 0.7, -0.05);
   const auto got = session::computeCurrentHingeLoads(composition);
