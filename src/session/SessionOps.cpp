@@ -1168,6 +1168,7 @@ struct Cr09OperatingScalars {
   double cd{0.0};
   double cdp{0.0};
   double cdf{0.0};
+  double clf{0.0};
   double avisc{0.0};
   double mvisc{0.0};
 };
@@ -1186,6 +1187,7 @@ Cr09OperatingScalars captureCr09OperatingScalars(
   s.cd = viscals.cd;
   s.cdp = viscals.cdp;
   s.cdf = viscals.cdf;
+  s.clf = viscals.clf;
   s.avisc = viscals.avisc;
   s.mvisc = viscals.mvisc;
   return s;
@@ -1206,6 +1208,7 @@ void resetViscalsPreservingCr09(SessionComposition& session) {
   session.viscous.viscals.cd = s.cd;
   session.viscous.viscals.cdp = s.cdp;
   session.viscous.viscals.cdf = s.cdf;
+  session.viscous.viscals.clf = s.clf;
   session.viscous.viscals.avisc = s.avisc;
   session.viscous.viscals.mvisc = s.mvisc;
 }
@@ -2844,6 +2847,7 @@ bool refreshExistingPointAfterMachChange(SessionComposition& session) {
       viscals.tau, panel.x, panel.y);
   viscals.cd = cdc.cd;
   viscals.cdf = cdc.cdf;
+  viscals.clf = cdc.clf;
 
   // canonical Mach CPCALC call (xoper.f:328-329).
   // CPI: CPCALC(N,QINV,QINF,MINF,CPI) overwrites exactly the first N

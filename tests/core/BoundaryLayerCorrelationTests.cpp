@@ -944,6 +944,14 @@ TEST(unit, UpdateZeroDeltasIdentity) {
   in.delt.bottom = {0.0, 0.1, 0.12};
   in.tstr.top = {0.0, 0.05, 0.0};
   in.tstr.bottom = {0.0, 0.05, 0.0};
+  in.dssr.top = {0.0, 0.04, 0.0};
+  in.dssr.bottom = {0.0, 0.04, 0.08};
+  in.mdef.top = {0.0, 0.02, 0.0};
+  in.mdef.bottom = {0.0, 0.02, 0.06};
+  in.pdef.top = {0.0, 0.03, 0.0};
+  in.pdef.bottom = {0.0, 0.03, 0.09};
+  in.kdef.top = {0.0, 0.01, 0.0};
+  in.kdef.bottom = {0.0, 0.01, 0.05};
   const auto r = update(in);
   CHECK_NEAR(r.rmsbl, 0.0, 1.0e-12, 1.0e-12);
   CHECK_NEAR(r.rlx, 1.0, 1.0e-12, 1.0e-12);
@@ -954,6 +962,10 @@ TEST(unit, UpdateZeroDeltasIdentity) {
   // wake equating: upper wake arrays = lower
   CHECK_NEAR(in.tau.top[2], 0.003, 1.0e-12, 1.0e-12);
   CHECK_NEAR(in.delt.top[2], 0.12, 1.0e-12, 1.0e-12);
+  CHECK_NEAR(in.dssr.top[2], 0.08, 1.0e-12, 1.0e-12);
+  CHECK_NEAR(in.mdef.top[2], 0.06, 1.0e-12, 1.0e-12);
+  CHECK_NEAR(in.pdef.top[2], 0.09, 1.0e-12, 1.0e-12);
+  CHECK_NEAR(in.kdef.top[2], 0.05, 1.0e-12, 1.0e-12);
 }
 
 // QNEW/Q_AC-view contract: Fortran DO 20 IBL=2, IBLTE(IS) reads UNEW until
@@ -1022,6 +1034,14 @@ TEST(unit, UpdateQnewIblteEqualsNblView) {
   in.delt.bottom = {0.0, 0.1, 0.12};
   in.tstr.top = {0.0, 0.05, 0.0};
   in.tstr.bottom = {0.0, 0.05, 0.0};
+  in.dssr.top = {0.0, 0.04, 0.0};
+  in.dssr.bottom = {0.0, 0.04, 0.08};
+  in.mdef.top = {0.0, 0.02, 0.0};
+  in.mdef.bottom = {0.0, 0.02, 0.06};
+  in.pdef.top = {0.0, 0.03, 0.0};
+  in.pdef.bottom = {0.0, 0.03, 0.09};
+  in.kdef.top = {0.0, 0.01, 0.0};
+  in.kdef.bottom = {0.0, 0.01, 0.05};
   const auto r = update(in);
   // QNEW: q = {0, 1, 0.5, -1} (panel 2 only from top-station k=nbl=2).
   // CP = 1 - q^2: {1, 0, 0.75, 0}; CLNEW = 0.5 + 0.375 + 0.375 - 1.5

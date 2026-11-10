@@ -139,6 +139,7 @@ AirfoilBuffer readClarkYBuffer() {
 
 struct ClarkYPointResult {
   ViscalResult viscal;
+  ViscalState state;
   int itranTop{0};    // Fortran ITRAN(1), 1-based
   int itranBottom{0}; // Fortran ITRAN(2), 1-based
 };
@@ -147,7 +148,10 @@ struct ClarkYPointResult {
 // session values) on the core: identical to the permanent
 // c11a_state/c11a harness chain.
 ClarkYPointResult runClarkYViscousPoint(const AirfoilBuffer& buffer,
-                                        double alphaDegrees) {
+                                        double alphaDegrees,
+                                        std::size_t niter = 100,
+                                        double minf1 = 0.0,
+                                        double wakeLength = 1.0) {
   const double alpha = canonicalAlpha(alphaDegrees);
 
   const auto pg = xfoil::core::paneling::abcopy(buffer);
@@ -161,7 +165,7 @@ ClarkYPointResult runClarkYViscousPoint(const AirfoilBuffer& buffer,
 
   // Fortran SPECAL (inviscid kernel): MRCL/COMSET internal,
   // MINF1 = 0, REINF1 = 1e5, MATYP = RETYP = 1.
-  const MachReynoldsSettings settings{1, 1, 0.0, 100000.0};
+  const MachReynoldsSettings settings{1, 1, minf1, 100000.0};
   const auto sp = xfoil::core::inviscid::specAlpha(
       system, panel, settings, alpha, 1.0, 0.25, 0.0);
   CHECK(sp.isOk());
@@ -170,7 +174,7 @@ ClarkYPointResult runClarkYViscousPoint(const AirfoilBuffer& buffer,
   // Fortran XYWAKE/QWCALC/QISET (WAKLEN = 1.0).
   const auto wk = xfoil::core::inviscid::xywake(
       panel, sp.value().gam, sp.value().gamA, system.gamu1, system.gamu2,
-      sp.value().alfa, 1.0, 1.0);
+      sp.value().alfa, wakeLength, 1.0);
   CHECK(wk.isOk());
   const WakeState& wake = wk.value();
   const WakeBasisResult qb =
@@ -234,7 +238,7 @@ ClarkYPointResult runClarkYViscousPoint(const AirfoilBuffer& buffer,
 
   ViscalInput in{};
   in.blpar = xfoil::core::boundary_layer::blparConstants();
-  in.niter = 100;
+  in.niter = niter;
   in.qinf = 1.0;
   in.xref = 0.25;
   in.yref = 0.0;
@@ -244,7 +248,7 @@ ClarkYPointResult runClarkYViscousPoint(const AirfoilBuffer& buffer,
   in.lflap = false;
   in.machType = 1;
   in.reType = 1;
-  in.minf1 = 0.0;
+  in.minf1 = minf1;
   in.reinf1 = 100000.0;
   in.ivx = 283;
   in.acrit = {9.0, 9.0};
@@ -254,6 +258,7 @@ ClarkYPointResult runClarkYViscousPoint(const AirfoilBuffer& buffer,
   ClarkYPointResult out;
   out.viscal = xfoil::core::boundary_layer::viscal(
       in, panel, system, wake, te, vs);
+  out.state = vs;
   out.itranTop = vs.itran[0] + 1;    // 0-based -> Fortran 1-based
   out.itranBottom = vs.itran[1] + 1; // 0-based -> Fortran 1-based
 
@@ -304,6 +309,173 @@ TEST(unit, ClarkYViscousCoreAlpha05MatchesFortran) {
   CHECK_NEAR(r.viscal.cd, 1.8639247478485541e-02, 1.0e-9, 1.0e-9);
   CHECK_NEAR(r.viscal.cdf, 7.2829232999668449e-03, 1.0e-9, 1.0e-9);
   CHECK_NEAR(r.viscal.rmsbl, 2.5596698397623774e-05, 1.0e-10, 1.0e-6);
+}
+
+
+
+namespace {
+
+void checkStationField(const BoundaryLayerStationField& field, int station,
+                       double expected) {
+  CHECK_NEAR(field.top[static_cast<std::size_t>(station)], expected, 1.0e-9,
+             1.0e-9);
+}
+
+void checkStationFieldBottom(const BoundaryLayerStationField& field,
+                             int station, double expected) {
+  CHECK_NEAR(field.bottom[static_cast<std::size_t>(station)], expected,
+             1.0e-9, 1.0e-9);
+}
+
+}  // namespace
+
+TEST(unit, BoundaryLayerNewStateFieldsDefaultAndSessionIsolation) {
+  const ViscalState empty;
+  CHECK(empty.dssr.top.empty());
+  CHECK(empty.dssr.bottom.empty());
+  CHECK(empty.mdef.top.empty());
+  CHECK(empty.pdef.top.empty());
+  CHECK(empty.kdef.top.empty());
+  CHECK_EQ(empty.clf, 0.0);
+
+  const AirfoilBuffer buffer = readClarkYBuffer();
+  const ClarkYPointResult first = runClarkYViscousPoint(buffer, 4.0);
+  const ClarkYPointResult second = runClarkYViscousPoint(buffer, 4.0);
+  CHECK(!first.state.dssr.top.empty());
+  CHECK(first.state.dssr.top == second.state.dssr.top);
+  CHECK(first.state.mdef.bottom == second.state.mdef.bottom);
+  CHECK_EQ(first.state.clf, second.state.clf);
+
+  ClarkYPointResult isolated = first;
+  isolated.state.dssr.top[1] = 42.0;
+  CHECK(first.state.dssr.top[1] != 42.0);
+  CHECK(second.state.dssr.top[1] != 42.0);
+
+  isolated.state = ViscalState{};
+  CHECK(isolated.state.dssr.top.empty());
+  CHECK_EQ(isolated.state.clf, 0.0);
+}
+
+TEST(unit, BoundaryLayerNewStateFieldsConvergedStationsBothSidesAndWake) {
+  const AirfoilBuffer buffer = readClarkYBuffer();
+  const ClarkYPointResult r = runClarkYViscousPoint(buffer, 4.0);
+
+  CHECK(r.viscal.converged);
+  CHECK_EQ(r.itranTop, 61);
+  CHECK_EQ(r.itranBottom, 70);
+  CHECK_NEAR(r.state.clf, 1.3718900545702014e-03, 1.0e-9, 1.0e-9);
+  CHECK_NEAR(r.viscal.clf, 1.3718900545702014e-03, 1.0e-9, 1.0e-9);
+
+  // Fortran IBL=6, IS=1: laminar top station; IPAN=79 (1-based) -> 78.
+  CHECK_EQ(r.state.mapping.top.ipan[5], 77);
+  checkStationField(r.state.dssr, 5, 0.0);
+  checkStationField(r.state.mdef, 5, 1.5795743640368106e-04);
+  checkStationField(r.state.pdef, 5, 5.3637449771010964e-05);
+  checkStationField(r.state.kdef, 5, 3.3233521853002677e-05);
+
+  // Fortran IBL=10, IS=2: laminar bottom station; IPAN=91 -> 90.
+  CHECK_EQ(r.state.mapping.bottom.ipan[9], 90);
+  checkStationFieldBottom(r.state.dssr, 9, 0.0);
+  checkStationFieldBottom(r.state.mdef, 9, 5.801336786136245e-04);
+  checkStationFieldBottom(r.state.pdef, 9, 1.8284403766452106e-04);
+  checkStationFieldBottom(r.state.kdef, 9, 1.1194026183377396e-04);
+
+  // Fortran IBL=64, IS=1: turbulent top station.
+  checkStationField(r.state.dssr, 63, 0.0);
+  checkStationField(r.state.mdef, 63, 1.1744237590045935e-02);
+  checkStationField(r.state.pdef, 63, 4.582886175658467e-03);
+  checkStationField(r.state.kdef, 63, 4.124847151642602e-03);
+
+  // Fortran IBL=82, IS=2: wake station.
+  checkStationFieldBottom(r.state.dssr, 81, 0.0);
+  checkStationFieldBottom(r.state.mdef, 81, 1.3525247108848863e-02);
+  checkStationFieldBottom(r.state.pdef, 81, 9.136927521034012e-03);
+  checkStationFieldBottom(r.state.kdef, 81, 7.725507266501801e-03);
+
+  // UPDATE wake equating: upper wake pointers are copies of the lower wake.
+  const int bottomWake = 82 - 1;
+  const int topWake =
+      r.state.mapping.top.iblte + (bottomWake - r.state.mapping.bottom.iblte);
+  CHECK_EQ(topWake, 94);
+  CHECK(r.state.dssr.top.size() > static_cast<std::size_t>(topWake));
+  CHECK_NEAR(r.state.dssr.top[static_cast<std::size_t>(topWake)],
+             r.state.dssr.bottom[static_cast<std::size_t>(bottomWake)],
+             1.0e-14, 1.0e-14);
+  CHECK_NEAR(r.state.mdef.top[static_cast<std::size_t>(topWake)],
+             r.state.mdef.bottom[static_cast<std::size_t>(bottomWake)],
+             1.0e-14, 1.0e-14);
+  CHECK_NEAR(r.state.pdef.top[static_cast<std::size_t>(topWake)],
+             r.state.pdef.bottom[static_cast<std::size_t>(bottomWake)],
+             1.0e-14, 1.0e-14);
+  CHECK_NEAR(r.state.kdef.top[static_cast<std::size_t>(topWake)],
+             r.state.kdef.bottom[static_cast<std::size_t>(bottomWake)],
+             1.0e-14, 1.0e-14);
+  CHECK_NEAR(r.state.mdef.bottom[static_cast<std::size_t>(bottomWake)],
+             1.3525247108848863e-02, 1.0e-9, 1.0e-9);
+}
+
+TEST(unit, BoundaryLayerNewStateFieldsCompressibleDssr) {
+  const AirfoilBuffer buffer = readClarkYBuffer();
+  const ClarkYPointResult r = runClarkYViscousPoint(buffer, 4.0, 100, 0.3);
+
+  CHECK(r.viscal.converged);
+  CHECK_NEAR(r.state.clf, 1.3342545946136348e-03, 1.0e-9, 1.0e-9);
+  CHECK_NEAR(r.viscal.clf, 1.3342545946136348e-03, 1.0e-9, 1.0e-9);
+  checkStationField(r.state.dssr, 5, 2.0380151677881378e-06);
+  checkStationField(r.state.dssr, 63, 1.4532063706575274e-04);
+  checkStationField(r.state.mdef, 63, 9.575453062111189e-03);
+  checkStationFieldBottom(r.state.dssr, 81, 2.9588384934974986e-04);
+}
+
+TEST(unit, BoundaryLayerNewStateFieldsNonConverged) {
+  const AirfoilBuffer buffer = readClarkYBuffer();
+  const ClarkYPointResult r = runClarkYViscousPoint(buffer, 4.0, 1);
+
+  CHECK(!r.viscal.converged);
+  CHECK_EQ(r.viscal.iterations, static_cast<std::size_t>(1));
+  CHECK_NEAR(r.state.clf, 1.3090420460097126e-03, 1.0e-9, 1.0e-9);
+  CHECK_NEAR(r.viscal.clf, 1.3090420460097126e-03, 1.0e-9, 1.0e-9);
+  checkStationField(r.state.mdef, 63, 1.0323947751800054e-02);
+  checkStationField(r.state.pdef, 63, 7.943952465266108e-03);
+  checkStationField(r.state.kdef, 63, 8.173186602589434e-03);
+  checkStationFieldBottom(r.state.mdef, 81, 1.0499120294512904e-02);
+}
+
+TEST(unit, BoundaryLayerNewStateFieldsWakeActiveLengthGrowthAndShrink) {
+  const AirfoilBuffer buffer = readClarkYBuffer();
+  const ClarkYPointResult shortWake =
+      runClarkYViscousPoint(buffer, 4.0, 100, 0.0, 0.5);
+  const ClarkYPointResult longWake =
+      runClarkYViscousPoint(buffer, 4.0, 100, 0.0, 1.5);
+
+  CHECK(longWake.state.mapping.bottom.nbl >
+        shortWake.state.mapping.bottom.nbl);
+  CHECK(longWake.state.dssr.bottom.size() >
+        static_cast<std::size_t>(longWake.state.mapping.bottom.nbl));
+  CHECK(shortWake.state.dssr.bottom.size() >
+        static_cast<std::size_t>(shortWake.state.mapping.bottom.nbl));
+  CHECK(longWake.state.dssr.top.size() >
+        static_cast<std::size_t>(longWake.state.mapping.top.nbl));
+  CHECK(shortWake.state.dssr.top.size() >
+        static_cast<std::size_t>(shortWake.state.mapping.top.nbl));
+
+  for (const ClarkYPointResult* r : {&shortWake, &longWake}) {
+    const int nw =
+        r->state.mapping.bottom.nbl - r->state.mapping.bottom.iblte;
+    const int topWake = r->state.mapping.top.iblte + nw;
+    CHECK(r->state.dssr.top.size() >
+          static_cast<std::size_t>(topWake));
+    CHECK(r->state.mdef.top.size() >
+          static_cast<std::size_t>(topWake));
+    CHECK(r->state.pdef.top.size() >
+          static_cast<std::size_t>(topWake));
+    CHECK(r->state.kdef.top.size() >
+          static_cast<std::size_t>(topWake));
+    CHECK_NEAR(r->state.dssr.top[static_cast<std::size_t>(topWake)],
+               r->state.dssr.bottom[static_cast<std::size_t>(
+                   r->state.mapping.bottom.iblte + nw)],
+               1.0e-14, 1.0e-14);
+  }
 }
 
 // end: tests/core/ClarkYViscousCoreTests.cpp

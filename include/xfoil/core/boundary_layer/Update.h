@@ -84,6 +84,10 @@ struct UpdateInput {
   BoundaryLayerStationField ctq;     // Fortran CTQ
   BoundaryLayerStationField delt;    // Fortran DELT
   BoundaryLayerStationField tstr;    // Fortran TSTR
+  BoundaryLayerStationField dssr;    // Fortran DSSR
+  BoundaryLayerStationField mdef;    // Fortran MDEF
+  BoundaryLayerStationField pdef;    // Fortran PDEF
+  BoundaryLayerStationField kdef;    // Fortran KDEF
 };
 
 // Fortran: UPDATE exit — relaxation, DAC, and the RMS/max

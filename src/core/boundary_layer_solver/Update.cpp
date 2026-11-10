@@ -378,7 +378,11 @@ UpdateResult update(UpdateInput& in) {
     const std::size_t kt = static_cast<std::size_t>(in.mapping.top.iblte + kbl);
     const std::size_t kb =
         static_cast<std::size_t>(in.mapping.bottom.iblte + kbl);
-    if (kt >= in.ctau.top.size() || kb >= in.ctau.bottom.size()) {
+    if (kt >= in.ctau.top.size() || kb >= in.ctau.bottom.size() ||
+        kt >= in.dssr.top.size() || kb >= in.dssr.bottom.size() ||
+        kt >= in.mdef.top.size() || kb >= in.mdef.bottom.size() ||
+        kt >= in.pdef.top.size() || kb >= in.pdef.bottom.size() ||
+        kt >= in.kdef.top.size() || kb >= in.kdef.bottom.size()) {
       throw std::invalid_argument("update: wake index outside");
     }
     in.ctau.top[kt] = in.ctau.bottom[kb];
@@ -390,6 +394,10 @@ UpdateResult update(UpdateInput& in) {
     in.ctq.top[kt] = in.ctq.bottom[kb];
     in.delt.top[kt] = in.delt.bottom[kb];
     in.tstr.top[kt] = in.tstr.bottom[kb];
+    in.dssr.top[kt] = in.dssr.bottom[kb];
+    in.mdef.top[kt] = in.mdef.bottom[kb];
+    in.pdef.top[kt] = in.pdef.bottom[kb];
+    in.kdef.top[kt] = in.kdef.bottom[kb];
   }
 
   return out;

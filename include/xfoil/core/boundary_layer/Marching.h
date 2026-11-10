@@ -97,6 +97,10 @@ struct MarchInput {
   BoundaryLayerStationField ctq;               // Fortran CTQ
   BoundaryLayerStationField delt;              // Fortran DELT
   BoundaryLayerStationField tstr;              // Fortran TSTR
+  BoundaryLayerStationField dssr;              // Fortran DSSR
+  BoundaryLayerStationField mdef;              // Fortran MDEF
+  BoundaryLayerStationField pdef;              // Fortran PDEF
+  BoundaryLayerStationField kdef;              // Fortran KDEF
   std::array<int, 2> itran{0, 0};              // Fortran ITRAN (0-based)
   std::array<bool, 2> tforce{false, false};    // Fortran TFORCE
   std::array<double, 2> xssitr{0.0, 0.0};      // Fortran XSSITR

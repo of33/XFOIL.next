@@ -76,6 +76,32 @@ BoundaryLayerTurbulentSecondary fallbackBlvar(
   return ts;
 }
 
+// Fortran COMMON station arrays are dimensioned IVX and always
+// writable. Grow only the newly carried output fields to the mapping
+// extent; existing station values and the grow-only semantics stay
+// unchanged.
+void ensureStateOutputFields(MarchInput& in) {
+  const int nw = in.mapping.bottom.nbl - in.mapping.bottom.iblte;
+  const int topExtent =
+      std::max(in.mapping.top.nbl, in.mapping.top.iblte + nw);
+  const std::size_t needTop =
+      static_cast<std::size_t>(std::max(topExtent, 0)) + 1;
+  const std::size_t needBottom =
+      static_cast<std::size_t>(std::max(in.mapping.bottom.nbl, 0)) + 1;
+  const auto grow = [needTop, needBottom](BoundaryLayerStationField& f) {
+    if (f.top.size() < needTop) {
+      f.top.resize(needTop, 0.0);
+    }
+    if (f.bottom.size() < needBottom) {
+      f.bottom.resize(needBottom, 0.0);
+    }
+  };
+  grow(in.dssr);
+  grow(in.mdef);
+  grow(in.pdef);
+  grow(in.kdef);
+}
+
 // Fortran: BLPRV/BLKIN/BLVAR exit -> complete BLDIF
 // station state.
 BldifStation makeCom(const BoundaryLayerPrimary& prim,
@@ -230,6 +256,7 @@ void gauss4(std::array<std::array<double, 5>, 4>& vs2,
 }  // namespace
 
 MarchDiagnostics mrchue(MarchInput& in, std::array<MarchSideState, 2>& state) {
+  ensureStateOutputFields(in);
   MarchDiagnostics diag{};
   // Fortran: shape-factor criteria for separation
   const double hlmax = 3.8;
@@ -719,6 +746,12 @@ MarchDiagnostics mrchue(MarchInput& in, std::array<MarchSideState, 2>& state) {
         in.ctq.top[sz(ibl)] = tsUse.cq;
         in.delt.top[sz(ibl)] = tsUse.de;
         in.tstr.top[sz(ibl)] = tsUse.hs * primUse.t;
+        in.dssr.top[sz(ibl)] = tsUse.hc * primUse.t;
+        in.mdef.top[sz(ibl)] = secUse.r * primUse.ue * primUse.d;
+        in.pdef.top[sz(ibl)] =
+            secUse.r * primUse.ue * primUse.ue * primUse.t;
+        in.kdef.top[sz(ibl)] = secUse.r * primUse.ue * primUse.ue *
+                               primUse.ue * primUse.t * tsUse.hs * 0.5;
       } else {
         in.tau.bottom[sz(ibl)] =
             0.5 * secUse.r * primUse.ue * primUse.ue * tsUse.cf;
@@ -728,6 +761,12 @@ MarchDiagnostics mrchue(MarchInput& in, std::array<MarchSideState, 2>& state) {
         in.ctq.bottom[sz(ibl)] = tsUse.cq;
         in.delt.bottom[sz(ibl)] = tsUse.de;
         in.tstr.bottom[sz(ibl)] = tsUse.hs * primUse.t;
+        in.dssr.bottom[sz(ibl)] = tsUse.hc * primUse.t;
+        in.mdef.bottom[sz(ibl)] = secUse.r * primUse.ue * primUse.d;
+        in.pdef.bottom[sz(ibl)] =
+            secUse.r * primUse.ue * primUse.ue * primUse.t;
+        in.kdef.bottom[sz(ibl)] = secUse.r * primUse.ue * primUse.ue *
+                                  primUse.ue * primUse.t * tsUse.hs * 0.5;
       }
       // Fortran: set "1" variables from "2" variables
       st.com1 = com2;
@@ -765,6 +804,7 @@ MarchDiagnostics mrchue(MarchInput& in, std::array<MarchSideState, 2>& state) {
 
 
 MarchDiagnostics mrchdu(MarchInput& in, std::array<MarchSideState, 2>& state) {
+  ensureStateOutputFields(in);
   MarchDiagnostics diag{};
   // Fortran: SENSWT/DEPS
   const double senswt = 1000.0;
@@ -1205,6 +1245,12 @@ MarchDiagnostics mrchdu(MarchInput& in, std::array<MarchSideState, 2>& state) {
         in.ctq.top[sz(ibl)] = tsUse.cq;
         in.delt.top[sz(ibl)] = tsUse.de;
         in.tstr.top[sz(ibl)] = tsUse.hs * primUse.t;
+        in.dssr.top[sz(ibl)] = tsUse.hc * primUse.t;
+        in.mdef.top[sz(ibl)] = secUse.r * primUse.ue * primUse.d;
+        in.pdef.top[sz(ibl)] =
+            secUse.r * primUse.ue * primUse.ue * primUse.t;
+        in.kdef.top[sz(ibl)] = secUse.r * primUse.ue * primUse.ue *
+                               primUse.ue * primUse.t * tsUse.hs * 0.5;
       } else {
         in.tau.bottom[sz(ibl)] =
             0.5 * secUse.r * primUse.ue * primUse.ue * tsUse.cf;
@@ -1214,6 +1260,12 @@ MarchDiagnostics mrchdu(MarchInput& in, std::array<MarchSideState, 2>& state) {
         in.ctq.bottom[sz(ibl)] = tsUse.cq;
         in.delt.bottom[sz(ibl)] = tsUse.de;
         in.tstr.bottom[sz(ibl)] = tsUse.hs * primUse.t;
+        in.dssr.bottom[sz(ibl)] = tsUse.hc * primUse.t;
+        in.mdef.bottom[sz(ibl)] = secUse.r * primUse.ue * primUse.d;
+        in.pdef.bottom[sz(ibl)] =
+            secUse.r * primUse.ue * primUse.ue * primUse.t;
+        in.kdef.bottom[sz(ibl)] = secUse.r * primUse.ue * primUse.ue *
+                                  primUse.ue * primUse.t * tsUse.hs * 0.5;
       }
 
 

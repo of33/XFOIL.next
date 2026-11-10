@@ -435,9 +435,10 @@ CdCalcResult cdcalc(double alfa, double qinf, double tklam, bool lvisc,
     res.cd = 0.0;
   }
 
-  // Fortran: friction drag (xfoil.f:1197-1205).
+  // Fortran: friction drag and lift (xfoil.f:1197-1205).
   // DO IBL=3, IBLTE(IS) -> 0-based [2, iblte].
   res.cdf = 0.0;
+  res.clf = 0.0;
   for (int is = 0; is < 2; ++is) {
     const BoundaryLayerSideMapping& m =
         is == 0 ? map.top : map.bottom;
@@ -450,7 +451,9 @@ CdCalcResult cdcalc(double alfa, double qinf, double tklam, bool lvisc,
         throw std::invalid_argument("cdcalc: panel index outside X/Y");
       }
       const double dx = (x[i] - x[im]) * ca + (y[i] - y[im]) * sa;
+      const double dy = -(x[i] - x[im]) * sa + (y[i] - y[im]) * ca;
       res.cdf += 0.5 * (tauS[k] + tauS[k - 1]) * dx * 2.0 / (qinf * qinf);
+      res.clf += 0.5 * (tauS[k] + tauS[k - 1]) * dy * 2.0 / (qinf * qinf);
     }
   }
 

@@ -215,6 +215,10 @@ ViscalResult viscal(const ViscalInput& in,
   ensureSideField(state.ctq, state.mapping);
   ensureSideField(state.delt, state.mapping);
   ensureSideField(state.tstr, state.mapping);
+  ensureSideField(state.dssr, state.mapping);
+  ensureSideField(state.mdef, state.mapping);
+  ensureSideField(state.pdef, state.mapping);
+  ensureSideField(state.kdef, state.mapping);
   // IPAN divides the station fields from the COMMON capacity (CR15,
   // IVX): entries never written remain zero as in
   // Fortran; grow-only with zeros, the already written
@@ -256,6 +260,7 @@ ViscalResult viscal(const ViscalInput& in,
                panel.x, panel.y);
     state.cd = cdc.cd;
     state.cdf = cdc.cdf;
+    state.clf = cdc.clf;
   }
 
   // Fortran 2964: IF(.NOT.LWDIJ .OR. .NOT.LADIJ) CALL QDCALC.
@@ -331,6 +336,10 @@ ViscalResult viscal(const ViscalInput& in,
     sb.march.ctq = state.ctq;
     sb.march.delt = state.delt;
     sb.march.tstr = state.tstr;
+    sb.march.dssr = state.dssr;
+    sb.march.mdef = state.mdef;
+    sb.march.pdef = state.pdef;
+    sb.march.kdef = state.kdef;
     sb.march.itran = state.itran;
     sb.march.xoctr = state.xoctr;
     sb.march.props = state.props;
@@ -410,6 +419,10 @@ ViscalResult viscal(const ViscalInput& in,
     state.ctq = sb.march.ctq;
     state.delt = sb.march.delt;
     state.tstr = sb.march.tstr;
+    state.dssr = sb.march.dssr;
+    state.mdef = sb.march.mdef;
+    state.pdef = sb.march.pdef;
+    state.kdef = sb.march.kdef;
 
     // Fortran COMMON semantics: SETBL/UESET shrink march.uedg to
     // NBL+1; the wake positions beyond that (UPDATE, xbl.f:1547-1557)
@@ -424,6 +437,10 @@ ViscalResult viscal(const ViscalInput& in,
     ensureSideField(state.ctq, state.mapping);
     ensureSideField(state.delt, state.mapping);
     ensureSideField(state.tstr, state.mapping);
+    ensureSideField(state.dssr, state.mapping);
+    ensureSideField(state.mdef, state.mapping);
+    ensureSideField(state.pdef, state.mapping);
+    ensureSideField(state.kdef, state.mapping);
     syncPlxaddStationCapacity(state);
 
     // Fortran 2976: CALL BLSOLV
@@ -478,6 +495,10 @@ ViscalResult viscal(const ViscalInput& in,
     upd.ctq = state.ctq;
     upd.delt = state.delt;
     upd.tstr = state.tstr;
+    upd.dssr = state.dssr;
+    upd.mdef = state.mdef;
+    upd.pdef = state.pdef;
+    upd.kdef = state.kdef;
 
     const UpdateResult ures = update(upd);
 
@@ -493,6 +514,10 @@ ViscalResult viscal(const ViscalInput& in,
     state.ctq = std::move(upd.ctq);
     state.delt = std::move(upd.delt);
     state.tstr = std::move(upd.tstr);
+    state.dssr = std::move(upd.dssr);
+    state.mdef = std::move(upd.mdef);
+    state.pdef = std::move(upd.pdef);
+    state.kdef = std::move(upd.kdef);
     state.alfa = upd.alfa;
     state.cl = upd.cl;
 
@@ -581,6 +606,10 @@ ViscalResult viscal(const ViscalInput& in,
     ensureSideField(state.ctq, state.mapping);
     ensureSideField(state.delt, state.mapping);
     ensureSideField(state.tstr, state.mapping);
+    ensureSideField(state.dssr, state.mapping);
+    ensureSideField(state.mdef, state.mapping);
+    ensureSideField(state.pdef, state.mapping);
+    ensureSideField(state.kdef, state.mapping);
     ensureSideField(state.uedg, state.mapping);
     syncPlxaddStationCapacity(state);
     const inviscid::StagnationPointResult stGo =
@@ -602,6 +631,7 @@ ViscalResult viscal(const ViscalInput& in,
                panel.x, panel.y);
     state.cd = cdc.cd;
     state.cdf = cdc.cdf;
+    state.clf = cdc.clf;
 
     // Fortran 3005-3020: Convergence test (RMSBL < EPS1). The Record carries
     // additionally the aerodynamic quantities of this iteration state
@@ -686,6 +716,7 @@ ViscalResult viscal(const ViscalInput& in,
   res.cdp = state.cdp;
   res.cd = state.cd;
   res.cdf = state.cdf;
+  res.clf = state.clf;
   return res;
 }
 

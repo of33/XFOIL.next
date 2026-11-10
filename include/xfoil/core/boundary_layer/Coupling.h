@@ -141,6 +141,7 @@ StMoveResult stmove(const paneling::PanelGeometry& panel,
 struct CdCalcResult {
   double cd{0.0};   // Fortran CD
   double cdf{0.0};  // Fortran CDF
+  double clf{0.0};  // Fortran CLF
 };
 
 CdCalcResult cdcalc(double alfa, double qinf, double tklam, bool lvisc,

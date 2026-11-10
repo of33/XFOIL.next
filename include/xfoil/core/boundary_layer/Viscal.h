@@ -164,6 +164,10 @@ struct ViscalState {
   BoundaryLayerStationField ctq;
   BoundaryLayerStationField delt;
   BoundaryLayerStationField tstr;
+  BoundaryLayerStationField dssr;
+  BoundaryLayerStationField mdef;
+  BoundaryLayerStationField pdef;
+  BoundaryLayerStationField kdef;
   std::array<int, 2> itran{0, 0};       // Fortran ITRAN (0-based)
   std::array<double, 2> xoctr{1.0, 1.0};  // Fortran XOCTR (COMMON, display-only;
                                           // initial value 1.0, xfoil.f:679-680)
@@ -173,7 +177,7 @@ struct ViscalState {
                                            // set to XT per side by SETBL;
                                            // dplot.f FBLGET TURB decision)
   std::array<MarchSideState, 2> marchState{};  // Fortran COM1/XT states
-  // Fortran ALFA/MINF/REINF/CL/CM/CDP/CD/CDF/TKLAM/MINF_CL (Session).
+  // Fortran ALFA/MINF/REINF/CL/CM/CDP/CD/CDF/CLF/TKLAM/MINF_CL (Session).
   double alfa{0.0};
   double minf{0.0};
   double reinf{0.0};
@@ -182,6 +186,7 @@ struct ViscalState {
   double cdp{0.0};
   double cd{0.0};
   double cdf{0.0};
+  double clf{0.0};
   double tklam{0.0};   // Fortran TKLAM (COMSET exit)
   double tkMsq{0.0};   // Fortran TK_MSQ
   double minfCl{0.0};  // Fortran MINF_Cl (for the next UPDATE)
@@ -282,6 +287,7 @@ struct ViscalResult {
   double cdp{0.0};             // Fortran CDP (from CLCALC)
   double cd{0.0};              // Fortran CD (Squire-Young)
   double cdf{0.0};             // Fortran CDF (friction)
+  double clf{0.0};             // Fortran CLF (friction lift)
   double rmsbl{0.0};           // Fortran RMSBL after the last UPDATE
   std::vector<double> rmsblHistory;  // Fortran RMSBL per iteration
   std::vector<ViscalIterationRecord> iterationRecords;  // UPDATE per iteration
