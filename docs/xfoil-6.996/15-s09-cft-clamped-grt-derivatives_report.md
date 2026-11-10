@@ -64,7 +64,7 @@ banner change.
 ### H-S09-CFT
 
 `H-S09-CFT` external harness and data:
-`/local/Olaf/Entwicklung/.audit-xfoil-next/xfoil-6.996/s09/harness/`.
+`external audit area: xfoil-6.996/s09/harness/`.
 
 It covers 20 cases: laminar/turbulent/wake, incompressible/compressible,
 clear/immediate below, exact boundary, immediate/clear above, and both

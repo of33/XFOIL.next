@@ -62,7 +62,7 @@ No new BL architecture or global clamp helper was introduced.
 ## External H-S09-CFT harness
 
 Location outside the repository:
-`/local/Olaf/Entwicklung/.audit-xfoil-next/xfoil-6.996/s09/harness/`.
+`external audit area: xfoil-6.996/s09/harness/`.
 
 `CFT` was extracted byte-faithfully from both `xblsys.f` versions and compiled
 with the canonical double-precision flags. The harness covers 20 cases:
