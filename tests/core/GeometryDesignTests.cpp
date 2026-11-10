@@ -46,6 +46,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <limits>
 #include <span>
 #include <stdexcept>
 #include <vector>
@@ -94,8 +95,20 @@ SplineProfile splinedNaca4(int ides) {
 }
 
 // Builds the design buffer as the harnesses do: SCALC + SEGSPL x2 + GEOPAR.
-GeometryDesignBuffer designBuffer(int ides) {
-  SplineProfile p = splinedNaca4(ides);
+GeometryDesignBuffer designBuffer(int ides, bool sharpTrailingEdge = false) {
+  const Result<NacaResult> r = naca4(ides, kNside, sharpTrailingEdge);
+  if (r.isErr()) {
+    throw std::runtime_error("naca4 failed");
+  }
+  SplineProfile p;
+  p.x = r.value().xb;
+  p.y = r.value().yb;
+  p.s.resize(p.x.size());
+  p.xp.resize(p.x.size());
+  p.yp.resize(p.x.size());
+  scalc(p.x, p.y, p.s);
+  segspl(p.x, p.s, p.xp);
+  segspl(p.y, p.s, p.yp);
   GeometryDesignBuffer b(std::move(p.x), std::move(p.y), std::move(p.s),
                          std::move(p.xp), std::move(p.yp));
   b.metrics = geopar(b.x, b.xp, b.y, b.yp, b.s);
@@ -581,6 +594,219 @@ TEST(unit, GeometryDesignGdesShape2412Sequence) {
   const Result<paneling::AbcopyResult> fex = executeGeometryBuffer(b);
   CHECK(fex.isOk());
   CHECK_EQ(fex.value().panel.x.size(), 249u);
+}
+
+TEST(unit, GeometryDesignKernelContracts) {
+  // External 6.996 H-S05-GDES harness values.
+  auto point = [](const GeometryDesignBuffer& b, std::size_t i, double x,
+                  double y) {
+    CHECK_NEAR(b.x[i], x, 1.0e-12, 0.0);
+    CHECK_NEAR(b.y[i], y, 1.0e-12, 0.0);
+  };
+
+  // SQTE: cambered open TE.
+  {
+    GeometryDesignBuffer b = designBuffer(2412);
+    const Result<SqteResult> r = squareTrailingEdge(b);
+    CHECK(r.isOk());
+    CHECK(r.value().converged);
+    CHECK_EQ(b.size(), std::size_t{245});
+    CHECK_NEAR(b.x[0], 1.0000812850636549, 1.0e-12, 0.0);
+    CHECK_NEAR(b.y[0], 1.2431749715092583e-3, 1.0e-12, 0.0);
+    CHECK_NEAR(b.x.back(), 9.9991721622835472e-1, 1.0e-12, 0.0);
+    CHECK_NEAR(b.y.back(), -1.2660962337881960e-3, 1.0e-12, 0.0);
+    CHECK_NEAR(b.y[0] - b.y.back(), 2.5092712052974544e-3, 1.0e-12, 0.0);
+    CHECK_NEAR(b.metrics.thick, 1.2003228622287992e-1, kFortranAbsTol,
+               kFortranRelTol);
+    CHECK_NEAR(b.metrics.thickX, 2.9757707521376275e-1, kFortranAbsTol,
+               kFortranRelTol);
+    CHECK_NEAR(b.metrics.cambr, 2.0004123718118258e-2, kFortranAbsTol,
+               kFortranRelTol);
+    CHECK_NEAR(b.metrics.cambrX, 4.0310795477497668e-1, kFortranAbsTol,
+               kFortranRelTol);
+    point(b, 60, 3.9227587716869716e-1, 7.8301153559779985e-2);
+    point(b, 121, 1.3617682852651427e-4, 2.0821196957504758e-3);
+    point(b, 182, 3.7037633458325409e-1, -3.9104230435656487e-2);
+  }
+
+  // SQTE: symmetric open TE is already square.
+  {
+    GeometryDesignBuffer b = designBuffer(12);
+    const Result<SqteResult> r = squareTrailingEdge(b);
+    CHECK(r.isOk());
+    CHECK_EQ(b.size(), std::size_t{245});
+    CHECK_NEAR(b.y[0] - b.y.back(), 2.5199999999999572e-3, 1.0e-12, 0.0);
+    CHECK_NEAR(b.metrics.thick, 1.2003207898370065e-1, kFortranAbsTol,
+               kFortranRelTol);
+    CHECK_NEAR(b.metrics.cambr, -5.8980598183211441e-17, 1.0e-15, 0.0);
+    point(b, 60, 3.9219291414903468e-1, 5.8311508418170989e-2);
+  }
+
+  // SQTE: already sharp input.
+  {
+    GeometryDesignBuffer b = designBuffer(2412, true);
+    const Result<SqteResult> r = squareTrailingEdge(b);
+    CHECK(r.isOk());
+    CHECK_EQ(b.size(), std::size_t{245});
+    CHECK_NEAR(b.y[0] - b.y.back(), -3.3081498495382879e-17, 1.0e-15, 0.0);
+    CHECK_NEAR(b.metrics.thick, 1.2003450290498287e-1, kFortranAbsTol,
+               kFortranRelTol);
+    point(b, 121, 1.2562947795402568e-4, 2.0085452136485919e-3);
+  }
+
+  // TECIRC: 15 points per side, canonical circle at the squared TE.
+  {
+    GeometryDesignBuffer b = designBuffer(2412);
+    const Result<TrailingEdgeCircleResult> r =
+        addTrailingEdgeCircle(b, 15);
+    CHECK(r.isOk());
+    CHECK(r.value().sqteConverged);
+    CHECK_EQ(r.value().nHCirc, std::size_t{15});
+    CHECK_EQ(b.size(), std::size_t{275});
+    CHECK_NEAR(b.x[0], 1.0010893541062547, 1.0e-12, 0.0);
+    CHECK_NEAR(b.y[0], -8.2737105640242272e-5, 1.0e-12, 0.0);
+    CHECK_NEAR(b.x.back(), 1.0010893541062547, 1.0e-12, 0.0);
+    CHECK_NEAR(b.y.back(), -8.2737105640242272e-5, 1.0e-12, 0.0);
+    CHECK_NEAR(b.y[0] - b.y.back(), 0.0, 1.0e-15, 0.0);
+    CHECK_NEAR(b.metrics.thick, 1.2003250006408106e-1, kFortranAbsTol,
+               kFortranRelTol);
+    CHECK_NEAR(b.metrics.cambr, 2.0031976534593699e-2, kFortranAbsTol,
+               kFortranRelTol);
+    point(b, 67, 4.8231947678771558e-1, 7.3644778492252719e-2);
+    point(b, 136, 1.3617682852651427e-4, 2.0821196957504758e-3);
+    point(b, 205, 4.5923860712495052e-1, -3.5517929039376596e-2);
+  }
+
+  // TECIRC: NHCIRC=0 is the SQTE-only limit.
+  {
+    GeometryDesignBuffer b = designBuffer(2412);
+    const Result<TrailingEdgeCircleResult> r =
+        addTrailingEdgeCircle(b, 0);
+    CHECK(r.isOk());
+    CHECK_EQ(b.size(), std::size_t{245});
+    CHECK_NEAR(b.y[0] - b.y.back(), 2.5092712052974544e-3, 1.0e-12, 0.0);
+    CHECK_NEAR(b.metrics.thick, 1.2003228622287992e-1, kFortranAbsTol,
+               kFortranRelTol);
+  }
+
+  // SYTB: symmetric and cambered top/bottom scaling; X stays unchanged.
+  {
+    GeometryDesignBuffer b = designBuffer(12);
+    const std::vector<double> xBefore = b.x;
+    CHECK(scaleTopBottomY(b, 1.2, 0.8).isOk());
+    CHECK(b.x == xBefore);
+    CHECK_NEAR(b.y[0], 1.5119999999999732e-3, 1.0e-12, 0.0);
+    CHECK_NEAR(b.y.back(), -1.0079999999999822e-3, 1.0e-12, 0.0);
+    CHECK_NEAR(b.metrics.thick, 1.2003208056299047e-1, kFortranAbsTol,
+               kFortranRelTol);
+    CHECK_NEAR(b.metrics.cambr, 1.1762043003052437e-2, kFortranAbsTol,
+               kFortranRelTol);
+    point(b, 60, 3.9219291414903468e-1, 6.9973810101805187e-2);
+    point(b, 182, 3.7045929149706674e-1, -4.7193789928791988e-2);
+  }
+  {
+    GeometryDesignBuffer b = designBuffer(2412);
+    const std::vector<double> xBefore = b.x;
+    CHECK(scaleTopBottomY(b, 1.2, 0.8).isOk());
+    CHECK(b.x == xBefore);
+    CHECK_NEAR(b.metrics.thick, 1.2758063823477089e-1, kFortranAbsTol,
+               kFortranRelTol);
+    CHECK_NEAR(b.metrics.cambr, 3.1447933147663976e-2, kFortranAbsTol,
+               kFortranRelTol);
+    point(b, 60, 3.9219291414903468e-1, 9.3964670501024777e-2);
+    point(b, 182, 3.7045929149706674e-1, -3.1281058369150183e-2);
+  }
+
+  // TGAP: 6.99-compatible split (FTB=0) and the new top/bottom split.
+  {
+    GeometryDesignBuffer b = designBuffer(2412);
+    CHECK(setTrailingEdgeGap(b, 0.02, 0.3).isOk());
+    CHECK_NEAR(b.y[0], 1.0000000000902178e-2, 1.0e-12, 0.0);
+    CHECK_NEAR(b.y.back(), -9.9999999990978174e-3, 1.0e-12, 0.0);
+    CHECK_NEAR(b.y[0] - b.y.back(), 1.9999999999999997e-2, 1.0e-12, 0.0);
+    CHECK_NEAR(b.metrics.thick, 1.2107631312966896e-1, kFortranAbsTol,
+               kFortranRelTol);
+    CHECK_NEAR(b.metrics.cambr, 1.9999449541470843e-2, kFortranAbsTol,
+               kFortranRelTol);
+    point(b, 60, 3.9219291414903468e-1, 7.9133907698052355e-2);
+    point(b, 182, 3.7045929149706674e-1, -3.9846573338772777e-2);
+  }
+  {
+    GeometryDesignBuffer b = designBuffer(2412);
+    CHECK(setTrailingEdgeGap(b, 0.02, 0.3, 0.5).isOk());
+    CHECK_NEAR(b.y[0], 1.4370000001353279e-2, 1.0e-12, 0.0);
+    CHECK_NEAR(b.y.back(), -5.6299999995488969e-3, 1.0e-12, 0.0);
+    CHECK_NEAR(b.metrics.thick, 1.2106444137772734e-1, kFortranAbsTol,
+               kFortranRelTol);
+    CHECK_NEAR(b.metrics.cambr, 1.8744095450085624e-2, kFortranAbsTol,
+               kFortranRelTol);
+    point(b, 60, 3.9219291414903468e-1, 7.9548916749835816e-2);
+  }
+  {
+    GeometryDesignBuffer b = designBuffer(2412);
+    CHECK(setTrailingEdgeGap(b, 0.02, 0.3, -0.5).isOk());
+    CHECK_NEAR(b.y[0], 5.6300000004510780e-3, 1.0e-12, 0.0);
+    CHECK_NEAR(b.y.back(), -1.4369999998646738e-2, 1.0e-12, 0.0);
+    CHECK_NEAR(b.metrics.thick, 1.2108935006609581e-1, kFortranAbsTol,
+               kFortranRelTol);
+    CHECK_NEAR(b.metrics.cambr, 2.1286747120950616e-2, kFortranAbsTol,
+               kFortranRelTol);
+  }
+  {
+    GeometryDesignBuffer b = designBuffer(2412);
+    CHECK(setTrailingEdgeGap(b, 0.0, 1.0, 0.0).isOk());
+    CHECK_NEAR(b.y[0] - b.y.back(), 2.1684043449710089e-19, 1.0e-15, 0.0);
+    CHECK_NEAR(b.metrics.thick, 1.1928239451196850e-1, kFortranAbsTol,
+               kFortranRelTol);
+    point(b, 60, 3.9219291414903468e-1, 7.7809726520232797e-2);
+  }
+  {
+    GeometryDesignBuffer b = designBuffer(2412);
+    CHECK(setTrailingEdgeGap(b, 0.02, 0.0, 0.0).isOk());
+    CHECK_NEAR(b.metrics.thick, 1.2003208396171303e-1, kFortranAbsTol,
+               kFortranRelTol);
+    point(b, 60, 3.9219291414903468e-1, 7.8303889594485448e-2);
+  }
+}
+
+TEST(unit, GeometryDesignKernelAtomicity) {
+  // Negative NHCIRC and capacity overflow are rejected without mutation.
+  GeometryDesignBuffer b = designBuffer(2412);
+  const std::vector<double> x0 = b.x;
+  const std::vector<double> y0 = b.y;
+  CHECK(addTrailingEdgeCircle(b, -1).isErr());
+  CHECK(b.x == x0);
+  CHECK(b.y == y0);
+  CHECK(addTrailingEdgeCircle(b, 1080).isErr());
+  CHECK(b.x == x0);
+  CHECK(b.y == y0);
+
+  // Degenerate SQTE arc-length range is rejected without mutation.
+  b = designBuffer(2412);
+  b.s.assign(b.s.size(), 0.0);
+  const std::vector<double> x1 = b.x;
+  const std::vector<double> y1 = b.y;
+  CHECK(squareTrailingEdge(b).isErr());
+  CHECK(b.x == x1);
+  CHECK(b.y == y1);
+
+  // SYTB with a non-finite factor is rejected without mutation.
+  b = designBuffer(2412);
+  const std::vector<double> x2 = b.x;
+  const std::vector<double> y2 = b.y;
+  CHECK(scaleTopBottomY(b, std::numeric_limits<double>::quiet_NaN(), 1.0)
+            .isErr());
+  CHECK(b.x == x2);
+  CHECK(b.y == y2);
+
+  // TGAP with a non-finite gap is rejected without mutation.
+  b = designBuffer(2412);
+  const std::vector<double> x3 = b.x;
+  const std::vector<double> y3 = b.y;
+  CHECK(setTrailingEdgeGap(b, std::numeric_limits<double>::quiet_NaN(), 0.3)
+            .isErr());
+  CHECK(b.x == x3);
+  CHECK(b.y == y3);
 }
 
 TEST(unit, GeometryDesignScalItCases) {

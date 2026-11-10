@@ -70,6 +70,93 @@ void resplineAndPar(GeometryDesignBuffer& b) {
   b.metrics = geometry::geopar(b.x, b.xp, b.y, b.yp, b.s);
 }
 
+struct SqteCoordinates {
+  std::vector<double> x;
+  std::vector<double> y;
+  bool converged{true};
+};
+
+// xgeom.f SQTE: pure coordinate transformation, no buffer mutation.
+Result<SqteCoordinates> sqteCoordinates(std::span<const double> x,
+                                        std::span<const double> xp,
+                                        std::span<const double> y,
+                                        std::span<const double> yp,
+                                        std::span<const double> s) {
+  const std::size_t n = x.size();
+  if (n < 3 || xp.size() != n || y.size() != n || yp.size() != n ||
+      s.size() != n) {
+    return Result<SqteCoordinates>::fail(Error::make(
+        ErrorCode::invalidArgument,
+        "squareTrailingEdge: consistent lengths and N >= 3 required"));
+  }
+  const double srange = s[n - 1] - s[0];
+  if (srange == 0.0) {
+    return Result<SqteCoordinates>::fail(Error::make(
+        ErrorCode::invalidState,
+        "squareTrailingEdge: degenerate arc-length range"));
+  }
+  const double xte = 0.5 * (x[0] + x[n - 1]);
+  const double yte = 0.5 * (y[0] + y[n - 1]);
+  double xs1 = -xp[0];
+  double ys1 = -yp[0];
+  double xs2 = xp[n - 1];
+  double ys2 = yp[n - 1];
+  const double xsa = xs1 + xs2;
+  const double ysa = ys1 + ys2;
+  double s1 = s[0];
+  double s2 = s[n - 1];
+  const double stol = srange * 1.0e-7;
+  bool converged = false;
+  for (int iter = 0; iter < 8; ++iter) {
+    const double x1 = math::seval(s1, x, xp, s);
+    const double y1 = math::seval(s1, y, yp, s);
+    const double x2 = math::seval(s2, x, xp, s);
+    const double y2 = math::seval(s2, y, yp, s);
+    xs1 = math::deval(s1, x, xp, s);
+    ys1 = math::deval(s1, y, yp, s);
+    xs2 = math::deval(s2, x, xp, s);
+    ys2 = math::deval(s2, y, yp, s);
+    const double res1 = (x1 - x2) * xsa + (y1 - y2) * ysa;
+    const double res2 =
+        (0.5 * (x1 + x2) - xte) * xsa +
+        (0.5 * (y1 + y2) - yte) * ysa;
+    const double a11 = xs1 * xsa + ys1 * ysa;
+    const double a12 = -xs2 * xsa - ys2 * ysa;
+    const double a21 = 0.5 * xs1 * xsa + 0.5 * ys1 * ysa;
+    const double a22 = 0.5 * xs2 * xsa + 0.5 * ys2 * ysa;
+    const double det = a11 * a22 - a12 * a21;
+    if (!std::isfinite(det) || det == 0.0) {
+      return Result<SqteCoordinates>::fail(Error::make(
+          ErrorCode::invalidState,
+          "squareTrailingEdge: singular TE system"));
+    }
+    const double ds1 = -(res1 * a22 - a12 * res2) / det;
+    const double ds2 = -(a11 * res2 - res1 * a21) / det;
+    s1 += ds1;
+    s2 += ds2;
+    if (std::abs(ds1) < stol && std::abs(ds2) < stol) {
+      converged = true;
+      break;
+    }
+  }
+  SqteCoordinates out;
+  out.x.resize(n);
+  out.y.resize(n);
+  out.converged = converged;
+  for (std::size_t i = 0; i < n; ++i) {
+    const double sfrac = (s[i] - s[0]) / srange;
+    const double snew = s1 * (1.0 - sfrac) + s2 * sfrac;
+    out.x[i] = math::seval(snew, x, xp, s);
+    out.y[i] = math::seval(snew, y, yp, s);
+    if (!std::isfinite(out.x[i]) || !std::isfinite(out.y[i])) {
+      return Result<SqteCoordinates>::fail(Error::make(
+          ErrorCode::invalidState,
+          "squareTrailingEdge: non-finite TE result"));
+    }
+  }
+  return Result<SqteCoordinates>::ok(std::move(out));
+}
+
 }  // namespace
 
 Result<BufferSetResult> setBufferFromAirfoil(GeometryDesignBuffer& buffer,
@@ -353,7 +440,7 @@ Result<CornerAddResult> addCornerPoints(GeometryDesignBuffer& buffer) {
 }
 
 Status setTrailingEdgeGap(GeometryDesignBuffer& buffer, double gapnew,
-                          double doc) {
+                          double doc, double ftb) {
   Status st = validate(buffer, "setTrailingEdgeGap");
   if (!st.isOk()) return st;
   const std::size_t n = buffer.x.size();
@@ -366,6 +453,11 @@ Status setTrailingEdgeGap(GeometryDesignBuffer& buffer, double gapnew,
   const double ybte = 0.5 * (buffer.y[0] + buffer.y[n - 1]);
   const double chbsq = (xbte - xble) * (xbte - xble) +
                        (ybte - yble) * (ybte - yble);
+  if (chbsq == 0.0 || !std::isfinite(chbsq)) {
+    return Status::fail(Error::make(
+        ErrorCode::invalidState,
+        "setTrailingEdgeGap: degenerate chord (CHBSQ == 0)"));
+  }
   // TGAP 1233-1244: current column and unit vector.
   const double dxn = buffer.x[0] - buffer.x[n - 1];
   const double dyn = buffer.y[0] - buffer.y[n - 1];
@@ -383,6 +475,8 @@ Status setTrailingEdgeGap(GeometryDesignBuffer& buffer, double gapnew,
   const double docc = std::min(std::max(doc, 0.0), 1.0);
   const double dgap = gapnew - gap;
   // TGAP 1267-1289: per point x/c and exponential thickness factor.
+  std::vector<double> xnew = buffer.x;
+  std::vector<double> ynew = buffer.y;
   for (std::size_t i = 0; i < n; ++i) {
     const double xoc = ((buffer.x[i] - xble) * (xbte - xble) +
                         (buffer.y[i] - yble) * (ybte - yble)) /
@@ -396,16 +490,172 @@ Status setTrailingEdgeGap(GeometryDesignBuffer& buffer, double gapnew,
       tfac = std::exp(-arg);
     }
     if (buffer.s[i] <= le.sle) {
-      buffer.x[i] = buffer.x[i] + 0.5 * dgap * xoc * tfac * dxu;
-      buffer.y[i] = buffer.y[i] + 0.5 * dgap * xoc * tfac * dyu;
+      xnew[i] = buffer.x[i] + 0.5 * (1.0 + ftb) * dgap * xoc * tfac * dxu;
+      ynew[i] = buffer.y[i] + 0.5 * (1.0 + ftb) * dgap * xoc * tfac * dyu;
     } else {
-      buffer.x[i] = buffer.x[i] - 0.5 * dgap * xoc * tfac * dxu;
-      buffer.y[i] = buffer.y[i] - 0.5 * dgap * xoc * tfac * dyu;
+      xnew[i] = buffer.x[i] - 0.5 * (1.0 - ftb) * dgap * xoc * tfac * dxu;
+      ynew[i] = buffer.y[i] - 0.5 * (1.0 - ftb) * dgap * xoc * tfac * dyu;
+    }
+    if (!std::isfinite(xnew[i]) || !std::isfinite(ynew[i])) {
+      return Status::fail(Error::make(
+          ErrorCode::invalidState,
+          "setTrailingEdgeGap: non-finite result"));
     }
   }
+  buffer.x = std::move(xnew);
+  buffer.y = std::move(ynew);
   // TGAP 1290-1300: LGSAME=false, respline, GEOPAR.
   buffer.lgSame = false;
   resplineAndPar(buffer);
+  return Status::ok();
+}
+
+Result<SqteResult> squareTrailingEdge(GeometryDesignBuffer& buffer) {
+  Status st = validate(buffer, "squareTrailingEdge");
+  if (!st.isOk()) {
+    return Result<SqteResult>::fail(st.error());
+  }
+  const Result<SqteCoordinates> coords =
+      sqteCoordinates(buffer.x, buffer.xp, buffer.y, buffer.yp, buffer.s);
+  if (coords.isErr()) {
+    return Result<SqteResult>::fail(coords.error());
+  }
+  buffer.x = coords.value().x;
+  buffer.y = coords.value().y;
+  resplineAndPar(buffer);
+  buffer.lgSame = false;
+  return Result<SqteResult>::ok(SqteResult{coords.value().converged});
+}
+
+Result<TrailingEdgeCircleResult> addTrailingEdgeCircle(
+    GeometryDesignBuffer& buffer, int nHCirc) {
+  Status st = validate(buffer, "addTrailingEdgeCircle");
+  if (!st.isOk()) {
+    return Result<TrailingEdgeCircleResult>::fail(st.error());
+  }
+  if (nHCirc < 0) {
+    return Result<TrailingEdgeCircleResult>::fail(Error::make(
+        ErrorCode::invalidArgument,
+        "addTrailingEdgeCircle: NHCIRC must be >= 0"));
+  }
+  const std::size_t n = buffer.x.size();
+  const std::size_t extra = 2 * static_cast<std::size_t>(nHCirc);
+  if (extra > kIbx || n > kIbx - extra) {
+    return Result<TrailingEdgeCircleResult>::fail(Error::make(
+        ErrorCode::invalidArgument,
+        "addTrailingEdgeCircle: buffer capacity exceeded"));
+  }
+  const Result<SqteCoordinates> coords =
+      sqteCoordinates(buffer.x, buffer.xp, buffer.y, buffer.yp, buffer.s);
+  if (coords.isErr()) {
+    return Result<TrailingEdgeCircleResult>::fail(coords.error());
+  }
+  std::vector<double> x = coords.value().x;
+  std::vector<double> y = coords.value().y;
+  std::vector<double> s(n, 0.0);
+  std::vector<double> xp(n, 0.0);
+  std::vector<double> yp(n, 0.0);
+  math::scalc(x, y, s);
+  math::segspl(x, s, xp);
+  math::segspl(y, s, yp);
+  const double xte = 0.5 * (x[0] + x[n - 1]);
+  const double yte = 0.5 * (y[0] + y[n - 1]);
+  const double dx1 = x[0] - xte;
+  const double dy1 = y[0] - yte;
+  const double dotp = -(xp[0] * xp[n - 1] + yp[0] * yp[n - 1]);
+  // Canonical 6.996 expression (YS(2), not YS(N)).
+  const double crsp = -xp[0] * yp[n - 1] + yp[1] * xp[n - 1];
+  const double hang = 0.5 * std::atan2(crsp, dotp);
+  const double cosHang = std::cos(hang);
+  if (cosHang == 0.0 || !std::isfinite(cosHang)) {
+    return Result<TrailingEdgeCircleResult>::fail(Error::make(
+        ErrorCode::invalidState,
+        "addTrailingEdgeCircle: degenerate TE half-angle"));
+  }
+  const double trad = std::sqrt(dx1 * dx1 + dy1 * dy1) / cosHang;
+  const double cang = 0.5 * 3.14159265358979323846 - hang;
+  const double tbis = std::atan2(x[n - 1] - x[0], y[0] - y[n - 1]);
+  const double xo = xte - trad * std::tan(hang) * std::cos(tbis);
+  const double yo = yte - trad * std::tan(hang) * std::sin(tbis);
+  if (!std::isfinite(trad) || !std::isfinite(xo) || !std::isfinite(yo) ||
+      !std::isfinite(cang)) {
+    return Result<TrailingEdgeCircleResult>::fail(Error::make(
+        ErrorCode::invalidState,
+        "addTrailingEdgeCircle: non-finite TE circle"));
+  }
+  const std::size_t newN = n + extra;
+  std::vector<double> xnew(newN, 0.0);
+  std::vector<double> ynew(newN, 0.0);
+  for (std::size_t i = 0; i < n; ++i) {
+    xnew[i + static_cast<std::size_t>(nHCirc)] = x[i];
+    ynew[i + static_cast<std::size_t>(nHCirc)] = y[i];
+  }
+  for (int k = 1; k <= nHCirc; ++k) {
+    const double t = cang * static_cast<double>(k - 1) /
+                     static_cast<double>(nHCirc);
+    const std::size_t iup = static_cast<std::size_t>(k - 1);
+    const std::size_t ilow =
+        n + 2 * static_cast<std::size_t>(nHCirc) -
+        static_cast<std::size_t>(k);
+    xnew[iup] = xo + trad * std::cos(tbis + t);
+    ynew[iup] = yo + trad * std::sin(tbis + t);
+    xnew[ilow] = xo + trad * std::cos(tbis - t);
+    ynew[ilow] = yo + trad * std::sin(tbis - t);
+  }
+  for (std::size_t i = 0; i < newN; ++i) {
+    if (!std::isfinite(xnew[i]) || !std::isfinite(ynew[i])) {
+      return Result<TrailingEdgeCircleResult>::fail(Error::make(
+          ErrorCode::invalidState,
+          "addTrailingEdgeCircle: non-finite result"));
+    }
+  }
+  buffer.x = std::move(xnew);
+  buffer.y = std::move(ynew);
+  buffer.s.assign(newN, 0.0);
+  buffer.xp.assign(newN, 0.0);
+  buffer.yp.assign(newN, 0.0);
+  resplineAndPar(buffer);
+  buffer.lgSame = false;
+  return Result<TrailingEdgeCircleResult>::ok(
+      TrailingEdgeCircleResult{coords.value().converged,
+                               static_cast<std::size_t>(nHCirc)});
+}
+
+Status scaleTopBottomY(GeometryDesignBuffer& buffer, double ytfac,
+                       double ybfac) {
+  Status st = validate(buffer, "scaleTopBottomY");
+  if (!st.isOk()) return st;
+  const std::size_t n = buffer.x.size();
+  const geometry::LeadingEdgeResult le =
+      geometry::lefind(buffer.x, buffer.xp, buffer.y, buffer.yp, buffer.s);
+  const double xle = math::seval(le.sle, buffer.x, buffer.xp, buffer.s);
+  const double yle = math::seval(le.sle, buffer.y, buffer.yp, buffer.s);
+  const double xte = 0.5 * (buffer.x[0] + buffer.x[n - 1]);
+  const double yte = 0.5 * (buffer.y[0] + buffer.y[n - 1]);
+  if (xte == xle) {
+    return Status::fail(Error::make(
+        ErrorCode::invalidState,
+        "scaleTopBottomY: degenerate chord (XTE == XLE)"));
+  }
+  std::vector<double> ynew = buffer.y;
+  for (std::size_t i = 0; i < n; ++i) {
+    const double xoc = (buffer.x[i] - xle) / (xte - xle);
+    const double yax = yle * (1.0 - xoc) + yte * xoc;
+    const double dy = buffer.y[i] - yax;
+    if (buffer.s[i] < le.sle) {
+      ynew[i] = yax + dy * ytfac;
+    } else {
+      ynew[i] = yax + dy * ybfac;
+    }
+    if (!std::isfinite(ynew[i])) {
+      return Status::fail(Error::make(
+          ErrorCode::invalidState,
+          "scaleTopBottomY: non-finite result"));
+    }
+  }
+  buffer.y = std::move(ynew);
+  resplineAndPar(buffer);
+  buffer.lgSame = false;
   return Status::ok();
 }
 

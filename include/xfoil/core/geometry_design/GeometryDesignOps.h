@@ -37,6 +37,8 @@
 // LINS -> linearYScale DERO -> derotateBuffer
 // UNIT -> normalizeBuffer NMOV -> moveSurfaceNormals
 // SINT -> splineArcLengthRespline CADD -> addCornerPoints
+// SQTE -> squareTrailingEdge TECIRC -> addTrailingEdgeCircle
+// SYTB -> scaleTopBottomY TGAP -> setTrailingEdgeGap
 //
 // Canonical invariant: these operations change only the
 // buffer; only executeGeometryBuffer (ABCOPY,) carries it into the
@@ -151,12 +153,45 @@ Result<CornerAddResult> addCornerPoints(GeometryDesignBuffer& buffer,
 // ISPL=1, XRF = BBox +/- 10 %).
 Result<CornerAddResult> addCornerPoints(GeometryDesignBuffer& buffer);
 
-// Fortran: SUBROUTINE TGAP(RINPUT,NINPUT) (xgdes.f 1218-1308).
+// Fortran: SUBROUTINE SQTE(X,XS,Y,YS,S,N,XNEW,YNEW) (xgeom.f 1807-1890).
+// Squares a blunt trailing edge against the TE bisector. The pure
+// coordinate transform is validated and only committed after success;
+// afterwards SCALC/SEGSPL x2/GEOPAR, LGSAME=false. NB >= 3.
+// converged=false reports the canonical 8-iteration non-convergence, but
+// the last iterate is still the Fortran result.
+struct SqteResult {
+  bool converged{true};
+};
+Result<SqteResult> squareTrailingEdge(GeometryDesignBuffer& buffer);
+
+// Fortran: SUBROUTINE TECIRC(X,XS,Y,YS,S,N,XNEW,YNEW,NHCIRC)
+// (xgeom.f 1894-1973). Applies SQTE, re-splines, and inserts NHCIRC
+// points on each side of the TE circle. NHCIRC == 0 is the canonical
+// limit (SQTE only); negative values and buffer-capacity overflow are
+// rejected before mutation. After success SCALC/SEGSPL x2/GEOPAR,
+// LGSAME=false. NB >= 3.
+struct TrailingEdgeCircleResult {
+  bool sqteConverged{true};
+  std::size_t nHCirc{0};
+};
+Result<TrailingEdgeCircleResult> addTrailingEdgeCircle(
+    GeometryDesignBuffer& buffer, int nHCirc);
+
+// Fortran: GDES 'SYTB' numerical block (xgdes.f 353-390). Scales top and
+// bottom y values separately about the LE/TE chord axis. X coordinates
+// are unchanged. Afterwards SCALC/SEGSPL x2/GEOPAR, LGSAME=false.
+// A degenerate chord XTE == XLE is rejected before mutation.
+Status scaleTopBottomY(GeometryDesignBuffer& buffer, double ytfac,
+                       double ybfac);
+
+// Fortran: SUBROUTINE TGAP(RINPUT,NINPUT) (xgdes.f 1431-1527).
 // Sets the TE gap of the buffer contour (LEFIND, TE-gap unit vector,
 // exponential blend factor via x/c with DOC in [0,1]; DOC==0 only
-// edge points). Afterwards SCALC/SEGSPL x2/GEOPAR, LGSAME=false. NB >= 3.
+// edge points; FTB splits top/bottom, 0 is the 6.99 contract).
+// Afterwards SCALC/SEGSPL x2/GEOPAR, LGSAME=false. NB >= 3.
+// A degenerate chord and non-finite results are rejected before mutation.
 Status setTrailingEdgeGap(GeometryDesignBuffer& buffer, double gapnew,
-                          double doc);
+                          double doc, double ftb = 0.0);
 
 // Fortran: SUBROUTINE LERAD(RINPUT,NINPUT) (xgdes.f 1312-1373).
 // LE radius scaling (LERSCL, DOC >= 0.001), afterwards respline/GEOPAR,
