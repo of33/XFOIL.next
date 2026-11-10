@@ -201,6 +201,13 @@ CorePoint runCorePoint(const paneling::PanelGeometry& panel,
   return out;
 }
 
+xfoil::core::paneling::PanelingParameters xfoil699Paneling() {
+  xfoil::core::paneling::PanelingParameters p;
+  p.panelCount = 160;
+  p.teToLeDensityRatio = 0.15;
+  return p;
+}
+
 TEST(core, CpiBitAgainstFortranHarness) {
   using namespace xfoil::core;
   const auto oracle = loadCpiOracle(
@@ -220,7 +227,7 @@ TEST(core, CpiBitAgainstFortranHarness) {
   CHECK(naca.isOk());
   const geometry::AirfoilBuffer buffer(naca.value().xb, naca.value().yb,
                                        naca.value().name);
-  const auto pg = paneling::pangen(buffer, paneling::PanelingParameters{});
+  const auto pg = paneling::pangen(buffer, xfoil699Paneling());
   CHECK(pg.isOk());
   const auto& panel = pg.value().panel;
   const std::vector<double> sig0(panel.x.size(), 0.0);

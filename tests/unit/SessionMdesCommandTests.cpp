@@ -59,6 +59,11 @@ constexpr double kF6Abs = 5.0e-7 + 1.0e-12;
 constexpr double kF4DegAbs = 5.0e-5 + 1.0e-9;
 
 void setupPangenAirfoil(SessionComposition& s, int designation) {
+  xfoil::core::paneling::PanelingParameters params =
+      session::panelingParameters(s);
+  params.panelCount = 160;
+  params.teToLeDensityRatio = 0.15;
+  CHECK(session::setPanelingParameters(s, params).ok);
   std::ostringstream out;
   cli::handleNacaCore(s, out, designation);
   CHECK(s.paneling.panelingValid);

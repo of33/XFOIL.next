@@ -210,7 +210,7 @@ void CommandInterpreter::printBanner() {
 void CommandInterpreter::printMainMenu() {
   // Format 1100 from xfoil.f with the dynamic fields from the session
   // (XCMREF/YCMREF, NPAN). Without set panel parameters the
-  // INIT defaults 0.25 / 0.0 / 160 apply.
+  // INIT defaults 0.25 / 0.0 / 240 apply.
   const double cmReferenceX = session_.operating.momentReferenceX;
   const double cmReferenceY = session_.operating.momentReferenceY;
   const int panelNodeCount = session_.paneling.parameters.panelCount;

@@ -30,7 +30,7 @@
 //
 // - PanelingParameters: paneling parameters (Fortran NPAN, CVPAR,
 // CTERAT, CTRRAT, XSREF1/2, XPREF1/2) with the INIT defaults
-// (xfoil.f INIT: 160, 1.0, 0.15, 0.2, 1.0/1.0 each).
+// (xfoil.f 6.996 INIT: 240, 1.0, 0.3, 0.2, 1.0/1.0 each).
 // - Panel parameter branch: GETPAN parameter branching without menu/prompt.
 // - ParameterChangeResult: new parameter state with clamp diagnostics.
 // - PanelGeometry: current panel contour (Fortran X,XP,Y,YP,S,N,SLE,
@@ -80,12 +80,12 @@ inline constexpr int kMaxPanelNodeCount =
     static_cast<int>(surfaceSystemCapacity - 1);  // 600
 
 // Paneling parameters. Defaults are the Fortran INIT values
-// (xfoil.f INIT: NPAN=160, CVPAR=1.0, CTERAT=0.15, CTRRAT=0.2,
+// (xfoil.f 6.996 INIT: NPAN=240, CVPAR=1.0, CTERAT=0.3, CTRRAT=0.2,
 // XSREF1/2=1.0, XPREF1/2=1.0).
 struct PanelingParameters {
-  int panelCount{160};                     // Fortran NPAN
+  int panelCount{240};                     // Fortran NPAN
   double bunchingParam{1.0};               // Fortran CVPAR
-  double teToLeDensityRatio{0.15};         // Fortran CTERAT
+  double teToLeDensityRatio{0.3};          // Fortran CTERAT
   double refinementDensityRatio{0.2};      // Fortran CTRRAT
   std::array<double, 2> upperRefinementRange{1.0, 1.0};  // XSREF1, XSREF2
   std::array<double, 2> lowerRefinementRange{1.0, 1.0};  // XPREF1, XPREF2

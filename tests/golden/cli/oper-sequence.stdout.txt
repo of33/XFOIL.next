@@ -42,7 +42,7 @@ Number of points : 151
    BEND    Display structural properties of current airfoil
 
    PCOP    Set current-airfoil panel nodes directly from buffer airfoil points
-   PANE    Set current-airfoil panel nodes ( 160 ) based on curvature
+   PANE    Set current-airfoil panel nodes ( 240 ) based on curvature
   .PPAR    Show/change paneling
 
   .PLOP    Plotting options

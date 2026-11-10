@@ -242,13 +242,13 @@ TEST(integration, DefaultsWdefWritesAndRdefRestores) {
         std::string::npos);
   const std::string contents = readDataFile("p3-round.def");
   CHECK(contents.find("| Npan    PPanel  TErat  REFrat") != std::string::npos);
-  CHECK(contents.find("  160") != std::string::npos);
+  CHECK(contents.find("  240") != std::string::npos);
 
   writeDataFile("p3-mod.def", kModifiedDefaults);
   const auto modified =
       runSession("RDEF " + dataPath("p3-mod.def") + "\nRDEF " + file +
                  "\nNACA 2412\nPPAR\n\nQUIT\n");
-  CHECK(modified.outputText.find("Number of panel nodes       160") !=
+  CHECK(modified.outputText.find("Number of panel nodes       240") !=
         std::string::npos);
   removeDataFile("p3-round.def");
   removeDataFile("p3-mod.def");
@@ -353,4 +353,61 @@ TEST(integration, DefaultsStartupProcessDeclinesWithN) {
   CHECK(text.find("  Read settings from file  xfoil.def ?  Y") !=
         std::string::npos);
   CHECK(text.find("Default parameters read in") == std::string::npos);
+}
+
+// S07: one focused contract covering cold-start defaults, PPAR display,
+// NACA -> PANE, WDEF/RDEF restoration and independent sessions.
+TEST(integration, DefaultPanelingAndDefaultsRoundtripUsesXfoil6996Values) {
+  const testing::ScopedTempDirectory work("s07-defaults-roundtrip", true);
+  prepareDefaultsWorkspace(work);
+  const std::string file = dataPath("s07-round.def");
+  removeDataFile("s07-round.def");
+  removeDataFile("s07-pane.dat");
+
+  const auto result = runSession(
+      "NACA 0012\n"
+      "PPAR\n"
+      "\n"
+      "PANE\n"
+      "PSAV " + dataPath("s07-pane.dat") + "\n"
+      "WDEF " + file + "\n"
+      "PPAR\n"
+      "N 120\n"
+      "T 0.2\n"
+      "\n"
+      "\n"
+      "RDEF " + file + "\n"
+      "PPAR\n"
+      "\n"
+      "QUIT\n");
+  CHECK_EQ(result.exitCode, 0);
+
+  // Cold start, PANE table and the second independent session all carry
+  // the 6.996 defaults. PANE produces exactly 240 nodes with CTERAT=0.3.
+  CHECK(result.outputText.find("Number of panel nodes       240") !=
+        std::string::npos);
+  CHECK(result.outputText.find("TE/LE panel density ratio   0.300") !=
+        std::string::npos);
+
+  // WDEF contains the new cold-start line, mutation is visible, RDEF
+  // restores the saved 240/0.3 values.
+  const std::string def = readDataFile("s07-round.def");
+  CHECK(def.find("  240       1.0000   0.3000   0.2000 | Npan") !=
+        std::string::npos);
+  CHECK(result.outputText.find("Number of panel nodes       120") !=
+        std::string::npos);
+  CHECK(result.outputText.find("TE/LE panel density ratio   0.200") !=
+        std::string::npos);
+  CHECK(result.outputText.rfind("Number of panel nodes       240") !=
+        std::string::npos);
+
+  const auto independent = runSession("NACA 0012\nPPAR\n\nQUIT\n");
+  CHECK_EQ(independent.exitCode, 0);
+  CHECK(independent.outputText.find("Number of panel nodes       240") !=
+        std::string::npos);
+  CHECK(independent.outputText.find("TE/LE panel density ratio   0.300") !=
+        std::string::npos);
+
+  removeDataFile("s07-round.def");
+  removeDataFile("s07-pane.dat");
 }

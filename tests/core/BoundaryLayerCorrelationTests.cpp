@@ -60,6 +60,14 @@
 
 namespace {
 
+xfoil::core::paneling::PanelingParameters xfoil699Paneling() {
+  xfoil::core::paneling::PanelingParameters p;
+  p.panelCount = 160;
+  p.teToLeDensityRatio = 0.15;
+  return p;
+}
+
+
 using xfoil::core::boundary_layer::blparConstants;
 
 // Fortran REAL(4) outputs: tolerances analogous to BoundaryLayerTests.cpp.
@@ -1059,7 +1067,7 @@ void buildSetblNaca0012Fixture(SetblNaca0012Fixture& fx,
   CHECK(n.isOk());
   const geometry::AirfoilBuffer buffer(n.value().xb, n.value().yb,
                                        n.value().name);
-  const Result<PangenResult> pg = pangen(buffer, PanelingParameters{});
+  const Result<PangenResult> pg = pangen(buffer, xfoil699Paneling());
   CHECK(pg.isOk());
   const auto& panel = pg.value().panel;
   const std::vector<double> sig0(panel.x.size(), 0.0);
@@ -1558,7 +1566,7 @@ TEST(unit, StmoveStagnationRemapDirect) {
   CHECK(nacaRes.isOk());
   const geometry::AirfoilBuffer buffer(nacaRes.value().xb, nacaRes.value().yb,
                                        nacaRes.value().name);
-  const Result<PangenResult> pg = pangen(buffer, PanelingParameters{});
+  const Result<PangenResult> pg = pangen(buffer, xfoil699Paneling());
   CHECK(pg.isOk());
   const auto& panel = pg.value().panel;
   const std::vector<double> sig0(panel.x.size(), 0.0);
@@ -1667,7 +1675,7 @@ TEST(unit, ViscalHeadStfindFallbackEvent) {
   CHECK(nacaRes.isOk());
   const geometry::AirfoilBuffer buffer(nacaRes.value().xb, nacaRes.value().yb,
                                        nacaRes.value().name);
-  const Result<PangenResult> pg = pangen(buffer, PanelingParameters{});
+  const Result<PangenResult> pg = pangen(buffer, xfoil699Paneling());
   CHECK(pg.isOk());
   const auto& panel = pg.value().panel;
   const std::vector<double> sig0(panel.x.size(), 0.0);
@@ -1733,7 +1741,7 @@ TEST(unit, ViscalWakeGrowthKeepsQvisCapacity) {
   CHECK(nacaRes.isOk());
   const geometry::AirfoilBuffer buffer(nacaRes.value().xb, nacaRes.value().yb,
                                        nacaRes.value().name);
-  const Result<PangenResult> pg = pangen(buffer, PanelingParameters{});
+  const Result<PangenResult> pg = pangen(buffer, xfoil699Paneling());
   CHECK(pg.isOk());
   const auto& panel = pg.value().panel;
   const std::size_t n = panel.x.size();
@@ -1917,7 +1925,7 @@ TEST(unit, ViscalNewtonLoopStructural) {
   CHECK(n.isOk());
   const geometry::AirfoilBuffer buffer(n.value().xb, n.value().yb,
                                        n.value().name);
-  const Result<PangenResult> pg = pangen(buffer, PanelingParameters{});
+  const Result<PangenResult> pg = pangen(buffer, xfoil699Paneling());
   CHECK(pg.isOk());
   const auto& panel = pg.value().panel;
   const std::vector<double> sig0(panel.x.size(), 0.0);
@@ -2059,7 +2067,7 @@ TEST(unit, ViscalPersistsUpdatedMassBetweenIterations) {
   CHECK(n.isOk());
   const geometry::AirfoilBuffer buffer(n.value().xb, n.value().yb,
                                        n.value().name);
-  const Result<PangenResult> pg = pangen(buffer, PanelingParameters{});
+  const Result<PangenResult> pg = pangen(buffer, xfoil699Paneling());
   CHECK(pg.isOk());
   const auto& panel = pg.value().panel;
   const std::vector<double> sig0(panel.x.size(), 0.0);

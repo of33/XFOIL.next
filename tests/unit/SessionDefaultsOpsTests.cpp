@@ -65,9 +65,9 @@ io::DefaultsValues modifiedValues() {
 TEST(unit, SessionDefaultsInitialStateMatchesFortranInit) {
   SessionComposition session;
   const io::DefaultsValues& v = session.defaults.values;
-  CHECK_EQ(v.npan, 160);
+  CHECK_EQ(v.npan, 240);
   CHECK_NEAR(v.cvpar, 1.0, 0.0, 0.0);
-  CHECK_NEAR(v.cterat, 0.15, 0.0, 0.0);
+  CHECK_NEAR(v.cterat, 0.3, 0.0, 0.0);
   CHECK_NEAR(v.size, 10.0, 0.0, 0.0);
   CHECK_NEAR(v.plotar, 0.55, 0.0, 0.0);
   CHECK_NEAR(v.cpmax, 1.0, 0.0, 0.0);

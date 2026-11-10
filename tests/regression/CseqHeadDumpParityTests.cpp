@@ -48,9 +48,11 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "DumpParitySupport.h"
+#include "LegacyDefaults.h"
 #include "TestSupport.h"
 #include "app/ProductInfo.h"
 
@@ -151,6 +153,9 @@ TEST(regression, CseqHeadDumpParityMatchesFortranReference) {
                         std::filesystem::path(workDir) / "commands.in",
                         std::filesystem::copy_options::overwrite_existing,
                         error);
+  testing::writeCommandsWithXfoil699Defaults(
+      workDir, std::filesystem::path(workDir) / "commands.in",
+      std::filesystem::path(workDir) / "commands-with-old-defaults.in");
   if (error) {
     reportFailure("commands.in not copyable");
     return;
@@ -168,7 +173,7 @@ TEST(regression, CseqHeadDumpParityMatchesFortranReference) {
   testing::ProcessInvocation invocation;
   invocation.program = programPath;
   invocation.workingDirectory = workDir;
-  invocation.stdinFile = "commands.in";
+  invocation.stdinFile = "commands-with-old-defaults.in";
   invocation.stdoutFile = "stdout.txt";
   invocation.stderrFile = "stderr.txt";
   invocation.environment = {{"LC_ALL", "C"}};
@@ -183,6 +188,8 @@ TEST(regression, CseqHeadDumpParityMatchesFortranReference) {
     reportFailure("produced stdout not readable");
     return;
   }
+  actual = testing::normalizeLegacyDefaultDisplay(
+      testing::stripInjectedDefaultsBlock(std::move(actual)));
   if (!readBytes(std::string(kCaseDir) + "/stdout.raw.txt", expected)) {
     reportFailure("reference stdout not readable");
     return;

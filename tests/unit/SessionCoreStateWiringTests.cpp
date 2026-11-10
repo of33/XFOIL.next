@@ -469,6 +469,11 @@ TEST(unit, SessionPangenNaca2412OperatesOnPangenPanel) {
   const auto naca = core::geometry::nacaAirfoil(2412);
   CHECK(naca.isOk());
   CHECK(session::setBufferGeometry(composition, naca.value().buffer).success());
+  core::paneling::PanelingParameters params =
+      session::panelingParameters(composition);
+  params.panelCount = 160;
+  params.teToLeDensityRatio = 0.15;
+  CHECK(session::setPanelingParameters(composition, params).ok);
 
   const session::PanelingApplyResult pane = session::applyPaneling(composition);
   CHECK(pane.ok);
@@ -702,6 +707,11 @@ TEST(unit, SessionOperSequenceNseqexHaltsOnNonConvergence) {
   const auto naca = core::geometry::nacaAirfoil(2412);
   CHECK(naca.isOk());
   CHECK(session::setBufferGeometry(composition, naca.value().buffer).success());
+  core::paneling::PanelingParameters params =
+      session::panelingParameters(composition);
+  params.panelCount = 160;
+  params.teToLeDensityRatio = 0.15;
+  CHECK(session::setPanelingParameters(composition, params).ok);
   CHECK(session::applyPaneling(composition).ok);
 
   xfoil::AnalysisConfig config;

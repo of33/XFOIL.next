@@ -29,6 +29,9 @@
 
 #include "TestSupport.h"
 
+#include "xfoil/io/DefaultsCodec.h"
+#include "xfoil/session/SessionState.h"
+
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
@@ -76,6 +79,22 @@ class TopExportRun {
       }
     }
 
+    // These cases pin the 6.99 byte artifacts. Keep the canonical corpus
+    // unchanged and apply the old panel defaults through the existing RDEF
+    // contract before the case commands.
+    xfoil::io::DefaultsValues oldDefaults = xfoil::session::initDefaultsValues();
+    oldDefaults.npan = 160;
+    oldDefaults.cterat = 0.15;
+    {
+      std::ofstream defaults(work_.makePath("xfoil-6.99.def"),
+                             std::ios::binary);
+      defaults << xfoil::io::writeDefaults(oldDefaults, 2);
+      std::ifstream original(work_.makePath("commands.in"), std::ios::binary);
+      std::ofstream derived(work_.makePath("commands-with-old-defaults.in"),
+                            std::ios::binary);
+      derived << "RDEF xfoil-6.99.def\n" << original.rdbuf();
+    }
+
     const char* const configuredPath = std::getenv("XFOIL_CLI_PATH");
     const std::string program = configuredPath != nullptr
                                     ? configuredPath
@@ -85,7 +104,7 @@ class TopExportRun {
     testing::ProcessInvocation invocation;
     invocation.program = program;
     invocation.workingDirectory = work_.path().string();
-    invocation.stdinFile = "commands.in";
+    invocation.stdinFile = "commands-with-old-defaults.in";
     invocation.stdoutFile = "stdout.txt";
     invocation.stderrFile = "stderr.txt";
     exitCode_ = testing::runProcess(invocation);

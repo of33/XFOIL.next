@@ -105,6 +105,13 @@ void runHandlerCase(const std::string& caseId, std::ostringstream& out,
       reference.find("\n XFOIL", gdesBegin) == std::string::npos;
 
   session::SessionComposition session;
+  {
+    xfoil::core::paneling::PanelingParameters params =
+        session::panelingParameters(session);
+    params.panelCount = 160;
+    params.teToLeDensityRatio = 0.15;
+    CHECK(session::setPanelingParameters(session, params).ok);
+  }
   std::size_t gdesIndex = 0;
   for (std::size_t i = 0; i < lines.size(); ++i) {
     if (lines[i] == "GDES") {
@@ -420,6 +427,13 @@ TEST(unit, CoreGdesOverStateUnchangedMatchesFortran) {
       fs::path("tests/fortran-reference/cases") /
       "design-state/gdes-over-state-unchanged");
   session::SessionComposition session;
+  {
+    xfoil::core::paneling::PanelingParameters params =
+        session::panelingParameters(session);
+    params.panelCount = 160;
+    params.teToLeDensityRatio = 0.15;
+    CHECK(session::setPanelingParameters(session, params).ok);
+  }
   std::ostringstream setupOut;
   app::cli::handleNacaCore(session, setupOut, 12);
   testing::ScopedTempDirectory work("gdes-over-state-unchanged", true);

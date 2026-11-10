@@ -42,7 +42,7 @@ Number of points : 151
    BEND    Display structural properties of current airfoil
 
    PCOP    Set current-airfoil panel nodes directly from buffer airfoil points
-   PANE    Set current-airfoil panel nodes ( 160 ) based on curvature
+   PANE    Set current-airfoil panel nodes ( 240 ) based on curvature
   .PPAR    Show/change paneling
 
   .PLOP    Plotting options
@@ -59,9 +59,9 @@ Number of points : 151
  Blunt trailing edge.  Gap =  0.00120
 
  Paneling parameters used...
-   Number of panel nodes       160
+   Number of panel nodes       240
    Panel bunching parameter    1.000
-   TE/LE panel density ratio   0.150
+   TE/LE panel density ratio   0.300
    Refined-area/LE panel density ratio    0.200
    Top    side refined area x/c limits  1.000 1.000
    Bottom side refined area x/c limits  1.000 1.000

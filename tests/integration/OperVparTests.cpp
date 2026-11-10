@@ -276,7 +276,7 @@ TEST(integration, VparWakeWProductiveContract) {
 // like Fortran.
 TEST(integration, VparWakeGrowthAfterViscousPointConvergesLikeFortran) {
   const auto result = runOperVparSession(
-      "NACA 0012\nPANE\nOPER\nVISC 1000000\nALFA 4\n"
+      "NACA 0012\nPPAR\nN 160\nT 0.15\n\n\nPANE\nOPER\nVISC 1000000\nALFA 4\n"
       "VPAR\nWAKE 2.0\n\nALFA 6\n\n\nQUIT\n");
   CHECK_EQ(result.exitCode, 0);
   CHECK_EQ(countOccurrences(result.outputText,
@@ -294,7 +294,7 @@ TEST(integration, VparWakeGrowthAfterViscousPointConvergesLikeFortran) {
 // a viscous point also works (no throw, convergence).
 TEST(integration, VparWakeShrinkAfterViscousPointConverges) {
   const auto result = runOperVparSession(
-      "NACA 0012\nPANE\nOPER\nVISC 1000000\nALFA 4\n"
+      "NACA 0012\nPPAR\nN 160\nT 0.15\n\n\nPANE\nOPER\nVISC 1000000\nALFA 4\n"
       "VPAR\nWAKE 0.5\n\nALFA 6\n\n\nQUIT\n");
   CHECK_EQ(result.exitCode, 0);
   CHECK_EQ(countOccurrences(result.outputText,

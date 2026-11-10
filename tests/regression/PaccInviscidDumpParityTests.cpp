@@ -44,6 +44,7 @@
 #include <vector>
 
 #include "TestSupport.h"
+#include "LegacyDefaults.h"
 #ifdef _WIN32
 #include "DumpParitySupport.h"
 #endif
@@ -95,6 +96,9 @@ TEST(regression, PaccInviscidDumpByteParityMatchesFortranReference) {
                         std::filesystem::path(workDir) / "commands.in",
                         std::filesystem::copy_options::overwrite_existing,
                         error);
+  testing::writeCommandsWithXfoil699Defaults(
+      workDir, std::filesystem::path(workDir) / "commands.in",
+      std::filesystem::path(workDir) / "commands-with-old-defaults.in");
   if (error) {
     reportFailure("commands.in not copyable");
     return;
@@ -112,7 +116,7 @@ TEST(regression, PaccInviscidDumpByteParityMatchesFortranReference) {
   testing::ProcessInvocation invocation;
   invocation.program = programPath;
   invocation.workingDirectory = workDir;
-  invocation.stdinFile = "commands.in";
+  invocation.stdinFile = "commands-with-old-defaults.in";
   invocation.stdoutFile = "stdout.txt";
   invocation.stderrFile = "stderr.txt";
   invocation.environment = {{"LC_ALL", "C"}};

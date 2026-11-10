@@ -421,6 +421,13 @@ struct BlPipeline {
   bool ok{false};
 };
 
+xfoil::core::paneling::PanelingParameters xfoil699Paneling() {
+  xfoil::core::paneling::PanelingParameters p;
+  p.panelCount = 160;
+  p.teToLeDensityRatio = 0.15;
+  return p;
+}
+
 BlPipeline makeBlPipeline0012() {
   BlPipeline out;
   const inviscid::MachReynoldsSettings settings{1, 1, 0.0, 3.0e6};
@@ -431,7 +438,7 @@ BlPipeline makeBlPipeline0012() {
   const geometry::AirfoilBuffer buffer(n.value().xb, n.value().yb,
                                        n.value().name);
   const Result<paneling::PangenResult> pg =
-      paneling::pangen(buffer, paneling::PanelingParameters{});
+      paneling::pangen(buffer, xfoil699Paneling());
   if (pg.isErr()) {
     return out;
   }

@@ -81,6 +81,13 @@ AirfoilBuffer sqteBuffer() {
   return AirfoilBuffer(b.x, b.y, "SQTE2412");
 }
 
+PanelingParameters xfoil699Paneling() {
+  PanelingParameters p;
+  p.panelCount = 160;
+  p.teToLeDensityRatio = 0.15;
+  return p;
+}
+
 struct RowResult {
   std::vector<double> dij;
   std::size_t n{0};
@@ -91,7 +98,7 @@ struct RowResult {
 };
 
 RowResult computeRow(const AirfoilBuffer& buffer) {
-  const Result<PangenResult> pg = pangen(buffer, PanelingParameters{});
+  const Result<PangenResult> pg = pangen(buffer, xfoil699Paneling());
   CHECK(pg.isOk());
   const PanelGeometry& panel = pg.value().panel;
   const std::size_t n = panel.x.size();

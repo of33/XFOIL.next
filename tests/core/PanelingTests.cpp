@@ -66,6 +66,14 @@
 
 namespace {
 
+xfoil::core::paneling::PanelingParameters xfoil699Paneling() {
+  xfoil::core::paneling::PanelingParameters p;
+  p.panelCount = 160;
+  p.teToLeDensityRatio = 0.15;
+  return p;
+}
+
+
 using namespace xfoil::core;
 using namespace xfoil::core::geometry;
 using namespace xfoil::core::math;
@@ -312,7 +320,7 @@ AirfoilBuffer makeBufferManyDoubled() {
 // reference: paneling_reference.txt PANE160.
 TEST(unit, PanelingPangenStandard) {
   const Result<PangenResult> r = pangen(makeBuffer2412(),
-                                        PanelingParameters{});
+                                        xfoil699Paneling());
   CHECK(r.isOk());
   const PanelGeometry& p = r.value().panel;
   CHECK_EQ(p.x.size(), std::size_t{160});
@@ -342,7 +350,7 @@ TEST(unit, PanelingPangenStandard) {
 // reference: paneling_reference.txt PANE160 (node values).
 TEST(unit, PanelingPangenStandardNodeValues) {
   const Result<PangenResult> r = pangen(makeBuffer2412(),
-                                        PanelingParameters{});
+                                        xfoil699Paneling());
   CHECK(r.isOk());
   const PanelGeometry& p = r.value().panel;
   // first node (TE start point; XP/YP/NX/NY at the panel end are
@@ -375,6 +383,7 @@ TEST(unit, PanelingPangenStandardNodeValues) {
 // CTERAT=0.2).
 TEST(unit, PanelingPangenNonstandard) {
   PanelingParameters params;
+  params.teToLeDensityRatio = 0.15;
   params.panelCount = 200;
   params.bunchingParam = 1.5;
   params.teToLeDensityRatio = 0.2;
@@ -399,6 +408,7 @@ TEST(unit, PanelingPangenNonstandard) {
 // defaults).
 TEST(unit, PanelingPangen364) {
   PanelingParameters params;
+  params.teToLeDensityRatio = 0.15;
   params.panelCount = 364;
   const Result<PangenResult> r = pangen(makeBuffer2412(), params);
   CHECK(r.isOk());
@@ -416,7 +426,7 @@ TEST(unit, PanelingPangen364) {
 // corner node insertion).
 TEST(unit, PanelingPangenCornerInsertion) {
   const Result<PangenResult> r = pangen(makeBufferDuplicated(),
-                                        PanelingParameters{});
+                                        xfoil699Paneling());
   CHECK(r.isOk());
   const PanelGeometry& p = r.value().panel;
   CHECK_EQ(r.value().cornersInserted, 1);
@@ -514,7 +524,7 @@ TEST(unit, PanelingAbcopyBufferTooSmall) {
 // Fortran: NB < 2 -> 'PANGEN: Buffer airfoil not available.'
 TEST(unit, PanelingPangenBufferTooSmall) {
   const Result<PangenResult> r = pangen(AirfoilBuffer(),
-                                        PanelingParameters{});
+                                        xfoil699Paneling());
   CHECK(r.isErr());
   CHECK(r.error().code == ErrorCode::invalidArgument);
 
@@ -522,7 +532,7 @@ TEST(unit, PanelingPangenBufferTooSmall) {
   single.x = {0.5};
   single.y = {0.0};
   single.name = "Single";
-  const Result<PangenResult> r2 = pangen(single, PanelingParameters{});
+  const Result<PangenResult> r2 = pangen(single, xfoil699Paneling());
   CHECK(r2.isErr());
   CHECK(r2.error().code == ErrorCode::invalidArgument);
 }
@@ -531,21 +541,21 @@ TEST(unit, PanelingPangenBufferTooSmall) {
 TEST(unit, PanelingApplyPanelParameterClamp) {
   const std::array<double, 1> above{2000.0};
   const Result<ParameterChangeResult> rAbove = applyPanelParameter(
-      PanelingParameters{}, PanelParameterKind::panelCount, above);
+      xfoil699Paneling(), PanelParameterKind::panelCount, above);
   CHECK(rAbove.isOk());
   CHECK(rAbove.value().clamped);
   CHECK_EQ(rAbove.value().parameters.panelCount, 595);
 
   const std::array<double, 1> atClamp{596.0};
   const Result<ParameterChangeResult> rAt = applyPanelParameter(
-      PanelingParameters{}, PanelParameterKind::panelCount, atClamp);
+      xfoil699Paneling(), PanelParameterKind::panelCount, atClamp);
   CHECK(rAt.isOk());
   CHECK(rAt.value().clamped);
   CHECK_EQ(rAt.value().parameters.panelCount, 595);
 
   const std::array<double, 1> within{595.0};
   const Result<ParameterChangeResult> rWithin = applyPanelParameter(
-      PanelingParameters{}, PanelParameterKind::panelCount, within);
+      xfoil699Paneling(), PanelParameterKind::panelCount, within);
   CHECK(rWithin.isOk());
   CHECK_FALSE(rWithin.value().clamped);
   CHECK_EQ(rWithin.value().parameters.panelCount, 595);
@@ -555,30 +565,30 @@ TEST(unit, PanelingApplyPanelParameterClamp) {
 TEST(unit, PanelingApplyPanelParameterVariants) {
   const std::array<double, 1> one{1.5};
   const Result<ParameterChangeResult> rP = applyPanelParameter(
-      PanelingParameters{}, PanelParameterKind::bunchingParam, one);
+      xfoil699Paneling(), PanelParameterKind::bunchingParam, one);
   CHECK(rP.isOk());
   CHECK_FALSE(rP.value().clamped);
   CHECK_EQ(rP.value().parameters.bunchingParam, 1.5);
 
   const Result<ParameterChangeResult> rT = applyPanelParameter(
-      PanelingParameters{}, PanelParameterKind::teToLeDensityRatio, one);
+      xfoil699Paneling(), PanelParameterKind::teToLeDensityRatio, one);
   CHECK(rT.isOk());
   CHECK_EQ(rT.value().parameters.teToLeDensityRatio, 1.5);
 
   const Result<ParameterChangeResult> rR = applyPanelParameter(
-      PanelingParameters{}, PanelParameterKind::refinementDensityRatio, one);
+      xfoil699Paneling(), PanelParameterKind::refinementDensityRatio, one);
   CHECK(rR.isOk());
   CHECK_EQ(rR.value().parameters.refinementDensityRatio, 1.5);
 
   const std::array<double, 2> two{0.2, 0.8};
   const Result<ParameterChangeResult> rXT = applyPanelParameter(
-      PanelingParameters{}, PanelParameterKind::upperRefinementRange, two);
+      xfoil699Paneling(), PanelParameterKind::upperRefinementRange, two);
   CHECK(rXT.isOk());
   CHECK_EQ(rXT.value().parameters.upperRefinementRange[0], 0.2);
   CHECK_EQ(rXT.value().parameters.upperRefinementRange[1], 0.8);
 
   const Result<ParameterChangeResult> rXB = applyPanelParameter(
-      PanelingParameters{}, PanelParameterKind::lowerRefinementRange, two);
+      xfoil699Paneling(), PanelParameterKind::lowerRefinementRange, two);
   CHECK(rXB.isOk());
   CHECK_EQ(rXB.value().parameters.lowerRefinementRange[0], 0.2);
   CHECK_EQ(rXB.value().parameters.lowerRefinementRange[1], 0.8);
@@ -591,28 +601,28 @@ TEST(unit, PanelingApplyPanelParameterVariants) {
 // controlled rejection: wrong number of values and panelCount < 2.
 TEST(unit, PanelingApplyPanelParameterInvalid) {
   const std::array<double, 2> two{1.0, 2.0};
-  CHECK(applyPanelParameter(PanelingParameters{},
+  CHECK(applyPanelParameter(xfoil699Paneling(),
                             PanelParameterKind::panelCount, two).isErr());
 
   const std::array<double, 1> one{1.0};
-  CHECK(applyPanelParameter(PanelingParameters{},
+  CHECK(applyPanelParameter(xfoil699Paneling(),
                             PanelParameterKind::upperRefinementRange, one)
             .isErr());
-  CHECK(applyPanelParameter(PanelingParameters{},
+  CHECK(applyPanelParameter(xfoil699Paneling(),
                             PanelParameterKind::lowerRefinementRange, one)
             .isErr());
 
   const std::array<double, 1> small{1.0};
-  CHECK(applyPanelParameter(PanelingParameters{},
+  CHECK(applyPanelParameter(xfoil699Paneling(),
                             PanelParameterKind::panelCount, small).isErr());
 }
 
 // Fortran INIT defaults.
 TEST(unit, PanelingParametersDefaults) {
   const PanelingParameters params;
-  CHECK_EQ(params.panelCount, 160);
+  CHECK_EQ(params.panelCount, 240);
   CHECK_EQ(params.bunchingParam, 1.0);
-  CHECK_EQ(params.teToLeDensityRatio, 0.15);
+  CHECK_EQ(params.teToLeDensityRatio, 0.3);
   CHECK_EQ(params.refinementDensityRatio, 0.2);
   CHECK_EQ(params.upperRefinementRange[0], 1.0);
   CHECK_EQ(params.upperRefinementRange[1], 1.0);
@@ -817,12 +827,14 @@ TEST(unit, PanelingCapacityLimits) {
 TEST(unit, PanelingPangenIqxBoundaryAccepted) {
   for (const int n : {370, 371}) {
     PanelingParameters params;
+  params.teToLeDensityRatio = 0.15;
     params.panelCount = n;
     const Result<PangenResult> r = pangen(makeBuffer2412(), params);
     CHECK(r.isOk());
     CHECK_EQ(r.value().panel.x.size(), static_cast<std::size_t>(n));
   }
   PanelingParameters params;
+  params.teToLeDensityRatio = 0.15;
   params.panelCount = 600;
   const Result<PangenResult> r = pangen(makeBuffer599(), params);
   CHECK(r.isOk());
@@ -834,6 +846,7 @@ TEST(unit, PanelingPangenIqxBoundaryAccepted) {
 TEST(unit, PanelingPangenAboveCapacity) {
   for (const int n : {601, 602}) {
     PanelingParameters params;
+  params.teToLeDensityRatio = 0.15;
     params.panelCount = n;
     const Result<PangenResult> r = pangen(makeBuffer599(), params);
     CHECK(r.isErr());
@@ -847,6 +860,7 @@ TEST(unit, PanelingPangenAboveCapacity) {
 // verification, NACA 2412, defaults).
 TEST(unit, PanelingPangen365Direct) {
   PanelingParameters params;
+  params.teToLeDensityRatio = 0.15;
   params.panelCount = 365;
   const Result<PangenResult> r = pangen(makeBuffer2412(), params);
   CHECK(r.isOk());
@@ -866,6 +880,7 @@ TEST(unit, PanelingPangen365Direct) {
 // still inside the new IQX-1 = 600 limit; Fortran driver verification).
 TEST(unit, PanelingPangen369Direct) {
   PanelingParameters params;
+  params.teToLeDensityRatio = 0.15;
   params.panelCount = 369;
   const Result<PangenResult> r = pangen(makeBuffer2412(), params);
   CHECK(r.isOk());
@@ -887,6 +902,7 @@ TEST(unit, PanelingSeparatedLimits) {
   // direct PANGEN call: 596..600 all permitted.
   for (const int panelCount : {596, 597, 598, 599, 600}) {
     PanelingParameters params;
+  params.teToLeDensityRatio = 0.15;
     params.panelCount = panelCount;
     const Result<PangenResult> r = pangen(makeBuffer599(), params);
     CHECK(r.isOk());
@@ -896,7 +912,7 @@ TEST(unit, PanelingSeparatedLimits) {
   // GETPAN/PPAR input boundary: 596 -> clamp to 595.
   const std::array<double, 1> at596{596.0};
   const Result<ParameterChangeResult> par = applyPanelParameter(
-      PanelingParameters{}, PanelParameterKind::panelCount, at596);
+      xfoil699Paneling(), PanelParameterKind::panelCount, at596);
   CHECK(par.isOk());
   CHECK(par.value().clamped);
   CHECK_EQ(par.value().parameters.panelCount, 595);
@@ -905,7 +921,7 @@ TEST(unit, PanelingSeparatedLimits) {
 // PangenResult structure: diagnostics empty on regular completion.
 TEST(unit, PanelingPangenDiagnostics) {
   const Result<PangenResult> r = pangen(makeBuffer2412(),
-                                        PanelingParameters{});
+                                        xfoil699Paneling());
   CHECK(r.isOk());
   CHECK(r.value().diagnostics.empty());
   // panel size ratios (user information) are finite and positive.
@@ -918,7 +934,7 @@ TEST(unit, PanelingPangenNaca0012) {
   const Result<NacaResult> n = naca4(12, kNside);
   CHECK(n.isOk());
   AirfoilBuffer buffer(n.value().xb, n.value().yb, n.value().name);
-  const Result<PangenResult> r = pangen(buffer, PanelingParameters{});
+  const Result<PangenResult> r = pangen(buffer, xfoil699Paneling());
   CHECK(r.isOk());
   const PanelGeometry& p = r.value().panel;
   CHECK_EQ(p.x.size(), std::size_t{160});
@@ -941,7 +957,7 @@ TEST(unit, PanelingPangenNaca0012) {
 // reference: paneling_reference.txt PANECLY (Clark Y, standard parameters).
 TEST(unit, PanelingPangenClarkY) {
   const Result<PangenResult> r = pangen(makeBufferClarkY(),
-                                        PanelingParameters{});
+                                        xfoil699Paneling());
   CHECK(r.isOk());
   const PanelGeometry& p = r.value().panel;
   CHECK_EQ(p.x.size(), std::size_t{160});
@@ -961,6 +977,7 @@ TEST(unit, PanelingPangenClarkY) {
 // XSREF/XPREF = 0.2..0.4, NPAN=200).
 TEST(unit, PanelingPangenRefinementZones) {
   PanelingParameters params;
+  params.teToLeDensityRatio = 0.15;
   params.panelCount = 200;
   params.upperRefinementRange = {0.2, 0.4};
   params.lowerRefinementRange = {0.2, 0.4};
@@ -985,7 +1002,7 @@ TEST(unit, PanelingPangenSharpLeRegion) {
   AirfoilBuffer buffer(n.value().xb, n.value().yb, n.value().name);
   buffer.x[kNside + 1] = buffer.x[kNside];
   buffer.y[kNside + 1] = buffer.y[kNside];
-  const Result<PangenResult> r = pangen(buffer, PanelingParameters{});
+  const Result<PangenResult> r = pangen(buffer, xfoil699Paneling());
   CHECK(r.isOk());
   const PanelGeometry& p = r.value().panel;
   CHECK_EQ(p.x.size(), std::size_t{161});
@@ -1002,6 +1019,7 @@ TEST(unit, PanelingPangenSharpLeRegion) {
 // capacity; controlled error without partial state.
 TEST(unit, PanelingPangenIqx1Protection) {
   PanelingParameters params;
+  params.teToLeDensityRatio = 0.15;
   params.panelCount = 600;
   const Result<PangenResult> r = pangen(makeBufferManyDoubled(), params);
   CHECK(r.isErr());
@@ -1012,7 +1030,7 @@ TEST(unit, PanelingPangenIqx1Protection) {
 // (PANE + PSAV of the original implementation, F9.6/E12.4 display rounding).
 TEST(unit, PanelingPsaReferenceStandard) {
   const Result<PangenResult> r = pangen(makeBuffer2412(),
-                                        PanelingParameters{});
+                                        xfoil699Paneling());
   CHECK(r.isOk());
   const PanelGeometry& p = r.value().panel;
   // PSAV display rounding (F9.6/E12.4).
@@ -1034,6 +1052,7 @@ TEST(unit, PanelingPsaReferenceStandard) {
 // (PPAR N 200 + PSAV, N with defaults).
 TEST(unit, PanelingPsaReferencePpar200) {
   PanelingParameters params;
+  params.teToLeDensityRatio = 0.15;
   params.panelCount = 200;
   const Result<PangenResult> r = pangen(makeBuffer2412(), params);
   CHECK(r.isOk());
@@ -1050,6 +1069,7 @@ TEST(unit, PanelingPsaReferencePpar200) {
 // ppar-n365-above-clamp (historical 6.99 clamp values).
 TEST(unit, PanelingPsaReferencePpar364Clamp) {
   PanelingParameters params;
+  params.teToLeDensityRatio = 0.15;
   params.panelCount = 364;
   const Result<PangenResult> r = pangen(makeBuffer2412(), params);
   CHECK(r.isOk());

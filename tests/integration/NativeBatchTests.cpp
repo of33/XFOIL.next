@@ -256,8 +256,8 @@ TEST(batch, IntxHalfCommandsRun) {
 TEST(batch, SaveLoadFileRoundtrip) {
   const testing::ScopedTempDirectory work("save-load");
   const auto run = runBatch(
-      work,
-      minimalJob("NACA 2412\nSAVE foil_save.dat\nLOAD foil_save.dat\nQUIT\n"));
+      work, minimalJob("NACA 2412\nPPAR\nN 160\nT 0.15\n\n\nPANE\n"
+                       "SAVE foil_save.dat\nLOAD foil_save.dat\nQUIT\n"));
   CHECK(run.executed);
   CHECK_EQ(run.exitCode, 0);
   CHECK(fileExists(work.makePath("foil_save.dat")));

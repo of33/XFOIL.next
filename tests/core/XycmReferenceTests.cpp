@@ -86,8 +86,15 @@ struct SystemBundle {
   InfluenceSystem system;
 };
 
+PanelingParameters xfoil699Paneling() {
+  PanelingParameters p;
+  p.panelCount = 160;
+  p.teToLeDensityRatio = 0.15;
+  return p;
+}
+
 Result<SystemBundle> buildSystem(const AirfoilBuffer& buffer) {
-  const Result<PangenResult> pg = pangen(buffer, PanelingParameters{});
+  const Result<PangenResult> pg = pangen(buffer, xfoil699Paneling());
   if (pg.isErr()) {
     return Result<SystemBundle>::fail(pg.error());
   }

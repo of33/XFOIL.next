@@ -232,8 +232,11 @@ int main() {
     return 1;
   }
 
+  paneling::PanelingParameters oldPaneling;
+  oldPaneling.panelCount = 160;
+  oldPaneling.teToLeDensityRatio = 0.15;
   const Result<paneling::PangenResult> pan =
-      paneling::pangen(bufferC4, paneling::PanelingParameters{});
+      paneling::pangen(bufferC4, oldPaneling);
   if (!pan.isOk() || pan.value().panel.s.size() != 160) {
     return 1;
   }

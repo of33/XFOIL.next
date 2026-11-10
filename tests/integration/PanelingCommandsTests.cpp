@@ -185,8 +185,8 @@ TEST(integration, TopPaneRepanelsLoadedAirfoil) {
   CHECK(contains(result.outputText, "\n Paneling parameters used...\n"));
 
   const std::string saved = readDataFile("pane-out.dat");
-  // NPAN = 160: header line plus 160 nodes.
-  CHECK_EQ(dataLineCount(saved), 161);
+  // NPAN = 240: header line plus 240 nodes.
+  CHECK_EQ(dataLineCount(saved), 241);
   CHECK(contains(saved, "PANE FOIL\n"));
 
   removeDataFile("pane-in.dat");
@@ -195,7 +195,7 @@ TEST(integration, TopPaneRepanelsLoadedAirfoil) {
 
 TEST(integration, TopPaneKeepsOperUsable) {
   const auto result = runSession(
-      "NACA 2412\nPANE\nOPER\nALFA -10\nQUIT\n");
+      "NACA 2412\nPPAR\nN 160\nT 0.15\n\n\nPANE\nOPER\nALFA -10\nQUIT\n");
 
   CHECK_EQ(result.exitCode, 0);
   // the analysis continues on the newly paneled state.
@@ -276,9 +276,9 @@ TEST(integration, PparDisplaysCurrentParameters) {
   CHECK_EQ(result.exitCode, 0);
   CHECK(contains(
       result.outputText, "\n    Present paneling parameters...\n"
-                         "  N  i   Number of panel nodes       160\n"
+                         "  N  i   Number of panel nodes       240\n"
                          "  P  r   Panel bunching parameter    1.000\n"
-                         "  T  r   TE/LE panel density ratio   0.150\n"
+                         "  T  r   TE/LE panel density ratio   0.300\n"
                          "  R  r   Refined area/LE  panel density ratio   0.200\n"
                          "  XT rr  Top    side refined area x/c limits    1.000 1.000\n"
                          "  XB rr  Bottom side refined area x/c limits    1.000 1.000\n"
@@ -304,6 +304,7 @@ TEST(integration, PparNChangesPanelCount) {
 
   const auto result = runSession(
       "NACA 2412\nPPAR\n"
+      "T 0.15\n"
       "N 60\n"   // inline
       "\n"       // <cr>: Apply (LCHANGE)
       "\nSAVE " + dataPath("ppar-n60.dat") + "\nQUIT\n");
@@ -563,7 +564,7 @@ TEST(integration, PparChangesInvalidatePreviousAnalysis) {
   // OPER analysis returns different coefficients than the baseline with
   // NPAN = 160; the analysis was rebuilt on the new state.
   const auto baseline = runSession(
-      "NACA 2412\nOPER\nALFA -10\nQUIT\n");
+      "NACA 2412\nPPAR\nN 160\nT 0.15\n\n\nOPER\nALFA -10\nQUIT\n");
   CHECK_EQ(baseline.exitCode, 0);
   // canonical OFS line of the baseline (NPAN 160).
   CHECK(contains(baseline.outputText,
@@ -571,6 +572,7 @@ TEST(integration, PparChangesInvalidatePreviousAnalysis) {
 
   const auto afterPaneling = runSession(
       "NACA 2412\nPPAR\n"
+      "T 0.15\n"
       "N 50\n"   // change
       "\n"       // <cr>: Apply (LCHANGE)
       "\nOPER\nALFA -10\nQUIT\n");   // second <cr>: Return after TOP

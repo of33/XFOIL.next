@@ -38,7 +38,7 @@
    BEND    Display structural properties of current airfoil
 
    PCOP    Set current-airfoil panel nodes directly from buffer airfoil points
-   PANE    Set current-airfoil panel nodes ( 160 ) based on curvature
+   PANE    Set current-airfoil panel nodes ( 240 ) based on curvature
   .PPAR    Show/change paneling
 
   .PLOP    Plotting options
@@ -59,9 +59,9 @@
  Blunt trailing edge.  Gap =  0.00252
 
  Paneling parameters used...
-   Number of panel nodes       160
+   Number of panel nodes       240
    Panel bunching parameter    1.000
-   TE/LE panel density ratio   0.150
+   TE/LE panel density ratio   0.300
    Refined-area/LE panel density ratio    0.200
    Top    side refined area x/c limits  1.000 1.000
    Bottom side refined area x/c limits  1.000 1.000
@@ -70,14 +70,14 @@
  XFOIL   c>  
  Labeled airfoil file.  Name:  NACA 2412                                       
 
- Number of input coordinate points: 160
+ Number of input coordinate points: 240
  Counterclockwise ordering
- Max thickness =     0.120023  at x =   0.305
- Max camber    =     0.020000  at x =   0.400
+ Max thickness =     0.120034  at x =   0.299
+ Max camber    =     0.020000  at x =   0.401
 
-  LE  x,y  =  -0.00000   0.00000  |   Chord =   1.00000
+  LE  x,y  =   0.00000  -0.00000  |   Chord =   1.00000
   TE  x,y  =   1.00000   0.00000  |
 
- Current airfoil nodes set from buffer airfoil nodes ( 160 )
+ Current airfoil nodes set from buffer airfoil nodes ( 240 )
 
  XFOIL   c>  

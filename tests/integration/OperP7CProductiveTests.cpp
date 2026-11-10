@@ -140,7 +140,7 @@ TEST(integration, OperPolarHingeWithFlapWritesChingeColumn) {
   TestDataDir dir;
   removeDataFile("p7c-hinge.pol");
   const auto result = runSession(
-      "NACA 0012\nPANE\nOPER\nALFA 2\nFNEW 0.7 -0.05\nFMOM\n"
+      "NACA 0012\nPPAR\nN 160\nT 0.15\n\n\nPANE\nOPER\nALFA 2\nFNEW 0.7 -0.05\nFMOM\n"
       "HINC\nPACC\n" + dataPath("p7c-hinge.pol") + "\n\nALFA 4\nP\n\nQUIT\n");
   CHECK_EQ(result.exitCode, 0);
   CHECK(result.outputText.find("not available in this build yet") ==
@@ -184,7 +184,7 @@ TEST(integration, OperAsetTakeoverAndAbortAreProductive) {
   TestDataDir dir;
   removeDataFile("p7c-aset-abort.dat");
   const auto abort = runSession(
-      "NACA 0012\nPANE\nOPER\nPACC\n\n\nALFA 2\nP\nASET\nn\n\n"
+      "NACA 0012\nPPAR\nN 160\nT 0.15\n\n\nPANE\nOPER\nPACC\n\n\nALFA 2\nP\nASET\nn\n\n"
       "SAVE " + dataPath("p7c-aset-abort.dat") + "\nQUIT\n");
   CHECK_EQ(abort.exitCode, 0);
   CHECK(abort.outputText.find("not available in this build yet") ==
@@ -197,7 +197,7 @@ TEST(integration, OperAsetTakeoverAndAbortAreProductive) {
   removeDataFile("p7c-aset-abort.dat");
 
   const auto proceed = runSession(
-      "NACA 0012\nPANE\nOPER\nPACC\n\n\nALFA 2\nP\nASET\nY\n"
+      "NACA 0012\nPPAR\nN 160\nT 0.15\n\n\nPANE\nOPER\nPACC\n\n\nALFA 2\nP\nASET\nY\n"
       "\nQUIT\n");
   CHECK_EQ(proceed.exitCode, 0);
   CHECK(proceed.outputText.find("No action taken") == std::string::npos);

@@ -149,7 +149,7 @@ TEST(integration, TopNacaSetsBufferAndNamesAirfoil) {
 }
 
 // FCPP009 NACA successor group: structural tests for the canonical point count.
-// NB=245 (buffer), N=160 (PANGEN default), PCOP=245 (buffer adoption).
+// NB=245 (buffer), N=240 (PANGEN default), PCOP=245 (buffer adoption).
 // No exact C++ vs Fortran point-value comparison: the panel coordinates
 // differ because of FCPP038 (IPFAC=3 vs 5) until the PANGEN correction
 // is released. The point counts have been evidenced by FCPP009 since then.
@@ -163,13 +163,13 @@ TEST(integration, NacaBufferHas245Points) {
   }
 }
 
-TEST(integration, NacaPangenCurrentContourHas160Points) {
+TEST(integration, NacaPangenCurrentContourHas240Points) {
   TestDataDir dir;
   removeDataFile("naca-pane.dat");
   const auto result = runSession(
       "NACA 2412\nSAVE " + dataPath("naca-pane.dat") + "\nQUIT\n");
   CHECK_EQ(result.exitCode, 0);
-  // SAVE stores the current (PANGEN-paneled) contour: 160 points.
+  // SAVE stores the current (PANGEN-paneled) contour: 240 points.
   // the first line is the airfoil name, the rest are coordinate lines.
   const std::string fileText = readDataFile("naca-pane.dat");
   int dataLines = 0;
@@ -185,7 +185,7 @@ TEST(integration, NacaPangenCurrentContourHas160Points) {
       ++dataLines;
     }
   }
-  CHECK_EQ(dataLines, 160);
+  CHECK_EQ(dataLines, 240);
   removeDataFile("naca-pane.dat");
 }
 

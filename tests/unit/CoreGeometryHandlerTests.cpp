@@ -55,6 +55,15 @@ namespace {
 
 using namespace xfoil;
 
+void useXfoil699PanelDefaults(session::SessionComposition& composition) {
+  core::paneling::PanelingParameters params =
+      session::panelingParameters(composition);
+  params.panelCount = 160;
+  params.teToLeDensityRatio = 0.15;
+  CHECK(session::setPanelingParameters(composition, params).ok);
+}
+
+
 // INTE call helper for the interactively controlled handler: both sources as
 // F lines with file path, fraction and result name as answer lines.
 app::cli::InteCoreStatus handleInteFF(session::SessionComposition& composition,
@@ -106,9 +115,9 @@ TEST(unit, CoreNacaHandlerMatchesFortranNacaBlock) {
       "\n Buffer airfoil set using 245 points\n"
       "\n Blunt trailing edge.  Gap =  0.00252\n"
       "\n Paneling parameters used..."
-      "\n   Number of panel nodes       160"
+      "\n   Number of panel nodes       240"
       "\n   Panel bunching parameter    1.000"
-      "\n   TE/LE panel density ratio   0.150"
+      "\n   TE/LE panel density ratio   0.300"
       "\n   Refined-area/LE panel density ratio    0.200"
       "\n   Top    side refined area x/c limits  1.000 1.000"
       "\n   Bottom side refined area x/c limits  1.000 1.000\n";
@@ -143,6 +152,7 @@ TEST(unit, CoreNacaHandlerIllegalFiveDigitDesignation) {
 // (from fortran-bin/xfoil).
 TEST(unit, CoreCurrentAirfoilCoordinatesMatchesFortranSave) {
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
   app::cli::handleNacaCore(composition, sink, 2412);
 
@@ -180,9 +190,9 @@ TEST(unit, CoreNacaHandlerN0012MatchesFortranText) {
       "\n Buffer airfoil set using 245 points\n"
       "\n Blunt trailing edge.  Gap =  0.00252\n"
       "\n Paneling parameters used..."
-      "\n   Number of panel nodes       160"
+      "\n   Number of panel nodes       240"
       "\n   Panel bunching parameter    1.000"
-      "\n   TE/LE panel density ratio   0.150"
+      "\n   TE/LE panel density ratio   0.300"
       "\n   Refined-area/LE panel density ratio    0.200"
       "\n   Top    side refined area x/c limits  1.000 1.000"
       "\n   Bottom side refined area x/c limits  1.000 1.000\n";
@@ -200,9 +210,9 @@ TEST(unit, CoreNacaHandlerNaca5N23012MatchesFortranText) {
       "\n Buffer airfoil set using 245 points\n"
       "\n Blunt trailing edge.  Gap =  0.00252\n"
       "\n Paneling parameters used..."
-      "\n   Number of panel nodes       160"
+      "\n   Number of panel nodes       240"
       "\n   Panel bunching parameter    1.000"
-      "\n   TE/LE panel density ratio   0.150"
+      "\n   TE/LE panel density ratio   0.300"
       "\n   Refined-area/LE panel density ratio    0.200"
       "\n   Top    side refined area x/c limits  1.000 1.000"
       "\n   Bottom side refined area x/c limits  1.000 1.000\n";
@@ -563,7 +573,9 @@ TEST(unit, CorePcopHandlerCapacityNoMutation) {
 // independent sessions: PCOP in one session leaves the other untouched.
 TEST(unit, CorePcopHandlerIndependentSessions) {
   session::SessionComposition a;
+  useXfoil699PanelDefaults(a);
   session::SessionComposition b;
+  useXfoil699PanelDefaults(b);
   std::ostringstream nacaA;
   std::ostringstream nacaB;
   app::cli::handleNacaCore(a, nacaA, 2412);
@@ -657,9 +669,9 @@ TEST(unit, CorePaneHandlerMatchesFortranPangenBlock) {
   const std::string expected =
       "\n Blunt trailing edge.  Gap =  0.00252\n"
       "\n Paneling parameters used..."
-      "\n   Number of panel nodes       160"
+      "\n   Number of panel nodes       240"
       "\n   Panel bunching parameter    1.000"
-      "\n   TE/LE panel density ratio   0.150"
+      "\n   TE/LE panel density ratio   0.300"
       "\n   Refined-area/LE panel density ratio    0.200"
       "\n   Top    side refined area x/c limits  1.000 1.000"
       "\n   Bottom side refined area x/c limits  1.000 1.000\n";
@@ -671,6 +683,7 @@ TEST(unit, CorePaneHandlerMatchesFortranPangenBlock) {
 // fortran-bin/xfoil (NACA 2412 -> PPAR -> N 200 -> Apply -> PANE).
 TEST(unit, CorePaneHandlerAfterN200MatchesFortranText) {
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream nacaSink;
   app::cli::handleNacaCore(composition, nacaSink, 2412);
   const double n = 200.0;
@@ -727,6 +740,7 @@ TEST(unit, CorePaneHandlerTeLineAppearsOnce) {
 // (paneling_reference.txt PANE160) for the same PANGEN producer.
 TEST(unit, CorePaneHandlerPanelCountAndGapMatchFortran) {
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream nacaSink;
   app::cli::handleNacaCore(composition, nacaSink, 2412);
   std::ostringstream out;
@@ -741,6 +755,7 @@ TEST(unit, CorePaneHandlerPanelCountAndGapMatchFortran) {
 // buffer and buffer revision unchanged, parameters preserved.
 TEST(unit, CorePaneHandlerSetsPangenOriginAndRevision) {
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream loadOut;
   app::cli::handleLoadCore(composition, kLoadReferenceFile, "naca2412buf",
                            loadOut);  // origin abcopy
@@ -941,7 +956,9 @@ TEST(unit, CorePaneHandlerErrorAfterValidPangenKeepsPanel) {
 // independent sessions: PANE in one session leaves the other untouched.
 TEST(unit, CorePaneHandlerIndependentSessions) {
   session::SessionComposition a;
+  useXfoil699PanelDefaults(a);
   session::SessionComposition b;
+  useXfoil699PanelDefaults(b);
   std::ostringstream nacaA;
   std::ostringstream nacaB;
   app::cli::handleNacaCore(a, nacaA, 2412);
@@ -986,9 +1003,9 @@ TEST(unit, CorePparShowHandlerMatchesFortranTable) {
   app::cli::handlePparShowCore(composition, out);
   const std::string expected =
       "\n    Present paneling parameters..."
-      "\n  N  i   Number of panel nodes       160"
+      "\n  N  i   Number of panel nodes       240"
       "\n  P  r   Panel bunching parameter    1.000"
-      "\n  T  r   TE/LE panel density ratio   0.150"
+      "\n  T  r   TE/LE panel density ratio   0.300"
       "\n  R  r   Refined area/LE  panel density ratio   0.200"
       "\n  XT rr  Top    side refined area x/c limits    1.000 1.000"
       "\n  XB rr  Bottom side refined area x/c limits    1.000 1.000"
@@ -1056,6 +1073,7 @@ TEST(unit, CorePparParameterNClampEmitsFortranMessage) {
 // N < 2: controlled rejection without partial mutation (core contract).
 TEST(unit, CorePparParameterNTooSmallRejectedNoMutation) {
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream nacaSink;
   app::cli::handleNacaCore(composition, nacaSink, 2412);
   const std::vector<double> panelXBefore = composition.paneling.panel.x;
@@ -1242,7 +1260,9 @@ TEST(unit, CorePparParameterMultipleChangesAccumulate) {
 // independent sessions: a change in one session leaves the other untouched.
 TEST(unit, CorePparParameterIndependentSessions) {
   session::SessionComposition a;
+  useXfoil699PanelDefaults(a);
   session::SessionComposition b;
+  useXfoil699PanelDefaults(b);
   std::ostringstream nacaA;
   std::ostringstream nacaB;
   app::cli::handleNacaCore(a, nacaA, 2412);
@@ -1282,7 +1302,7 @@ TEST(unit, CorePparParameterTextDeterministic) {
 
 // --- PPAR Apply/PANGEN producer ------------------------------
 
-// PPAR Apply with default parameters (N=160): canonical text =
+// PPAR Apply with default parameters (N=240): canonical text =
 // PANGEN(.FALSE.) (TE line, no SHOPAR table) + CANG corner angle.
 // reference from fortran-bin/xfoil (NACA 2412 -> PPAR -> N 160 -> Apply).
 TEST(unit, CorePparApplyDefaultMatchesFortranText) {
@@ -1297,8 +1317,8 @@ TEST(unit, CorePparApplyDefaultMatchesFortranText) {
            static_cast<int>(app::cli::PparApplyCoreStatus::applied));
   const std::string expected =
       "\n Blunt trailing edge.  Gap =  0.00252\n"
-      "\n Maximum panel corner angle =  7.257   at  i,x,y  =  84"
-      "   0.0006  -0.0041\n";
+      "\n Maximum panel corner angle =  4.900   at  i,x,y  = 126"
+      "   0.0007  -0.0045\n";
   CHECK_EQ(out.str(), expected);
 }
 
@@ -1306,6 +1326,7 @@ TEST(unit, CorePparApplyDefaultMatchesFortranText) {
 // panel-coord/ppar-n200-psav (5.803 at index 105).
 TEST(unit, CorePparApplyAfterN200MatchesFortranText) {
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream nacaSink;
   app::cli::handleNacaCore(composition, nacaSink, 2412);
   const double n = 200.0;
@@ -1329,6 +1350,7 @@ TEST(unit, CorePparApplyAfterN200MatchesFortranText) {
 // buffer and buffer revision unchanged, parameters preserved.
 TEST(unit, CorePparApplySetsPangenOriginAndRevision) {
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream loadOut;
   app::cli::handleLoadCore(composition, kLoadReferenceFile, "naca2412buf",
                            loadOut);  // origin abcopy
@@ -1489,7 +1511,9 @@ TEST(unit, CorePparApplyCapacityNoMutation) {
 // independent sessions: Apply in one session leaves the other untouched.
 TEST(unit, CorePparApplyIndependentSessions) {
   session::SessionComposition a;
+  useXfoil699PanelDefaults(a);
   session::SessionComposition b;
+  useXfoil699PanelDefaults(b);
   std::ostringstream nacaA;
   std::ostringstream nacaB;
   app::cli::handleNacaCore(a, nacaA, 2412);
@@ -1537,6 +1561,7 @@ TEST(unit, CorePparApplySmallCountN2GuardedNoMutation) {
 // Small-number audit NPAN=4: Fortran corner angle 87.097 at index 2.
 TEST(unit, CorePparApplySmallCountN4MatchesFortran) {
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream nacaSink;
   app::cli::handleNacaCore(composition, nacaSink, 2412);
   const double n = 4.0;
@@ -1603,6 +1628,7 @@ TEST(unit, CoreLoadHandlerMatchesFortranLoadBlock) {
 // panelSourceRevision == bufferRevision, panel parameters preserved, name set.
 TEST(unit, CoreLoadHandlerSetsBufferAbcopyAndRevision) {
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream out;
   const app::cli::LoadCoreStatus status = app::cli::handleLoadCore(
       composition, kLoadReferenceFile, "naca2412buf", out);
@@ -1744,6 +1770,7 @@ TEST(unit, CoreInteHandlerResultCoordinatesMatchFortran) {
 // (INTE produces no current contour, no ABCOPY), panel parameters preserved.
 TEST(unit, CoreInteHandlerSetsBufferAndInvalidatesPanel) {
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream loadSink;
   app::cli::handleLoadCore(composition, kInteFile0, "0012src", loadSink);
   const std::uint64_t revisionBefore = composition.geometry.bufferRevision;
@@ -2625,6 +2652,7 @@ TEST(unit, CoreXycmHandlerNextPointMatchesFortran) {
   constexpr double kCmM51 = -0.60814745992731189528;      // (-0.50, 0.10)
 
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
   app::cli::handleNacaCore(composition, sink, 2412);
   xfoil::AnalysisConfig cfg;
@@ -3414,6 +3442,7 @@ constexpr const char* kSaveNoGeometryBlankReference =
 TEST(unit, CoreSaveHandlerWritesCurrentPanelNotBuffer) {
   TestSavePath file("save-panel.dat");
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
   app::cli::handleNacaCore(composition, sink, 2412);
   CHECK_EQ(composition.geometry.buffer.x.size(), 245u);
@@ -3435,6 +3464,7 @@ TEST(unit, CoreSaveHandlerWritesCurrentPanelNotBuffer) {
 TEST(unit, CoreSaveHandlerNameHeaderMatchesFortranReference) {
   TestSavePath file("save-name-ref.dat");
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
   app::cli::handleNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);
@@ -3452,6 +3482,7 @@ TEST(unit, CoreSaveHandlerNameHeaderMatchesFortranReference) {
 TEST(unit, CoreSaveHandlerReveCommaMatchesFortranReference) {
   TestSavePath file("save-reve-comma-ref.dat");
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
   app::cli::handleNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);
@@ -3472,6 +3503,7 @@ TEST(unit, CoreSaveHandlerReveCommaMatchesFortranReference) {
 TEST(unit, CoreSaveHandlerTabMatchesFortranReference) {
   TestSavePath file("save-tab-ref.dat");
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
   app::cli::handleNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);
@@ -3831,6 +3863,7 @@ constexpr const char* kPsavInteNoCurrentReference =
 TEST(unit, CorePsavHandlerWritesCurrentPanelNotBuffer) {
   TestSavePath file("psav-panel.dat");
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
   app::cli::handleNacaCore(composition, sink, 2412);
   CHECK_EQ(composition.geometry.buffer.x.size(), 245u);
@@ -3854,6 +3887,7 @@ TEST(unit, CorePsavHandlerWritesCurrentPanelNotBuffer) {
 TEST(unit, CorePsavHandlerNameNincProducesNoHeader) {
   TestSavePath file("psav-name-ref.dat");
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
   app::cli::handleNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);
@@ -3874,6 +3908,7 @@ TEST(unit, CorePsavHandlerNameNincProducesNoHeader) {
 TEST(unit, CorePsavHandlerReveCommaMatchesFortranReference) {
   TestSavePath file("psav-reve-comma-ref.dat");
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
   app::cli::handleNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);
@@ -3894,6 +3929,7 @@ TEST(unit, CorePsavHandlerReveCommaMatchesFortranReference) {
 TEST(unit, CorePsavHandlerTabMatchesFortranReference) {
   TestSavePath file("psav-tab-ref.dat");
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
   app::cli::handleNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);
@@ -4374,6 +4410,7 @@ constexpr const char* kUsavInteNoCurrentReference =
 TEST(unit, CoreUsavHandlerWritesCurrentPanelNotBuffer) {
   TestSavePath file("usav-panel.dat");
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
   app::cli::handleNacaCore(composition, sink, 2412);
   CHECK_EQ(composition.geometry.buffer.x.size(), 245u);
@@ -4399,6 +4436,7 @@ TEST(unit, CoreUsavHandlerPcopSourceMatchesFortranReference) {
   TestSavePath afterNaca("usav-source-naca.dat");
   TestSavePath afterPcop("usav-source-pcop.dat");
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
   app::cli::handleNacaCore(composition, sink, 2412);
 
@@ -4423,6 +4461,7 @@ TEST(unit, CoreUsavHandlerPcopSourceMatchesFortranReference) {
 TEST(unit, CoreUsavHandlerNameNincProducesNoHeader) {
   TestSavePath file("usav-name-ref.dat");
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
   app::cli::handleNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);
@@ -4442,6 +4481,7 @@ TEST(unit, CoreUsavHandlerNameNincProducesNoHeader) {
 TEST(unit, CoreUsavHandlerReveMatchesFortranReference) {
   TestSavePath file("usav-reve-ref.dat");
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
   app::cli::handleNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);
@@ -4461,6 +4501,7 @@ TEST(unit, CoreUsavHandlerReveMatchesFortranReference) {
 TEST(unit, CoreUsavHandlerDelimiterIsIgnored) {
   TestSavePath file("usav-delim-ref.dat");
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
   app::cli::handleNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);
@@ -4523,6 +4564,7 @@ TEST(unit, CoreUsavHandlerSaveAndPsavContractsRemainSeparate) {
   TestSavePath psavFile("usav-contract-psav.dat");
   TestSavePath usavFile("usav-contract-usav.dat");
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
   app::cli::handleNacaCore(composition, sink, 2412);
 
@@ -4842,7 +4884,9 @@ TEST(unit, CoreUsavHandlerIndependentSessionsDifferentPolicies) {
   TestSavePath fileA("usav-independent-a.dat");
   TestSavePath fileB("usav-independent-b.dat");
   session::SessionComposition a;
+  useXfoil699PanelDefaults(a);
   session::SessionComposition b;
+  useXfoil699PanelDefaults(b);
   std::ostringstream sink;
   app::cli::handleNacaCore(a, sink, 2412);
   app::cli::handleNacaCore(b, sink, 2412);
@@ -4979,6 +5023,7 @@ std::string secondLine(const std::string& text) {
 TEST(unit, CoreIsavHandlerWritesCurrentPanelWithHeaders) {
   TestSavePath file("isav-panel.dat");
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
   app::cli::handleNacaCore(composition, sink, 2412);
   CHECK_EQ(composition.geometry.buffer.x.size(), 245u);
@@ -5004,6 +5049,7 @@ TEST(unit, CoreIsavHandlerPcopSourceMatchesFortranReference) {
   TestSavePath afterNaca("isav-source-naca.dat");
   TestSavePath afterPcop("isav-source-pcop.dat");
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
   app::cli::handleNacaCore(composition, sink, 2412);
 
@@ -5028,6 +5074,7 @@ TEST(unit, CoreIsavHandlerPcopSourceMatchesFortranReference) {
 TEST(unit, CoreIsavHandlerNameNincHeaderMatchesFortranReference) {
   TestSavePath file("isav-name-ref.dat");
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
   app::cli::handleNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);
@@ -5065,6 +5112,7 @@ TEST(unit, CoreIsavHandlerMaxNameLengthHeader) {
 TEST(unit, CoreIsavHandlerReveCommaMatchesFortranReference) {
   TestSavePath file("isav-reve-comma-ref.dat");
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
   app::cli::handleNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);
@@ -5085,6 +5133,7 @@ TEST(unit, CoreIsavHandlerReveCommaMatchesFortranReference) {
 TEST(unit, CoreIsavHandlerTabMatchesFortranReference) {
   TestSavePath file("isav-tab-ref.dat");
   session::SessionComposition composition;
+  useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
   app::cli::handleNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);

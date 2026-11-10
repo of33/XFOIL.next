@@ -160,7 +160,7 @@ TEST(integration, OperAliasHandlersAreProductive) {
 // the menu stays synchronous.
 TEST(integration, OperFlapVelocityCommandsAreProductive) {
   const auto result = runOperCommandsSession(
-      "NACA 0012\nPANE\nOPER\nALFA 2\nFNEW 0.7 -0.05\nFMOM\n"
+      "NACA 0012\nPPAR\nN 160\nT 0.15\n\n\nPANE\nOPER\nALFA 2\nFNEW 0.7 -0.05\nFMOM\n"
       "VELS 0.5 0.1\n\nQUIT\n");
   CHECK_EQ(result.exitCode, 0);
   CHECK(result.outputText.find("not available in this build yet") ==

@@ -56,6 +56,11 @@ namespace session = xfoil::session;
 using session::SessionComposition;
 
 void setupPangenAirfoil(SessionComposition& s, int designation) {
+  xfoil::core::paneling::PanelingParameters params =
+      session::panelingParameters(s);
+  params.panelCount = 160;
+  params.teToLeDensityRatio = 0.15;
+  CHECK(session::setPanelingParameters(s, params).ok);
   std::ostringstream out;
   cli::handleNacaCore(s, out, designation);
   CHECK(s.paneling.panelingValid);

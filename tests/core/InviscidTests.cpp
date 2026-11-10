@@ -271,6 +271,13 @@ MachReynoldsSettings harnessSettings() {
   return settings;
 }
 
+PanelingParameters xfoil699Paneling() {
+  PanelingParameters p;
+  p.panelCount = 160;
+  p.teToLeDensityRatio = 0.15;
+  return p;
+}
+
 // Paneling plus factorized influence system (GGCALC chain).
 struct SystemBundle {
   PanelGeometry panel;
@@ -279,7 +286,7 @@ struct SystemBundle {
 
 Result<SystemBundle> buildSystem(const AirfoilBuffer& buffer,
                                  bool sharpTeHint) {
-  const Result<PangenResult> pg = pangen(buffer, PanelingParameters{});
+  const Result<PangenResult> pg = pangen(buffer, xfoil699Paneling());
   if (pg.isErr()) {
     return Result<SystemBundle>::fail(pg.error());
   }

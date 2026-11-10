@@ -359,9 +359,9 @@ inline io::DefaultsValues initDefaultsValues() {
   // INIT assignments xfoil.f 545-660/742-745 (only the fields
   // occurring in xfoil.def).
   io::DefaultsValues v;
-  v.npan = 160;
+  v.npan = 240;
   v.cvpar = 1.0;
-  v.cterat = 0.15;
+  v.cterat = 0.3;
   v.ctrrat = 0.2;
   v.xsref1 = 1.0;
   v.xsref2 = 1.0;

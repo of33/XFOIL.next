@@ -28,7 +28,7 @@
 // ported from fortran-src/xfoil.f PANGEN.
 //
 // PANGEN produces the current panel contour from the buffer contour:
-// default paneling (160 nodes) or PPAR-configured paneling,
+// default paneling (240 nodes) or PPAR-configured paneling,
 // LE/TE refinement, Newton node distribution, corner node insertion,
 // panel normals and panel angles.
 //

@@ -267,7 +267,7 @@ TEST(integration, InterpreterLoadsPositionalDatFile) {
 
 TEST(integration, InterpreterUsesCentralPanelDefault) {
   // FCPP005: after loading a geometry the session keeps
-  // NPAN = 160 from the central default (no CLI
+  // NPAN = 240 from the central default (no CLI
   // compensation value). The PPAR menu shows that value.
   const testing::ScopedTempDirectory work(
       "InterpreterUsesCentralPanelDefault");
@@ -278,7 +278,7 @@ TEST(integration, InterpreterUsesCentralPanelDefault) {
                      std::optional<std::string>{profilePath.string()});
   CHECK_EQ(result.exitCode, 0);
   CHECK(result.outputText.find(
-            "Number of panel nodes       160") != std::string::npos);
+            "Number of panel nodes       240") != std::string::npos);
 }
 
 TEST(integration, InterpreterRejectsMissingPositionalDatFile) {

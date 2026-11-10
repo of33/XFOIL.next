@@ -60,6 +60,11 @@ session::SessionComposition nacaSession(int designation, bool viscous) {
   CHECK(naca.isOk());
   CHECK(session::setBufferGeometry(composition, naca.value().buffer)
             .success());
+  xfoil::core::paneling::PanelingParameters params =
+      session::panelingParameters(composition);
+  params.panelCount = 160;
+  params.teToLeDensityRatio = 0.15;
+  CHECK(session::setPanelingParameters(composition, params).ok);
   CHECK(session::applyPaneling(composition).ok);
   xfoil::AnalysisConfig config;
   config.reynoldsNumber = 1000000.0;
