@@ -167,6 +167,13 @@ so no byte equality is claimed.
 `BlSideStations` have no `DSSR` member. The S13 implementation must extend
 the existing export types, not create a second BL data model.
 
+Historical clarification: the preceding sentence describes the G1 state
+before implementation only. S13 subsequently added the optional `dssr`
+member to `BoundaryLayerDumpInput` and wired `viscals.dssr` into
+`currentBoundaryLayerDumpInput`; `BlSideStations` was not extended because
+no second BL data model was introduced. The G1 text is intentionally kept
+unchanged as a historical record.
+
 ## Decision
 
 `X6996-S13-G1: PASS`
@@ -254,4 +261,34 @@ the default BLDUMP/DMP bytes. It remains command-free; S16 owns `BLOU`.
   `2032/2032`; ASan/UBSan full suite `2032/2032`. Existing `DUMP`/`DMP` byte references remain green.
 - No `BLOU` activation, no automatic `:00.bl`, no product-version/banner
   change, no S11/S12 change, no Fortran/patch/golden/reference change.
-- Windows focused acceptance: `5/5` tests pass. The local S13 integration commit follows.
+- Windows focused acceptance: `5/5` tests pass.
+
+## Focused acceptance — X6996-S13-R1
+
+Decision: PASS
+
+Evidence (2026-11-11; no code, fixture or expected-value change during R1):
+
+| Check | Result | Evidence |
+|---|---:|---|
+| GCC 13.3 debug full suite | 2032/2032 | `/tmp/opencode/fulltest2.log` |
+| GCC 13.3 release full suite | 2032/2032 | `/tmp/opencode/s13-r1-gcc13-release-full.log` |
+| Clang 18.1 debug full suite | 2032/2032 | `/tmp/opencode/s13-r1-clang18-debug-full.log` |
+| Clang 18.1 release full suite | 2032/2032 | `/tmp/opencode/s13-r1-clang18-release-full.log` |
+| ASan/UBSan full suite | 2032/2032 | `/tmp/opencode/sanitize2.log` |
+| Focused Valgrind, `unit.BoundaryLayerOutputS13` | 5/5, no errors | `/tmp/opencode/s13-r1-valgrind-focused.log` |
+| Focused Windows acceptance | 5/5 | operator-run S13 focused output |
+| Reference verification | 236/236 | `/tmp/opencode/s13-r1-reference.log` |
+| Reference determinism | 236/236 | `/tmp/opencode/s13-r1-determinism.log` |
+| Harness families | 16/16 | `/tmp/opencode/s13-r1-harnesses.log` |
+| Permanent gates | green | S13-R1 gate run |
+
+Permanent gates covered: `git diff --check`, `make check-fortran-sha`,
+`make check-license-headers`, `make check-release-inventory` and
+`make check-public-docs`.
+
+At R1 start HEAD was already `a0325b2` (`Integrate XFOIL 6.996
+boundary-layer output formats`), parent `f3ef3acab60bcef358a85c7d35c30df6054d9b78`.
+No duplicate S13 integration commit is created; the R1 report update is a
+documentation-only local follow-up. No push, fetch, tag or release was made.
+`v1.0.0` remains `dc7305b057286574cd137cb6f1af170b74650ec5`.
