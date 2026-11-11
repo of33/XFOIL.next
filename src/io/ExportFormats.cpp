@@ -406,16 +406,7 @@ std::string boundaryLayerExtendedDumpText(
   return result.isOk() ? result.value() : std::string{};
 }
 
-core::Result<std::string> boundaryLayerDump3TextChecked(
-    const BoundaryLayerDumpInput& input) {
-  const bool viscous = input.lipan && input.lvisc;
-  const std::string error =
-      validateBoundaryLayerStations(input, viscous, viscous);
-  if (!error.empty()) {
-    return core::Result<std::string>::fail(
-        core::Error::make(core::ErrorCode::invalidArgument, error));
-  }
-
+std::string boundaryLayerDump3HeaderText() {
   std::string out;
   out += "#      x          y          s          b    "
          "      Cp       Ue/Vinf   rhoe/rhoinf    Me   "
@@ -429,6 +420,20 @@ core::Result<std::string> boundaryLayerDump3TextChecked(
          "      11           12           13     "
          "      14           15           16     "
          "      17           18           19           20     \n";
+  return out;
+}
+
+core::Result<std::string> boundaryLayerDump3TextChecked(
+    const BoundaryLayerDumpInput& input) {
+  const bool viscous = input.lipan && input.lvisc;
+  const std::string error =
+      validateBoundaryLayerStations(input, viscous, viscous);
+  if (!error.empty()) {
+    return core::Result<std::string>::fail(
+        core::Error::make(core::ErrorCode::invalidArgument, error));
+  }
+
+  std::string out = boundaryLayerDump3HeaderText();
 
   constexpr double hvrat = 0.35;
   const core::inviscid::CompressibilityState comp =

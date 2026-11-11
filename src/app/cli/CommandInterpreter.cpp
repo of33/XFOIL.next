@@ -1383,6 +1383,10 @@ CommandFlow CommandInterpreter::executeOperCommand(const ParsedCommand& parsed) 
     handleOperDmp(parsed);
     return CommandFlow::stayInMenu;
   }
+  if (command == "BLOU") {
+    handleOperBlou(parsed);
+    return CommandFlow::stayInMenu;
+  }
 
   if (command == "VISC" || command == "V") {
     handleOperViscCore(session_, input_, output_, parsed.argument,
@@ -2721,6 +2725,24 @@ void CommandInterpreter::handleOperDmp(const ParsedCommand& parsed) {
       session::currentBoundaryLayerDumpInput(session_);
   std::ignore =
       writeExportFile(fileName, io::boundaryLayerExtendedDumpText(input));
+}
+
+void CommandInterpreter::handleOperBlou(const ParsedCommand& parsed) {
+  std::string fileName;
+  if (!askExportFilename(parsed.argument, ".bl", fileName)) {
+    return;
+  }
+  const io::BoundaryLayerDumpInput input =
+      session::currentBoundaryLayerDumpInput(session_);
+  const auto encoded = io::boundaryLayerDump3TextChecked(input);
+  // 6.996 BLDUMP3 writes its two header lines before the station loops.
+  // Before a BL solution exists, the canonical file is therefore the
+  // header-only artifact; the S13 checked writer correctly rejects the
+  // incomplete station data, so the command reuses its header helper.
+  const std::string text =
+      encoded.isOk() ? encoded.value()
+                     : io::boundaryLayerDump3HeaderText() + "\n";
+  std::ignore = writeExportFile(fileName, text);
 }
 
 // ---

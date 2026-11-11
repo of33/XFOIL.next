@@ -80,6 +80,9 @@ std::string boundaryLayerExtendedDumpText(
         BoundaryLayerExtendedDumpContract::Xfoil699);
 
 // S13 BLDUMP3 (xoper.f:2290): separate write-only 20-column format.
+// The header is exposed for the 6.996 BLOU no-station path, which writes
+// the canonical two header lines before any station row.
+std::string boundaryLayerDump3HeaderText();
 [[nodiscard]] core::Result<std::string> boundaryLayerDump3TextChecked(
     const BoundaryLayerDumpInput& input);
 std::string boundaryLayerDump3Text(const BoundaryLayerDumpInput& input);

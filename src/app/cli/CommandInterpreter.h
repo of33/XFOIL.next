@@ -285,11 +285,13 @@ class CommandInterpreter {
   void handleOperPnam(const ParsedCommand& parsed);
   void handleOperPacc(const ParsedCommand& parsed);
   // OPER file exports CPWR (CPDUMP), DUMP (BLDUMP), DMP
-  // (BLDUMP2). Prompt chain after the SETFILE prefix requirement, open
-  // overwrite (STATUS='UNKNOWN'), no success message.
+  // (BLDUMP2), BLOU (BLDUMP3, hidden 6.996 command). Prompt chain after
+  // the SETFILE prefix requirement, open overwrite (STATUS='UNKNOWN'),
+  // no success message.
   void handleOperCpwr(const ParsedCommand& parsed);
   void handleOperDump(const ParsedCommand& parsed);
   void handleOperDmp(const ParsedCommand& parsed);
+  void handleOperBlou(const ParsedCommand& parsed);
   bool askYesNo(const std::string& promptText, bool& value);
   // PLRINI/PLXINI (xpol.f 180-556) as interpreter steps; returns
   // whether the respective file is ready for appending.

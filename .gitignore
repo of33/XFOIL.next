@@ -36,6 +36,7 @@ compile_commands.json
 !tests/data/core-polar-io-reference/*.bl
 !tests/fortran-reference/cases/*/*/generated/*.bl
 !tests/data/xfoil-6.996/s13/*.bl
+!tests/data/xfoil-6.996/s16/*.bl
 
 # Logo source files (SVG not for publication)
 docs/Logo/

@@ -1,0 +1,24 @@
+XFOIL 6.996 S16 BLOU oracle fixtures
+===================================
+
+Source: XFOIL 6.996 stock binary, external oracle run S16.
+No product-generated files are stored here.
+
+blou-clark-y-re1e6-alfa4.bl
+  commands: LOAD CLARK_Y.dat, OPER, VISC, 1e6, ALFA 4, BLOU blou.bl
+  size: 42704 bytes, 177 lines, 20 columns
+  sha256: 04d81ba85130f109ef5d06f260a318f52e648bac9de7e792f1112d7047138c5d
+  note: identical to the S13 BLDUMP3 a28 artifact.
+
+blou-no-stations.bl
+  commands: LOAD CLARK_Y.dat, OPER, BLOU nobl.bl (no BL solution)
+  size: 491 bytes, 3 lines (two header lines plus one header-only line)
+  sha256: f53e0956302c5cc3e153dc7b61a7874fcd5bf881083f88494b6c733b59cb7f94
+  note: BLDUMP3 writes the canonical header before the station loops.
+
+Prompt and overwrite observations:
+  default prompt: " Enter filename:  CLARK_Y.bl" (80-column padded)
+  no-prefix prompt: "Enter filename   s>  "
+  existing target: overwritten/truncated without prompt
+  invalid path: stock exit 2, no file
+  EOF at filename prompt: stock exit 2, no file
