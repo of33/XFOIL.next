@@ -43,6 +43,7 @@
 
 #include <array>
 #include <cstddef>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -88,6 +89,25 @@ struct PolarSideData {
 // Number of canonical side-data columns (PINDEX.INC: JPTOT=4).
 inline constexpr std::size_t sideColumnCount = 4;
 
+inline constexpr std::size_t maxPolarElements = 5;
+inline constexpr std::size_t elementColumnCount = 4;
+
+enum class PolarElementQuantity { cx = 1, cy = 2, cm = 3, cdVisc = 4 };
+
+struct PolarElementData {
+  double cx{0.0};
+  double cy{0.0};
+  double cm{0.0};
+  double cdVisc{0.0};
+};
+
+using PolarElementRow = std::array<PolarElementData, maxPolarElements>;
+
+struct PolarElementSelection {
+  std::array<std::optional<PolarElementQuantity>, elementColumnCount> columns{};
+  std::size_t count{0};
+};
+
 // Polar header data: canonical parameters of a stored polar.
 struct PolarMetadata {
   std::string airfoilName;            // NAMEPOL(IP)
@@ -120,6 +140,7 @@ struct PolarDataset {
   std::vector<PolarPoint> points;
   // points[i].side[s]: CPOLSD(IA=i+1, IS=s+1, JP, IP).
   std::vector<std::array<PolarSideData, sideCount>> sideData;
+  std::vector<PolarElementRow> elementData;
   PolarGeometrySnapshot geometry;
 };
 
@@ -146,6 +167,8 @@ inline constexpr std::size_t maxReferencePoints = referencePointCapacity;
 static_assert(maxPolarPoints == 800);
 static_assert(maxPolarSlots == 20);
 static_assert(maxReferencePoints == 128);
+static_assert(maxPolarElements == 5);
+static_assert(elementColumnCount == 4);
 
 }  // namespace xfoil::core::polar
 

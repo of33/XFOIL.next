@@ -52,6 +52,7 @@ core::polar::PolarDataset makePolar(const std::string& name,
     point.cl = alpha * 0.1;
     polar.points.push_back(point);
     polar.sideData.push_back({});
+    polar.elementData.emplace_back();
   }
   return polar;
 }
@@ -247,6 +248,128 @@ TEST(unit, SessionPolarAppendAndCapacity) {
            core::polar::maxPolarSlots - 1);
   session::deleteAllReferenceSlots(session);
   CHECK_EQ(session.polar.referenceSlots.size(), 0u);
+}
+
+TEST(unit, PolarElementMetadataSessionDeleteCompaction) {
+  SessionComposition session;
+  session.polar.slots.push_back(makePolar("A", {0.0}));
+  session.polar.slots.push_back(makePolar("B", {1.0}));
+  session.polar.slots.push_back(makePolar("C", {2.0}));
+  session.polar.slots[0].elementData[0][0].cx = 10.0;
+  session.polar.slots[1].elementData[0][0].cx = 20.0;
+  session.polar.slots[2].elementData[0][0].cx = 30.0;
+  session.polar.saveFileNames = {"fa", "fb", "fc"};
+  session.polar.dumpFileNames = {"xa", "xb", "xc"};
+  session.polar.activeSlot = 2;
+  session.polar.accumulating = true;
+
+  const auto removed = session::deletePolarSlot(session, 1);
+  CHECK(removed.deleted);
+  CHECK_EQ(session.polar.slots.size(), 2u);
+  CHECK_EQ(session.polar.slots[0].elementData[0][0].cx, 10.0);
+  CHECK_EQ(session.polar.slots[1].elementData[0][0].cx, 30.0);
+  CHECK_EQ(session.polar.activeSlot, 1);
+}
+
+TEST(unit, PolarElementMetadataPointRemovalKeepsParallelFields) {
+  SessionComposition session;
+  session.polar.slots.push_back(makePolar("A", {0.0, 1.0, 2.0}));
+  for (std::size_t i = 0; i < 3; ++i) {
+    session.polar.slots[0].elementData[i][0].cx =
+        10.0 * static_cast<double>(i + 1);
+  }
+
+  const auto result = session::removePolarPoints(session, 0, {1.0});
+  CHECK_EQ(result.removedPoints, 1);
+  CHECK(!result.polarEliminated);
+  CHECK_EQ(session.polar.slots[0].points.size(), 2u);
+  CHECK_EQ(session.polar.slots[0].elementData.size(), 2u);
+  CHECK_EQ(session.polar.slots[0].elementData[0][0].cx, 10.0);
+  CHECK_EQ(session.polar.slots[0].elementData[1][0].cx, 30.0);
+}
+
+TEST(unit, PolarElementMetadataSlotTwentyAndTwentyOne) {
+  SessionComposition session;
+  session.polar.elementSelection.count = 2;
+  session.polar.elementSelection.columns[0] = core::polar::PolarElementQuantity::cx;
+  session.polar.elementSelection.columns[1] =
+      core::polar::PolarElementQuantity::cdVisc;
+
+  for (std::size_t i = 0; i < core::polar::maxPolarSlots; ++i) {
+    auto polar = makePolar("P", {static_cast<double>(i)});
+    polar.elementData[0][4].cdVisc = static_cast<double>(i);
+    const auto added = session::appendPolarSlot(session, std::move(polar), "f");
+    CHECK(!added.capacityExceeded);
+    CHECK_EQ(added.slotIndex, static_cast<int>(i));
+  }
+  CHECK_EQ(session.polar.slots.size(), core::polar::maxPolarSlots);
+  CHECK_EQ(session.polar.slots[19].elementData[0][4].cdVisc, 19.0);
+
+  auto overflow = makePolar("Q", {21.0});
+  overflow.elementData[0][4].cdVisc = 99.0;
+  const auto rejected =
+      session::appendPolarSlot(session, std::move(overflow), "g");
+  CHECK(rejected.capacityExceeded);
+  CHECK_EQ(session.polar.slots.size(), core::polar::maxPolarSlots);
+  CHECK_EQ(session.polar.slots[19].elementData[0][4].cdVisc, 19.0);
+  CHECK_EQ(session.polar.elementSelection.count, std::size_t{2});
+}
+
+TEST(unit, PolarElementMetadataResetKeepsOtherSessionData) {
+  SessionComposition session;
+  session.polar.slots.push_back(makePolar("A", {0.0}));
+  session.polar.slots[0].elementData[0][0].cy = 3.5;
+  session.polar.saveFileNames = {"fa"};
+  session.polar.dumpFileNames = {"xa"};
+  session.polar.activeSlot = 0;
+  session.polar.accumulating = true;
+  session.polar.elementSelection.count = 1;
+  session.polar.elementSelection.columns[0] =
+      core::polar::PolarElementQuantity::cm;
+  session.geometry.name = "keep-name";
+  session.operating.maximumIterations = 77;
+
+  session::deleteAllPolarSlots(session);
+  CHECK(session.polar.slots.empty());
+  CHECK(session.polar.saveFileNames.empty());
+  CHECK(session.polar.dumpFileNames.empty());
+  CHECK_EQ(session.polar.activeSlot, -1);
+  CHECK(!session.polar.accumulating);
+  CHECK_EQ(session.polar.elementSelection.count, std::size_t{1});
+  CHECK(session.polar.elementSelection.columns[0].has_value());
+  CHECK(session.polar.elementSelection.columns[0].value() ==
+        core::polar::PolarElementQuantity::cm);
+  CHECK_EQ(session.geometry.name, std::string("keep-name"));
+  CHECK_EQ(session.operating.maximumIterations, 77);
+}
+
+TEST(unit, PolarElementMetadataIndependentSessions) {
+  SessionComposition first;
+  SessionComposition second;
+  first.polar.slots.push_back(makePolar("A", {0.0}));
+  second.polar.slots.push_back(makePolar("B", {1.0}));
+  first.polar.slots[0].elementData[0][0].cx = 1.5;
+  second.polar.slots[0].elementData[0][0].cx = 2.5;
+  first.polar.elementSelection.count = 1;
+  first.polar.elementSelection.columns[0] =
+      core::polar::PolarElementQuantity::cy;
+
+  CHECK_EQ(second.polar.slots[0].elementData[0][0].cx, 2.5);
+  CHECK_EQ(second.polar.elementSelection.count, std::size_t{0});
+  CHECK(!second.polar.elementSelection.columns[0].has_value());
+}
+
+TEST(unit, PolarElementMetadataSelectionDefinition) {
+  SessionComposition session;
+  const auto& selection = session.polar.elementSelection;
+  CHECK_EQ(selection.count, std::size_t{0});
+  for (const auto& column : selection.columns) {
+    CHECK(!column.has_value());
+  }
+  CHECK_EQ(static_cast<int>(core::polar::PolarElementQuantity::cx), 1);
+  CHECK_EQ(static_cast<int>(core::polar::PolarElementQuantity::cy), 2);
+  CHECK_EQ(static_cast<int>(core::polar::PolarElementQuantity::cm), 3);
+  CHECK_EQ(static_cast<int>(core::polar::PolarElementQuantity::cdVisc), 4);
 }
 
 // End: tests/unit/SessionPolarOpsTests.cpp

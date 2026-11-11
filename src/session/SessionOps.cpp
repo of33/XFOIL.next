@@ -3613,10 +3613,16 @@ PolarPointRemovalResult removePolarPoints(SessionComposition& session,
     bool removed = false;
     for (std::size_t ia = 0; ia < slot.points.size(); ++ia) {
       if (std::abs(slot.points[ia].alpha - alpha) < 0.0005) {
+        const bool haveElementData =
+            slot.elementData.size() == slot.points.size();
         slot.points.erase(slot.points.begin() +
                           static_cast<std::ptrdiff_t>(ia));
         slot.sideData.erase(slot.sideData.begin() +
                             static_cast<std::ptrdiff_t>(ia));
+        if (haveElementData) {
+          slot.elementData.erase(
+              slot.elementData.begin() + static_cast<std::ptrdiff_t>(ia));
+        }
         ++result.removedPoints;
         removed = true;
         break;

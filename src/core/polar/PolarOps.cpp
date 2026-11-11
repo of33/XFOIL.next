@@ -87,6 +87,12 @@ Status addPoint(PolarDataset& polar, const PolarPointInput& input) {
         Error::make(ErrorCode::capacityExceeded,
                     "PLRADD: Polar storage arrays full (NAX=800)"));
   }
+  if (!polar.elementData.empty() &&
+      polar.elementData.size() != polar.points.size()) {
+    return Status::fail(Error::make(
+        ErrorCode::sizeMismatch,
+        "PLRADD: element data count does not fit"));
+  }
 
   PolarPoint point;
   point.alpha = input.alphaDeg;
@@ -111,8 +117,12 @@ Status addPoint(PolarDataset& polar, const PolarPointInput& input) {
     sides[is].itr = input.tindex[is];
   }
 
+  if (polar.elementData.empty() && !polar.points.empty()) {
+    polar.elementData.resize(polar.points.size());
+  }
   polar.points.push_back(point);
   polar.sideData.push_back(sides);
+  polar.elementData.emplace_back();
   return Status::ok();
 }
 
@@ -124,6 +134,11 @@ Status sortPoints(PolarDataset& polar, SortKey key) {
   if (polar.sideData.size() != n) {
     return Status::fail(Error::make(ErrorCode::sizeMismatch,
                                     "PLRSRT: side data count does not fit"));
+  }
+  const bool haveElementData = !polar.elementData.empty();
+  if (haveElementData && polar.elementData.size() != n) {
+    return Status::fail(Error::make(ErrorCode::sizeMismatch,
+                                    "PLRSRT: element data count does not fit"));
   }
 
   // HSORT (sort.f) returns the canonical Permutation INDX.
@@ -138,17 +153,25 @@ Status sortPoints(PolarDataset& polar, SortKey key) {
   // shared permutation is applied to the point and page records.
   std::vector<PolarPoint> sortedPoints(n);
   std::vector<std::array<PolarSideData, sideCount>> sortedSides(n);
+  std::vector<PolarElementRow> sortedElements(haveElementData ? n : 0);
   for (std::size_t i = 0; i < n; ++i) {
     const int source = indx[i];
     if (source < 0 || static_cast<std::size_t>(source) >= n) {
       return Status::fail(Error::make(ErrorCode::outOfRange,
                                       "PLRSRT: Sortierindex except Range"));
     }
-    sortedPoints[i] = polar.points[static_cast<std::size_t>(source)];
-    sortedSides[i] = polar.sideData[static_cast<std::size_t>(source)];
+    const auto sourceIndex = static_cast<std::size_t>(source);
+    sortedPoints[i] = polar.points[sourceIndex];
+    sortedSides[i] = polar.sideData[sourceIndex];
+    if (haveElementData) {
+      sortedElements[i] = polar.elementData[sourceIndex];
+    }
   }
   polar.points.swap(sortedPoints);
   polar.sideData.swap(sortedSides);
+  if (haveElementData) {
+    polar.elementData.swap(sortedElements);
+  }
   return Status::ok();
 }
 

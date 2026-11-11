@@ -324,7 +324,7 @@ struct AnalysisResultState {
 
 // Polar session state (Fortran XFOIL.INC CR14/CL01):
 // slots corresponds to CPOL/CPOLSD/CPOLXY(:,:,IP) with NPOL = slots.size
-// (canonical capacity limit maxPolarSlots = NPX = 12). saveFileNames
+// (canonical capacity limit maxPolarSlots = NPX = 20). saveFileNames
 // holds PFNAME(IP) per slot (1:1 with slots). activeSlot is IPACT:
 // -1 means Fortran IPACT = 0 (no accumulation), otherwise the 0-based
 // slot index. accumulating is LPACC, includeCpMin/includeHingeMoment are
@@ -339,6 +339,7 @@ struct PolarSessionState {
   bool accumulating{false};
   bool includeCpMin{false};
   bool includeHingeMoment{false};
+  core::polar::PolarElementSelection elementSelection;
   // LPFILE/LPFILX (PLRINI/PLXINI): opened save/dump file of the
   // active polar. dumpFileNames is PFNAMX(IP) parallel to slots.
   bool saveFileOpen{false};

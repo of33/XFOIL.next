@@ -138,6 +138,125 @@ TEST(unit, PolarAddPointCapacityNoMutation) {
   CHECK_EQ(ds.points.size(), maxPolarPoints);
 }
 
+TEST(unit, PolarElementMetadataTypesAndInitialization) {
+  CHECK_EQ(maxPolarElements, std::size_t{5});
+  CHECK_EQ(elementColumnCount, std::size_t{4});
+  CHECK_EQ(static_cast<int>(PolarElementQuantity::cx), 1);
+  CHECK_EQ(static_cast<int>(PolarElementQuantity::cy), 2);
+  CHECK_EQ(static_cast<int>(PolarElementQuantity::cm), 3);
+  CHECK_EQ(static_cast<int>(PolarElementQuantity::cdVisc), 4);
+
+  const PolarElementData data{};
+  CHECK_EQ(data.cx, 0.0);
+  CHECK_EQ(data.cy, 0.0);
+  CHECK_EQ(data.cm, 0.0);
+  CHECK_EQ(data.cdVisc, 0.0);
+
+  PolarElementSelection selection;
+  CHECK_EQ(selection.count, std::size_t{0});
+  for (const auto& column : selection.columns) {
+    CHECK(!column.has_value());
+  }
+
+  PolarDataset dataset;
+  CHECK(dataset.elementData.empty());
+  CHECK_EQ(dataset.metadata.elementCount, 1);
+}
+
+TEST(unit, PolarElementMetadataAddPointInitializesZeroRows) {
+  PolarDataset dataset;
+  CHECK(addPoint(dataset, makeInput(1.0)).isOk());
+  CHECK(addPoint(dataset, makeInput(2.0)).isOk());
+  CHECK_EQ(dataset.elementData.size(), 2u);
+  for (const auto& row : dataset.elementData) {
+    for (const auto& element : row) {
+      CHECK_EQ(element.cx, 0.0);
+      CHECK_EQ(element.cy, 0.0);
+      CHECK_EQ(element.cm, 0.0);
+      CHECK_EQ(element.cdVisc, 0.0);
+    }
+  }
+}
+
+TEST(unit, PolarElementMetadataAddPointRepairsLegacyRows) {
+  PolarDataset dataset;
+  dataset.points.resize(2);
+  dataset.sideData.resize(2);
+  CHECK(addPoint(dataset, makeInput(3.0)).isOk());
+  CHECK_EQ(dataset.elementData.size(), 3u);
+  for (const auto& row : dataset.elementData) {
+    CHECK_EQ(row[0].cx, 0.0);
+  }
+}
+
+TEST(unit, PolarElementMetadataPointCapacityAtomic) {
+  PolarDataset dataset;
+  for (std::size_t i = 0; i < maxPolarPoints; ++i) {
+    CHECK(addPoint(dataset, makeInput(static_cast<double>(i))).isOk());
+  }
+  CHECK_EQ(dataset.elementData.size(), maxPolarPoints);
+  dataset.elementData.back()[4].cdVisc = 7.5;
+
+  const auto status = addPoint(dataset, makeInput(99.0));
+  CHECK(status.isErr());
+  CHECK(status.error().code == ErrorCode::capacityExceeded);
+  CHECK_EQ(dataset.points.size(), maxPolarPoints);
+  CHECK_EQ(dataset.elementData.size(), maxPolarPoints);
+  CHECK_EQ(dataset.elementData.back()[4].cdVisc, 7.5);
+}
+
+TEST(unit, PolarElementMetadataSortKeepsElementMapping) {
+  PolarDataset dataset;
+  for (double alpha : {3.0, 1.0, 2.0}) {
+    CHECK(addPoint(dataset, makeInput(alpha)).isOk());
+  }
+  for (std::size_t i = 0; i < dataset.points.size(); ++i) {
+    dataset.elementData[i][0].cx = 10.0 * dataset.points[i].alpha;
+    dataset.elementData[i][4].cdVisc = dataset.points[i].alpha + 0.5;
+  }
+
+  CHECK(sortPoints(dataset, SortKey::alpha).isOk());
+  CHECK_EQ(dataset.points[0].alpha, 1.0);
+  CHECK_EQ(dataset.points[1].alpha, 2.0);
+  CHECK_EQ(dataset.points[2].alpha, 3.0);
+  CHECK_EQ(dataset.elementData[0][0].cx, 10.0);
+  CHECK_EQ(dataset.elementData[1][0].cx, 20.0);
+  CHECK_EQ(dataset.elementData[2][0].cx, 30.0);
+  CHECK_EQ(dataset.elementData[0][4].cdVisc, 1.5);
+  CHECK_EQ(dataset.elementData[2][4].cdVisc, 3.5);
+}
+
+TEST(unit, PolarElementMetadataSortMismatchNoMutation) {
+  PolarDataset dataset;
+  CHECK(addPoint(dataset, makeInput(2.0)).isOk());
+  CHECK(addPoint(dataset, makeInput(1.0)).isOk());
+  dataset.elementData.pop_back();
+
+  const auto status = sortPoints(dataset, SortKey::alpha);
+  CHECK(status.isErr());
+  CHECK(status.error().code == ErrorCode::sizeMismatch);
+  CHECK_EQ(dataset.points[0].alpha, 2.0);
+  CHECK_EQ(dataset.points[1].alpha, 1.0);
+}
+
+TEST(unit, PolarElementMetadataCopySlotDeepCopies) {
+  PolarDataset source;
+  CHECK(addPoint(source, makeInput(1.0)).isOk());
+  source.elementData[0][0].cx = 1.25;
+  source.elementData[0][4].cdVisc = 2.5;
+
+  PolarDataset destination;
+  CHECK(copySlot(source, destination).isOk());
+  CHECK_EQ(destination.elementData.size(), 1u);
+  CHECK_EQ(destination.elementData[0][0].cx, 1.25);
+  CHECK_EQ(destination.elementData[0][4].cdVisc, 2.5);
+
+  source.elementData[0][0].cx = 9.0;
+  CHECK_EQ(destination.elementData[0][0].cx, 1.25);
+  CHECK(copySlot(source, source).isOk());
+  CHECK_EQ(source.elementData.size(), 1u);
+}
+
 TEST(unit, PolarSortAscendingAndDescending) {
   PolarDataset ds;
   for (double a : {3.0, 1.0, 2.0}) {
