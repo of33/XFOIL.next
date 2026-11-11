@@ -481,6 +481,9 @@ CommandFlow CommandInterpreter::executeTopCommand(const ParsedCommand& parsed) {
     handleDelimiter(parsed.argument);
   } else if (command == "NACA") {
     handleNaca(parsed.argument);
+  } else if (command == "NACS") {
+    // 6.996 hidden sharp-TE variant: same parser and NACA routine, LTES=true.
+    handleNaca(parsed.argument, true);
   } else if (command == "INTE") {
     handleInte();
   } else if (command == "NORM") {
@@ -888,11 +891,12 @@ void CommandInterpreter::handleDelimiter(const std::string& argument) {
   }
 }
 
-void CommandInterpreter::handleNaca(const std::string& argument) {
+void CommandInterpreter::handleNaca(const std::string& argument,
+                                    bool sharpTrailingEdge) {
   const auto values = parseIntegerArguments(argument);
   const int designation =
       (values.success() && !values.values.empty()) ? values.values[0] : -1;
-  handleNacaCore(session_, output_, designation);
+  handleNacaCore(session_, output_, designation, sharpTrailingEdge);
 }
 
 void CommandInterpreter::handleXycm(const std::string& argument) {

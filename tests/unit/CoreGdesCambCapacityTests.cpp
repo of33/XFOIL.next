@@ -93,7 +93,7 @@ TEST(unit, CoreGdesExecCapacityBoundaryIqx5) {
   auto sessionOk = std::make_unique<session::SessionComposition>();
   {
     std::ostringstream setup;
-    cli::handleNacaCore(*sessionOk, setup, 12);
+    testing::handleLegacyNacaCore(*sessionOk, setup, 12);
   }
   CHECK(session::setBufferGeometry(*sessionOk, std::move(atLimit)).success());
   const auto okStatus = session::executeGeometryDesignBuffer(*sessionOk);
@@ -106,7 +106,7 @@ TEST(unit, CoreGdesExecCapacityBoundaryIqx5) {
   auto sessionBig = std::make_unique<session::SessionComposition>();
   {
     std::ostringstream setup;
-    cli::handleNacaCore(*sessionBig, setup, 12);
+    testing::handleLegacyNacaCore(*sessionBig, setup, 12);
   }
   CHECK(session::setBufferGeometry(*sessionBig, std::move(big)).success());
   // The panel was invalidated by the buffer replacement; regenerate it from
@@ -133,7 +133,7 @@ TEST(unit, CoreGdesExecHandlerCapacityTexts) {
   auto session = std::make_unique<session::SessionComposition>();
   {
     std::ostringstream setup;
-    cli::handleNacaCore(*session, setup, 12);
+    testing::handleLegacyNacaCore(*session, setup, 12);
     (void)session::setBufferGeometry(
         *session,
         makeCornerBuffer(398, 10));  // 597 > IQX-5
@@ -160,7 +160,7 @@ TEST(unit, CoreCambInpcAcceptsFullTwoIqxPath) {
   auto session = std::make_unique<session::SessionComposition>();
   {
     std::ostringstream setup;
-    cli::handleNacaCore(*session, setup, 12);
+    testing::handleLegacyNacaCore(*session, setup, 12);
     (void)session::initializeGeometryDesign(*session);
   }
   std::ostringstream menu;

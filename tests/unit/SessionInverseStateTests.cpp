@@ -54,7 +54,7 @@ using session::SessionComposition;
 // Valid panel contour via the existing NACA path (buffer + PANGEN).
 void setupPanelAirfoil(SessionComposition& session) {
   std::ostringstream out;
-  cli::handleNacaCore(session, out, 2412);
+  testing::handleLegacyNacaCore(session, out, 2412);
   CHECK(session.paneling.panelingValid);
   CHECK(!session.paneling.panel.x.empty());
 }
@@ -478,7 +478,7 @@ TEST(unit, InverseResetRestoresInitDefaultsOnlyForInverseState) {
 TEST(unit, InversePanelRevisionMonotonicAcrossPanelProducers) {
   SessionComposition session;
   std::ostringstream out;
-  cli::handleNacaCore(session, out, 2412);
+  testing::handleLegacyNacaCore(session, out, 2412);
   const std::uint64_t afterNaca = session.paneling.panelRevision;
   CHECK(afterNaca >= 2);  // setBufferGeometry + applyPaneling
   (void)session::copyBufferToCurrent(session);

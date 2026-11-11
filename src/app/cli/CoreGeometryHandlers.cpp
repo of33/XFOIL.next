@@ -136,7 +136,8 @@ void emitPangenOutput(std::ostream& out,
 }  // namespace
 
 void handleNacaCore(session::SessionComposition& session, std::ostream& out,
-                    int designation) {
+                    int designation, bool sharpTrailingEdge,
+                    std::size_t nside) {
   // Controlled original messages (as handleNaca / xfoil.f NACA).
   if (designation < 0) {
     out << " This designation not implemented.\n";
@@ -165,7 +166,8 @@ void handleNacaCore(session::SessionComposition& session, std::ostream& out,
     }
   }
 
-  const auto naca = core::geometry::nacaAirfoil(designation);
+  const auto naca =
+      core::geometry::nacaAirfoil(designation, sharpTrailingEdge, nside);
   if (!naca.isOk()) {
     out << " This designation not implemented.\n";
     return;
@@ -2268,9 +2270,9 @@ GeometryDesignCoreStatus handleGeometryDesignCore(
       } else {
         emitSymmetryDisabled(out);
       }
-    } else if (cmd == "ADEG" || cmd == "ARAD") {
+    } else if (cmd == "ADEG" || cmd == "A" || cmd == "ARAD") {
       double arad = 0.0;
-      if (cmd == "ADEG") {
+      if (cmd == "ADEG" || cmd == "A") {
         double adeg = 0.0;
         if (ninput >= 1) {
           adeg = reals.values[0];
@@ -2287,6 +2289,71 @@ GeometryDesignCoreStatus handleGeometryDesignCore(
       }
       if (!eofRequested) {
         (void)session::gdesRotate(session, arad);
+      }
+    } else if (cmd == "SQTE") {
+      (void)session::gdesSquareTrailingEdge(session);
+    } else if (cmd == "CIRC") {
+      // xgdes.f 594-596: NHCIRC is fixed at 15; an inline argument is
+      // intentionally not used as a variable circle size.
+      (void)session::gdesAddTrailingEdgeCircle(session, 15);
+    } else if (cmd == "SYTB") {
+      double ytfac = 1.0;
+      double ybfac = 1.0;
+      bool have = true;
+      if (ninput >= 2) {
+        ytfac = reals.values[0];
+        ybfac = reals.values[1];
+      } else if (ninput == 1) {
+        ytfac = reals.values[0];
+        have = askReal("Enter bottom y scale factor^", ybfac);
+      } else {
+        have = askReal("Enter top y scale factor^", ytfac);
+        if (have) have = askReal("Enter bottom y scale factor^", ybfac);
+      }
+      if (have && !eofRequested) {
+        (void)session::gdesScaleTopBottomY(session, ytfac, ybfac);
+      }
+    } else if (cmd == "XCEN") {
+      double xoc = 0.0;
+      double yot = 0.0;
+      auto askXcen = [&](const char* promptText, double& value) -> bool {
+        for (;;) {
+          out << "\n " << promptText;
+          std::string answerLine;
+          if (!std::getline(in, answerLine)) return false;
+          const auto answerValues = parseRealArguments(answerLine);
+          if (answerValues.success() && !answerValues.values.empty()) {
+            value = answerValues.values[0];
+            return true;
+          }
+        }
+      };
+      bool have = true;
+      if (ninput >= 2) {
+        xoc = reals.values[0];
+        yot = reals.values[1];
+      } else {
+        have = askXcen("Enter center-point x/c: ", xoc);
+        if (have) have = askXcen("Enter center-point y/t: ", yot);
+      }
+      if (have && !eofRequested) {
+        const auto q = session::gdesCenterPointQuery(session, xoc, yot);
+        if (!q.ok) {
+          if (!q.message.empty()) out << " " << q.message << "\n";
+        } else {
+          if (!q.topFound) out << " x/c top point not found\n";
+          if (!q.topConverged) out << " SB1 convergence failed\n";
+          if (!q.bottomFound) out << " x/c bot point not found\n";
+          if (!q.bottomConverged) out << " SB2 convergence failed\n";
+          out << "\n";
+          out << " Top point  x,y =" << io::fortranG(15, 6, q.topX)
+              << io::fortranG(15, 6, q.topY) << "\n";
+          out << " y/t point  x,y =" << io::fortranG(15, 6, q.middleX)
+              << io::fortranG(15, 6, q.middleY) << "\n";
+          out << " Bot point  x,y =" << io::fortranG(15, 6, q.bottomX)
+              << io::fortranG(15, 6, q.bottomY) << "\n";
+          out << "\n";
+        }
       }
     } else if (cmd == "TRAN" || cmd == "T") {
       double delx = 0.0;

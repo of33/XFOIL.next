@@ -53,7 +53,7 @@ using app::cli::handleOperDampCore;
 
 std::string runCombinedSequence() {
   session::SessionComposition composition;
-  const auto naca2412 = core::geometry::nacaAirfoil(2412);
+  const auto naca2412 = core::geometry::nacaAirfoil(2412, false, 123);
   CHECK(naca2412.isOk());
   CHECK(session::setBufferGeometry(composition, naca2412.value().buffer)
             .success());

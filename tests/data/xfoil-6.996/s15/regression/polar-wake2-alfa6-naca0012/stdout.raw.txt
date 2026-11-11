@@ -1,0 +1,231 @@
+
+ ===================================================
+  XFOIL Version 6.99
+  Copyright (C) 2000   Mark Drela, Harold Youngren
+
+  This software comes with ABSOLUTELY NO WARRANTY,
+    subject to the GNU General Public License.
+
+  Caveat computor
+ ===================================================
+
+ File  xfoil.def  not found
+
+   QUIT    Exit program
+
+  .OPER    Direct operating point(s)
+  .MDES    Complex mapping design routine
+  .QDES    Surface speed design routine
+  .GDES    Geometry design routine
+
+   SAVE f  Write airfoil to labeled coordinate file
+   PSAV f  Write airfoil to plain coordinate file
+   ISAV f  Write airfoil to ISES coordinate file
+   MSAV f  Write airfoil to MSES coordinate file
+   REVE    Reverse written-airfoil node ordering
+   DELI i  Change written-airfoil file delimiters
+
+   LOAD f  Read buffer airfoil from coordinate file
+   NACA i  Set NACA 4,5-digit airfoil and buffer airfoil
+   INTE    Set buffer airfoil by interpolating two airfoils
+   NORM    Buffer airfoil normalization toggle
+   HALF    Halve the number of points in buffer airfoil
+   XYCM rr Change CM reference location, currently  0.25000 0.00000
+
+   BEND    Display structural properties of current airfoil
+
+   PCOP    Set current-airfoil panel nodes directly from buffer airfoil points
+   PANE    Set current-airfoil panel nodes ( 160 ) based on curvature
+  .PPAR    Show/change paneling
+
+  .PLOP    Plotting options
+
+   WDEF f  Write  current-settings file
+   RDEF f  Reread current-settings file
+   NAME s  Specify new airfoil name
+   NINC    Increment name version number
+
+   Z       Zoom    | (available in all menus)
+   U       Unzoom  | 
+
+ XFOIL   c>   Max thickness =     0.120034  at x =   0.301
+ Max camber    =     0.000000  at x =   0.043
+
+ Buffer airfoil set using 399 points
+
+ Blunt trailing edge.  Gap =  0.00252
+
+ Paneling parameters used...
+   Number of panel nodes       160
+   Panel bunching parameter    1.000
+   TE/LE panel density ratio   0.150
+   Refined-area/LE panel density ratio    0.200
+   Top    side refined area x/c limits  1.000 1.000
+   Bottom side refined area x/c limits  1.000 1.000
+
+ XFOIL   c>  
+ Blunt trailing edge.  Gap =  0.00252
+
+ Paneling parameters used...
+   Number of panel nodes       160
+   Panel bunching parameter    1.000
+   TE/LE panel density ratio   0.150
+   Refined-area/LE panel density ratio    0.200
+   Top    side refined area x/c limits  1.000 1.000
+   Bottom side refined area x/c limits  1.000 1.000
+
+ XFOIL   c>  
+.OPERi   c>  
+ M  =    0.0000
+ Re =  0.1000E+07
+
+.OPERv   c>   Calculating unit vorticity distributions ...
+
+OFS: alfa =   4.0000 cl =   0.4829 cdp =  -0.0011 cm =  -0.0056
+ Calculating wake trajectory ...
+ Calculating source influence matrix ...
+
+ Solving BL system ...
+
+ Initializing BL ...
+    side            1  ...
+ MRCHUE: Inverse mode at  38     Hk =   2.921
+ MRCHUE: Inverse mode at  87     Hk =   2.500
+    side            2  ...
+ MRCHUE: Inverse mode at  65     Hk =   4.479
+ MRCHUE: Inverse mode at  66     Hk =   5.216
+ MRCHUE: Inverse mode at  67     Hk =   5.943
+ MRCHUE: Inverse mode at  68     Hk =   6.661
+ MRCHUE: Inverse mode at  69     Hk =   5.547
+ MRCHUE: Inverse mode at  70     Hk =   2.689
+
+ Side 1  free  transition at x/c =  0.2120   39
+ Side 2  free  transition at x/c =  0.9149   69
+
+   1   rms: 0.1316E+00   max: 0.1067E+01   D at   39  1   RLX: 0.512
+       a =  4.000      CL =  0.4572
+      Cm = -0.0005     CD =  0.00654   =>   CDf =  0.00529    CDp =  0.00125
+
+ Side 1  free  transition at x/c =  0.2271   39
+ Side 2  free  transition at x/c =  0.9370   70
+
+   2   rms: 0.7701E-01   max: -.6581E+00   D at   75  2   RLX: 0.760
+       a =  4.000      CL =  0.4213
+      Cm =  0.0071     CD =  0.00710   =>   CDf =  0.00519    CDp =  0.00191
+
+ MRCHDU: Convergence failed at  74  side 2    Res =  0.7354E+01
+ MRCHDU: Convergence failed at  75  side 2    Res =  0.4548E+01
+ Side 1  free  transition at x/c =  0.2559   41
+ Side 2  free  transition at x/c =  0.9813   74
+
+   3   rms: 0.6362E-01   max: 0.7245E+00   C at   74  2
+       a =  4.000      CL =  0.4228
+      Cm =  0.0073     CD =  0.00708   =>   CDf =  0.00497    CDp =  0.00211
+
+ Side 1  free  transition at x/c =  0.2567   41
+ Side 2  free  transition at x/c =  0.9673   73
+
+   4   rms: 0.1685E-01   max: -.3128E+00   D at   73  2
+       a =  4.000      CL =  0.4264
+      Cm =  0.0063     CD =  0.00726   =>   CDf =  0.00495    CDp =  0.00231
+
+ Side 1  free  transition at x/c =  0.2542   41
+ Side 2  free  transition at x/c =  0.9704   73
+
+   5   rms: 0.5950E-02   max: 0.7665E-01   C at   73  2
+       a =  4.000      CL =  0.4275
+      Cm =  0.0061     CD =  0.00728   =>   CDf =  0.00496    CDp =  0.00231
+
+ Side 1  free  transition at x/c =  0.2538   41
+ Side 2  free  transition at x/c =  0.9686   73
+
+   6   rms: 0.5264E-03   max: -.6258E-02   D at   75  2
+       a =  4.000      CL =  0.4278
+      Cm =  0.0060     CD =  0.00728   =>   CDf =  0.00496    CDp =  0.00231
+
+ Side 1  free  transition at x/c =  0.2537   41
+ Side 2  free  transition at x/c =  0.9685   73
+
+   7   rms: 0.1645E-05   max: -.1880E-04   D at   73  2
+       a =  4.000      CL =  0.4278
+      Cm =  0.0060     CD =  0.00728   =>   CDf =  0.00497    CDp =  0.00231
+      9.000    3.1650   0.007279   0.000000   0.000000   0.000000    0.2537     #
+
+.OPERv   c>  
+ Xtr/c     =  1.0000    top    side
+ Xtr/c     =  1.0000    bottom side
+ NcritT    =    9.00   ( 0.070 % turb. level )
+ NcritB    =    9.00   ( 0.070 % turb. level )
+ Vacc      =  0.0100
+ WakeL/c   =   1.000
+
+ Klag  =  5.6000     Uxwt  =    1.00       Kdl =  0.9000
+ A     =  6.7000     B     =  0.7500       KCt = 0.01485
+ CtiniK=  1.8000     CtiniX=  3.3000
+
+..VPAR   c>  
+..VPAR   c>  
+.OPERv   c>  
+OFS: alfa =   6.0000 cl =   0.7235 cdp =  -0.0011 cm =  -0.0083
+ Calculating wake trajectory ...
+ Calculating source influence matrix ...
+
+ Solving BL system ...
+
+ Initializing BL ...
+    side            1  ...
+ MRCHUE: Inverse mode at  26     Hk =   4.788
+ MRCHUE: Inverse mode at  27     Hk =   6.249
+ MRCHUE: Inverse mode at  28     Hk =   7.810
+ MRCHUE: Inverse mode at  29     Hk =   6.183
+ MRCHUE: Inverse mode at  30     Hk =   2.500
+ MRCHUE: Inverse mode at  90     Hk =   2.500
+    side            2  ...
+ MRCHUE: Inverse mode at  65     Hk =   4.416
+ MRCHUE: Inverse mode at  66     Hk =   5.141
+ MRCHUE: Inverse mode at  67     Hk =   5.845
+ MRCHUE: Inverse mode at  68     Hk =   6.518
+ MRCHUE: Inverse mode at  69     Hk =   7.145
+ MRCHUE: Inverse mode at  70     Hk =   7.708
+ MRCHUE: Inverse mode at  71     Hk =   7.334
+ MRCHUE: Inverse mode at  72     Hk =   5.767
+
+ Side 1  free  transition at x/c =  0.0516   29
+ Side 2  free  transition at x/c =  0.9888   71
+
+   1   rms: 0.2003E+00   max: 0.9598E+00   D at   75  2   RLX: 0.750
+       a =  6.000      CL =  0.7301
+      Cm = -0.0111     CD =  0.00908   =>   CDf =  0.00589    CDp =  0.00319
+
+ Side 1  free  transition at x/c =  0.0617   30
+ Side 2  free  transition at x/c =  0.9909   71
+
+   2   rms: 0.6157E-01   max: -.4117E+00   T at   30  1
+       a =  6.000      CL =  0.6917
+      Cm = -0.0037     CD =  0.01003   =>   CDf =  0.00598    CDp =  0.00405
+
+ Side 1  free  transition at x/c =  0.0762   32
+ Side 2  free  transition at x/c =  0.9985   72
+
+   3   rms: 0.2627E-01   max: 0.2915E+00   D at   32  1
+       a =  6.000      CL =  0.6956
+      Cm = -0.0044     CD =  0.00965   =>   CDf =  0.00583    CDp =  0.00381
+
+ Side 1  free  transition at x/c =  0.0820   32
+ Side 2  free  transition at x/c =  0.9937   72
+
+   4   rms: 0.2371E-02   max: -.3246E-01   D at   72  2
+       a =  6.000      CL =  0.6949
+      Cm = -0.0043     CD =  0.00973   =>   CDf =  0.00578    CDp =  0.00395
+
+ Side 1  free  transition at x/c =  0.0813   32
+ Side 2  free  transition at x/c =  0.9940   72
+
+   5   rms: 0.2908E-04   max: -.5430E-03   D at   32  1
+       a =  6.000      CL =  0.6949
+      Cm = -0.0043     CD =  0.00973   =>   CDf =  0.00578    CDp =  0.00395
+      9.000    3.8780   0.009728   0.000000   0.000000   0.000000    0.0813     #
+
+.OPERv   c>  
+ XFOIL   c>  
+ XFOIL   c>  

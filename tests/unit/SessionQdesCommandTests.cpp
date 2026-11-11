@@ -54,7 +54,7 @@ void setupPangenAirfoil(SessionComposition& s, int designation) {
   params.teToLeDensityRatio = 0.15;
   CHECK(session::setPanelingParameters(s, params).ok);
   std::ostringstream out;
-  cli::handleNacaCore(s, out, designation);
+  testing::handleLegacyNacaCore(s, out, designation);
   CHECK(s.paneling.panelingValid);
 }
 

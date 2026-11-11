@@ -54,7 +54,7 @@ using app::cli::handleOperDampCore;
 using app::cli::handleOperViscCore;
 
 void buildNaca2412Paned(session::SessionComposition& composition) {
-  const auto naca = core::geometry::nacaAirfoil(2412);
+  const auto naca = core::geometry::nacaAirfoil(2412, false, 123);
   CHECK(naca.isOk());
   CHECK(
       session::setBufferGeometry(composition, naca.value().buffer).success());

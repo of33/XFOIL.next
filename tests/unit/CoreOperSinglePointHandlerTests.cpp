@@ -526,7 +526,7 @@ const std::string kRepanelP2Completion =
 ;
 
 void buildNaca2412Paned(session::SessionComposition& composition) {
-  const auto naca = core::geometry::nacaAirfoil(2412);
+  const auto naca = core::geometry::nacaAirfoil(2412, false, 123);
   CHECK(naca.isOk());
   CHECK(session::setBufferGeometry(composition, naca.value().buffer).success());
   core::paneling::PanelingParameters params =
@@ -1213,7 +1213,7 @@ TEST(unit, OperCseqViscousChainedAlphaMatchesFortranOracle) {
 // binary, identical to the PLXADD header of the last point).
 TEST(unit, OperCseqChainRawRadiansCarryMatchesFortran) {
   session::SessionComposition composition;
-  const auto naca = core::geometry::nacaAirfoil(12);
+  const auto naca = core::geometry::nacaAirfoil(12, false, 123);
   CHECK(naca.isOk());
   CHECK(session::setBufferGeometry(composition, naca.value().buffer)
             .success());
@@ -1956,7 +1956,7 @@ TEST(unit, OperSinglePointHandlerTextIsDeterministic) {
 // missing panel contour: controlled missingGeometry without any output.
 TEST(unit, OperSinglePointHandlerWithoutPanelingIsControlled) {
   session::SessionComposition composition;
-  const auto naca = core::geometry::nacaAirfoil(2412);
+  const auto naca = core::geometry::nacaAirfoil(2412, false, 123);
   CHECK(naca.isOk());
   CHECK(session::setBufferGeometry(composition, naca.value().buffer).success());
 
@@ -2597,7 +2597,7 @@ TEST(unit, OperCpmnAfterGeometryChangeKeepsCommonSnapshot) {
   std::ostringstream before;
   CHECK(app::cli::handleOperCpmnCore(composition, before) ==
         app::cli::OperCpmnCoreStatus::available);
-  const auto naca = core::geometry::nacaAirfoil(4412);
+  const auto naca = core::geometry::nacaAirfoil(4412, false, 123);
   CHECK(naca.isOk());
   CHECK(session::setBufferGeometry(composition, naca.value().buffer)
             .success());
@@ -2688,7 +2688,7 @@ TEST(unit, SessionBlparPersistsAcrossPaneProfileInitAndAnalysis) {
   CHECK_NEAR(composition.viscous.blpar.sccon, 6.0, 0.0, 0.0);
 
   // profile change does not reset BLPAR.
-  const auto naca = core::geometry::nacaAirfoil(4412);
+  const auto naca = core::geometry::nacaAirfoil(4412, false, 123);
   CHECK(naca.isOk());
   CHECK(session::setBufferGeometry(composition, naca.value().buffer)
             .success());
@@ -2768,7 +2768,7 @@ TEST(unit, SessionIdampPersistsAcrossPaneProfileVparInitAndMenus) {
   CHECK_EQ(composition.viscous.idamp, 1);
 
   // profile change does not reset IDAMP.
-  const auto naca = core::geometry::nacaAirfoil(4412);
+  const auto naca = core::geometry::nacaAirfoil(4412, false, 123);
   CHECK(naca.isOk());
   CHECK(session::setBufferGeometry(composition, naca.value().buffer)
             .success());
@@ -3143,7 +3143,7 @@ TEST(unit, SessionLagGbCtrCfacPersistAcrossPaneProfileInitAndAnalysis) {
   CHECK(session::applyPaneling(s).ok);
   CHECK(p6p3BlparBits(s.viscous.blpar) == expected);
 
-  const auto naca = core::geometry::nacaAirfoil(4412);
+  const auto naca = core::geometry::nacaAirfoil(4412, false, 123);
   CHECK(naca.isOk());
   CHECK(session::setBufferGeometry(s, naca.value().buffer).success());
   CHECK(session::applyPaneling(s).ok);
@@ -3475,7 +3475,7 @@ TEST(unit, SessionRestPersistsAcrossPaneProfileInitAndIndependentSessions) {
   CHECK(session::applyPaneling(s).ok);
   CHECK(p6p3BlparBits(s.viscous.blpar) == expected);
 
-  const auto naca = core::geometry::nacaAirfoil(4412);
+  const auto naca = core::geometry::nacaAirfoil(4412, false, 123);
   CHECK(naca.isOk());
   CHECK(session::setBufferGeometry(s, naca.value().buffer).success());
   CHECK(p6p3BlparBits(s.viscous.blpar) == expected);

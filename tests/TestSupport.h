@@ -29,9 +29,14 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <iosfwd>
 #include <sstream>
 #include <string>
 #include <vector>
+
+namespace xfoil::session {
+struct SessionComposition;
+}
 
 namespace testing {
 
@@ -69,6 +74,12 @@ int runRegisteredTests(int argc, char** argv);
 // "unit.CoreGdesMenuHelpUnknownExitMatchesFortran"); outside a
 // test run it is empty.
 std::string currentTestName();
+
+// Test-only setup helper for cases whose reference transcript predates
+// the S15 NACA command contract. It exercises the same core handler and
+// commit path with the explicit S04 NSIDE=123 (NB=245) baseline.
+void handleLegacyNacaCore(xfoil::session::SessionComposition& session,
+                          std::ostream& out, int designation);
 
 // base directory for test working directories:
 // std::filesystem::temp_directory_path.

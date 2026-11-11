@@ -314,7 +314,7 @@ TEST(integration, PparNChangesPanelCount) {
  // the core PANGEN path now matches the Fortran reference
   // (fortran-bin/xfoil byte-identical for NACA 2412, N=60).
   CHECK(contains(result.outputText,
-                 " Maximum panel corner angle = 19.117   at  i,x,y  ="
+                 " Maximum panel corner angle = 19.124   at  i,x,y  ="
                  "  32   0.0009  -0.0052\n"));
 
   const std::string saved = readDataFile("ppar-n60.dat");
@@ -409,8 +409,8 @@ TEST(integration, PparAppliesChangesOnEmptyLine) {
   // 'XT 0.18 , 0.72' in the old tests desynchronizes the
   // Fortran GETFLT input stream; the C++ parser accepts it).
   CHECK(contains(result.outputText,
-                 " Maximum panel corner angle = 37.149   at  i,x,y  ="
-                 "  47   0.0002  -0.0026\n"));
+                 " Maximum panel corner angle = 37.143   at  i,x,y  ="
+                 "  47   0.0004  -0.0036\n"));
 }
 
 TEST(integration, PparRemainsOpenAfterApplyingChanges) {

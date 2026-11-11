@@ -138,8 +138,8 @@ TEST(integration, TopNacaSetsBufferAndNamesAirfoil) {
       runSession("NACA 2412\nSAVE " + dataPath("top-naca.dat") + "\nQUIT\n");
 
   CHECK_EQ(result.exitCode, 0);
-  // FCPP009 NACA successor group: canonical NSIDE=123, buffer NB=2*123-1=245.
-  CHECK(result.outputText.find(" Buffer airfoil set using 245 points\n") !=
+  // S15 NACA command contract: NSIDE=200, buffer NB=2*200-1=399.
+  CHECK(result.outputText.find(" Buffer airfoil set using 399 points\n") !=
         std::string::npos);
 
   const std::string fileText = readDataFile("top-naca.dat");
@@ -148,17 +148,17 @@ TEST(integration, TopNacaSetsBufferAndNamesAirfoil) {
   removeDataFile("top-naca.dat");
 }
 
-// FCPP009 NACA successor group: structural tests for the canonical point count.
-// NB=245 (buffer), N=240 (PANGEN default), PCOP=245 (buffer adoption).
+// S15 NACA successor group: structural tests for the accepted point count.
+// NB=399 (buffer), N=240 (PANGEN default), PCOP=399 (buffer adoption).
 // No exact C++ vs Fortran point-value comparison: the panel coordinates
 // differ because of FCPP038 (IPFAC=3 vs 5) until the PANGEN correction
 // is released. The point counts have been evidenced by FCPP009 since then.
-TEST(integration, NacaBufferHas245Points) {
+TEST(integration, NacaBufferHas399Points) {
   for (const char* designation : {"0012", "2412", "23012"}) {
     const auto result = runSession(std::string("NACA ") + designation +
                                    "\nQUIT\n");
     CHECK_EQ(result.exitCode, 0);
-    CHECK(result.outputText.find(" Buffer airfoil set using 245 points\n") !=
+    CHECK(result.outputText.find(" Buffer airfoil set using 399 points\n") !=
           std::string::npos);
   }
 }
@@ -189,13 +189,13 @@ TEST(integration, NacaPangenCurrentContourHas240Points) {
   removeDataFile("naca-pane.dat");
 }
 
-TEST(integration, NacaPcopCurrentContourHas245Points) {
+TEST(integration, NacaPcopCurrentContourHas399Points) {
   TestDataDir dir;
   removeDataFile("naca-pcop.dat");
   const auto result = runSession(
       "NACA 2412\nPCOP\nSAVE " + dataPath("naca-pcop.dat") + "\nQUIT\n");
   CHECK_EQ(result.exitCode, 0);
-  // PCOP takes over the 245-point buffer as the current contour.
+  // PCOP takes over the 399-point buffer as the current contour.
   const std::string fileText = readDataFile("naca-pcop.dat");
   int dataLines = 0;
   std::istringstream stream(fileText);
@@ -210,7 +210,7 @@ TEST(integration, NacaPcopCurrentContourHas245Points) {
       ++dataLines;
     }
   }
-  CHECK_EQ(dataLines, 245);
+  CHECK_EQ(dataLines, 399);
   removeDataFile("naca-pcop.dat");
 }
 
@@ -481,7 +481,7 @@ TEST(integration, TopInteCurrentSourceNeedsCurrentAirfoil) {
 }
 
 // INTX reaches the canonical
-// source menu, HALF only decimates the buffer (245 -> 123),
+// source menu, HALF only decimates the buffer (399 -> 200),
 // PCOP takes over only afterwards.
 TEST(integration, TopIntxHalfAreProductive) {
   TestDataDir dir;
@@ -508,9 +508,9 @@ TEST(integration, TopIntxHalfAreProductive) {
       ++coordinateLines;
     }
   }
-  // INTX (C/C, FRAC 0.5) keeps 245 buffer points; HALF decimates to
-  // 123; PCOP takes over only that contour.
-  CHECK_EQ(coordinateLines, std::size_t{123});
+  // INTX (C/C, FRAC 0.5) keeps 399 buffer points; HALF decimates to
+  // 200; PCOP takes over only that contour.
+  CHECK_EQ(coordinateLines, std::size_t{200});
   removeDataFile("top-intx-half-pinned.dat");
 }
 

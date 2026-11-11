@@ -283,7 +283,7 @@ TEST(integration, VparWakeGrowthAfterViscousPointConvergesLikeFortran) {
                              " VISCAL:  Convergence failed"),
            std::size_t{0});
   CHECK(result.outputText.find(
-            "   5   rms: 0.3146E-04   max: -.5670E-03   D at   32  1") !=
+            "   5   rms: 0.2908E-04   max: -.5430E-03   D at   32  1") !=
         std::string::npos);
   CHECK(result.outputText.find(
             "      Cm = -0.0043     CD =  0.00973   =>   CDf =  0.00578"

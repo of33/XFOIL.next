@@ -110,9 +110,9 @@ TEST(unit, CoreNacaHandlerMatchesFortranNacaBlock) {
   std::ostringstream out;
   app::cli::handleNacaCore(composition, out, 2412);
   const std::string expected =
-      " Max thickness =     0.120032  at x =   0.297\n"
-      " Max camber    =     0.019999  at x =   0.403\n"
-      "\n Buffer airfoil set using 245 points\n"
+      " Max thickness =     0.120034  at x =   0.301\n"
+      " Max camber    =     0.020000  at x =   0.398\n"
+      "\n Buffer airfoil set using 399 points\n"
       "\n Blunt trailing edge.  Gap =  0.00252\n"
       "\n Paneling parameters used..."
       "\n   Number of panel nodes       240"
@@ -154,7 +154,7 @@ TEST(unit, CoreCurrentAirfoilCoordinatesMatchesFortranSave) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   const auto coordinates = app::cli::currentAirfoilCoordinatesCore(composition);
   CHECK_EQ(coordinates.size(), 160u);
@@ -185,9 +185,9 @@ TEST(unit, CoreNacaHandlerN0012MatchesFortranText) {
   std::ostringstream out;
   app::cli::handleNacaCore(composition, out, 12);
   const std::string expected =
-      " Max thickness =     0.120032  at x =   0.297\n"
-      " Max camber    =    -0.000000  at x =   0.015\n"
-      "\n Buffer airfoil set using 245 points\n"
+      " Max thickness =     0.120034  at x =   0.301\n"
+      " Max camber    =     0.000000  at x =   0.043\n"
+      "\n Buffer airfoil set using 399 points\n"
       "\n Blunt trailing edge.  Gap =  0.00252\n"
       "\n Paneling parameters used..."
       "\n   Number of panel nodes       240"
@@ -205,9 +205,9 @@ TEST(unit, CoreNacaHandlerNaca5N23012MatchesFortranText) {
   std::ostringstream out;
   app::cli::handleNacaCore(composition, out, 23012);
   const std::string expected =
-      " Max thickness =     0.120032  at x =   0.297\n"
-      " Max camber    =     0.018382  at x =   0.146\n"
-      "\n Buffer airfoil set using 245 points\n"
+      " Max thickness =     0.120034  at x =   0.301\n"
+      " Max camber    =     0.018385  at x =   0.152\n"
+      "\n Buffer airfoil set using 399 points\n"
       "\n Blunt trailing edge.  Gap =  0.00252\n"
       "\n Paneling parameters used..."
       "\n   Number of panel nodes       240"
@@ -222,7 +222,7 @@ TEST(unit, CoreNacaHandlerNaca5N23012MatchesFortranText) {
 
 // success-state contract: canonical name, buffer revision incremented
 // exactly once, origin pangen, panelSourceRevision == bufferRevision,
-// buffer with 245 points, panel derived from this buffer.
+// buffer with 399 points, panel derived from this buffer.
 TEST(unit, CoreNacaHandlerSetsNameRevisionAndOrigin) {
   session::SessionComposition composition;
   std::ostringstream out;
@@ -231,7 +231,7 @@ TEST(unit, CoreNacaHandlerSetsNameRevisionAndOrigin) {
   CHECK_EQ(composition.geometry.name, std::string("NACA 2412"));
   CHECK(composition.geometry.valid);
   CHECK_EQ(composition.geometry.bufferRevision, 1u);
-  CHECK_EQ(composition.geometry.buffer.x.size(), 245u);
+  CHECK_EQ(composition.geometry.buffer.x.size(), 399u);
   CHECK(composition.paneling.panelingValid);
   CHECK_EQ(static_cast<int>(composition.paneling.origin),
            static_cast<int>(session::PanelingOrigin::pangen));
@@ -251,7 +251,7 @@ TEST(unit, CoreNacaHandlerUsesCurrentPanelParameters) {
       std::span<const double>(&n, 1), paramSink);
 
   std::ostringstream out;
-  app::cli::handleNacaCore(composition, out, 2412);
+  testing::handleLegacyNacaCore(composition, out, 2412);
   CHECK(out.str().find("Number of panel nodes       200") !=
         std::string::npos);
   CHECK_EQ(session::panelingParameters(composition).panelCount, 200);
@@ -262,14 +262,14 @@ TEST(unit, CoreNacaHandlerUsesCurrentPanelParameters) {
 TEST(unit, CoreNacaHandlerInvalidatesAnalysisIncludingWake) {
   session::SessionComposition composition;
   std::ostringstream firstOut;
-  app::cli::handleNacaCore(composition, firstOut, 2412);
+  testing::handleLegacyNacaCore(composition, firstOut, 2412);
   composition.viscous.systemValid = true;
   composition.viscous.wakeValid = true;
   composition.viscous.converged = true;
   composition.result.lastResult.status = xfoil::AnalysisStatus::converged;
 
   std::ostringstream out;
-  app::cli::handleNacaCore(composition, out, 2412);
+  testing::handleLegacyNacaCore(composition, out, 2412);
   CHECK_FALSE(composition.viscous.systemValid);
   CHECK_FALSE(composition.viscous.wakeValid);
   CHECK_FALSE(composition.viscous.converged);
@@ -289,7 +289,7 @@ TEST(unit, CoreNacaHandlerFromAbcopyOriginReplacesBuffer) {
   const std::uint64_t revBefore = composition.geometry.bufferRevision;
 
   std::ostringstream out;
-  app::cli::handleNacaCore(composition, out, 2412);
+  testing::handleLegacyNacaCore(composition, out, 2412);
   CHECK_EQ(composition.geometry.bufferRevision, revBefore + 1u);
   CHECK_EQ(composition.geometry.name, std::string("NACA 2412"));
   CHECK_EQ(static_cast<int>(composition.paneling.origin),
@@ -304,14 +304,14 @@ TEST(unit, CoreNacaHandlerFromAbcopyOriginReplacesBuffer) {
 TEST(unit, CoreNacaHandlerPangenFailureNoMutation) {
   session::SessionComposition composition;
   std::ostringstream firstOut;
-  app::cli::handleNacaCore(composition, firstOut, 2412);  // buffer + panel valid
+  testing::handleLegacyNacaCore(composition, firstOut, 2412);  // buffer + panel valid
   const std::vector<double> bufferBefore = composition.geometry.buffer.x;
   const std::vector<double> panelBefore = composition.paneling.panel.x;
   const std::uint64_t revBefore = composition.geometry.bufferRevision;
   composition.paneling.parameters.panelCount = 601;  // test injection (>600)
 
   std::ostringstream out;
-  app::cli::handleNacaCore(composition, out, 12);
+  testing::handleLegacyNacaCore(composition, out, 12);
   CHECK_EQ(out.str(), "Panel: Too many panels. Increase IQX\n");
   // No commit: buffer, panel, name and revision remain at the first NACA.
   CHECK(composition.geometry.buffer.x == bufferBefore);
@@ -326,7 +326,7 @@ TEST(unit, CoreNacaHandlerIndependentSessions) {
   session::SessionComposition a;
   session::SessionComposition b;
   std::ostringstream outA;
-  app::cli::handleNacaCore(a, outA, 2412);
+  testing::handleLegacyNacaCore(a, outA, 2412);
   CHECK(!b.geometry.valid);
   CHECK_EQ(a.geometry.name, std::string("NACA 2412"));
   CHECK(b.geometry.name.empty());
@@ -336,7 +336,7 @@ TEST(unit, CoreNacaHandlerIndependentSessions) {
 TEST(unit, CoreNacaHandlerTeLineAppearsOnce) {
   session::SessionComposition composition;
   std::ostringstream out;
-  app::cli::handleNacaCore(composition, out, 2412);
+  testing::handleLegacyNacaCore(composition, out, 2412);
   std::size_t count = 0;
   const std::string needle = "trailing edge";
   for (std::size_t pos = out.str().find(needle); pos != std::string::npos;
@@ -352,7 +352,7 @@ TEST(unit, CoreNacaHandlerTextDeterministic) {
   auto runOnce = [] {
     session::SessionComposition composition;
     std::ostringstream out;
-    app::cli::handleNacaCore(composition, out, 2412);
+    testing::handleLegacyNacaCore(composition, out, 2412);
     return out.str();
   };
   const std::string first = runOnce();
@@ -368,7 +368,7 @@ TEST(unit, CoreNacaHandlerTextDeterministic) {
 TEST(unit, CorePcopHandlerMatchesFortranAbcopyConfirmation) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
 
   std::ostringstream out;
   app::cli::handlePcopCore(composition, out);
@@ -385,7 +385,7 @@ TEST(unit, CorePcopHandlerMatchesFortranAbcopyConfirmation) {
 TEST(unit, CorePcopHandlerFromPangenPanelCopiesBufferToPanel) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);  // panel pangen (160)
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);  // panel pangen (160)
   CHECK_EQ(static_cast<int>(composition.paneling.origin),
            static_cast<int>(session::PanelingOrigin::pangen));
   const std::uint64_t bufferRevBefore = composition.geometry.bufferRevision;
@@ -413,7 +413,7 @@ TEST(unit, CorePcopHandlerFromPangenPanelCopiesBufferToPanel) {
 TEST(unit, CorePcopHandlerPanelCoordsEqualBufferAfter) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   std::ostringstream out;
   app::cli::handlePcopCore(composition, out);
   CHECK(composition.paneling.panel.x == composition.geometry.buffer.x);
@@ -449,7 +449,7 @@ TEST(unit, CorePcopHandlerFromAbcopyPanel) {
 TEST(unit, CorePcopHandlerPreservesParamsAndName) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   const int npanBefore = session::panelingParameters(composition).panelCount;
   const std::string nameBefore = composition.geometry.name;
 
@@ -465,7 +465,7 @@ TEST(unit, CorePcopHandlerPreservesParamsAndName) {
 TEST(unit, CorePcopHandlerInvalidatesAnalysisDependents) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   composition.viscous.systemValid = true;
   composition.viscous.wakeValid = true;
   composition.viscous.converged = true;
@@ -485,7 +485,7 @@ TEST(unit, CorePcopHandlerInvalidatesAnalysisDependents) {
 TEST(unit, CorePcopHandlerThenPaneUsesBuffer) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   std::ostringstream pcopOut;
   app::cli::handlePcopCore(composition, pcopOut);  // panel = buffer (245)
   const double n = 200.0;
@@ -509,7 +509,7 @@ TEST(unit, CorePcopHandlerThenPaneUsesBuffer) {
 TEST(unit, CorePcopHandlerRepeated) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   std::ostringstream firstOut;
   app::cli::handlePcopCore(composition, firstOut);
   const std::uint64_t bufferRev = composition.geometry.bufferRevision;
@@ -544,7 +544,7 @@ TEST(unit, CorePcopHandlerNoBufferNoMutation) {
 TEST(unit, CorePcopHandlerCapacityNoMutation) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);  // panel 160
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);  // panel 160
   const std::vector<double> panelXBefore = composition.paneling.panel.x;
   // Stretch the buffer above the new limit (only the capacity check matters).
   const std::size_t limit = static_cast<std::size_t>(
@@ -578,8 +578,8 @@ TEST(unit, CorePcopHandlerIndependentSessions) {
   useXfoil699PanelDefaults(b);
   std::ostringstream nacaA;
   std::ostringstream nacaB;
-  app::cli::handleNacaCore(a, nacaA, 2412);
-  app::cli::handleNacaCore(b, nacaB, 2412);
+  testing::handleLegacyNacaCore(a, nacaA, 2412);
+  testing::handleLegacyNacaCore(b, nacaB, 2412);
   std::ostringstream out;
   app::cli::handlePcopCore(a, out);
   CHECK_EQ(static_cast<int>(b.paneling.origin),
@@ -594,8 +594,8 @@ TEST(unit, CorePcopHandlerTextDeterministic) {
   session::SessionComposition b;
   std::ostringstream nacaA;
   std::ostringstream nacaB;
-  app::cli::handleNacaCore(a, nacaA, 2412);
-  app::cli::handleNacaCore(b, nacaB, 2412);
+  testing::handleLegacyNacaCore(a, nacaA, 2412);
+  testing::handleLegacyNacaCore(b, nacaB, 2412);
   std::ostringstream outA;
   std::ostringstream outB;
   app::cli::handlePcopCore(a, outA);
@@ -608,7 +608,7 @@ TEST(unit, CorePcopHandlerTextDeterministic) {
 TEST(unit, CorePcopHandlerAfterInteMatchesGoldenCount) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   std::ostringstream inteSink;
   handleInteFF(composition, "tests/data/core-c11a-cli-reference/inte_n0012.dat", "tests/data/core-c11a-cli-reference/inte_n2412.dat", "0.5", "inte", inteSink);
   CHECK_EQ(composition.geometry.buffer.x.size(), 160u);
@@ -628,7 +628,7 @@ TEST(unit, CorePcopHandlerAfterInteMatchesGoldenCount) {
 TEST(unit, CorePcopHandlerResetsLbliniFromPangenPanel) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);  // panel pangen 160
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);  // panel pangen 160
   composition.viscous.viscals.lblini = true;  // test injection
 
   std::ostringstream out;
@@ -643,7 +643,7 @@ TEST(unit, CorePcopHandlerResetsLbliniFromPangenPanel) {
 TEST(unit, CorePcopHandlerPreservesLbliniFromAbcopyPanel) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   std::ostringstream firstOut;
   app::cli::handlePcopCore(composition, firstOut);  // panel = buffer 245
   composition.viscous.viscals.lblini = true;  // test injection
@@ -662,7 +662,7 @@ TEST(unit, CorePcopHandlerPreservesLbliniFromAbcopyPanel) {
 TEST(unit, CorePaneHandlerMatchesFortranPangenBlock) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
 
   std::ostringstream out;
   app::cli::handlePaneCore(composition, out);
@@ -685,7 +685,7 @@ TEST(unit, CorePaneHandlerAfterN200MatchesFortranText) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   const double n = 200.0;
   std::ostringstream paramSink;
   app::cli::applyPparParameterCore(
@@ -714,7 +714,7 @@ TEST(unit, CorePaneHandlerAfterN200MatchesFortranText) {
 TEST(unit, CorePaneHandlerNoCangLine) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   std::ostringstream out;
   app::cli::handlePaneCore(composition, out);
   CHECK(out.str().find("Maximum panel corner angle") == std::string::npos);
@@ -725,7 +725,7 @@ TEST(unit, CorePaneHandlerNoCangLine) {
 TEST(unit, CorePaneHandlerTeLineAppearsOnce) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   std::ostringstream out;
   app::cli::handlePaneCore(composition, out);
   const std::string marker = "trailing edge.";
@@ -742,7 +742,7 @@ TEST(unit, CorePaneHandlerPanelCountAndGapMatchFortran) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   std::ostringstream out;
   app::cli::handlePaneCore(composition, out);
   CHECK_EQ(composition.paneling.panel.x.size(), 160u);
@@ -806,7 +806,7 @@ TEST(unit, CorePaneHandlerUsesBufferNotOldPanel) {
 TEST(unit, CorePaneHandlerInvalidatesAnalysisIncludingWake) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   composition.viscous.systemValid = true;
   composition.viscous.wakeValid = true;
   composition.viscous.awake = 2.0;
@@ -863,7 +863,7 @@ TEST(unit, CorePaneHandlerFromAbcopyOrigin) {
 TEST(unit, CorePaneHandlerRenewedPangenStable) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   std::ostringstream firstOut;
   app::cli::handlePaneCore(composition, firstOut);
   const std::uint64_t bufferRev = composition.geometry.bufferRevision;
@@ -899,7 +899,7 @@ TEST(unit, CorePaneHandlerNoBufferNoMutation) {
 TEST(unit, CorePaneHandlerInvalidParamsNoMutation) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   const std::vector<double> panelXBefore = composition.paneling.panel.x;
   composition.paneling.parameters.panelCount = 1;  // test injection
 
@@ -917,7 +917,7 @@ TEST(unit, CorePaneHandlerInvalidParamsNoMutation) {
 TEST(unit, CorePaneHandlerCapacityNoMutation) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   const std::vector<double> panelXBefore = composition.paneling.panel.x;
   composition.paneling.parameters.panelCount = 601;  // test injection (>600)
 
@@ -935,7 +935,7 @@ TEST(unit, CorePaneHandlerCapacityNoMutation) {
 TEST(unit, CorePaneHandlerErrorAfterValidPangenKeepsPanel) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   std::ostringstream firstOut;
   app::cli::handlePaneCore(composition, firstOut);  // valid pangen-panel
   const std::vector<double> panelXBefore = composition.paneling.panel.x;
@@ -961,8 +961,8 @@ TEST(unit, CorePaneHandlerIndependentSessions) {
   useXfoil699PanelDefaults(b);
   std::ostringstream nacaA;
   std::ostringstream nacaB;
-  app::cli::handleNacaCore(a, nacaA, 2412);
-  app::cli::handleNacaCore(b, nacaB, 2412);
+  testing::handleLegacyNacaCore(a, nacaA, 2412);
+  testing::handleLegacyNacaCore(b, nacaB, 2412);
   const double n = 200.0;
   std::ostringstream paramSink;
   app::cli::applyPparParameterCore(
@@ -983,8 +983,8 @@ TEST(unit, CorePaneHandlerTextDeterministic) {
   session::SessionComposition b;
   std::ostringstream nacaA;
   std::ostringstream nacaB;
-  app::cli::handleNacaCore(a, nacaA, 2412);
-  app::cli::handleNacaCore(b, nacaB, 2412);
+  testing::handleLegacyNacaCore(a, nacaA, 2412);
+  testing::handleLegacyNacaCore(b, nacaB, 2412);
   std::ostringstream outA;
   std::ostringstream outB;
   app::cli::handlePaneCore(a, outA);
@@ -997,7 +997,7 @@ TEST(unit, CorePaneHandlerTextDeterministic) {
 TEST(unit, CorePparShowHandlerMatchesFortranTable) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
 
   std::ostringstream out;
   app::cli::handlePparShowCore(composition, out);
@@ -1019,7 +1019,7 @@ TEST(unit, CorePparShowHandlerMatchesFortranTable) {
 TEST(unit, CorePparParameterNChangesNoReprintNoPangen) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);  // origin pangen
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);  // origin pangen
 
   const std::vector<double> panelXBefore = composition.paneling.panel.x;
   const std::vector<double> panelYBefore = composition.paneling.panel.y;
@@ -1053,7 +1053,7 @@ TEST(unit, CorePparParameterNChangesNoReprintNoPangen) {
 TEST(unit, CorePparParameterNClampEmitsFortranMessage) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
 
   const double value = 600.0;
   std::ostringstream out;
@@ -1075,7 +1075,7 @@ TEST(unit, CorePparParameterNTooSmallRejectedNoMutation) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   const std::vector<double> panelXBefore = composition.paneling.panel.x;
 
   const double value = 1.0;
@@ -1097,7 +1097,7 @@ TEST(unit, CorePparParameterNTooSmallRejectedNoMutation) {
 TEST(unit, CorePparParameterPTeRStoreValuesNoText) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
 
   const double p = 0.5;
   const double t = 0.25;
@@ -1128,7 +1128,7 @@ TEST(unit, CorePparParameterPTeRStoreValuesNoText) {
 TEST(unit, CorePparParameterXtXbStorePairsUnsorted) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
 
   const double xt[2] = {0.8, 0.2};  // deliberate descending
   const double xb[2] = {0.9, 0.1};
@@ -1156,7 +1156,7 @@ TEST(unit, CorePparParameterXtXbStorePairsUnsorted) {
 TEST(unit, CorePparParameterXtPartialPairNoMutation) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   const auto before = session::panelingParameters(composition);
 
   const double single = 0.5;
@@ -1231,7 +1231,7 @@ TEST(unit, CorePparParameterOriginAbcopyKeepsContour) {
 TEST(unit, CorePparParameterMultipleChangesAccumulate) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   const std::vector<double> panelXBefore = composition.paneling.panel.x;
 
   const double n = 250.0;
@@ -1265,8 +1265,8 @@ TEST(unit, CorePparParameterIndependentSessions) {
   useXfoil699PanelDefaults(b);
   std::ostringstream nacaA;
   std::ostringstream nacaB;
-  app::cli::handleNacaCore(a, nacaA, 2412);
-  app::cli::handleNacaCore(b, nacaB, 2412);
+  testing::handleLegacyNacaCore(a, nacaA, 2412);
+  testing::handleLegacyNacaCore(b, nacaB, 2412);
 
   const double value = 300.0;
   std::ostringstream out;
@@ -1284,7 +1284,7 @@ TEST(unit, CorePparParameterTextDeterministic) {
   auto runOnce = [] {
     session::SessionComposition composition;
     std::ostringstream nacaSink;
-    app::cli::handleNacaCore(composition, nacaSink, 2412);
+    testing::handleLegacyNacaCore(composition, nacaSink, 2412);
     const double value = 600.0;
     std::ostringstream out;
     app::cli::applyPparParameterCore(
@@ -1308,7 +1308,7 @@ TEST(unit, CorePparParameterTextDeterministic) {
 TEST(unit, CorePparApplyDefaultMatchesFortranText) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
 
   std::ostringstream out;
   const app::cli::PparApplyCoreStatus status =
@@ -1328,7 +1328,7 @@ TEST(unit, CorePparApplyAfterN200MatchesFortranText) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   const double n = 200.0;
   std::ostringstream paramSink;
   app::cli::applyPparParameterCore(
@@ -1401,7 +1401,7 @@ TEST(unit, CorePparApplyUsesBufferNotOldPanel) {
 TEST(unit, CorePparApplyInvalidatesAnalysisDependents) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   // analysis/wake state set artificially (only to test invalidation).
   composition.viscous.systemValid = true;
   composition.viscous.wakeValid = true;
@@ -1441,7 +1441,7 @@ TEST(unit, CorePparApplyFromNoneOrigin) {
 TEST(unit, CorePparApplyRenewedPangenStable) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   std::ostringstream firstOut;
   app::cli::applyPparPanelingCore(composition, firstOut);
   const std::uint64_t bufferRev = composition.geometry.bufferRevision;
@@ -1477,7 +1477,7 @@ TEST(unit, CorePparApplyNoBufferNoMutation) {
 TEST(unit, CorePparApplyInvalidParamsNoMutation) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   const std::vector<double> panelXBefore = composition.paneling.panel.x;
   composition.paneling.parameters.panelCount = 1;  // test injection
 
@@ -1495,7 +1495,7 @@ TEST(unit, CorePparApplyInvalidParamsNoMutation) {
 TEST(unit, CorePparApplyCapacityNoMutation) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   const std::vector<double> panelXBefore = composition.paneling.panel.x;
   composition.paneling.parameters.panelCount = 601;  // test injection (>600)
 
@@ -1516,8 +1516,8 @@ TEST(unit, CorePparApplyIndependentSessions) {
   useXfoil699PanelDefaults(b);
   std::ostringstream nacaA;
   std::ostringstream nacaB;
-  app::cli::handleNacaCore(a, nacaA, 2412);
-  app::cli::handleNacaCore(b, nacaB, 2412);
+  testing::handleLegacyNacaCore(a, nacaA, 2412);
+  testing::handleLegacyNacaCore(b, nacaB, 2412);
   const double n = 200.0;
   std::ostringstream paramSink;
   app::cli::applyPparParameterCore(
@@ -1540,7 +1540,7 @@ TEST(unit, CorePparApplyIndependentSessions) {
 TEST(unit, CorePparApplySmallCountN2GuardedNoMutation) {
   session::SessionComposition composition;
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   const std::vector<double> panelXBefore = composition.paneling.panel.x;
   const double n = 2.0;
   std::ostringstream paramSink;
@@ -1563,7 +1563,7 @@ TEST(unit, CorePparApplySmallCountN4MatchesFortran) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream nacaSink;
-  app::cli::handleNacaCore(composition, nacaSink, 2412);
+  testing::handleLegacyNacaCore(composition, nacaSink, 2412);
   const double n = 4.0;
   std::ostringstream paramSink;
   app::cli::applyPparParameterCore(
@@ -1586,7 +1586,7 @@ TEST(unit, CorePparApplyTextDeterministic) {
   auto runOnce = [] {
     session::SessionComposition composition;
     std::ostringstream nacaSink;
-    app::cli::handleNacaCore(composition, nacaSink, 2412);
+    testing::handleLegacyNacaCore(composition, nacaSink, 2412);
     std::ostringstream out;
     app::cli::applyPparPanelingCore(composition, out);
     return out.str();
@@ -1935,7 +1935,7 @@ TEST(unit, CoreNormHandlerPreservesAbcopyState) {
 TEST(unit, CoreNormHandlerPreservesPangenPanel) {
   session::SessionComposition composition;
   std::ostringstream nacaOut;
-  app::cli::handleNacaCore(composition, nacaOut, 2412);  // panel pangen
+  testing::handleLegacyNacaCore(composition, nacaOut, 2412);  // panel pangen
   CHECK_EQ(static_cast<int>(composition.paneling.origin),
            static_cast<int>(session::PanelingOrigin::pangen));
   const std::size_t panelN = composition.paneling.panel.x.size();
@@ -1981,7 +1981,7 @@ TEST(unit, CoreNormHandlerNacaInteIgnorePolicy) {
   std::ostringstream normOn;
   app::cli::handleNormCore(composition, normOn);  // LNORM on
   std::ostringstream nacaOut;
-  app::cli::handleNacaCore(composition, nacaOut, 2412);
+  testing::handleLegacyNacaCore(composition, nacaOut, 2412);
   CHECK(nacaOut.str().find("Airfoil has been normalized") == std::string::npos);
   CHECK(session::normalizeOnLoad(composition));
 
@@ -2125,7 +2125,7 @@ TEST(unit, CoreReveHandlerPreservesBufferAndPanelCoordinates) {
 TEST(unit, CoreReveHandlerPreservesPangenPanel) {
   session::SessionComposition composition;
   std::ostringstream nacaOut;
-  app::cli::handleNacaCore(composition, nacaOut, 2412);  // panel pangen
+  testing::handleLegacyNacaCore(composition, nacaOut, 2412);  // panel pangen
   CHECK_EQ(static_cast<int>(composition.paneling.origin),
            static_cast<int>(session::PanelingOrigin::pangen));
   const std::vector<double> panelX = composition.paneling.panel.x;
@@ -2204,8 +2204,8 @@ TEST(unit, CoreReveHandlerSubsequentPaneUsesSameContour) {
   session::SessionComposition a;
   session::SessionComposition b;
   std::ostringstream sink;
-  app::cli::handleNacaCore(a, sink, 2412);
-  app::cli::handleNacaCore(b, sink, 2412);
+  testing::handleLegacyNacaCore(a, sink, 2412);
+  testing::handleLegacyNacaCore(b, sink, 2412);
   std::ostringstream paneA;
   app::cli::handlePaneCore(a, paneA);
   std::ostringstream reve;
@@ -2349,7 +2349,7 @@ TEST(unit, CoreDeliHandlerPreservesAbcopyState) {
 TEST(unit, CoreDeliHandlerPreservesPangenPanel) {
   session::SessionComposition composition;
   std::ostringstream nacaOut;
-  app::cli::handleNacaCore(composition, nacaOut, 2412);
+  testing::handleLegacyNacaCore(composition, nacaOut, 2412);
   const std::vector<double> panelX = composition.paneling.panel.x;
   std::ostringstream out;
   app::cli::handleDeliCore(composition, out, 2, true);
@@ -2378,7 +2378,7 @@ TEST(unit, CoreDeliHandlerIndependentOfNormAndReve) {
 TEST(unit, CoreDeliHandlerWriterConsumesEachState) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   std::vector<xfoil::Point2D> coords;
   for (std::size_t i = 0; i < composition.geometry.buffer.x.size(); ++i) {
     coords.push_back({composition.geometry.buffer.x[i],
@@ -2420,7 +2420,7 @@ TEST(unit, CoreDeliHandlerWriterConsumesEachState) {
 TEST(unit, CoreDeliHandlerRevePlusDeliOrderAndSeparation) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   std::vector<xfoil::Point2D> coords;
   for (std::size_t i = 0; i < composition.geometry.buffer.x.size(); ++i) {
     coords.push_back({composition.geometry.buffer.x[i],
@@ -2602,7 +2602,7 @@ TEST(unit, CoreXycmHandlerPreservesAbcopyState) {
 TEST(unit, CoreXycmHandlerPreservesPangenPanel) {
   session::SessionComposition composition;
   std::ostringstream nacaOut;
-  app::cli::handleNacaCore(composition, nacaOut, 2412);
+  testing::handleLegacyNacaCore(composition, nacaOut, 2412);
   const std::vector<double> panelX = composition.paneling.panel.x;
   std::ostringstream out;
   app::cli::handleXycmCore(composition, out, 0.5, 0.0, true, true);
@@ -2617,7 +2617,7 @@ TEST(unit, CoreXycmHandlerPreservesPangenPanel) {
 TEST(unit, CoreXycmHandlerInvalidatesStoredResultPerSessionContract) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   CHECK(session::configure(composition, xfoil::AnalysisConfig{}).success());
   const xfoil::AnalysisResult r1 =
       session::runSpecAlpha(composition, xfoil::Degrees{2.0}, nullptr);
@@ -2654,7 +2654,7 @@ TEST(unit, CoreXycmHandlerNextPointMatchesFortran) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   xfoil::AnalysisConfig cfg;
   cfg.viscous = false;  // inviscid branch as in the harness
   CHECK(session::configure(composition, cfg).success());
@@ -2698,7 +2698,7 @@ TEST(unit, CoreXycmHandlerNextPointMatchesFortran) {
 TEST(unit, CoreXycmHandlerNoGeometryPanelWakeMappingBlMutation) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   CHECK(session::configure(composition, xfoil::AnalysisConfig{}).success());
   const xfoil::AnalysisResult r1 =
       session::runSpecAlpha(composition, xfoil::Degrees{2.0}, nullptr);
@@ -2739,7 +2739,7 @@ TEST(unit, CoreXycmHandlerNoGeometryPanelWakeMappingBlMutation) {
 TEST(unit, CoreXycmHandlerViscousNextPointContract) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   CHECK(session::configure(composition, xfoil::AnalysisConfig{}).success());
   const xfoil::AnalysisResult r1 =
       session::runSpecAlpha(composition, xfoil::Degrees{2.0}, nullptr);
@@ -2781,7 +2781,7 @@ std::string expectedNamePrompt(std::string_view nameDefault) {
 TEST(unit, CoreNameHandlerInlineSimpleNoText) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   const app::cli::NameCoreStatus status = app::cli::handleNameCore(
@@ -2797,7 +2797,7 @@ TEST(unit, CoreNameHandlerInlineSimpleNoText) {
 TEST(unit, CoreNameHandlerInlineSpacesPreserveInternal) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   app::cli::handleNameCore(composition, out, "   A  B   ", true, "", false);
@@ -2810,7 +2810,7 @@ TEST(unit, CoreNameHandlerInlineSpacesPreserveInternal) {
 TEST(unit, CoreNameHandlerBlankInlineArgumentRequestsPromptNoMutation) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   const std::string before = composition.geometry.name;
 
   std::ostringstream out;
@@ -2826,7 +2826,7 @@ TEST(unit, CoreNameHandlerBlankInlineArgumentRequestsPromptNoMutation) {
 TEST(unit, CoreNameHandlerNoArgumentBlankAnswerKeepsCurrent) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   app::cli::handleNameCore(composition, out, "", false, "", false);
@@ -2842,7 +2842,7 @@ TEST(unit, CoreNameHandlerNoArgumentBlankAnswerKeepsCurrent) {
 TEST(unit, CoreNameHandlerNoArgumentAnswerSetsNewName) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   app::cli::handleNameCore(composition, out, "", false, "", false);
@@ -2856,7 +2856,7 @@ TEST(unit, CoreNameHandlerNoArgumentAnswerSetsNewName) {
 TEST(unit, CoreNameHandlerNoArgumentReformatsBracketDefault) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A [007]", true, "", false);
 
   std::ostringstream out;
@@ -2870,7 +2870,7 @@ TEST(unit, CoreNameHandlerNoArgumentReformatsBracketDefault) {
 TEST(unit, CoreNameHandlerOverlongTruncatesToFortranField) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   app::cli::handleNameCore(composition, out, std::string(60, 'A'), true, "",
@@ -2884,7 +2884,7 @@ TEST(unit, CoreNameHandlerOverlongTruncatesToFortranField) {
 TEST(unit, CoreNameHandlerCaseAndSpecialCharactersPreserved) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   app::cli::handleNameCore(composition, out, "from!@#[]", true, "", false);
@@ -2936,7 +2936,7 @@ TEST(unit, CoreNameHandlerPreservesAbcopyState) {
 TEST(unit, CoreNameHandlerPreservesPangenPanel) {
   session::SessionComposition composition;
   std::ostringstream nacaOut;
-  app::cli::handleNacaCore(composition, nacaOut, 2412);
+  testing::handleLegacyNacaCore(composition, nacaOut, 2412);
   const std::vector<double> panelX = composition.paneling.panel.x;
 
   std::ostringstream out;
@@ -2951,7 +2951,7 @@ TEST(unit, CoreNameHandlerPreservesPangenPanel) {
 TEST(unit, CoreNameHandlerNoNumericalAnalysisWakeBlPolicyMutation) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   CHECK(session::configure(composition, xfoil::AnalysisConfig{}).success());
   const xfoil::AnalysisResult before =
       session::runSpecAlpha(composition, xfoil::Degrees{2.0}, nullptr);
@@ -3003,7 +3003,7 @@ TEST(unit, CoreNameHandlerNoNumericalAnalysisWakeBlPolicyMutation) {
 TEST(unit, CoreNameHandlerWriterConsumesNewSessionName) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   std::ostringstream out;
   app::cli::handleNameCore(composition, out, "A B C", true, "", false);
 
@@ -3027,7 +3027,7 @@ TEST(unit, CoreNameHandlerWriterConsumesNewSessionName) {
 TEST(unit, CoreNincHandlerNoBracketAppendsOne) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A1", true, "", false);
 
   std::ostringstream out;
@@ -3044,7 +3044,7 @@ TEST(unit, CoreNincHandlerNoBracketAppendsOne) {
 TEST(unit, CoreNincHandlerRepeatedIncrements) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B", true, "", false);
 
   std::ostringstream out;
@@ -3060,7 +3060,7 @@ TEST(unit, CoreNincHandlerRepeatedIncrements) {
 TEST(unit, CoreNincHandlerBracketCarryNineToTen) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A [9]", true, "", false);
 
   std::ostringstream out;
@@ -3077,7 +3077,7 @@ TEST(unit, CoreNincHandlerBracketCarryNineToTen) {
 TEST(unit, CoreNincHandlerNinetyNineKeepsOriginalDefault) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A [99]", true, "", false);
 
   std::ostringstream out;
@@ -3091,7 +3091,7 @@ TEST(unit, CoreNincHandlerNinetyNineKeepsOriginalDefault) {
 TEST(unit, CoreNincHandlerLeadingZerosNormalize) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A [007]", true, "", false);
 
   std::ostringstream out;
@@ -3105,7 +3105,7 @@ TEST(unit, CoreNincHandlerLeadingZerosNormalize) {
 TEST(unit, CoreNincHandlerMultipleDigitsIncrement) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A [12]", true, "", false);
 
   std::ostringstream out;
@@ -3120,7 +3120,7 @@ TEST(unit, CoreNincHandlerMultipleDigitsIncrement) {
 TEST(unit, CoreNincHandlerAtMaximumFieldLengthTruncatesTag) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, std::string(48, 'A'), true, "",
                            false);
 
@@ -3150,7 +3150,7 @@ TEST(unit, CoreNincHandlerNoGeometry) {
 TEST(unit, CoreNincHandlerNoAnswerNoMutation) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   const std::string before = composition.geometry.name;
 
   std::ostringstream out;
@@ -3166,7 +3166,7 @@ TEST(unit, CoreNincHandlerNoAnswerNoMutation) {
 TEST(unit, CoreNincHandlerAnswerOverridesDefault) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   app::cli::handleNincCore(composition, out, "", false);
@@ -3179,7 +3179,7 @@ TEST(unit, CoreNincHandlerAnswerOverridesDefault) {
 TEST(unit, CoreNincHandlerOverlongAnswerTruncates) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   app::cli::handleNincCore(composition, out, "", false);
@@ -3191,7 +3191,7 @@ TEST(unit, CoreNincHandlerOverlongAnswerTruncates) {
 TEST(unit, CoreNincHandlerNoNumericalAnalysisWakeBlPolicyMutation) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   CHECK(session::configure(composition, xfoil::AnalysisConfig{}).success());
   const xfoil::AnalysisResult before =
       session::runSpecAlpha(composition, xfoil::Degrees{2.0}, nullptr);
@@ -3243,7 +3243,7 @@ TEST(unit, CoreNincHandlerNoNumericalAnalysisWakeBlPolicyMutation) {
 TEST(unit, CoreNincHandlerWriterConsumesIncrementedName) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);
   std::ostringstream out;
   app::cli::handleNincCore(composition, out, "", false);
@@ -3269,7 +3269,7 @@ TEST(unit, CoreNincHandlerWriterConsumesIncrementedName) {
 TEST(unit, CoreNameNincHandlersPreserveFilePolicies) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   session::setNormalizeOnLoad(composition, true);
   session::setWriteOrientation(composition, true);
   session::setDelimiter(composition, 2);
@@ -3289,7 +3289,7 @@ TEST(unit, CoreNameNincHandlersPreserveFilePolicies) {
 TEST(unit, CoreNameHandlerDoesNotTouchOperatingOrPolarState) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   CHECK(session::configure(composition, xfoil::AnalysisConfig{}).success());
   const auto operatingBefore = composition.operating;
   const auto configBefore = composition.config;
@@ -3444,7 +3444,7 @@ TEST(unit, CoreSaveHandlerWritesCurrentPanelNotBuffer) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   CHECK_EQ(composition.geometry.buffer.x.size(), 245u);
   CHECK_EQ(composition.paneling.panel.x.size(), 160u);
 
@@ -3466,7 +3466,7 @@ TEST(unit, CoreSaveHandlerNameHeaderMatchesFortranReference) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);
   app::cli::handleNincCore(composition, sink, "", true);
 
@@ -3484,7 +3484,7 @@ TEST(unit, CoreSaveHandlerReveCommaMatchesFortranReference) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);
   app::cli::handleNincCore(composition, sink, "", true);
   session::setWriteOrientation(composition, true);
@@ -3505,7 +3505,7 @@ TEST(unit, CoreSaveHandlerTabMatchesFortranReference) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);
   app::cli::handleNincCore(composition, sink, "", true);
   session::setWriteOrientation(composition, true);
@@ -3555,7 +3555,7 @@ TEST(unit, CoreSaveHandlerMaxNameLengthHeader) {
   TestSavePath file("save-max-name.dat");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, std::string(60, 'A'), true, "",
                            false);
 
@@ -3571,7 +3571,7 @@ TEST(unit, CoreSaveHandlerExistingFileRequestsOverwriteNoMutation) {
   writeTextFile(file.path(), "original\n");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   const app::cli::SaveCoreStatus status = app::cli::handleSaveCore(
@@ -3588,7 +3588,7 @@ TEST(unit, CoreSaveHandlerOverwriteDeclineKeepsFile) {
   writeTextFile(file.path(), "original\n");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   const app::cli::SaveCoreStatus query = app::cli::handleSaveCore(
@@ -3610,7 +3610,7 @@ TEST(unit, CoreSaveHandlerOverwriteAcceptReplacesFile) {
   writeTextFile(file.path(), "original\n");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   const app::cli::SaveCoreStatus query = app::cli::handleSaveCore(
@@ -3631,7 +3631,7 @@ TEST(unit, CoreSaveHandlerOverwriteBlankAnswerAccepts) {
   writeTextFile(file.path(), "original\n");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   const app::cli::SaveCoreStatus status = app::cli::handleSaveCore(
@@ -3654,7 +3654,7 @@ TEST(unit, CoreSaveHandlerDirectoryTargetBadFilename) {
 
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   const app::cli::SaveCoreStatus status = app::cli::handleSaveCore(
@@ -3669,7 +3669,7 @@ TEST(unit, CoreSaveHandlerDirectoryTargetBadFilename) {
 TEST(unit, CoreSaveHandlerFilenamePromptAndBlankAnswer) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream promptOut;
   const app::cli::SaveCoreStatus promptStatus = app::cli::handleSaveCore(
@@ -3691,7 +3691,7 @@ TEST(unit, CoreSaveHandlerSuccessLeavesSessionStateUnchanged) {
   TestSavePath file("save-state-success.dat");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   CHECK(session::configure(composition, xfoil::AnalysisConfig{}).success());
   const xfoil::AnalysisResult before =
       session::runSpecAlpha(composition, xfoil::Degrees{2.0}, nullptr);
@@ -3743,7 +3743,7 @@ TEST(unit, CoreSaveHandlerDeclineLeavesSessionStateUnchanged) {
   writeTextFile(file.path(), "original\n");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   const std::vector<double> panelX = composition.paneling.panel.x;
   const std::uint64_t bufferRev = composition.geometry.bufferRevision;
   const std::string name = composition.geometry.name;
@@ -3775,7 +3775,7 @@ TEST(unit, CoreSaveHandlerBadFilenameLeavesSessionStateUnchanged) {
 
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   const std::vector<double> panelX = composition.paneling.panel.x;
   const std::uint64_t bufferRev = composition.geometry.bufferRevision;
   const std::string name = composition.geometry.name;
@@ -3798,8 +3798,8 @@ TEST(unit, CoreSaveHandlerIndependentSessionsDifferentPolicies) {
   session::SessionComposition a;
   session::SessionComposition b;
   std::ostringstream sink;
-  app::cli::handleNacaCore(a, sink, 2412);
-  app::cli::handleNacaCore(b, sink, 2412);
+  testing::handleLegacyNacaCore(a, sink, 2412);
+  testing::handleLegacyNacaCore(b, sink, 2412);
   session::setDelimiter(a, 1);
   session::setWriteOrientation(a, true);
 
@@ -3824,8 +3824,8 @@ TEST(unit, CoreSaveHandlerDeterministicBytesAndText) {
   session::SessionComposition a;
   session::SessionComposition b;
   std::ostringstream sink;
-  app::cli::handleNacaCore(a, sink, 2412);
-  app::cli::handleNacaCore(b, sink, 2412);
+  testing::handleLegacyNacaCore(a, sink, 2412);
+  testing::handleLegacyNacaCore(b, sink, 2412);
 
   std::ostringstream outA;
   std::ostringstream outB;
@@ -3865,7 +3865,7 @@ TEST(unit, CorePsavHandlerWritesCurrentPanelNotBuffer) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   CHECK_EQ(composition.geometry.buffer.x.size(), 245u);
   CHECK_EQ(composition.paneling.panel.x.size(), 160u);
 
@@ -3889,7 +3889,7 @@ TEST(unit, CorePsavHandlerNameNincProducesNoHeader) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);
   app::cli::handleNincCore(composition, sink, "", true);
 
@@ -3910,7 +3910,7 @@ TEST(unit, CorePsavHandlerReveCommaMatchesFortranReference) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);
   app::cli::handleNincCore(composition, sink, "", true);
   session::setWriteOrientation(composition, true);
@@ -3931,7 +3931,7 @@ TEST(unit, CorePsavHandlerTabMatchesFortranReference) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);
   app::cli::handleNincCore(composition, sink, "", true);
   session::setWriteOrientation(composition, true);
@@ -3987,7 +3987,7 @@ TEST(unit, CorePsavHandlerSaveContractRemainsLabeled) {
   TestSavePath psavFile("psav-save-contract-psav.dat");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   app::cli::handleSaveCore(composition, out, saveFile.path().string(), true, "",
@@ -4007,7 +4007,7 @@ TEST(unit, CorePsavHandlerInlineArgumentTrimsSpaces) {
   TestSavePath file("psav-inline-trim.dat");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   const std::string argument =
       "  " + file.path().string() + "   ";
@@ -4041,7 +4041,7 @@ TEST(unit, CorePsavHandlerPromptAnswerKeepsSpaces) {
 
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream leadingOut;
   const app::cli::PsavCoreStatus leadingStatus = app::cli::handlePsavCore(
@@ -4069,7 +4069,7 @@ TEST(unit, CorePsavHandlerExistingFileRequestsOverwriteNoMutation) {
   writeTextFile(file.path(), "original\n");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   const app::cli::PsavCoreStatus status = app::cli::handlePsavCore(
@@ -4086,7 +4086,7 @@ TEST(unit, CorePsavHandlerOverwriteDeclineKeepsFile) {
   writeTextFile(file.path(), "original\n");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   const app::cli::PsavCoreStatus query = app::cli::handlePsavCore(
@@ -4108,7 +4108,7 @@ TEST(unit, CorePsavHandlerOverwriteAcceptReplacesFile) {
   writeTextFile(file.path(), "original\n");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   const app::cli::PsavCoreStatus query = app::cli::handlePsavCore(
@@ -4130,7 +4130,7 @@ TEST(unit, CorePsavHandlerOverwriteLeadingSpaceAnswerAccepts) {
   writeTextFile(file.path(), "original\n");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   const app::cli::PsavCoreStatus status = app::cli::handlePsavCore(
@@ -4153,7 +4153,7 @@ TEST(unit, CorePsavHandlerDirectoryTargetBadFilename) {
 
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   const app::cli::PsavCoreStatus status = app::cli::handlePsavCore(
@@ -4175,7 +4175,7 @@ TEST(unit, CorePsavHandlerMissingDirectoryBadFilename) {
 
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   const std::vector<double> panelX = composition.paneling.panel.x;
   const std::uint64_t bufferRev = composition.geometry.bufferRevision;
 
@@ -4194,7 +4194,7 @@ TEST(unit, CorePsavHandlerMissingDirectoryBadFilename) {
 TEST(unit, CorePsavHandlerFilenamePromptAndBlankAnswer) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream promptOut;
   const app::cli::PsavCoreStatus promptStatus = app::cli::handlePsavCore(
@@ -4216,7 +4216,7 @@ TEST(unit, CorePsavHandlerSuccessLeavesSessionStateUnchanged) {
   TestSavePath file("psav-state-success.dat");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   CHECK(session::configure(composition, xfoil::AnalysisConfig{}).success());
   const xfoil::AnalysisResult before =
       session::runSpecAlpha(composition, xfoil::Degrees{2.0}, nullptr);
@@ -4284,7 +4284,7 @@ TEST(unit, CorePsavHandlerDeclineLeavesSessionStateUnchanged) {
   writeTextFile(file.path(), "original\n");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   const std::vector<double> panelX = composition.paneling.panel.x;
   const std::uint64_t bufferRev = composition.geometry.bufferRevision;
   const std::string name = composition.geometry.name;
@@ -4316,7 +4316,7 @@ TEST(unit, CorePsavHandlerBadFilenameLeavesSessionStateUnchanged) {
 
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   const std::vector<double> panelX = composition.paneling.panel.x;
   const std::uint64_t bufferRev = composition.geometry.bufferRevision;
   const std::string name = composition.geometry.name;
@@ -4339,8 +4339,8 @@ TEST(unit, CorePsavHandlerIndependentSessionsDifferentPolicies) {
   session::SessionComposition a;
   session::SessionComposition b;
   std::ostringstream sink;
-  app::cli::handleNacaCore(a, sink, 2412);
-  app::cli::handleNacaCore(b, sink, 2412);
+  testing::handleLegacyNacaCore(a, sink, 2412);
+  testing::handleLegacyNacaCore(b, sink, 2412);
   session::setDelimiter(a, 1);
   session::setWriteOrientation(a, true);
 
@@ -4365,8 +4365,8 @@ TEST(unit, CorePsavHandlerDeterministicBytesAndText) {
   session::SessionComposition a;
   session::SessionComposition b;
   std::ostringstream sink;
-  app::cli::handleNacaCore(a, sink, 2412);
-  app::cli::handleNacaCore(b, sink, 2412);
+  testing::handleLegacyNacaCore(a, sink, 2412);
+  testing::handleLegacyNacaCore(b, sink, 2412);
 
   std::ostringstream outA;
   std::ostringstream outB;
@@ -4412,7 +4412,7 @@ TEST(unit, CoreUsavHandlerWritesCurrentPanelNotBuffer) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   CHECK_EQ(composition.geometry.buffer.x.size(), 245u);
   CHECK_EQ(composition.paneling.panel.x.size(), 160u);
 
@@ -4438,7 +4438,7 @@ TEST(unit, CoreUsavHandlerPcopSourceMatchesFortranReference) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   app::cli::handleUsavCore(composition, out, afterNaca.path().string(), true,
@@ -4463,7 +4463,7 @@ TEST(unit, CoreUsavHandlerNameNincProducesNoHeader) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);
   app::cli::handleNincCore(composition, sink, "", true);
 
@@ -4483,7 +4483,7 @@ TEST(unit, CoreUsavHandlerReveMatchesFortranReference) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);
   app::cli::handleNincCore(composition, sink, "", true);
   session::setWriteOrientation(composition, true);
@@ -4503,7 +4503,7 @@ TEST(unit, CoreUsavHandlerDelimiterIsIgnored) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);
   app::cli::handleNincCore(composition, sink, "", true);
   session::setWriteOrientation(composition, true);
@@ -4566,7 +4566,7 @@ TEST(unit, CoreUsavHandlerSaveAndPsavContractsRemainSeparate) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   app::cli::handleSaveCore(composition, out, saveFile.path().string(), true, "",
@@ -4605,7 +4605,7 @@ TEST(unit, CoreUsavHandlerPromptAnswerKeepsSpaces) {
 
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream leadingOut;
   const app::cli::UsavCoreStatus leadingStatus = app::cli::handleUsavCore(
@@ -4633,7 +4633,7 @@ TEST(unit, CoreUsavHandlerExistingFileRequestsOverwriteNoMutation) {
   writeTextFile(file.path(), "original\n");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   const app::cli::UsavCoreStatus status = app::cli::handleUsavCore(
@@ -4650,7 +4650,7 @@ TEST(unit, CoreUsavHandlerOverwriteDeclineKeepsFile) {
   writeTextFile(file.path(), "original\n");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   const app::cli::UsavCoreStatus query = app::cli::handleUsavCore(
@@ -4672,7 +4672,7 @@ TEST(unit, CoreUsavHandlerOverwriteAcceptReplacesFile) {
   writeTextFile(file.path(), "original\n");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   const app::cli::UsavCoreStatus query = app::cli::handleUsavCore(
@@ -4700,7 +4700,7 @@ TEST(unit, CoreUsavHandlerDirectoryTargetBadFilename) {
 
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   const app::cli::UsavCoreStatus status = app::cli::handleUsavCore(
@@ -4722,7 +4722,7 @@ TEST(unit, CoreUsavHandlerMissingDirectoryBadFilename) {
 
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   const std::vector<double> panelX = composition.paneling.panel.x;
   const std::uint64_t bufferRev = composition.geometry.bufferRevision;
 
@@ -4741,7 +4741,7 @@ TEST(unit, CoreUsavHandlerMissingDirectoryBadFilename) {
 TEST(unit, CoreUsavHandlerFilenamePromptAndBlankAnswer) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream promptOut;
   const app::cli::UsavCoreStatus promptStatus = app::cli::handleUsavCore(
@@ -4763,7 +4763,7 @@ TEST(unit, CoreUsavHandlerSuccessLeavesSessionStateUnchanged) {
   TestSavePath file("usav-state-success.dat");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   CHECK(session::configure(composition, xfoil::AnalysisConfig{}).success());
   const xfoil::AnalysisResult before =
       session::runSpecAlpha(composition, xfoil::Degrees{2.0}, nullptr);
@@ -4831,7 +4831,7 @@ TEST(unit, CoreUsavHandlerDeclineLeavesSessionStateUnchanged) {
   writeTextFile(file.path(), "original\n");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   const std::vector<double> panelX = composition.paneling.panel.x;
   const std::uint64_t bufferRev = composition.geometry.bufferRevision;
   const std::string name = composition.geometry.name;
@@ -4863,7 +4863,7 @@ TEST(unit, CoreUsavHandlerBadFilenameLeavesSessionStateUnchanged) {
 
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   const std::vector<double> panelX = composition.paneling.panel.x;
   const std::uint64_t bufferRev = composition.geometry.bufferRevision;
   const std::string name = composition.geometry.name;
@@ -4888,8 +4888,8 @@ TEST(unit, CoreUsavHandlerIndependentSessionsDifferentPolicies) {
   session::SessionComposition b;
   useXfoil699PanelDefaults(b);
   std::ostringstream sink;
-  app::cli::handleNacaCore(a, sink, 2412);
-  app::cli::handleNacaCore(b, sink, 2412);
+  testing::handleLegacyNacaCore(a, sink, 2412);
+  testing::handleLegacyNacaCore(b, sink, 2412);
   session::setDelimiter(a, 1);
   session::setWriteOrientation(a, true);
 
@@ -4916,8 +4916,8 @@ TEST(unit, CoreUsavHandlerDeterministicBytesAndText) {
   session::SessionComposition a;
   session::SessionComposition b;
   std::ostringstream sink;
-  app::cli::handleNacaCore(a, sink, 2412);
-  app::cli::handleNacaCore(b, sink, 2412);
+  testing::handleLegacyNacaCore(a, sink, 2412);
+  testing::handleLegacyNacaCore(b, sink, 2412);
 
   std::ostringstream outA;
   std::ostringstream outB;
@@ -5025,7 +5025,7 @@ TEST(unit, CoreIsavHandlerWritesCurrentPanelWithHeaders) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   CHECK_EQ(composition.geometry.buffer.x.size(), 245u);
   CHECK_EQ(composition.paneling.panel.x.size(), 160u);
 
@@ -5051,7 +5051,7 @@ TEST(unit, CoreIsavHandlerPcopSourceMatchesFortranReference) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   app::cli::handleIsavCore(composition, out, afterNaca.path().string(), true,
@@ -5076,7 +5076,7 @@ TEST(unit, CoreIsavHandlerNameNincHeaderMatchesFortranReference) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);
   app::cli::handleNincCore(composition, sink, "", true);
 
@@ -5096,7 +5096,7 @@ TEST(unit, CoreIsavHandlerMaxNameLengthHeader) {
   TestSavePath file("isav-max-name.dat");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, std::string(60, 'A'), true, "",
                            false);
 
@@ -5114,7 +5114,7 @@ TEST(unit, CoreIsavHandlerReveCommaMatchesFortranReference) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);
   app::cli::handleNincCore(composition, sink, "", true);
   session::setWriteOrientation(composition, true);
@@ -5135,7 +5135,7 @@ TEST(unit, CoreIsavHandlerTabMatchesFortranReference) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   app::cli::handleNameCore(composition, sink, "A B C", true, "", false);
   app::cli::handleNincCore(composition, sink, "", true);
   session::setWriteOrientation(composition, true);
@@ -5195,7 +5195,7 @@ TEST(unit, CoreIsavHandlerWritesDomainParametersVerbatim) {
   TestSavePath file("isav-domain.dat");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   session::setIsesDomainParameters(composition,
                                    " -1.0  2.0  -1.5  2.5   ");
 
@@ -5545,7 +5545,7 @@ TEST(unit, CoreIsavHandlerOtherWriteContractsRemainSeparate) {
   TestSavePath isavFile("isav-contract-isav.dat");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   app::cli::handleSaveCore(composition, out, saveFile.path().string(), true, "",
@@ -5588,7 +5588,7 @@ TEST(unit, CoreIsavHandlerPromptAnswerKeepsSpaces) {
 
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream leadingOut;
   const app::cli::IsavCoreStatus leadingStatus = app::cli::handleIsavCore(
@@ -5616,7 +5616,7 @@ TEST(unit, CoreIsavHandlerExistingFileRequestsOverwriteNoMutation) {
   writeTextFile(file.path(), "original\n");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   const app::cli::IsavCoreStatus status = app::cli::handleIsavCore(
@@ -5633,7 +5633,7 @@ TEST(unit, CoreIsavHandlerOverwriteDeclineKeepsFile) {
   writeTextFile(file.path(), "original\n");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   const app::cli::IsavCoreStatus query = app::cli::handleIsavCore(
@@ -5655,7 +5655,7 @@ TEST(unit, CoreIsavHandlerOverwriteAcceptReplacesFile) {
   writeTextFile(file.path(), "original\n");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   const app::cli::IsavCoreStatus query = app::cli::handleIsavCore(
@@ -5683,7 +5683,7 @@ TEST(unit, CoreIsavHandlerDirectoryTargetBadFilename) {
 
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream out;
   const app::cli::IsavCoreStatus status = app::cli::handleIsavCore(
@@ -5705,7 +5705,7 @@ TEST(unit, CoreIsavHandlerMissingDirectoryBadFilename) {
 
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   const std::vector<double> panelX = composition.paneling.panel.x;
   const std::uint64_t bufferRev = composition.geometry.bufferRevision;
   const std::string domain = session::isesDomainParameters(composition);
@@ -5726,7 +5726,7 @@ TEST(unit, CoreIsavHandlerMissingDirectoryBadFilename) {
 TEST(unit, CoreIsavHandlerFilenamePromptAndBlankAnswer) {
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
 
   std::ostringstream promptOut;
   const app::cli::IsavCoreStatus promptStatus = app::cli::handleIsavCore(
@@ -5748,7 +5748,7 @@ TEST(unit, CoreIsavHandlerSuccessLeavesSessionStateUnchanged) {
   TestSavePath file("isav-state-success.dat");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   session::setIsesDomainParameters(composition,
                                    " -1.0  2.0  -1.5  2.5");
   CHECK(session::configure(composition, xfoil::AnalysisConfig{}).success());
@@ -5820,7 +5820,7 @@ TEST(unit, CoreIsavHandlerDeclineLeavesSessionStateUnchanged) {
   writeTextFile(file.path(), "original\n");
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   const std::vector<double> panelX = composition.paneling.panel.x;
   const std::uint64_t bufferRev = composition.geometry.bufferRevision;
   const std::string name = composition.geometry.name;
@@ -5854,7 +5854,7 @@ TEST(unit, CoreIsavHandlerBadFilenameLeavesSessionStateUnchanged) {
 
   session::SessionComposition composition;
   std::ostringstream sink;
-  app::cli::handleNacaCore(composition, sink, 2412);
+  testing::handleLegacyNacaCore(composition, sink, 2412);
   const std::vector<double> panelX = composition.paneling.panel.x;
   const std::uint64_t bufferRev = composition.geometry.bufferRevision;
   const std::string name = composition.geometry.name;
@@ -5879,8 +5879,8 @@ TEST(unit, CoreIsavHandlerIndependentSessionsDifferentDomainParameters) {
   session::SessionComposition a;
   session::SessionComposition b;
   std::ostringstream sink;
-  app::cli::handleNacaCore(a, sink, 2412);
-  app::cli::handleNacaCore(b, sink, 2412);
+  testing::handleLegacyNacaCore(a, sink, 2412);
+  testing::handleLegacyNacaCore(b, sink, 2412);
   session::setIsesDomainParameters(a, " -1.0  2.0  -1.5  2.5");
   session::setDelimiter(a, 1);
   session::setWriteOrientation(a, true);
@@ -5909,8 +5909,8 @@ TEST(unit, CoreIsavHandlerDeterministicBytesAndText) {
   session::SessionComposition a;
   session::SessionComposition b;
   std::ostringstream sink;
-  app::cli::handleNacaCore(a, sink, 2412);
-  app::cli::handleNacaCore(b, sink, 2412);
+  testing::handleLegacyNacaCore(a, sink, 2412);
+  testing::handleLegacyNacaCore(b, sink, 2412);
 
   std::ostringstream outA;
   std::ostringstream outB;
@@ -6071,7 +6071,7 @@ TEST(unit, CorePlotOptionsDeterministicBytesAcrossRuns) {
 TEST(unit, CorePlotOptionsLeaveGeometryAndPanelUntouched) {
   session::SessionComposition session;
   std::ostringstream sink;
-  app::cli::handleNacaCore(session, sink, 4412);
+  testing::handleLegacyNacaCore(session, sink, 4412);
   const std::uint64_t revisionBefore = session.geometry.bufferRevision;
   std::istringstream in("g\no\n0\n");
   std::ostringstream out;

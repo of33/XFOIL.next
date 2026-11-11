@@ -59,8 +59,10 @@
 
 namespace {
 
-const char* const kCaseDir =
+const char* const kCommandDir =
     "tests/fortran-reference/cases/polar/polar-cseq-head-naca0012";
+const char* const kReferenceDir =
+    "tests/data/xfoil-6.996/s15/regression/polar-cseq-head-naca0012";
 
 bool readBytes(const std::string& path, std::string& out) {
   std::ifstream stream(path, std::ios::binary);
@@ -150,7 +152,7 @@ TEST(regression, CseqHeadDumpParityMatchesFortranReference) {
   const std::string workDir = work.path().string();
   std::error_code error;
 
-  std::filesystem::copy(std::filesystem::path(kCaseDir) / "commands.in",
+  std::filesystem::copy(std::filesystem::path(kCommandDir) / "commands.in",
                         std::filesystem::path(workDir) / "commands.in",
                         std::filesystem::copy_options::overwrite_existing,
                         error);
@@ -191,7 +193,7 @@ TEST(regression, CseqHeadDumpParityMatchesFortranReference) {
   }
   actual = testing::normalizeLegacyDefaultDisplay(
       testing::stripInjectedDefaultsBlock(std::move(actual)));
-  if (!readBytes(std::string(kCaseDir) + "/stdout.raw.txt", expected)) {
+  if (!readBytes(std::string(kReferenceDir) + "/stdout.raw.txt", expected)) {
     reportFailure("reference stdout not readable");
     return;
   }
@@ -245,7 +247,7 @@ TEST(regression, CseqHeadDumpParityMatchesFortranReference) {
                     artifact);
       continue;
     }
-    if (!readBytes(std::string(kCaseDir) + "/generated/" + artifact,
+    if (!readBytes(std::string(kReferenceDir) + "/generated/" + artifact,
                    artifactExpected)) {
       reportFailure(std::string("reference artifact not readable: ") +
                     artifact);
@@ -386,11 +388,12 @@ TEST(regression, CseqHeadDumpParityMatchesFortranReference) {
   };
 #endif
   static const HeadPin kHeads[] = {
-      {3612u, 5.854803851967764e-13, 1.4027025085568577e-16,
-       1.5568571767289802e-14},
-      {3908u, 8.30637797224562, 1.0000000000000002, -0.011451524499104073},
-      {4204u, 16.793292073223768, 1.9999999999995404,
-       -0.022157766117429097},
+      {3612u, -6.263342402658837e-13, 6.49884067376841e-17,
+       -1.7429852553498242e-14},
+      {3908u, 8.306377211030313, 0.9999999999999992,
+       -0.011451654024654478},
+      {4204u, 16.793289613796574, 1.9999999999995415,
+       -0.022158015847556688},
   };
   for (const HeadPin& pin : kHeads) {
     checkPin(readDouble(dump, pin.offset), pin.alfaDegrees, "ALFA/DTOR",

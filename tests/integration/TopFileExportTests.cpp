@@ -41,6 +41,8 @@
 namespace {
 
 const char* const kCaseRoot = "tests/fortran-reference/cases/top-file-export";
+const char* const kS15ReferenceRoot =
+    "tests/data/xfoil-6.996/s15/top-file-export";
 
 std::string readBytes(const std::string& path) {
   std::ifstream stream(path, std::ios::binary);
@@ -126,12 +128,22 @@ class TopExportRun {
   int exitCode_{};
 };
 
+std::string expectedReferencePath(const std::string& caseName,
+                                 const std::string& relativePath) {
+  const std::string s15 =
+      std::string(kS15ReferenceRoot) + "/" + caseName + "/" + relativePath;
+  std::error_code error;
+  if (std::filesystem::exists(s15, error)) {
+    return s15;
+  }
+  return std::string(kCaseRoot) + "/" + caseName + "/" + relativePath;
+}
+
 void compareFile(const TopExportRun& run, const std::string& caseName,
                  const std::string& artifact) {
   const std::string produced = run.read(artifact);
-  const std::string expected =
-      readBytes(std::string(kCaseRoot) + "/" + caseName + "/generated/" +
-                artifact);
+  const std::string expected = readBytes(expectedReferencePath(
+      caseName, "generated/" + artifact));
   if (expected.empty()) {
     testing::reportFailure(__FILE__, __LINE__,
                            "reference artifact not readable: " + artifact);
@@ -161,8 +173,7 @@ void compareBendReport(const TopExportRun& run, const std::string& caseName) {
   const std::string produced = extractBendReport(
       testing::canonicalizeCapturedText(run.read("stdout.txt")));
   const std::string expected = extractBendReport(
-      readBytes(std::string(kCaseRoot) + "/" + caseName +
-                "/stdout.raw.txt"));
+      readBytes(expectedReferencePath(caseName, "stdout.raw.txt")));
   if (expected.empty()) {
     testing::reportFailure(__FILE__, __LINE__,
                            "BEND reference report not readable: " + caseName);

@@ -267,7 +267,7 @@ class CommandInterpreter {
   void handleRdef(const std::string& argument);
   void handleReve();
   void handleDelimiter(const std::string& argument);
-  void handleNaca(const std::string& argument);
+  void handleNaca(const std::string& argument, bool sharpTrailingEdge = false);
   void handleXycm(const std::string& argument);
   void handlePcop();
   void handleInte();

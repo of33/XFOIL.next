@@ -51,10 +51,10 @@
    Z       Zoom    | (available in all menus)
    U       Unzoom  |
 
- XFOIL   c>   Max thickness =     0.120032  at x =   0.297
- Max camber    =     0.019999  at x =   0.403
+ XFOIL   c>   Max thickness =     0.120034  at x =   0.301
+ Max camber    =     0.020000  at x =   0.398
 
- Buffer airfoil set using 245 points
+ Buffer airfoil set using 399 points
 
  Blunt trailing edge.  Gap =  0.00252
 
@@ -76,7 +76,7 @@ Enter filename   s>
  airfoil "0":  NACA 2412                                       
  airfoil "1":  CLARK Y                                         
 
-Specify interpolating fraction  0...1   r>   Max thickness =     0.118515  at x =   0.292
+Specify interpolating fraction  0...1   r>   Max thickness =     0.118514  at x =   0.292
  Max camber    =     0.027506  at x =   0.413
 
 Enter new airfoil name   s>  

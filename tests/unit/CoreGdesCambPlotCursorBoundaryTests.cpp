@@ -128,7 +128,7 @@ bool same(const StateSnapshot& a, const StateSnapshot& b) {
 session::SessionComposition makeDesignSession() {
   session::SessionComposition session;
   std::ostringstream setupOut;
-  cli::handleNacaCore(session, setupOut, 12);
+  testing::handleLegacyNacaCore(session, setupOut, 12);
   (void)session::initializeGeometryDesign(session);
   return session;
 }

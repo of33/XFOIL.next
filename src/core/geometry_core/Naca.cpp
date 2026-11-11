@@ -236,11 +236,11 @@ Result<Naca5Result> naca5(int ides, std::size_t nside,
   return Result<Naca5Result>::ok(std::move(r));
 }
 
-Result<NacaAirfoilResult> nacaAirfoil(int ides, bool sharpTrailingEdge) {
-  // Fortran NACA (xfoil.f): the existing NACA command retains the
-  // 6.99 NSIDE = 123 / NB = 245 contract. The 6.996 399-point buffer is
-  // the deferred G-NACA-BUFFER decision (S04/S15), not a kernel change.
-  constexpr std::size_t nside = 123;
+Result<NacaAirfoilResult> nacaAirfoil(int ides, bool sharpTrailingEdge,
+                                      std::size_t nside) {
+  // Fortran 6.996 NACA/NACS (xfoil.f): NSIDE = IQX/3 = 200, NB = 399.
+  // The S04 kernel remains parameterized; this is the product command
+  // contract accepted by G-NACA-BUFFER in S15.
 
   // Fortran: ITYPE = 0; IF(IDES.LE.25099) ITYPE = 5;
   // IF(IDES.LE.9999) ITYPE = 4

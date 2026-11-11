@@ -111,7 +111,7 @@ void runCamberCase(const std::string& caseId, std::ostringstream& setupOut,
       break;
     }
     if (lines[i].rfind("NACA ", 0) == 0) {
-      app::cli::handleNacaCore(session, setupOut,
+      testing::handleLegacyNacaCore(session, setupOut,
                                std::stoi(lines[i].substr(5)));
     } else if (lines[i] == "PANE") {
       (void)app::cli::handlePaneCore(session, setupOut);
@@ -218,7 +218,7 @@ CamberFileCaseRun runCamberFileCase(const std::string& caseId) {
     }
     if (lines[i].rfind("NACA ", 0) == 0) {
       std::ostringstream setupOut;
-      app::cli::handleNacaCore(run.session, setupOut,
+      testing::handleLegacyNacaCore(run.session, setupOut,
                                std::stoi(lines[i].substr(5)));
     } else if (lines[i] == "GDES") {
       (void)session::initializeGeometryDesign(run.session);
@@ -381,7 +381,7 @@ TEST(unit, CoreCamberMenuAddPanelUnchangedMatchesFortran) {
 TEST(unit, CoreCamberMenuEndOfFileIsControlled) {
   session::SessionComposition session;
   std::ostringstream out;
-  app::cli::handleNacaCore(session, out, 1212);
+  testing::handleLegacyNacaCore(session, out, 1212);
   (void)session::initializeGeometryDesign(session);
   std::istringstream in("");
   const auto status = app::cli::handleCamberDesignCore(session, in, out);
@@ -391,7 +391,7 @@ TEST(unit, CoreCamberMenuEndOfFileIsControlled) {
 TEST(unit, CoreCamberEntryExitLgparmRoundTrip) {
   session::SessionComposition session;
   std::ostringstream out;
-  app::cli::handleNacaCore(session, out, 1212);
+  testing::handleLegacyNacaCore(session, out, 1212);
   (void)session::initializeGeometryDesign(session);
   session.design.lgParm = false;  // arbitrary initial value
   const auto entry = session::initializeCamberDesign(session);
@@ -411,7 +411,7 @@ TEST(unit, CoreCamberEntryExitLgparmRoundTrip) {
 TEST(unit, CoreCamberAddMutatesBufferNotPanel) {
   session::SessionComposition session;
   std::ostringstream out;
-  app::cli::handleNacaCore(session, out, 2412);
+  testing::handleLegacyNacaCore(session, out, 2412);
   (void)app::cli::handlePaneCore(session, out);
   const std::vector<double> panelBefore = session.paneling.panel.x;
   const std::vector<double> bufferBefore = session.geometry.buffer.y;
@@ -429,8 +429,8 @@ TEST(unit, CoreCamberSessionsAreIndependent) {
   session::SessionComposition a;
   session::SessionComposition b;
   std::ostringstream out;
-  app::cli::handleNacaCore(a, out, 1212);
-  app::cli::handleNacaCore(b, out, 2412);
+  testing::handleLegacyNacaCore(a, out, 1212);
+  testing::handleLegacyNacaCore(b, out, 2412);
   (void)session::initializeGeometryDesign(a);
   (void)session::initializeGeometryDesign(b);
   (void)session::initializeCamberDesign(a);
@@ -570,7 +570,7 @@ TEST(unit, CoreCamberMenuScalLoadingConsumerMatchesFortran) {
   // integral values 0.768/-0.064 (oracle fortran-bin/xfoil).
   session::SessionComposition s;
   std::ostringstream setup;
-  app::cli::handleNacaCore(s, setup, 12);
+  testing::handleLegacyNacaCore(s, setup, 12);
   (void)session::initializeGeometryDesign(s);
   const std::string menu =
       "INPP\n0.2 0.5\n0.8 0.5\n\n"

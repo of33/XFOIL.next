@@ -598,6 +598,44 @@ GeometryDesignSymmetryResult gdesToggleSymmetry(
 [[nodiscard]]
 GeometryDesignOpResult gdesRotate(SessionComposition& session, double arad);
 
+// Fortran GDES 'SQTE' (xgdes.f 568-592): square the TE against the
+// TE bisector; buffer point count unchanged, EXEC remains the commit.
+[[nodiscard]]
+core::Result<core::geometry_design::SqteResult> gdesSquareTrailingEdge(
+    SessionComposition& session);
+
+// Fortran GDES 'CIRC' (xgdes.f 594-620): TECIRC with NHCIRC=15; buffer
+// grows by 2*NHCIRC, capacity is checked before mutation, EXEC commits.
+[[nodiscard]]
+core::Result<core::geometry_design::TrailingEdgeCircleResult>
+    gdesAddTrailingEdgeCircle(SessionComposition& session, int nHCirc);
+
+// Fortran GDES 'SYTB' (xgdes.f 353-390): top/bottom y scaling; X unchanged.
+[[nodiscard]]
+GeometryDesignOpResult gdesScaleTopBottomY(SessionComposition& session,
+                                           double ytfac, double ybfac);
+
+// Fortran GDES 'XCEN' (xgdes.f 482-557): pure center-point query. No
+// buffer, panel or analysis mutation; flags mirror the canonical
+// not-found/convergence messages.
+struct GeometryDesignCenterPointResult {
+  bool ok{false};
+  std::string message;
+  bool topFound{true};
+  bool bottomFound{true};
+  bool topConverged{true};
+  bool bottomConverged{true};
+  double topX{0.0};
+  double topY{0.0};
+  double middleX{0.0};
+  double middleY{0.0};
+  double bottomX{0.0};
+  double bottomY{0.0};
+};
+[[nodiscard]]
+GeometryDesignCenterPointResult gdesCenterPointQuery(
+    const SessionComposition& session, double xoc, double yot);
+
 // Fortran GDES 'TRAN'/'T' (xgdes.f 250-274): shift, LGSAME=false.
 [[nodiscard]]
 GeometryDesignOpResult gdesTranslate(SessionComposition& session, double delx,

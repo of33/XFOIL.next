@@ -78,13 +78,29 @@ std::string referenceGdesSegment(const std::string& reference) {
     return {};
   }
   const std::size_t end = reference.find("\n XFOIL", begin);
-  if (end == std::string::npos) {
-    return reference.substr(begin);
-  }
-  if (end <= begin) {
-    return {};
-  }
-  return reference.substr(begin, end - begin);
+  const std::string segment =
+      end == std::string::npos ? reference.substr(begin)
+                               : reference.substr(begin, end - begin);
+
+  // Canonical 6.99 transcripts predate the accepted S15 GDES additions.
+  // Keep those references read-only and add only the exact S15 help lines
+  // at their canonical positions when the reference displays GDES help.
+  std::string expected = segment;
+  const auto insertAfter = [&expected](const std::string& anchor,
+                                       const std::string& added) {
+    const std::size_t pos = expected.find(anchor);
+    if (pos == std::string::npos) {
+      return;
+    }
+    const std::size_t after = pos + anchor.size();
+    expected.insert(after, added);
+  };
+  insertAfter("\n   Scal r   Scale about origin",
+              "\n   SYTB rr  Scale top and bottom y values separately");
+  insertAfter("\n   LERA rr  Change leading edge radius",
+              "\n   SQTE     Make TE gap square to TE bisector"
+              "\n   CIRC i   Add TE circle");
+  return expected;
 }
 
 // Feeds the commands before GDES (NACA/PANE) through the existing core
@@ -119,7 +135,7 @@ void runHandlerCase(const std::string& caseId, std::ostringstream& out,
       break;
     }
     if (lines[i].rfind("NACA ", 0) == 0) {
-      app::cli::handleNacaCore(session, out,
+      testing::handleLegacyNacaCore(session, out,
                                std::stoi(lines[i].substr(5)));
     } else if (lines[i] == "PANE") {
       (void)app::cli::handlePaneCore(session, out);
@@ -435,7 +451,7 @@ TEST(unit, CoreGdesOverStateUnchangedMatchesFortran) {
     CHECK(session::setPanelingParameters(session, params).ok);
   }
   std::ostringstream setupOut;
-  app::cli::handleNacaCore(session, setupOut, 12);
+  testing::handleLegacyNacaCore(session, setupOut, 12);
   testing::ScopedTempDirectory work("gdes-over-state-unchanged", true);
   fs::copy_file(dir / "input" / "ov_big.dat", work.makePath("ov_big.dat"),
                 fs::copy_options::overwrite_existing);

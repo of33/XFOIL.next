@@ -51,8 +51,10 @@
 
 namespace {
 
-const char* const kCaseDir =
+const char* const kCommandDir =
     "tests/fortran-reference/cases/polar/polar-wake2-alfa6-naca0012";
+const char* const kReferenceDir =
+    "tests/data/xfoil-6.996/s15/regression/polar-wake2-alfa6-naca0012";
 
 bool readBytes(const std::string& path, std::string& out) {
   std::ifstream stream(path, std::ios::binary);
@@ -148,7 +150,7 @@ TEST(regression, Wake2Alfa6ConvergenceParityMatchesFortranReference) {
   const std::string workDir = work.path().string();
   std::error_code error;
 
-  std::filesystem::copy(std::filesystem::path(kCaseDir) / "commands.in",
+  std::filesystem::copy(std::filesystem::path(kCommandDir) / "commands.in",
                         std::filesystem::path(workDir) / "commands.in",
                         std::filesystem::copy_options::overwrite_existing,
                         error);
@@ -189,7 +191,7 @@ TEST(regression, Wake2Alfa6ConvergenceParityMatchesFortranReference) {
   }
   actual = testing::normalizeLegacyDefaultDisplay(
       testing::stripInjectedDefaultsBlock(std::move(actual)));
-  if (!readBytes(std::string(kCaseDir) + "/stdout.raw.txt", expected)) {
+  if (!readBytes(std::string(kReferenceDir) + "/stdout.raw.txt", expected)) {
     reportFailure("reference stdout not readable");
     return;
   }
@@ -222,7 +224,7 @@ TEST(regression, Wake2Alfa6ConvergenceParityMatchesFortranReference) {
   if (countOccurrences(actual, " VISCAL:  Convergence failed") != 0) {
     reportFailure("VISCAL non-convergence message in the B3 case");
   }
-  if (actual.find("   5   rms: 0.3146E-04   max: -.5670E-03   D at   32  1") ==
+  if (actual.find("   5   rms: 0.2908E-04   max: -.5430E-03   D at   32  1") ==
       std::string::npos) {
     reportFailure("ALFA-6 iteration-5 line missing or differs");
   }
@@ -230,7 +232,7 @@ TEST(regression, Wake2Alfa6ConvergenceParityMatchesFortranReference) {
                   "    CDp =  0.00395") == std::string::npos) {
     reportFailure("ALFA-6 final load line missing or differs");
   }
-  if (actual.find("      9.000    3.8787   0.009726") ==
+  if (actual.find("      9.000    3.8780   0.009728") ==
       std::string::npos) {
     reportFailure("FORMAT-9922-Completion block missing");
   }

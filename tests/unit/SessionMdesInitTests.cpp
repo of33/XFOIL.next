@@ -72,7 +72,7 @@ constexpr double kPrecAbs = 1.0e-4;
 // buffer contour as Fortran NACA4(NSIDE=123) after ABCOPY removal of the
 // duplicate point (the core NACA returns NB=245 directly).
 void setupAbcopyAirfoil(SessionComposition& s, int designation) {
-  const auto naca = core::geometry::nacaAirfoil(designation);
+  const auto naca = core::geometry::nacaAirfoil(designation, false, 123);
   CHECK(naca.isOk());
   const auto set = session::setBufferGeometry(s, naca.value().buffer);
   CHECK(set.success());
@@ -111,7 +111,7 @@ void setupClarkYAbcopy(SessionComposition& s) {
 // PANGEN contour via the existing NACA production commit (buffer+PANGEN).
 void setupPangenAirfoil(SessionComposition& s, int designation) {
   std::ostringstream out;
-  cli::handleNacaCore(s, out, designation);
+  testing::handleLegacyNacaCore(s, out, designation);
   CHECK(s.paneling.panelingValid);
   CHECK(s.paneling.origin == session::PanelingOrigin::pangen);
 }

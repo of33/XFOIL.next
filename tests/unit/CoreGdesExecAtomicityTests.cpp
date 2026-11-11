@@ -59,7 +59,7 @@ double runOperAlfa(session::SessionComposition& s, double alpha) {
 TEST(unit, CoreGdesExecAtomicityAndConsumerChain) {
   session::SessionComposition s;
   std::ostringstream setup;
-  cli::handleNacaCore(s, setup, 12);
+  testing::handleLegacyNacaCore(s, setup, 12);
   (void)session::applyPaneling(s);
   xfoil::AnalysisConfig config;
   config.maximumIterations = 40;
@@ -112,7 +112,7 @@ TEST(unit, CoreGdesExecAtomicityAndConsumerChain) {
 TEST(unit, CoreGdesExecFailureKeepsOldPanelAndAnalysis) {
   session::SessionComposition s;
   std::ostringstream setup;
-  cli::handleNacaCore(s, setup, 12);
+  testing::handleLegacyNacaCore(s, setup, 12);
   (void)session::applyPaneling(s);
   xfoil::AnalysisConfig config;
   config.maximumIterations = 40;
@@ -157,7 +157,7 @@ TEST(unit, CoreGdesExecLbliniRule) {
   // count preserves LBLINI, a different one clears it.
   session::SessionComposition s;
   std::ostringstream setup;
-  cli::handleNacaCore(s, setup, 12);
+  testing::handleLegacyNacaCore(s, setup, 12);
   (void)session::initializeGeometryDesign(s);
   const auto gset = session::gdesSetBufferFromCurrent(s);
   CHECK(gset.ok);
@@ -168,7 +168,7 @@ TEST(unit, CoreGdesExecLbliniRule) {
 
   session::SessionComposition t;
   std::ostringstream setupT;
-  cli::handleNacaCore(t, setupT, 12);
+  testing::handleLegacyNacaCore(t, setupT, 12);
   t.viscous.viscals.lblini = true;
   auto grown = t.geometry.buffer;
   grown.x.push_back(grown.x.front());

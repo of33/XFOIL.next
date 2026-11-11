@@ -200,7 +200,7 @@ TEST(unit, DesignStateDefaultsMatchFortranInit) {
 TEST(unit, GdesBufferOpPreservesPanelAndAnalysisState) {
   SessionComposition session;
   std::ostringstream out;
-  app::cli::handleNacaCore(session, out, 12);
+  testing::handleLegacyNacaCore(session, out, 12);
   (void)app::cli::handlePaneCore(session, out);
   CHECK(session.paneling.panelingValid);
 

@@ -266,7 +266,7 @@ TEST(unit, SessionSetBufferGeometryInvalidatesPanel) {
   const std::uint64_t revisionBefore = composition.geometry.bufferRevision;
   const int panelCountBefore = session::panelingParameters(composition).panelCount;
 
-  const auto naca = core::geometry::nacaAirfoil(2412);
+  const auto naca = core::geometry::nacaAirfoil(2412, false, 123);
   CHECK(naca.isOk());
   CHECK(session::setBufferGeometry(composition, naca.value().buffer).success());
 
@@ -325,7 +325,7 @@ TEST(unit, SessionBufferGeometryMinimalProcessedThenPaneling) {
 // current buffer revision; buffer stays preserved.
 TEST(unit, SessionCopyBufferToCurrentSetsAbcopyOrigin) {
   session::SessionComposition composition;
-  const auto naca = core::geometry::nacaAirfoil(2412);
+  const auto naca = core::geometry::nacaAirfoil(2412, false, 123);
   CHECK(naca.isOk());
   CHECK(session::setBufferGeometry(composition, naca.value().buffer).success());
   CHECK_FALSE(session::panelingValid(composition));
@@ -374,7 +374,7 @@ TEST(unit, SessionAbcopyPreservesLbliniWhenCountEqual) {
 // 245 sets LBLINI=false (xgdes.f:975).
 TEST(unit, SessionAbcopyResetsLbliniWhenCountDiffers) {
   session::SessionComposition composition;
-  const auto naca = core::geometry::nacaAirfoil(2412);
+  const auto naca = core::geometry::nacaAirfoil(2412, false, 123);
   CHECK(naca.isOk());
   CHECK(session::setBufferGeometry(composition, naca.value().buffer).success());
   CHECK(session::applyPaneling(composition).ok);  // panel count stays 160
@@ -434,7 +434,7 @@ TEST(unit, SessionSetBufferGeometryNewGeometryResetsLblini) {
   CHECK(point.converged);
   CHECK(composition.viscous.viscals.lblini);
 
-  const auto naca = core::geometry::nacaAirfoil(2412);
+  const auto naca = core::geometry::nacaAirfoil(2412, false, 123);
   CHECK(naca.isOk());
   CHECK(session::setBufferGeometry(composition, naca.value().buffer).success());
   CHECK_FALSE(composition.viscous.viscals.lblini);  // new geometry: cold start
@@ -466,7 +466,7 @@ TEST(unit, SessionSetGeometrySameCountNewGeometryResetsLblini) {
 // lift coefficient must reproduce the confirmed reference value.
 TEST(unit, SessionPangenNaca2412OperatesOnPangenPanel) {
   session::SessionComposition composition;
-  const auto naca = core::geometry::nacaAirfoil(2412);
+  const auto naca = core::geometry::nacaAirfoil(2412, false, 123);
   CHECK(naca.isOk());
   CHECK(session::setBufferGeometry(composition, naca.value().buffer).success());
   core::paneling::PanelingParameters params =
@@ -704,7 +704,7 @@ TEST(unit, SessionOperSequenceWarmStartPreservesAndResetsState) {
 // VISCAL never converges; the OPER-ASEQ aborts after four points.
 TEST(unit, SessionOperSequenceNseqexHaltsOnNonConvergence) {
   session::SessionComposition composition;
-  const auto naca = core::geometry::nacaAirfoil(2412);
+  const auto naca = core::geometry::nacaAirfoil(2412, false, 123);
   CHECK(naca.isOk());
   CHECK(session::setBufferGeometry(composition, naca.value().buffer).success());
   core::paneling::PanelingParameters params =
@@ -738,7 +738,7 @@ TEST(unit, SessionOperSequenceNseqexHaltsOnNonConvergence) {
 // reference, not raised by increasing the reference resolution.
 TEST(unit, SessionOperAlphaSequenceViscousMatchesFortranSeqVisc2412) {
   session::SessionComposition composition;
-  const auto naca = core::geometry::nacaAirfoil(2412);
+  const auto naca = core::geometry::nacaAirfoil(2412, false, 123);
   CHECK(naca.isOk());
   CHECK(session::setBufferGeometry(composition, naca.value().buffer).success());
   CHECK(session::applyPaneling(composition).ok);
@@ -769,7 +769,7 @@ TEST(unit, SessionOperAlphaSequenceViscousMatchesFortranSeqVisc2412) {
 // is monotonically increasing. NPOINT formula (0.4..0.8/0.2 -> 3 points).
 TEST(unit, SessionOperClSequenceViscousConvergesToTargets) {
   session::SessionComposition composition;
-  const auto naca = core::geometry::nacaAirfoil(2412);
+  const auto naca = core::geometry::nacaAirfoil(2412, false, 123);
   CHECK(naca.isOk());
   CHECK(session::setBufferGeometry(composition, naca.value().buffer).success());
   CHECK(session::applyPaneling(composition).ok);

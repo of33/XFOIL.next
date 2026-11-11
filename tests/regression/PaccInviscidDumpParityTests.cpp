@@ -52,8 +52,10 @@
 
 namespace {
 
-const char* const kCaseDir =
+const char* const kCommandDir =
     "tests/fortran-reference/cases/polar/polar-inviscid-naca0012-aseq";
+const char* const kReferenceDir =
+    "tests/data/xfoil-6.996/s15/regression/polar-inviscid-naca0012-aseq";
 
 bool readBytes(const std::string& path, std::string& out) {
   std::ifstream stream(path, std::ios::binary);
@@ -93,7 +95,7 @@ TEST(regression, PaccInviscidDumpByteParityMatchesFortranReference) {
   const std::string workDir = work.path().string();
   std::error_code error;
 
-  std::filesystem::copy(std::filesystem::path(kCaseDir) / "commands.in",
+  std::filesystem::copy(std::filesystem::path(kCommandDir) / "commands.in",
                         std::filesystem::path(workDir) / "commands.in",
                         std::filesystem::copy_options::overwrite_existing,
                         error);
@@ -136,7 +138,7 @@ TEST(regression, PaccInviscidDumpByteParityMatchesFortranReference) {
                     artifact);
       continue;
     }
-    if (!readBytes(std::string(kCaseDir) + "/generated/" + artifact,
+    if (!readBytes(std::string(kReferenceDir) + "/generated/" + artifact,
                    expected)) {
       reportFailure(std::string("reference artifact not readable: ") +
                     artifact);

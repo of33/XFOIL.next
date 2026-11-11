@@ -89,6 +89,7 @@ constexpr double kDisplayAbsTol = 1.0e-3;
 // canonical NACA buffer point count (Fortran NACA: NSIDE=IQX/3=123).
 constexpr std::size_t kNside = 123;
 constexpr std::size_t kBufferCount = 245;
+constexpr std::size_t kS15BufferCount = 399;
 
 // Builds the splined contour of a NACA buffer (SCALC/SEGSPL/LEFIND as
 // in the xfoil.f calling context).
@@ -213,7 +214,9 @@ TEST(unit, GeometryNacaTooSmallNsideFails) {
 
 TEST(unit, NacaLtesContracts) {
   // External 6.996 H-S04-NACA-LTES target values. Normal cases use the
-  // unchanged 6.99 open-TE contract; sharp cases set LTES and use XTES.
+  // unchanged open-TE contract; sharp cases set LTES and use XTES. S15
+  // fixes the command NSIDE at 200 (NB=399); the S04 kernel stays
+  // parameterized and keeps its explicit 123-point tests above.
   struct Case {
     const char* name;
     int ides;
@@ -222,34 +225,34 @@ TEST(unit, NacaLtesContracts) {
     double xThickness;
     double camber;
     double xCamber;
-    double midY;
-    double lowerMidY;
+    double topSampleY;
+    double bottomSampleY;
   };
   const Case cases[] = {
-      {"NACA 0012", 12, false, 1.2003207898370065e-1,
-       2.9749550101842870e-1, -5.8980598183211441e-17,
-       1.4776720928247184e-2, 5.8311508418170989e-2,
-       -5.8672581611098097e-2},
-      {"NACA 0012", 12, true, 1.2003449863607675e-1,
-       2.9749550101842981e-1, 6.9388939039072284e-17,
-       8.8083310663491843e-1, 5.8187602518426570e-2,
-       -5.8564012249496103e-2},
-      {"NACA 2412", 2412, false, 1.2003208369899164e-1,
-       2.9749567771631857e-1, 1.9999450869281215e-2,
-       4.0318958280910333e-1, 7.8303889594485448e-2,
-       -3.8716379080363739e-2},
-      {"NACA 2412", 2412, true, 1.2003450290498287e-1,
-       2.9749566856972637e-1, 1.9999452316196244e-2,
-       4.0318958149393869e-1, 7.8179983694741023e-2,
-       -3.8607809718761738e-2},
-      {"NACA 23012", 23012, false, 1.2003208797899201e-1,
-       2.9749588969381840e-1, 1.8381723477353389e-2,
-       1.4621022974616818e-1, 7.1734237853458921e-2,
-       -4.5008887450011623e-2},
-      {"NACA 23012", 23012, true, 1.2003450763826617e-1,
-       2.9749509609299629e-1, 1.8381727916315555e-2,
-       1.4621029441886532e-1, 7.1610331953714496e-2,
-       -4.4900318088409621e-2},
+      {"NACA 0012", 12, false, 1.2003404356207915e-1,
+       3.0088316229660095e-1, 1.2490009027033011e-16,
+       4.3064363686545391e-2, 4.0326855862119398e-2,
+       1.8423122763674360e-2},
+      {"NACA 0012", 12, true, 1.2003177554550842e-1,
+       2.9472446684914366e-1, 1.0755285551056204e-16,
+       6.3848605997653990e-2, 3.9783032433896422e-2,
+       1.8500824584631616e-2},
+      {"NACA 2412", 2412, false, 1.2003404738622367e-1,
+       3.0088331964801801e-1, 1.9999533402725141e-2,
+       3.9803999663384071e-1, 5.6542856116659268e-2,
+       1.9584843914656664e-2},
+      {"NACA 2412", 2412, true, 1.2003178062950301e-1,
+       2.9472465204562642e-1, 1.9999533719896642e-2,
+       3.9803999505753174e-1, 5.5999032688436291e-2,
+       1.9662545735613920e-2},
+      {"NACA 23012", 23012, false, 1.2003405242908681e-1,
+       3.0088276925138585e-1, 1.8385052281461058e-2,
+       1.5222775317295173e-1, 4.7813666951246170e-2,
+       2.1800113141494659e-2},
+      {"NACA 23012", 23012, true, 1.2003178470988227e-1,
+       2.9472486157708111e-1, 1.8385051079090577e-2,
+       1.5222779480168022e-1, 4.7269843523023200e-2,
+       2.1877814962451916e-2},
   };
 
   for (const Case& c : cases) {
@@ -260,8 +263,8 @@ TEST(unit, NacaLtesContracts) {
     }
     const NacaAirfoilResult& out = r.value();
     CHECK(out.buffer.name == c.name);
-    CHECK_EQ(out.buffer.x.size(), kBufferCount);
-    CHECK_EQ(out.buffer.y.size(), kBufferCount);
+    CHECK_EQ(out.buffer.x.size(), kS15BufferCount);
+    CHECK_EQ(out.buffer.y.size(), kS15BufferCount);
     CHECK_NEAR(out.buffer.x.front(), 1.0, 0.0, 0.0);
     CHECK_NEAR(out.buffer.x.back(), 1.0, 0.0, 0.0);
     CHECK_NEAR(out.buffer.y.front(),
@@ -270,21 +273,18 @@ TEST(unit, NacaLtesContracts) {
                c.sharp ? 0.0 : -1.2599999999999777e-3, 1.0e-15, 0.0);
     CHECK_NEAR(out.buffer.y.front() - out.buffer.y.back(),
                c.sharp ? 0.0 : 2.5199999999999554e-3, 1.0e-15, 0.0);
-    CHECK_NEAR(out.buffer.x[122], 0.0, 0.0, 0.0);
-    CHECK_NEAR(out.buffer.y[122], 0.0, 0.0, 0.0);
-    CHECK_NEAR(out.buffer.x[60], 3.9219291414903468e-1, 1.0e-12, 0.0);
-    CHECK_NEAR(out.buffer.y[60], c.midY, 1.0e-12, 0.0);
-    CHECK_NEAR(out.buffer.x[183], 3.8128156646177092e-1, 1.0e-12, 0.0);
-    CHECK_NEAR(out.buffer.y[183], c.lowerMidY, 1.0e-12, 0.0);
-    CHECK_NEAR(out.metrics.thick, c.thickness, kFortranAbsTol,
-               kFortranRelTol);
-    CHECK_NEAR(out.metrics.thickX, c.xThickness, kFortranAbsTol,
-               kFortranRelTol);
+    CHECK_NEAR(out.buffer.x[199], 0.0, 0.0, 0.0);
+    CHECK_NEAR(out.buffer.y[199], 0.0, 0.0, 0.0);
+    CHECK_NEAR(out.buffer.x[60], 6.6098274927336154e-1, 1.0e-12, 0.0);
+    CHECK_NEAR(out.buffer.y[60], c.topSampleY, 1.0e-12, 0.0);
+    CHECK_NEAR(out.buffer.x[183], 1.1790995992955411e-2, 1.0e-12, 0.0);
+    CHECK_NEAR(out.buffer.y[183], c.bottomSampleY, 1.0e-12, 0.0);
+    CHECK_NEAR(out.metrics.thick, c.thickness, 1.0e-15, 0.0);
+    CHECK_NEAR(out.metrics.thickX, c.xThickness, 1.0e-15, 0.0);
     CHECK_NEAR(out.metrics.chord, 1.0, kFortranAbsTol, kFortranRelTol);
     CHECK_NEAR(out.metrics.cambr, c.camber, 1.0e-15, 0.0);
     if (c.ides != 12) {
-      CHECK_NEAR(out.metrics.cambrX, c.xCamber, kFortranAbsTol,
-                 kFortranRelTol);
+      CHECK_NEAR(out.metrics.cambrX, c.xCamber, 1.0e-15, 0.0);
     }
     double twiceArea = 0.0;
     bool finite = true;
@@ -302,8 +302,7 @@ TEST(unit, NacaLtesContracts) {
             out.buffer.y.front() == out.buffer.y.back()));
   }
 
-  // The 399-point buffer is a deferred G-NACA-BUFFER decision; the
-  // kernel accepts NSIDE=200 while the existing NACA command keeps 245.
+  // The accepted S15 NACA/NACS command contract is NSIDE=200, NB=399.
   const Result<NacaResult> n399 = naca4(12, 200, false);
   const Result<NacaResult> n399s = naca4(12, 200, true);
   CHECK(n399.isOk());
@@ -314,8 +313,9 @@ TEST(unit, NacaLtesContracts) {
              2.5199999999999554e-3, 1.0e-15, 0.0);
   CHECK_NEAR(n399s.value().yb.front() - n399s.value().yb.back(),
              0.0, 1.0e-15, 0.0);
-  CHECK_EQ(nacaAirfoil(12).value().buffer.x.size(), kBufferCount);
+  CHECK_EQ(nacaAirfoil(12).value().buffer.x.size(), kS15BufferCount);
 }
+
 
 TEST(unit, GeometryNaca4FirstLastZeroBased) {
   // 0-based first/last indices: XX(1)=0, XX(NSIDE)=1
@@ -1163,7 +1163,7 @@ TEST(unit, GeometryNacaAirfoilN0012) {
   const Result<NacaAirfoilResult> r = nacaAirfoil(12);
   CHECK(r.isOk());
   const NacaAirfoilResult& out = r.value();
-  CHECK_EQ(out.buffer.x.size(), kBufferCount);
+  CHECK_EQ(out.buffer.x.size(), kS15BufferCount);
   CHECK(out.buffer.name == "NACA 0012");
   // geometry parameter as in the xfoil.f-NACA-call context (SCALC/SEGSPL/
   // GEOPAR).
@@ -1178,9 +1178,9 @@ TEST(unit, GeometryNacaAirfoilN23012) {
   const Result<NacaAirfoilResult> r = nacaAirfoil(23012);
   CHECK(r.isOk());
   const NacaAirfoilResult& out = r.value();
-  CHECK_EQ(out.buffer.x.size(), kBufferCount);
+  CHECK_EQ(out.buffer.x.size(), kS15BufferCount);
   CHECK(out.buffer.name == "NACA 23012");
-  CHECK_NEAR(out.metrics.cambr, 1.8381724134087563e-2, kFortranAbsTol,
+  CHECK_NEAR(out.metrics.cambr, 1.8385052281461058e-2, kFortranAbsTol,
              kFortranRelTol);
 }
 

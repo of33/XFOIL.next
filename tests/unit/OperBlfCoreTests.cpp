@@ -63,7 +63,7 @@ std::string readReference(const char* name) {
 
 session::SessionComposition viscousNaca0012Session() {
   session::SessionComposition composition;
-  const auto naca = core::geometry::nacaAirfoil(12);
+  const auto naca = core::geometry::nacaAirfoil(12, false, 123);
   CHECK(naca.isOk());
   CHECK(
       session::setBufferGeometry(composition, naca.value().buffer).success());
@@ -194,7 +194,7 @@ TEST(unit, OperBlfReportIsMutationFree) {
 // safety diagnostic, no partial values, no mutation.
 TEST(unit, OperBlfGuardWithoutBlDataIsMutationFree) {
   session::SessionComposition composition;
-  const auto naca = core::geometry::nacaAirfoil(12);
+  const auto naca = core::geometry::nacaAirfoil(12, false, 123);
   CHECK(naca.isOk());
   CHECK(
       session::setBufferGeometry(composition, naca.value().buffer).success());

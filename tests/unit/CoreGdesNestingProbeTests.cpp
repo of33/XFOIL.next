@@ -44,7 +44,7 @@ namespace session = xfoil::session;
 session::SessionComposition makeSession() {
   session::SessionComposition s;
   std::ostringstream setup;
-  cli::handleNacaCore(s, setup, 12);
+  testing::handleLegacyNacaCore(s, setup, 12);
   return s;
 }
 

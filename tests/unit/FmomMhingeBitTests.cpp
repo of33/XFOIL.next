@@ -166,7 +166,7 @@ HarnessValues readHarnessReference(
 // the current contour is the PANGEN contour.
 session::SessionComposition nacaSessionNoPane(int designation, bool viscous) {
   session::SessionComposition composition;
-  const auto naca = core::geometry::nacaAirfoil(designation);
+  const auto naca = core::geometry::nacaAirfoil(designation, false, 123);
   CHECK(naca.isOk());
   CHECK(session::setBufferGeometry(composition, naca.value().buffer)
             .success());

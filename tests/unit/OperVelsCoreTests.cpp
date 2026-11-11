@@ -56,7 +56,7 @@ std::string readReference(const char* path) {
 
 session::SessionComposition naca0012InviscidAlfa2() {
   session::SessionComposition composition;
-  const auto naca = core::geometry::nacaAirfoil(12);
+  const auto naca = core::geometry::nacaAirfoil(12, false, 123);
   CHECK(naca.isOk());
   CHECK(session::setBufferGeometry(composition, naca.value().buffer)
             .success());

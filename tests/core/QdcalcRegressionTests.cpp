@@ -250,7 +250,7 @@ TEST(unit, QdcalcWakeDijClarkY) {
 
 TEST(unit, QdcalcWakeDijNaca4412) {
   // NACA regression: canonical NACA path (nacaAirfoil, NB = 245).
-  const auto na = nacaAirfoil(4412);
+  const auto na = nacaAirfoil(4412, false, 123);
   CHECK(na.isOk());
   const AirfoilBuffer& buffer = na.value().buffer;
   CHECK_EQ(buffer.x.size(), static_cast<std::size_t>(245));

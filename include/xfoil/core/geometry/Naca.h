@@ -100,18 +100,20 @@ Result<Naca5Result> naca5(int ides, std::size_t nside,
                           bool sharpTrailingEdge = false);
 
 // Fortran 6.996: SUBROUTINE NACA(IDES1,LTES) without dialog and without
-// PANGEN. The existing NACA command keeps NSIDE = 123 (NB = 245); the
-// 6.996 399-point buffer is the deferred G-NACA-BUFFER decision (S04/S15).
+// PANGEN. The accepted S15 command contract uses NSIDE = 200 (NB = 399);
+// the S04 kernel remains parameterized for explicit 123/200 callers.
 // ITYPE rules as in xfoil.f: IDES<=9999 -> NACA4, IDES<=25099 -> NACA5,
 // otherwise 'This designation not implemented.' as a controlled error.
 // IDES <= 0 corresponds to the Fortran dialog case and also returns
 // a controlled error. The geometry parameters follow from the
 // SCALC/SEGSPL/LEFIND/GEOPAR chain as in the Fortran calling context.
-// sharpTrailingEdge is the Fortran LTES; the existing NACA command passes
-// false, while a future NACS command can pass true without CLI registration
-// in this slice.
+// sharpTrailingEdge is the Fortran LTES: NACA passes false, NACS true.
+// nside is the Fortran NSIDE argument; the NACA/NACS command uses the
+// accepted default 200 (NB=399). Explicit 123 remains available for
+// kernel-level/legacy reference tests.
 Result<NacaAirfoilResult> nacaAirfoil(int ides,
-                                      bool sharpTrailingEdge = false);
+                                      bool sharpTrailingEdge = false,
+                                      std::size_t nside = 200);
 
 }  // namespace xfoil::core::geometry
 

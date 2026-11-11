@@ -51,10 +51,10 @@
    Z       Zoom    | (available in all menus)
    U       Unzoom  |
 
- XFOIL   c>   Max thickness =     0.120032  at x =   0.297
- Max camber    =     0.019999  at x =   0.403
+ XFOIL   c>   Max thickness =     0.120034  at x =   0.301
+ Max camber    =     0.020000  at x =   0.398
 
- Buffer airfoil set using 245 points
+ Buffer airfoil set using 399 points
 
  Blunt trailing edge.  Gap =  0.00252
 
@@ -75,7 +75,7 @@
  Max thickness =     0.120034  at x =   0.299
  Max camber    =     0.020000  at x =   0.401
 
-  LE  x,y  =   0.00000  -0.00000  |   Chord =   1.00000
+  LE  x,y  =  -0.00000  -0.00000  |   Chord =   1.00000
   TE  x,y  =   1.00000   0.00000  |
 
  Current airfoil nodes set from buffer airfoil nodes ( 240 )

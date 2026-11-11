@@ -2263,6 +2263,151 @@ GeometryDesignOpResult gdesRotate(SessionComposition& session, double arad) {
   return GeometryDesignOpResult{true, ""};
 }
 
+core::Result<core::geometry_design::SqteResult> gdesSquareTrailingEdge(
+    SessionComposition& session) {
+  if (!designWorkAvailable(session)) {
+    return core::Result<core::geometry_design::SqteResult>::fail(
+        core::Error{core::ErrorCode::invalidState,
+                    "GDES: no design buffer active"});
+  }
+  auto wb = assembleDesignBuffer(session);
+  auto result = core::geometry_design::squareTrailingEdge(wb);
+  if (!result.isOk()) {
+    return result;
+  }
+  syncDesignBuffer(session, wb, /*geometryChanged=*/true);
+  return result;
+}
+
+core::Result<core::geometry_design::TrailingEdgeCircleResult>
+    gdesAddTrailingEdgeCircle(SessionComposition& session, int nHCirc) {
+  if (!designWorkAvailable(session)) {
+    return core::Result<core::geometry_design::TrailingEdgeCircleResult>::fail(
+        core::Error{core::ErrorCode::invalidState,
+                    "GDES: no design buffer active"});
+  }
+  auto wb = assembleDesignBuffer(session);
+  auto result = core::geometry_design::addTrailingEdgeCircle(wb, nHCirc);
+  if (!result.isOk()) {
+    return result;
+  }
+  syncDesignBuffer(session, wb, /*geometryChanged=*/true);
+  return result;
+}
+
+GeometryDesignOpResult gdesScaleTopBottomY(SessionComposition& session,
+                                           double ytfac, double ybfac) {
+  if (!designWorkAvailable(session)) {
+    return designOpFailure("GDES: no design buffer active");
+  }
+  auto wb = assembleDesignBuffer(session);
+  const core::Status status =
+      core::geometry_design::scaleTopBottomY(wb, ytfac, ybfac);
+  if (!status.isOk()) {
+    return designOpFailure(status.error().message.c_str());
+  }
+  syncDesignBuffer(session, wb, /*geometryChanged=*/true);
+  return GeometryDesignOpResult{true, ""};
+}
+
+GeometryDesignCenterPointResult gdesCenterPointQuery(
+    const SessionComposition& session, double xoc, double yot) {
+  GeometryDesignCenterPointResult result;
+  if (!designWorkAvailable(session)) {
+    result.message = "GDES: no design buffer active";
+    return result;
+  }
+  const auto wb = assembleDesignBuffer(session);
+  const std::size_t n = wb.x.size();
+  if (n < 3) {
+    result.message = "GDES: no design buffer active";
+    return result;
+  }
+  const core::geometry::LeadingEdgeResult le = core::geometry::lefind(
+      wb.x, wb.xp, wb.y, wb.yp, wb.s);
+  const double xle = core::math::seval(le.sle, wb.x, wb.xp, wb.s);
+  const double yle = core::math::seval(le.sle, wb.y, wb.yp, wb.s);
+  const double xte = 0.5 * (wb.x[0] + wb.x[n - 1]);
+  const double yte = 0.5 * (wb.y[0] + wb.y[n - 1]);
+  const double chbsq = (xte - xle) * (xte - xle) +
+                       (yte - yle) * (yte - yle);
+  if (!(chbsq > 0.0) || !std::isfinite(chbsq)) {
+    result.message = "XCEN: degenerate chord";
+    return result;
+  }
+
+  double sb1 = wb.s[n - 1];
+  for (std::size_t i = 0; i < n; ++i) {
+    const double xoc1 = ((wb.x[i] - xle) * (xte - xle) +
+                         (wb.y[i] - yle) * (yte - yle)) / chbsq;
+    sb1 = wb.s[i];
+    if (xoc1 <= xoc) {
+      break;
+    }
+    if (i + 1 == n) result.topFound = false;
+  }
+  for (int iter = 1; iter <= 8; ++iter) {
+    const double xb1 = core::math::seval(sb1, wb.x, wb.xp, wb.s);
+    const double yb1 = core::math::seval(sb1, wb.y, wb.yp, wb.s);
+    const double xbp1 = core::math::deval(sb1, wb.x, wb.xp, wb.s);
+    const double ybp1 = core::math::deval(sb1, wb.y, wb.yp, wb.s);
+    const double xoc1 = ((xb1 - xle) * (xte - xle) +
+                         (yb1 - yle) * (yte - yle)) / chbsq;
+    const double xocp1 = (xbp1 * (xte - xle) + ybp1 * (yte - yle)) / chbsq;
+    if (xocp1 == 0.0 || !std::isfinite(xocp1)) {
+      result.topConverged = false;
+      break;
+    }
+    const double dsb1 = -(xoc1 - xoc) / xocp1;
+    sb1 += dsb1;
+    if (std::abs(dsb1) < (wb.s[n - 1] - wb.s[0]) * 1.0e-8) break;
+    if (iter == 8) result.topConverged = false;
+  }
+
+  double sb2 = wb.s[0];
+  for (std::size_t i = n; i-- > 0;) {
+    const double xoc2 = ((wb.x[i] - xle) * (xte - xle) +
+                         (wb.y[i] - yle) * (yte - yle)) / chbsq;
+    sb2 = wb.s[i];
+    if (xoc2 <= xoc) {
+      break;
+    }
+    if (i == 0) result.bottomFound = false;
+  }
+  for (int iter = 1; iter <= 8; ++iter) {
+    const double xb2 = core::math::seval(sb2, wb.x, wb.xp, wb.s);
+    const double yb2 = core::math::seval(sb2, wb.y, wb.yp, wb.s);
+    const double xbp2 = core::math::deval(sb2, wb.x, wb.xp, wb.s);
+    const double ybp2 = core::math::deval(sb2, wb.y, wb.yp, wb.s);
+    const double xoc2 = ((xb2 - xle) * (xte - xle) +
+                         (yb2 - yle) * (yte - yle)) / chbsq;
+    const double xocp2 = (xbp2 * (xte - xle) + ybp2 * (yte - yle)) / chbsq;
+    if (xocp2 == 0.0 || !std::isfinite(xocp2)) {
+      result.bottomConverged = false;
+      break;
+    }
+    const double dsb2 = -(xoc2 - xoc) / xocp2;
+    sb2 += dsb2;
+    if (std::abs(dsb2) < (wb.s[n - 1] - wb.s[0]) * 1.0e-8) break;
+    if (iter == 8) result.bottomConverged = false;
+  }
+
+  result.topX = core::math::seval(sb1, wb.x, wb.xp, wb.s);
+  result.topY = core::math::seval(sb1, wb.y, wb.yp, wb.s);
+  result.bottomX = core::math::seval(sb2, wb.x, wb.xp, wb.s);
+  result.bottomY = core::math::seval(sb2, wb.y, wb.yp, wb.s);
+  result.middleX = result.topX * yot + result.bottomX * (1.0 - yot);
+  result.middleY = result.topY * yot + result.bottomY * (1.0 - yot);
+  if (!std::isfinite(result.topX) || !std::isfinite(result.topY) ||
+      !std::isfinite(result.bottomX) || !std::isfinite(result.bottomY) ||
+      !std::isfinite(result.middleX) || !std::isfinite(result.middleY)) {
+    result.message = "XCEN: non-finite result";
+    return result;
+  }
+  result.ok = true;
+  return result;
+}
+
 GeometryDesignOpResult gdesTranslate(SessionComposition& session, double delx,
                                      double dely) {
   if (!designWorkAvailable(session)) {

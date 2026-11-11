@@ -56,7 +56,9 @@ namespace xfoil::app::cli {
 // designation < 0 or invalid designation deliver the controlled
 // original messages; the session state then stays unchanged.
 void handleNacaCore(xfoil::session::SessionComposition& session,
-                    std::ostream& out, int designation);
+                    std::ostream& out, int designation,
+                    bool sharpTrailingEdge = false,
+                    std::size_t nside = 200);
 
 // Current airfoil of the session panel contour (Fortran X(1..N)/Y(1..N)) as
 // a coordinate list for SAVE/PSAV/ISAV.

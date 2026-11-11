@@ -143,7 +143,7 @@ HarnessValues readHarnessReference(
 session::SessionComposition nacaSession(int designation, bool viscous,
                                         double alphaDeg) {
   session::SessionComposition composition;
-  const auto naca = core::geometry::nacaAirfoil(designation);
+  const auto naca = core::geometry::nacaAirfoil(designation, false, 123);
   CHECK(naca.isOk());
   CHECK(session::setBufferGeometry(composition, naca.value().buffer)
             .success());

@@ -56,7 +56,7 @@ using xfoil::app::cli::handleOperAlphaCore;
 using xfoil::app::cli::handleOperMachCore;
 
 void buildNaca2412Paned(session::SessionComposition& composition) {
-  const auto naca = core::geometry::nacaAirfoil(2412);
+  const auto naca = core::geometry::nacaAirfoil(2412, false, 123);
   CHECK(naca.isOk());
   CHECK(session::setBufferGeometry(composition, naca.value().buffer).success());
   CHECK(session::applyPaneling(composition).ok);
@@ -228,7 +228,7 @@ TEST(unit, SessionCpiStaleAfterProfileChangeButInvalidated) {
         app::cli::OperAlphaCoreStatus::analyzed);
   const std::vector<double> cpiBefore = composition.viscous.cpi;
 
-  const auto naca = core::geometry::nacaAirfoil(4412);
+  const auto naca = core::geometry::nacaAirfoil(4412, false, 123);
   CHECK(naca.isOk());
   CHECK(session::setBufferGeometry(composition, naca.value().buffer)
             .success());

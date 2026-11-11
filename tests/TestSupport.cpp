@@ -26,6 +26,9 @@
 
 #include "TestSupport.h"
 
+#include "app/cli/CoreGeometryHandlers.h"
+#include "xfoil/session/SessionState.h"
+
 #include <unistd.h>
 #ifndef _WIN32
 #include <sys/wait.h>
@@ -84,6 +87,11 @@ std::string sanitizePathComponent(const std::string& text,
 std::vector<TestCase>& registry() {
   static std::vector<TestCase> tests;
   return tests;
+}
+
+void handleLegacyNacaCore(xfoil::session::SessionComposition& session,
+                          std::ostream& out, int designation) {
+  xfoil::app::cli::handleNacaCore(session, out, designation, false, 123);
 }
 
 Registrar::Registrar(const char* name, TestFunction function) {

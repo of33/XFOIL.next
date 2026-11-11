@@ -10,6 +10,10 @@ tests/data/xfoil-6.996/s11/*.pol -whitespace
 # S13 boundary-layer fixtures keep fixed-width header trailing spaces.
 tests/data/xfoil-6.996/s13/*.bl -whitespace
 
+# S15 NACA/GDES and targeted regression references are byte-exact oracle
+# text; fixed-width Fortran columns intentionally keep trailing spaces.
+tests/data/xfoil-6.996/s15/** -whitespace
+
 # Keep public text artifacts byte-stable across POSIX and Windows checkouts.
 * text=auto eol=lf
 
