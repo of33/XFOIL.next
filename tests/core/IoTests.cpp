@@ -26,6 +26,7 @@
 // against the canonical Fortran references under
 // tests/data/core-polar-io-reference/ (text serializers and binary dump).
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <cstring>
@@ -64,6 +65,35 @@ std::vector<std::uint8_t> readBytes(const std::string& path) {
   std::ifstream in(path, std::ios::binary);
   return std::vector<std::uint8_t>((std::istreambuf_iterator<char>(in)),
                                    std::istreambuf_iterator<char>());
+}
+
+void writeBytes(const std::string& path,
+                const std::vector<std::uint8_t>& bytes) {
+  std::ofstream out(path, std::ios::binary | std::ios::trunc);
+  out.write(reinterpret_cast<const char*>(bytes.data()),
+            static_cast<std::streamsize>(bytes.size()));
+}
+
+struct DumpRecordSpan {
+  std::size_t payloadOffset;
+  std::size_t payloadSize;
+};
+
+std::vector<DumpRecordSpan> dumpRecordSpans(
+    const std::vector<std::uint8_t>& bytes) {
+  std::vector<DumpRecordSpan> spans;
+  std::size_t pos = 0;
+  while (pos + 8 <= bytes.size()) {
+    const std::uint32_t front =
+        static_cast<std::uint32_t>(bytes[pos]) |
+        (static_cast<std::uint32_t>(bytes[pos + 1]) << 8) |
+        (static_cast<std::uint32_t>(bytes[pos + 2]) << 16) |
+        (static_cast<std::uint32_t>(bytes[pos + 3]) << 24);
+    if (front > bytes.size() - pos - 8) break;
+    spans.push_back({pos + 4, front});
+    pos += static_cast<std::size_t>(front) + 8;
+  }
+  return spans;
 }
 
 const char* kPolFixtures[] = {
@@ -287,6 +317,201 @@ TEST(unit, IoDumpDecodeFixtures) {
     CHECK_EQ(re.size(), bytes.size());
     CHECK(re == bytes);
   }
+}
+
+TEST(unit, PolarDumpS12TargetRoundTrip) {
+  const std::vector<std::uint8_t> bytes =
+      readBytes("tests/data/xfoil-6.996/s12/polar-visc-clark-y.dump");
+  const io::DumpDecodeResult decoded = io::decodeDump(bytes.data(), bytes.size());
+  CHECK(decoded.file.has_value());
+  if (!decoded.file) return;
+  const io::DumpFile& file = *decoded.file;
+  CHECK_EQ(file.header.name, std::string("CLARK Y") + std::string(41, ' '));
+  CHECK_EQ(file.header.code, std::string("XFOIL   "));
+  CHECK_EQ(file.header.version, io::kDumpHeaderVersion);
+  CHECK_EQ(file.header.iibx, 151);
+  CHECK_EQ(file.header.geometry.size(), 151u);
+  CHECK_EQ(file.points.size(), 4u);
+  CHECK_EQ(file.points[0].nside1, 99);
+  CHECK_EQ(file.points[0].nside2, 98);
+  CHECK_EQ(file.points[0].iblte1, 77);
+  CHECK_EQ(file.points[0].iblte2, 76);
+  CHECK_EQ(file.points[3].nside1, 107);
+  CHECK_EQ(file.points[3].nside2, 90);
+
+  const auto headerBytes = io::encodeDumpHeaderChecked(file.header);
+  CHECK(headerBytes.isOk());
+  std::vector<std::uint8_t> re = headerBytes.value();
+  for (const auto& point : file.points) {
+    const auto encoded = io::encodeDumpPointChecked(point);
+    CHECK(encoded.isOk());
+    re.insert(re.end(), encoded.value().begin(), encoded.value().end());
+  }
+  CHECK_EQ(re.size(), bytes.size());
+  CHECK(re == bytes);
+
+  const auto spans = dumpRecordSpans(bytes);
+  CHECK_EQ(spans.size(), 21u);
+  CHECK_EQ(spans[0].payloadSize, 64u);
+  CHECK_EQ(spans[1].payloadSize, 32u);
+  CHECK_EQ(spans[2].payloadSize, 8u);
+  CHECK_EQ(spans[3].payloadSize, 16u);
+  CHECK_EQ(spans[4].payloadSize, 2416u);
+  CHECK_EQ(spans[5].payloadSize, 56u);
+  CHECK_EQ(spans[6].payloadSize, 16u);
+  CHECK_EQ(spans[7].payloadSize, 4752u);
+  CHECK_EQ(spans[8].payloadSize, 4704u);
+  CHECK_EQ(spans[20].payloadSize, 4320u);
+}
+
+TEST(unit, PolarDumpS12Old699Compatibility) {
+  for (const char* path : {
+           "tests/data/xfoil-6.996/s09/polar-visc-clark-y.dump",
+           "tests/fortran-reference/cases/polar/polar-visc-0012/generated/"
+           "polar-visc-0012.dump"}) {
+    const std::vector<std::uint8_t> bytes = readBytes(path);
+    const io::DumpDecodeResult decoded =
+        io::decodeDump(bytes.data(), bytes.size());
+    CHECK(decoded.file.has_value());
+    if (!decoded.file) continue;
+    CHECK_EQ(decoded.file->header.version, 6.99);
+    std::vector<std::uint8_t> re =
+        io::encodeDumpHeader(decoded.file->header);
+    for (const auto& point : decoded.file->points) {
+      const auto encoded = io::encodeDumpPoint(point);
+      re.insert(re.end(), encoded.begin(), encoded.end());
+    }
+    CHECK(re == bytes);
+  }
+}
+
+TEST(unit, PolarDumpS12MalformedRejected) {
+  const std::vector<std::uint8_t> bytes =
+      readBytes("tests/data/xfoil-6.996/s12/polar-visc-clark-y.dump");
+  std::vector<std::uint8_t> empty;
+  CHECK(!io::decodeDump(empty.data(), empty.size()).file.has_value());
+  const std::vector<std::uint8_t> truncated =
+      readBytes("tests/data/xfoil-6.996/s12/"
+                "polar-visc-clark-y-truncated.dump");
+  const io::DumpDecodeResult tail =
+      io::decodeDump(truncated.data(), truncated.size());
+  CHECK(!tail.file.has_value());
+  CHECK(tail.error == io::DumpError::kTruncated ||
+        tail.error == io::DumpError::kMarkerMismatch);
+
+  std::vector<std::uint8_t> corrupt = bytes;
+  corrupt[0] = static_cast<std::uint8_t>(corrupt[0] ^ 0xffu);
+  CHECK(!io::decodeDump(corrupt.data(), corrupt.size()).file.has_value());
+
+  const auto spans = dumpRecordSpans(bytes);
+  CHECK(spans.size() > 6u);
+  std::vector<std::uint8_t> badCounts = bytes;
+  badCounts[spans[6].payloadOffset] = 1;
+  const io::DumpDecodeResult badCountResult =
+      io::decodeDump(badCounts.data(), badCounts.size());
+  CHECK(!badCountResult.file.has_value());
+  CHECK(badCountResult.error == io::DumpError::kRecordLength);
+
+  std::vector<std::uint8_t> badIblte = bytes;
+  badIblte[spans[6].payloadOffset + 8] = 0xff;
+  badIblte[spans[6].payloadOffset + 9] = 0x03;
+  CHECK(!io::decodeDump(badIblte.data(), badIblte.size()).file.has_value());
+
+  std::vector<std::uint8_t> hugeMarker = bytes;
+  hugeMarker[0] = 0xff;
+  hugeMarker[1] = 0xff;
+  hugeMarker[2] = 0xff;
+  hugeMarker[3] = 0xff;
+  CHECK(!io::decodeDump(hugeMarker.data(), hugeMarker.size()).file.has_value());
+
+  io::DumpHeader badHeader;
+  badHeader.iibx = 1;
+  CHECK(io::encodeDumpHeaderChecked(badHeader).isErr());
+
+  io::DumpPoint badPoint;
+  badPoint.nside1 = 1;
+  badPoint.nside2 = 2;
+  CHECK(io::encodeDumpPointChecked(badPoint).isErr());
+  badPoint.nside1 = 2;
+  CHECK(io::encodeDumpPointChecked(badPoint).isErr());
+}
+
+TEST(unit, PolarDumpS12AppendPreflight) {
+  const std::vector<std::uint8_t> bytes =
+      readBytes("tests/data/xfoil-6.996/s12/polar-visc-clark-y.dump");
+  const io::DumpDecodeResult decoded = io::decodeDump(bytes.data(), bytes.size());
+  CHECK(decoded.file.has_value());
+  if (!decoded.file) return;
+  const io::DumpHeader expected = decoded.file->header;
+  const io::DumpAppendCheck good =
+      io::checkDumpAppend(bytes.data(), bytes.size(), expected);
+  CHECK(good.compatible);
+
+  io::DumpHeader wrongName = expected;
+  wrongName.name = "OTHER";
+  CHECK(!io::checkDumpAppend(bytes.data(), bytes.size(), wrongName).compatible);
+  io::DumpHeader wrongMach = expected;
+  wrongMach.mach += 1.0;
+  CHECK(!io::checkDumpAppend(bytes.data(), bytes.size(), wrongMach).compatible);
+  io::DumpHeader wrongGeometry = expected;
+  wrongGeometry.geometry.pop_back();
+  wrongGeometry.iibx = static_cast<int>(wrongGeometry.geometry.size());
+  CHECK(
+      !io::checkDumpAppend(bytes.data(), bytes.size(), wrongGeometry).compatible);
+
+  const testing::ScopedTempDirectory work("polar-dump-s12-append");
+  const std::string path = work.makePath("a07.dump").string();
+  writeBytes(path, bytes);
+  std::ifstream original(path, std::ios::binary);
+  const std::vector<std::uint8_t> originalBytes(
+      (std::istreambuf_iterator<char>(original)),
+      std::istreambuf_iterator<char>());
+  const auto incompatible =
+      io::appendDumpPointFile(path, wrongName, decoded.file->points[0]);
+  CHECK(incompatible.isErr());
+  std::ifstream unchanged(path, std::ios::binary);
+  const std::vector<std::uint8_t> unchangedBytes(
+      (std::istreambuf_iterator<char>(unchanged)),
+      std::istreambuf_iterator<char>());
+  CHECK(unchangedBytes == originalBytes);
+
+  const auto pointBytes =
+      io::encodeDumpPointChecked(decoded.file->points[0]);
+  CHECK(pointBytes.isOk());
+  const auto appended =
+      io::appendDumpPointFile(path, expected, decoded.file->points[0]);
+  CHECK(appended.isOk());
+  std::ifstream after(path, std::ios::binary);
+  const std::vector<std::uint8_t> afterBytes(
+      (std::istreambuf_iterator<char>(after)),
+      std::istreambuf_iterator<char>());
+  CHECK_EQ(afterBytes.size(), bytes.size() + pointBytes.value().size());
+  CHECK(std::equal(bytes.begin(), bytes.end(), afterBytes.begin()));
+  CHECK(std::equal(pointBytes.value().begin(), pointBytes.value().end(),
+                   afterBytes.begin() +
+                       static_cast<std::ptrdiff_t>(bytes.size())));
+}
+
+TEST(unit, PolarDumpS12HeaderVersionAndCheckedEncoding) {
+  io::DumpHeader header;
+  header.name = "NACA 0012";
+  header.code = "XFOIL   ";
+  header.version = io::kDumpHeaderVersion;
+  header.mach = 0.0;
+  header.reynMillions = 0.0;
+  header.acritTop = 9.0;
+  header.acritBottom = 9.0;
+  header.matyp = 1;
+  header.retyp = 1;
+  header.iibx = 0;
+  const auto encoded = io::encodeDumpHeaderChecked(header);
+  CHECK(encoded.isOk());
+  const auto decoded =
+      io::decodeDump(encoded.value().data(), encoded.value().size());
+  CHECK(decoded.file.has_value());
+  if (!decoded.file) return;
+  CHECK_EQ(decoded.file->header.version, 6.996);
+  CHECK_EQ(decoded.file->header.geometry.size(), 0u);
 }
 
 TEST(unit, IoPlxaddEndToEndByteIdentical) {

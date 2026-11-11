@@ -42,6 +42,7 @@
 
 #include "xfoil/AnalysisResult.h"
 #include "xfoil/core/polar/PolarTypes.h"
+#include "xfoil/io/DumpCodec.h"
 #include "xfoil/io/PolarText.h"
 #include "xfoil/session/SessionState.h"
 
@@ -328,6 +329,11 @@ xfoil::io::PolarWriteRequest makePolarWriteRequest(
     const xfoil::core::polar::PolarDataset& slot, bool includeCpMin,
     bool includeHingeMoment, int ia1, int ia2, bool echoHeader,
     const xfoil::core::polar::PolarElementSelection& elementSelection);
+
+// PLXINI header for the current session. The dump code version is the
+// accepted 6.996 target; this is not the product version.
+xfoil::io::DumpHeader makeDumpHeader(
+    const xfoil::session::SessionComposition& session);
 
 // PLRSUM (xpol.f 755): header plus one line per slot. ipact1 is the
 // active slot 1-based (0 = none); LPFILE is canonical only set with the

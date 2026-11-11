@@ -1520,6 +1520,29 @@ OperPointResult makeOperPointResult(
   return result;
 }
 
+io::DumpHeader makeDumpHeader(const session::SessionComposition& session) {
+  io::DumpHeader header;
+  header.name = session.geometry.name;
+  header.code = "XFOIL   ";
+  header.version = io::kDumpHeaderVersion;
+  header.mach = session.operating.machReynolds.minf1;
+  header.reynMillions = session.operating.machReynolds.reinf1 / 1.0e6;
+  header.acritTop = session.operating.criticalReynoldsExponents[0];
+  header.acritBottom = session.operating.criticalReynoldsExponents[1];
+  header.matyp = session.operating.machReynolds.machType;
+  header.retyp = session.operating.machReynolds.reType;
+  header.iix = 0;
+  header.ilex = 0;
+  header.itex = 0;
+  header.iibx = static_cast<int>(session.paneling.panel.x.size());
+  header.geometry.reserve(session.paneling.panel.x.size());
+  for (std::size_t i = 0; i < session.paneling.panel.x.size(); ++i) {
+    header.geometry.emplace_back(session.paneling.panel.x[i],
+                                 session.paneling.panel.y[i]);
+  }
+  return header;
+}
+
 bool appendPolarSavePoint(session::SessionComposition& session, int slot0) {
   const auto& slot = session.polar.slots[static_cast<std::size_t>(slot0)];
   io::PolarWriteRequest request = makePolarWriteRequest(
@@ -1640,20 +1663,14 @@ bool appendPolarDumpPoint(session::SessionComposition& session, int slot0) {
     return false;
   }
 
-  const auto bytes = io::encodeDumpPoint(io::toDumpPoint(projected.value()));
- // read and write use the same transformed file;
+  const io::DumpPoint dumpPoint = io::toDumpPoint(projected.value());
+  const io::DumpHeader header = makeDumpHeader(session);
+  // read and write use the same transformed file;
   // dumpFileNames carries the logical names.
   const std::string effective = io::applyOutputPathPolicy(
       session.outputPaths,
       session.polar.dumpFileNames[static_cast<std::size_t>(slot0)]);
-  std::ofstream stream(effective, std::ios::app | std::ios::binary);
-  if (!stream) {
-    return false;
-  }
-  stream.write(reinterpret_cast<const char*>(bytes.data()),
-               static_cast<std::streamsize>(bytes.size()));
-  stream.close();
-  return stream.good();
+  return io::appendDumpPointFile(effective, header, dumpPoint).isOk();
 }
 
 std::string accumulateOperPointRecord(session::SessionComposition& session,

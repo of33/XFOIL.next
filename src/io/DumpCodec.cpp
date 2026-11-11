@@ -26,6 +26,11 @@
 #include "xfoil/io/DumpCodec.h"
 
 #include <cstring>
+#include <fstream>
+#include <limits>
+#include <sstream>
+#include <string>
+#include <string_view>
 
 namespace xfoil::io {
 namespace {
@@ -77,6 +82,27 @@ void appendReal(std::vector<std::uint8_t>& out, double v, DumpRealWidth width) {
   }
 }
 
+bool appendRecord(std::vector<std::uint8_t>& out,
+                  const std::vector<std::uint8_t>& record) {
+  if (record.size() > std::numeric_limits<std::uint32_t>::max()) {
+    return false;
+  }
+  appendU32(out, static_cast<std::uint32_t>(record.size()));
+  out.insert(out.end(), record.begin(), record.end());
+  appendU32(out, static_cast<std::uint32_t>(record.size()));
+  return true;
+}
+
+std::string trimTrailingSpaces(std::string_view text) {
+  while (!text.empty() && text.back() == ' ') text.remove_suffix(1);
+  return std::string(text);
+}
+
+template <typename T>
+core::Result<T> failResult(core::ErrorCode code, std::string message) {
+  return core::Result<T>::fail(core::Error::make(code, std::move(message)));
+}
+
 class RecordReader {
  public:
   RecordReader(const std::uint8_t* data, std::size_t size) : data_(data), size_(size) {}
@@ -93,7 +119,7 @@ class RecordReader {
       return false;
     }
     const std::uint32_t front = readU32(data_ + pos_);
-    if (front > size_ - pos_ - 8) {
+    if (size_ - pos_ < 8 || front > size_ - pos_ - 8) {
       result.error = DumpError::kTruncated;
       result.message = "Record length exceeds end of file";
       return false;
@@ -132,8 +158,9 @@ class RecordReader {
 
 std::size_t realBytes(DumpRealWidth width) { return width == DumpRealWidth::k8 ? 8 : 4; }
 
-bool need(const std::vector<std::uint8_t>& rec, std::size_t bytes, DumpDecodeResult& result) {
-  if (rec.size() < bytes) {
+bool needExact(const std::vector<std::uint8_t>& rec, std::size_t bytes,
+               DumpDecodeResult& result) {
+  if (rec.size() != bytes) {
     result.error = DumpError::kRecordLength;
     result.message = "Record length does not match the expected layout";
     return false;
@@ -151,25 +178,25 @@ DumpDecodeResult decodeDump(const std::uint8_t* data, std::size_t size, DumpReal
   DumpFile file;
 
   if (!reader.next(rec, result)) return result;
-  if (!need(rec, 48 + 8 + rb, result)) return result;
+  if (!needExact(rec, 48 + 8 + rb, result)) return result;
   file.header.name = std::string(reinterpret_cast<const char*>(rec.data()), 48);
   file.header.code = std::string(reinterpret_cast<const char*>(rec.data() + 48), 8);
   file.header.version = readReal(rec.data() + 56, realWidth);
 
   if (!reader.next(rec, result)) return result;
-  if (!need(rec, 4 * rb, result)) return result;
+  if (!needExact(rec, 4 * rb, result)) return result;
   file.header.mach = readReal(rec.data(), realWidth);
   file.header.reynMillions = readReal(rec.data() + rb, realWidth);
   file.header.acritTop = readReal(rec.data() + 2 * rb, realWidth);
   file.header.acritBottom = readReal(rec.data() + 3 * rb, realWidth);
 
   if (!reader.next(rec, result)) return result;
-  if (!need(rec, 8, result)) return result;
+  if (!needExact(rec, 8, result)) return result;
   file.header.matyp = readI32(rec.data());
   file.header.retyp = readI32(rec.data() + 4);
 
   if (!reader.next(rec, result)) return result;
-  if (!need(rec, 16, result)) return result;
+  if (!needExact(rec, 16, result)) return result;
   file.header.iix = readI32(rec.data());
   file.header.ilex = readI32(rec.data() + 4);
   file.header.itex = readI32(rec.data() + 8);
@@ -196,7 +223,7 @@ DumpDecodeResult decodeDump(const std::uint8_t* data, std::size_t size, DumpReal
 
   while (reader.position() < reader.size()) {
     if (!reader.next(rec, result)) return result;
-    if (!need(rec, 7 * rb, result)) return result;
+    if (!needExact(rec, 7 * rb, result)) return result;
     DumpPoint point;
     point.alfaRad = readReal(rec.data(), realWidth);
     point.cl = readReal(rec.data() + rb, realWidth);
@@ -207,13 +234,23 @@ DumpDecodeResult decodeDump(const std::uint8_t* data, std::size_t size, DumpReal
     point.xtrBottom = readReal(rec.data() + 6 * rb, realWidth);
 
     if (!reader.next(rec, result)) return result;
-    if (!need(rec, 16, result)) return result;
+    if (!needExact(rec, 16, result)) return result;
     point.nside1 = readI32(rec.data());
     point.nside2 = readI32(rec.data() + 4);
     point.iblte1 = readI32(rec.data() + 8);
     point.iblte2 = readI32(rec.data() + 12);
-    if (point.nside1 < 0 || point.nside2 < 0 ||
-        static_cast<std::size_t>(point.nside1) > kMaxAlloc / (6 * rb) ||
+    if (point.nside1 < 2 || point.nside2 < 2) {
+      result.error = DumpError::kRecordLength;
+      result.message = "Side count is below the canonical minimum";
+      return result;
+    }
+    if (point.iblte1 < 0 || point.iblte2 < 0 ||
+        point.iblte1 > point.nside1 || point.iblte2 > point.nside2) {
+      result.error = DumpError::kRecordLength;
+      result.message = "IBLTE is inconsistent with NSIDE";
+      return result;
+    }
+    if (static_cast<std::size_t>(point.nside1) > kMaxAlloc / (6 * rb) ||
         static_cast<std::size_t>(point.nside2) > kMaxAlloc / (6 * rb)) {
       result.error = DumpError::kTooLarge;
       result.message = "Side count is outside the supported range";
@@ -254,10 +291,24 @@ DumpDecodeResult decodeDump(const std::uint8_t* data, std::size_t size, DumpReal
   return result;
 }
 
-std::vector<std::uint8_t> encodeDumpHeader(const DumpHeader& header, DumpRealWidth realWidth) {
-  std::vector<std::uint8_t> out;
+core::Result<std::vector<std::uint8_t>> encodeDumpHeaderChecked(
+    const DumpHeader& header, DumpRealWidth realWidth) {
   const std::size_t rb = realBytes(realWidth);
+  if (header.iibx < 0 ||
+      header.geometry.size() != static_cast<std::size_t>(header.iibx)) {
+    return failResult<std::vector<std::uint8_t>>(
+        core::ErrorCode::sizeMismatch,
+        "Dump header IIBX does not match the geometry record");
+  }
+  if (header.geometry.size() > kMaxAlloc / (2 * rb) ||
+      header.geometry.size() >
+          std::numeric_limits<std::uint32_t>::max() / (2 * rb)) {
+    return failResult<std::vector<std::uint8_t>>(
+        core::ErrorCode::capacityExceeded,
+        "Dump header geometry exceeds the record limit");
+  }
 
+  std::vector<std::uint8_t> out;
   std::vector<std::uint8_t> rec;
   std::string name = header.name;
   name.resize(48, ' ');
@@ -266,45 +317,60 @@ std::vector<std::uint8_t> encodeDumpHeader(const DumpHeader& header, DumpRealWid
   code.resize(8, ' ');
   rec.insert(rec.end(), code.begin(), code.end());
   appendReal(rec, header.version, realWidth);
-  appendU32(out, static_cast<std::uint32_t>(rec.size()));
-  out.insert(out.end(), rec.begin(), rec.end());
-  appendU32(out, static_cast<std::uint32_t>(rec.size()));
+  if (!appendRecord(out, rec)) {
+    return failResult<std::vector<std::uint8_t>>(
+        core::ErrorCode::capacityExceeded,
+        "Dump header record exceeds the marker limit");
+  }
 
   rec.clear();
   appendReal(rec, header.mach, realWidth);
   appendReal(rec, header.reynMillions, realWidth);
   appendReal(rec, header.acritTop, realWidth);
   appendReal(rec, header.acritBottom, realWidth);
-  appendU32(out, static_cast<std::uint32_t>(rec.size()));
-  out.insert(out.end(), rec.begin(), rec.end());
-  appendU32(out, static_cast<std::uint32_t>(rec.size()));
+  if (!appendRecord(out, rec)) {
+    return failResult<std::vector<std::uint8_t>>(
+        core::ErrorCode::capacityExceeded,
+        "Dump parameter record exceeds the marker limit");
+  }
 
   rec.clear();
   appendU32(rec, static_cast<std::uint32_t>(header.matyp));
   appendU32(rec, static_cast<std::uint32_t>(header.retyp));
-  appendU32(out, static_cast<std::uint32_t>(rec.size()));
-  out.insert(out.end(), rec.begin(), rec.end());
-  appendU32(out, static_cast<std::uint32_t>(rec.size()));
+  if (!appendRecord(out, rec)) {
+    return failResult<std::vector<std::uint8_t>>(
+        core::ErrorCode::capacityExceeded,
+        "Dump type record exceeds the marker limit");
+  }
 
   rec.clear();
   appendU32(rec, static_cast<std::uint32_t>(header.iix));
   appendU32(rec, static_cast<std::uint32_t>(header.ilex));
   appendU32(rec, static_cast<std::uint32_t>(header.itex));
   appendU32(rec, static_cast<std::uint32_t>(header.iibx));
-  appendU32(out, static_cast<std::uint32_t>(rec.size()));
-  out.insert(out.end(), rec.begin(), rec.end());
-  appendU32(out, static_cast<std::uint32_t>(rec.size()));
+  if (!appendRecord(out, rec)) {
+    return failResult<std::vector<std::uint8_t>>(
+        core::ErrorCode::capacityExceeded,
+        "Dump index record exceeds the marker limit");
+  }
 
   rec.clear();
   for (const auto& xy : header.geometry) {
     appendReal(rec, xy.first, realWidth);
     appendReal(rec, xy.second, realWidth);
   }
-  appendU32(out, static_cast<std::uint32_t>(rec.size()));
-  out.insert(out.end(), rec.begin(), rec.end());
-  appendU32(out, static_cast<std::uint32_t>(rec.size()));
-  (void)rb;
-  return out;
+  if (!appendRecord(out, rec)) {
+    return failResult<std::vector<std::uint8_t>>(
+        core::ErrorCode::capacityExceeded,
+        "Dump geometry record exceeds the marker limit");
+  }
+  return core::Result<std::vector<std::uint8_t>>::ok(std::move(out));
+}
+
+std::vector<std::uint8_t> encodeDumpHeader(const DumpHeader& header,
+                                           DumpRealWidth realWidth) {
+  const auto checked = encodeDumpHeaderChecked(header, realWidth);
+  return checked.isOk() ? checked.value() : std::vector<std::uint8_t>{};
 }
 
 DumpPoint toDumpPoint(const core::export_data::PlxaddPoint& point) {
@@ -341,10 +407,41 @@ DumpPoint toDumpPoint(const core::export_data::PlxaddPoint& point) {
   return out;
 }
 
-std::vector<std::uint8_t> encodeDumpPoint(const DumpPoint& point, DumpRealWidth realWidth) {
+core::Result<std::vector<std::uint8_t>> encodeDumpPointChecked(
+    const DumpPoint& point, DumpRealWidth realWidth) {
+  const std::size_t rb = realBytes(realWidth);
+  if (point.nside1 < 2 || point.nside2 < 2) {
+    return failResult<std::vector<std::uint8_t>>(
+        core::ErrorCode::invalidArgument,
+        "Dump NSIDE is below the canonical minimum");
+  }
+  if (point.iblte1 < 0 || point.iblte2 < 0 ||
+      point.iblte1 > point.nside1 || point.iblte2 > point.nside2) {
+    return failResult<std::vector<std::uint8_t>>(
+        core::ErrorCode::invalidArgument,
+        "Dump IBLTE is inconsistent with NSIDE");
+  }
+  const int nsides[2] = {point.nside1, point.nside2};
+  if (static_cast<std::size_t>(point.nside1) > kMaxAlloc / (6 * rb) ||
+      static_cast<std::size_t>(point.nside2) > kMaxAlloc / (6 * rb)) {
+    return failResult<std::vector<std::uint8_t>>(
+        core::ErrorCode::capacityExceeded,
+        "Dump side count exceeds the record limit");
+  }
+  for (int s = 0; s < 2; ++s) {
+    const DumpSide& side = point.sides[s];
+    const std::size_t expected = static_cast<std::size_t>(nsides[s]);
+    if (side.x.size() != expected || side.cp.size() != expected ||
+        side.thet.size() != expected || side.dstr.size() != expected ||
+        side.cf.size() != expected || side.ctau.size() != expected) {
+      return failResult<std::vector<std::uint8_t>>(
+          core::ErrorCode::sizeMismatch,
+          "Dump side vectors do not match NSIDE");
+    }
+  }
+
   std::vector<std::uint8_t> out;
   std::vector<std::uint8_t> rec;
-
   appendReal(rec, point.alfaRad, realWidth);
   appendReal(rec, point.cl, realWidth);
   appendReal(rec, point.cdTot, realWidth);
@@ -352,20 +449,23 @@ std::vector<std::uint8_t> encodeDumpPoint(const DumpPoint& point, DumpRealWidth 
   appendReal(rec, point.cm, realWidth);
   appendReal(rec, point.xtrTop, realWidth);
   appendReal(rec, point.xtrBottom, realWidth);
-  appendU32(out, static_cast<std::uint32_t>(rec.size()));
-  out.insert(out.end(), rec.begin(), rec.end());
-  appendU32(out, static_cast<std::uint32_t>(rec.size()));
+  if (!appendRecord(out, rec)) {
+    return failResult<std::vector<std::uint8_t>>(
+        core::ErrorCode::capacityExceeded,
+        "Dump point record exceeds the marker limit");
+  }
 
   rec.clear();
   appendU32(rec, static_cast<std::uint32_t>(point.nside1));
   appendU32(rec, static_cast<std::uint32_t>(point.nside2));
   appendU32(rec, static_cast<std::uint32_t>(point.iblte1));
   appendU32(rec, static_cast<std::uint32_t>(point.iblte2));
-  appendU32(out, static_cast<std::uint32_t>(rec.size()));
-  out.insert(out.end(), rec.begin(), rec.end());
-  appendU32(out, static_cast<std::uint32_t>(rec.size()));
+  if (!appendRecord(out, rec)) {
+    return failResult<std::vector<std::uint8_t>>(
+        core::ErrorCode::capacityExceeded,
+        "Dump index record exceeds the marker limit");
+  }
 
-  const int nsides[2] = {point.nside1, point.nside2};
   for (int s = 0; s < 2; ++s) {
     rec.clear();
     const DumpSide& side = point.sides[s];
@@ -378,11 +478,91 @@ std::vector<std::uint8_t> encodeDumpPoint(const DumpPoint& point, DumpRealWidth 
       appendReal(rec, side.cf[idx], realWidth);
       appendReal(rec, side.ctau[idx], realWidth);
     }
-    appendU32(out, static_cast<std::uint32_t>(rec.size()));
-    out.insert(out.end(), rec.begin(), rec.end());
-    appendU32(out, static_cast<std::uint32_t>(rec.size()));
+    if (!appendRecord(out, rec)) {
+      return failResult<std::vector<std::uint8_t>>(
+          core::ErrorCode::capacityExceeded,
+          "Dump side record exceeds the marker limit");
+    }
   }
-  return out;
+  return core::Result<std::vector<std::uint8_t>>::ok(std::move(out));
+}
+
+std::vector<std::uint8_t> encodeDumpPoint(const DumpPoint& point,
+                                          DumpRealWidth realWidth) {
+  const auto checked = encodeDumpPointChecked(point, realWidth);
+  return checked.isOk() ? checked.value() : std::vector<std::uint8_t>{};
+}
+
+DumpAppendCheck checkDumpAppend(const std::uint8_t* data, std::size_t size,
+                                const DumpHeader& expected,
+                                DumpRealWidth realWidth) {
+  const DumpDecodeResult decoded = decodeDump(data, size, realWidth);
+  if (!decoded.file.has_value()) {
+    return {false, "existing dump: " + decoded.message};
+  }
+  const DumpHeader& header = decoded.file->header;
+  if (expected.iibx < 0 ||
+      expected.geometry.size() != static_cast<std::size_t>(expected.iibx)) {
+    return {false, "requested dump header has inconsistent IIBX"};
+  }
+  std::string expectedName = expected.name;
+  expectedName.resize(48, ' ');
+  if (trimTrailingSpaces(header.name) != trimTrailingSpaces(expectedName)) {
+    return {false, "dump append airfoil name differs"};
+  }
+  if (header.mach != expected.mach ||
+      header.reynMillions != expected.reynMillions ||
+      header.acritTop != expected.acritTop ||
+      header.acritBottom != expected.acritBottom ||
+      header.retyp != expected.retyp || header.matyp != expected.matyp) {
+    return {false, "dump append parameters differ"};
+  }
+  if (header.geometry.size() != expected.geometry.size()) {
+    return {false, "dump append geometry size differs"};
+  }
+  return {true, {}};
+}
+
+core::Status appendDumpPointFile(const std::string& path,
+                                 const DumpHeader& expected,
+                                 const DumpPoint& point,
+                                 DumpRealWidth realWidth) {
+  std::ifstream existing(path, std::ios::binary);
+  if (!existing) {
+    return core::Status::fail(
+        core::Error::make(core::ErrorCode::ioError,
+                          "Cannot read existing polar dump file"));
+  }
+  std::ostringstream buffer;
+  buffer << existing.rdbuf();
+  const std::string contents = buffer.str();
+  const DumpAppendCheck check =
+      checkDumpAppend(reinterpret_cast<const std::uint8_t*>(contents.data()),
+                      contents.size(), expected, realWidth);
+  if (!check.compatible) {
+    return core::Status::fail(
+        core::Error::make(core::ErrorCode::invalidState, check.message));
+  }
+  const core::Result<std::vector<std::uint8_t>> encoded =
+      encodeDumpPointChecked(point, realWidth);
+  if (!encoded.isOk()) {
+    return core::Status::fail(encoded.error());
+  }
+  std::ofstream stream(path, std::ios::app | std::ios::binary);
+  if (!stream) {
+    return core::Status::fail(
+        core::Error::make(core::ErrorCode::ioError,
+                          "Cannot append to polar dump file"));
+  }
+  stream.write(reinterpret_cast<const char*>(encoded.value().data()),
+               static_cast<std::streamsize>(encoded.value().size()));
+  stream.close();
+  if (!stream.good()) {
+    return core::Status::fail(
+        core::Error::make(core::ErrorCode::ioError,
+                          "Polar dump append write failed"));
+  }
+  return core::Status::ok();
 }
 
 }  // namespace xfoil::io

@@ -52,6 +52,7 @@
 #include <vector>
 
 #include "DumpParitySupport.h"
+#include "DumpTargetSupport.h"
 #include "LegacyDefaults.h"
 #include "TestSupport.h"
 #include "app/ProductInfo.h"
@@ -249,6 +250,10 @@ TEST(regression, CseqHeadDumpParityMatchesFortranReference) {
       reportFailure(std::string("reference artifact not readable: ") +
                     artifact);
       continue;
+    }
+    if (std::string(artifact) == "s2.dump") {
+      artifactExpected =
+          testing::withS12DumpHeaderVersion(std::move(artifactExpected));
     }
 #ifdef _WIN32
     const std::string name = artifact;

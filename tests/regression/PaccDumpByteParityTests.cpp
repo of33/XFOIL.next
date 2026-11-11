@@ -22,15 +22,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // file: tests/regression/PaccDumpByteParityTests.cpp
-// PLXADD multi-point proof: the canonical Fortran case
-// polar/polar-visc-clark-y (PACC with save and dump files, ASEQ over
-// several points with growing and shrinking NBL, NSIDE(1) >
-// NBL(1)) is reproduced in production; the save (.pol) and dump
-// file (.dump) must be byte-identical to the reference-generated
-// artifacts. Reference: tests/fortran-reference/cases/polar/polar-visc-clark-y.
+// PLXADD multi-point proof: the canonical case polar/polar-visc-clark-y
+// (PACC with save and dump files, ASEQ over several points with growing
+// and shrinking NBL, NSIDE(1) > NBL(1)) is reproduced in production.
+// The .pol remains byte-identical to the 6.99 reference; the .dump is the
+// S12 patched-6.996 target under tests/data/xfoil-6.996/s12/.
 //
-// No golden change: the reference artifacts are read unchanged
-// and checked byte-by-byte without sha256.
+// No golden change: the S12 dump fixture and the 6.99 .pol reference are
+// checked byte-by-byte without sha256.
 
 #include <cstdlib>
 #include <filesystem>
@@ -67,7 +66,7 @@ void reportFailure(const std::string& message) {
 
 }  // namespace
 
-TEST(regression, PaccDumpByteParityMatchesXfoil6996S09Target) {
+TEST(regression, PaccDumpByteParityMatchesXfoil6996S12Target) {
   const char* configuredPath = std::getenv("XFOIL_CLI_PATH");
   const std::string program =
       configuredPath != nullptr ? configuredPath : "build/debug/xfoil.next";
@@ -134,7 +133,7 @@ TEST(regression, PaccDumpByteParityMatchesXfoil6996S09Target) {
     const std::string expectedPath =
         std::string(artifact) == "polar-visc-clark-y.dump"
             ? std::string(
-                  "tests/data/xfoil-6.996/s09/polar-visc-clark-y.dump")
+                  "tests/data/xfoil-6.996/s12/polar-visc-clark-y.dump")
             : std::string(kCaseDir) + "/generated/" + artifact;
     if (!readBytes(expectedPath, expected)) {
       reportFailure(std::string("reference artifact not readable: ") +

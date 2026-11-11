@@ -1,0 +1,81 @@
+XFOIL 6.996 S12 polar-dump fixtures
+===================================
+
+Version:            XFOIL 6.996 binary polar dump (S12)
+Purpose:            exact patched-6.996 a07 target, malformed-record
+                    negative case, and explicit 6.99 compatibility checks.
+Oracle policy:      frozen 6.996 sources plus the accepted P1 overlay;
+                    no repository Fortran, patch, golden or old fixture
+                    change.
+
+Provenance:
+  source_baseline      XFOIL 6.996
+  xpol.f sha256        048c491773bd896d7325fa4e00928f1c18551283fae6ed9f45b42f979c5e3f8f
+  P1 patch sha256      be992f7c48cee137293e15b8fe2dc169b3e5838b5f46c95475b479048cca0572
+  patched xpol.f       f29b6b04b8a18052c8a2996fae12174931243145a3e9677ff4c22fefc84b528d
+  patched oracle       031d667f3990c326b5b90d448fbdd10327b127a4e56d249fd6fcec71b55a69ce
+  unpatched oracle     000b0468d9a7f4fce42d6fac24bd14147d7d326c8a9035909c8e9f98d180f50e
+  patch file           patches/xfoil-6.996/0001-rewind-polar-dump-unit-before-header.patch
+
+P1 oracle status:
+  unpatched 6.996    exit 2, 0-byte dump, runtime message
+                     "Sequential READ or WRITE not allowed after EOF marker"
+  patched 6.996      exit 0, non-empty deterministic dump
+  P1 effect          REWIND(LU) before the new-file header write only;
+                     no dump field order or field set change
+
+Format class:
+  little-endian Fortran sequential unformatted records;
+  4-byte little-endian record markers; 8-byte REAL and 4-byte INTEGER
+  payloads; two 4-byte markers per record.
+  Header: five records (name/code/version, parameters, types, indices,
+  geometry). Point: four records (seven scalars, four integer indices,
+  two six-column side records).
+
+Fixture: polar-visc-clark-y.dump
+  case ID            a07 (patched 6.996 viscous PACC dump)
+  input              sample/CLARK_Y.dat + canonical
+                     tests/fortran-reference/cases/polar/polar-visc-clark-y/commands.in
+  command            xfoil < commands.in
+  exit code          0
+  file size          40816 bytes
+  SHA-256            a442b07a0aa05ea3bc583a2d5890d07657027053084dc0c0c23a2b516d3514c5
+  records            21 total: 5 header + 4 point groups of 4 records
+  group sizes        56, 16, 4752, 4704 (point 1, 8-byte reals)
+                     56, 16, 5040, 4416 (point 2)
+                     56, 16, 5040, 4416 (point 3)
+                     56, 16, 5136, 4320 (point 4)
+  first point        NSIDE=(99,98), IBLTE=(77,76)
+  last point         NSIDE=(107,90), IBLTE=(85,68)
+  repeatability      two independent patched-oracle runs byte-identical
+                     (s12/a07-patched-run1, s12/a07-patched-run2)
+  relation to S09    tests/data/xfoil-6.996/s09/polar-visc-clark-y.dump is
+                     byte-identical except for the 8-byte header VERSION
+                     field (6.99 versus 6.996); it remains unchanged and
+                     is not reinterpreted as the S12 target.
+
+Fixture: polar-visc-clark-y-truncated.dump
+  case ID            a07 negative truncated-record case
+  generation         the a07 fixture with the last five bytes removed
+  file size          40811 bytes
+  SHA-256            b376600a0db364502edc355f7bec100187b4eae43f04725228cff020b777fde8
+  expected decode    rejected as truncated/marker mismatch; no file model
+
+External oracle coverage (not all stored as fixtures):
+  a07 viscous PACC         4 points, exact target above
+  a06 inviscid old-defaults NACA 0012
+                           exit 0, 3608 bytes, repeatable; not stored as
+                           an S12 target because non-dump out-of-scope
+                           slices change geometry/numerical bytes relative
+                           to the 6.99 a06 reference
+  unpatched 6.996 control  confirms the P1 requirement; never a target
+  append / multi-point     covered by the exact four-point a07 target and
+                           the productive append tests
+
+Protected state:
+  tests/fortran-reference/**
+  tests/data/core-polar-io-reference/**
+  tests/golden/**
+  tests/data/xfoil-6.996/s09/polar-visc-clark-y.dump
+  fortran-src/**, fortran-bin/**, patches/**
+  all unchanged.

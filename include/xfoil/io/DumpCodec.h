@@ -41,6 +41,10 @@ namespace xfoil::io {
 // REAL(4) layout is additionally supported.
 enum class DumpRealWidth { k4 = 4, k8 = 8 };
 
+// S12 target: the frozen 6.996 patched oracle writes this code version in
+// the dump header. This is a dump-record version, not the product version.
+inline constexpr double kDumpHeaderVersion = 6.996;
+
 struct DumpHeader {
   std::string name;
   std::string code;
@@ -112,11 +116,38 @@ DumpDecodeResult decodeDump(const std::uint8_t* data, std::size_t size,
 // core record (B) onto the pure codec record model.
 DumpPoint toDumpPoint(const core::export_data::PlxaddPoint& point);
 
-// Encoder for the new-file header and a PLXADD record.
+// Checked encoder: validates field counts, element counts, record sizes
+// and the uint32 record-marker contract before producing bytes.
+[[nodiscard]] core::Result<std::vector<std::uint8_t>> encodeDumpHeaderChecked(
+    const DumpHeader& header, DumpRealWidth realWidth = DumpRealWidth::k8);
+[[nodiscard]] core::Result<std::vector<std::uint8_t>> encodeDumpPointChecked(
+    const DumpPoint& point, DumpRealWidth realWidth = DumpRealWidth::k8);
+
+// Compatibility wrappers. Invalid input yields an empty byte vector; new
+// productive code uses the checked variants.
 std::vector<std::uint8_t> encodeDumpHeader(const DumpHeader& header,
                                            DumpRealWidth realWidth = DumpRealWidth::k8);
 std::vector<std::uint8_t> encodeDumpPoint(const DumpPoint& point,
                                           DumpRealWidth realWidth = DumpRealWidth::k8);
+
+struct DumpAppendCheck {
+  bool compatible{false};
+  std::string message;
+};
+
+// Parses a complete dump and compares the PLXINI-relevant header fields
+// and geometry schema with the requested header. Code/version text is not
+// part of the append schema. No filesystem access.
+[[nodiscard]] DumpAppendCheck checkDumpAppend(
+    const std::uint8_t* data, std::size_t size, const DumpHeader& expected,
+    DumpRealWidth realWidth = DumpRealWidth::k8);
+
+// Append one validated PLXADD group. The existing file is read and checked
+// before it is opened for writing; an incompatible or malformed file is
+// left byte-identical.
+[[nodiscard]] core::Status appendDumpPointFile(
+    const std::string& path, const DumpHeader& expected,
+    const DumpPoint& point, DumpRealWidth realWidth = DumpRealWidth::k8);
 
 }  // namespace xfoil::io
 

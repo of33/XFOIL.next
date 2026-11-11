@@ -2435,33 +2435,21 @@ void CommandInterpreter::initPolarDumpFile(int slot0) {
   }
   if (content.empty()) {
     // Label 60: new unformatted header.
-    io::DumpHeader header;
-    header.name = session_.geometry.name;
-    header.code = "XFOIL   ";
-    header.version = 6.99;
-    header.mach = session_.operating.machReynolds.minf1;
-    header.reynMillions = session_.operating.machReynolds.reinf1 / 1.0e6;
-    header.acritTop = session_.operating.criticalReynoldsExponents[0];
-    header.acritBottom = session_.operating.criticalReynoldsExponents[1];
-    header.matyp = session_.operating.machReynolds.machType;
-    header.retyp = session_.operating.machReynolds.reType;
-    header.iix = 0;
-    header.ilex = 0;
-    header.itex = 0;
-    header.iibx = static_cast<int>(session_.paneling.panel.x.size());
-    for (std::size_t i = 0; i < session_.paneling.panel.x.size(); ++i) {
-      header.geometry.emplace_back(session_.paneling.panel.x[i],
-                                   session_.paneling.panel.y[i]);
+    const io::DumpHeader header = makeDumpHeader(session_);
+    const auto bytes = io::encodeDumpHeaderChecked(header);
+    if (!bytes.isOk()) {
+      output_ << " OPEN error on polar dump file "
+              << io::fortranA(48, fileName) << "\n";
+      return;
     }
-    const auto bytes = io::encodeDumpHeader(header);
     std::ofstream stream(effective, std::ios::binary | std::ios::trunc);
     if (!stream) {
       output_ << " OPEN error on polar dump file "
               << io::fortranA(48, fileName) << "\n";
       return;
     }
-    stream.write(reinterpret_cast<const char*>(bytes.data()),
-                 static_cast<std::streamsize>(bytes.size()));
+    stream.write(reinterpret_cast<const char*>(bytes.value().data()),
+                 static_cast<std::streamsize>(bytes.value().size()));
     if (!stream.good()) {
       output_ << " OPEN error on polar dump file "
               << io::fortranA(48, fileName) << "\n";

@@ -44,6 +44,7 @@
 #include <vector>
 
 #include "TestSupport.h"
+#include "DumpTargetSupport.h"
 #include "LegacyDefaults.h"
 #ifdef _WIN32
 #include "DumpParitySupport.h"
@@ -140,6 +141,11 @@ TEST(regression, PaccInviscidDumpByteParityMatchesFortranReference) {
       reportFailure(std::string("reference artifact not readable: ") +
                     artifact);
       continue;
+    }
+    if (std::string(artifact).size() > 5 &&
+        std::string(artifact).compare(std::string(artifact).size() - 5, 5,
+                                      ".dump") == 0) {
+      expected = testing::withS12DumpHeaderVersion(std::move(expected));
     }
 #ifdef _WIN32
     // PUB-W2: PLXADD dumps store raw IEEE-754 records; on Windows the
