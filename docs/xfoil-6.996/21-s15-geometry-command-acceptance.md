@@ -1,7 +1,7 @@
 # XFOIL 6.996 — S15 geometry command acceptance and NACA buffer decision
 
-Status: PASS — `X6996-S15` geometry commands accepted on Linux and with the
-focused Windows process.
+Status: PASS — `X6996-S15` and `X6996-S15-R1` accepted; the implementation
+is committed and the documentation-only R1 follow-up is recorded.
 
 Decision: `G-NACA-BUFFER: ACCEPT-XFOIL-6996`.
 
@@ -109,7 +109,9 @@ It must not:
 
 ## Implementation record — X6996-S15
 
-Implementation is in the working tree; no follow-up commit exists yet.
+Implementation commit: `8d4164125ae1e7e3f5e3fb0f6b1462a17ef4a52f`,
+parent `53b34fbc1877543b1d81ab8e3911cfedda23cbcf`. The commit was not
+amended. A separate documentation-only follow-up records the R1 closure.
 
 - `nacaAirfoil` now defaults to `NSIDE=200` / `NB=399`; `NACS` dispatches
   through the same kernel with the sharp-TE flag. The kernel keeps an
@@ -129,9 +131,10 @@ Implementation is in the working tree; no follow-up commit exists yet.
   or an explicit `nacaAirfoil(..., false, 123)` call.
 - Canonical `tests/fortran-reference/**` is unchanged.
 
-Evidence is recorded in
+Evidence, including the targeted existing-golden migration table and the
+versioned fixture inventory, is recorded in
 `21-s15-geometry-command-acceptance_report.md`. The Linux matrix and the
-focused Windows process are green.
+single focused Windows process are green.
 
 ## Non-goals
 

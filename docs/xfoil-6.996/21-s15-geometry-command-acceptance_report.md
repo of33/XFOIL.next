@@ -1,7 +1,6 @@
 # XFOIL 6.996 — S15 geometry command acceptance report
 
-Status: PASS — implementation accepted on Linux and with the focused
-Windows process.
+Status: PASS — `X6996-S15` and `X6996-S15-R1` accepted.
 
 Decision: `X6996-S15-G1: PASS`
 `G-NACA-BUFFER: ACCEPT-XFOIL-6996`
@@ -62,8 +61,7 @@ Current C++ mapping before implementation:
 
 ## External oracle method
 
-Measurement directory:
-`/local/Olaf/Entwicklung/.audit-xfoil-next/xfoil-6.996/s15/`
+External audit area: `xfoil-6.996/s15/`.
 
 Binaries:
 
@@ -169,11 +167,7 @@ directories.
 
 ## Impact inventory
 
-External matrix:
-
-```text
-/local/Olaf/Entwicklung/.audit-xfoil-next/xfoil-6.996/s15/s15-impact-matrix.tsv
-```
+External matrix: `external audit area: xfoil-6.996/s15/s15-impact-matrix.tsv`.
 
 42 inventoried paths, with classifications:
 
@@ -237,10 +231,10 @@ commands, with each affected path listed in the impact matrix.
 
 ## Geometry command implementation — X6996-S15
 
-The implementation remains uncommitted. `HEAD` is still
-`53b34fbc1877543b1d81ab8e3911cfedda23cbcf`; the working tree contains the
-S15 code, tests, targeted golden migrations, fixtures and these two
-documents.
+The implementation commit is
+`8d4164125ae1e7e3f5e3fb0f6b1462a17ef4a52f`, parent
+`53b34fbc1877543b1d81ab8e3911cfedda23cbcf`. It was not amended. This R1
+follow-up changes only the two S15 documents.
 
 Implementation summary:
 
@@ -271,20 +265,20 @@ Test and fixture changes:
 
 Linux acceptance evidence:
 
-| Check | Result | Log |
-|---|---|---|
-| GCC 13.3 Debug full suite | 2042/2042 | `/tmp/opencode/s15-full-debug.log` |
-| GCC 13.3 Release full suite | 2042/2042 | `/tmp/opencode/s15-test-release2.log` |
-| Clang 18.1.3 Debug full suite | 2042/2042 | `/tmp/opencode/s15-test-clang-debug.log` |
-| Clang 18.1.3 Release full suite | 2042/2042 | `/tmp/opencode/s15-test-clang-release.log` |
-| ASan/UBSan full suite | 2042/2042 | `/tmp/opencode/s15-test-sanitize.log` |
-| Valgrind matrix | PASS | `/tmp/opencode/s15-valgrind.log` |
-| Focused S15 Valgrind | 5/5 + 5/5 | `/tmp/opencode/s15-valgrind-unit.log`, `/tmp/opencode/s15-valgrind-integration.log` |
-| Reference verification | 236/236 | `/tmp/opencode/s15-reference.log` |
-| Reference determinism | 236/236 | `/tmp/opencode/s15-determinism.log` |
-| Harness families | 16/16 | `/tmp/opencode/s15-harnesses.log` |
-| Permanent gates | PASS | `/tmp/opencode/s15-gates-final.log` |
-| Windows focused `integration.GeometryCommandS15` | 5/5 | user-provided Windows run, 0 failures |
+| Check | Result |
+|---|---|
+| GCC 13.3 Debug full suite | 2042/2042 |
+| GCC 13.3 Release full suite | 2042/2042 |
+| Clang 18.1.3 Debug full suite | 2042/2042 |
+| Clang 18.1.3 Release full suite | 2042/2042 |
+| ASan/UBSan full suite | 2042/2042 |
+| Valgrind matrix | PASS |
+| Focused S15 Valgrind | 5/5 + 5/5 |
+| Reference verification | 236/236 |
+| Reference determinism | 236/236 |
+| Harness families | 16/16 |
+| Permanent gates | PASS |
+| Windows focused `integration.GeometryCommandS15` | 5/5, 0 failures |
 
 Golden migration note: the batch `naca0012`/`naca4415` transcripts and
 results now contain the deterministic product behavior at the 399-point
@@ -300,7 +294,90 @@ integration.GeometryCommandS15
 5/5, 0 failures
 ```
 
-Both the Linux matrix and the Windows focused process are green. S15 is
-accepted; the remaining action is the local commit
-`Integrate XFOIL 6.996 geometry commands`, without push, fetch, tag or
-release.
+## Targeted existing-golden migration record
+
+The S15 implementation commit changes exactly six files that already
+existed in the parent and serve as product goldens. Hashes are computed
+from the parent blob and the S15 commit blob, not from the working tree.
+
+| Path | Case | Old SHA-256 | New SHA-256 | Diff extent | Oracle evidence | Cause |
+|---|---|---|---|---|---|---|
+| `tests/golden/batch/naca0012_results.dat` | batch naca0012 results | `5c40876799e0f181b8aff0d2deea9e4574db91965c24b074aee9715c0507cba7` | `5b69428ec762c894e9dfc7775181257d0618f87ffc7eee0fd50c169638c0c800` | 30 added / 31 removed; 4419 -> 4312 bytes | accepted NACA NSIDE=200/NB=399 product contract; versioned fixture `tests/data/xfoil-6.996/s15/cases/6996-naca-0012-200/` | NACA command default changes from 245 to 399 buffer points; the file records the intended deterministic product text/metadata and targeted analysis consequence. |
+| `tests/golden/batch/naca0012_transcript.txt` | batch naca0012 transcript | `c9bb633efd08ef006e3a1b0d585728542523a281a744fe78cad289656f42502d` | `eff36989da51dd3587c065bff8eabb227af99c0a1f20411be8492a05ba96ffa4` | 4807 added / 2424 removed; 166184 -> 268165 bytes | accepted NACA NSIDE=200/NB=399 product contract; versioned fixture `tests/data/xfoil-6.996/s15/cases/6996-naca-0012-200/` | NACA command default changes from 245 to 399 buffer points; the file records the intended deterministic product text/metadata and targeted analysis consequence. |
+| `tests/golden/batch/naca4415_results.dat` | batch naca4415 results | `9b346e63c580f6ef637429d560fd9e93ea72e8eb2a06400e0977974a69838e6f` | `457145ff2338745a4cc9e9ad713292e9baac7263d340967db43244b34c356e95` | 32 added / 32 removed; 4426 -> 4427 bytes | accepted NACA NSIDE=200/NB=399 product contract; deterministic S15 batch output | NACA command default changes from 245 to 399 buffer points; the file records the intended deterministic product text/metadata and targeted analysis consequence. |
+| `tests/golden/batch/naca4415_transcript.txt` | batch naca4415 transcript | `ee003297a42b04abab2b66025b6365bce584567200e49263b263e49d859c85f7` | `9a264c9f09420fd4e2488883b5b9bb6518549f4f0daf3b8ea5a1b440ecc3604d` | 652 added / 604 removed; 61220 -> 63594 bytes | accepted NACA NSIDE=200/NB=399 product contract; deterministic S15 batch output | NACA command default changes from 245 to 399 buffer points; the file records the intended deterministic product text/metadata and targeted analysis consequence. |
+| `tests/golden/cli/file-inte-pcop-quit.stdout.txt` | CLI NACA 2412 -> INTE -> PCOP | `c5bc9ab99d13e7aa56d0c14d6804bfc93738c02c577fc7c3a3c941b155877333` | `5b360efd9a9ca0c820ede43a0c35cd97ebf22af0305c29cbf4238d1b25237d43` | 4 added / 4 removed; 2871 -> 2871 bytes | accepted NACA 399-point contract; external audit area: xfoil-6.996/s15/cases/6996-naca-2412-200/ | NACA command default changes from 245 to 399 buffer points; the file records the intended deterministic product text/metadata and targeted analysis consequence. |
+| `tests/golden/cli/file-naca-save-load-quit.stdout.txt` | CLI NACA 2412 -> SAVE/LOAD | `68704c162500bc2860f9456139d594119d5bddc4c95f2decf8efc9dca5156ec5` | `009fd9bb275a7727bb9866cb727a74f65b1b6a59efc0cb44429a257199a9b3d7` | 4 added / 4 removed; 2624 -> 2624 bytes | accepted NACA 399-point contract; external audit area: xfoil-6.996/s15/cases/6996-naca-2412-200/ | NACA command default changes from 245 to 399 buffer points; the file records the intended deterministic product text/metadata and targeted analysis consequence. |
+
+New files under `tests/data/xfoil-6.996/s15/**` are separately classified as
+versioned S15 fixtures below and are not counted in this table.
+
+## Versioned S15 fixture inventory
+
+| Path | Case | SHA-256 | Oracle evidence | Purpose |
+|---|---|---|---|---|
+| `tests/data/xfoil-6.996/s15/cases/6996-naca-0012-200/buffer.dat` | naca-0012-200 | `a877d11c6ab48aaad124a3a71a4b373da3c49fb84bc38bc109b27ba269709f7b` | external audit area: xfoil-6.996/s15/cases/6996-naca-0012-200/ | NACA/NACS 399-point buffer oracle |
+| `tests/data/xfoil-6.996/s15/cases/6996-naca-0012-200/cp.dat` | naca-0012-200 | `4497a8a6c288c8a57fdeb7d40a5b42283c53b6d7f6e93b3637cd3a5b1e2e3ee5` | external audit area: xfoil-6.996/s15/cases/6996-naca-0012-200/ | NACA/NACS inviscid Cp oracle |
+| `tests/data/xfoil-6.996/s15/cases/6996-naca-23012-200/buffer.dat` | naca-23012-200 | `ae10da2fd7c72b9f194fadd1708a67cc77fef4390a5b62000d7aaf998fbd6384` | external audit area: xfoil-6.996/s15/cases/6996-naca-23012-200/ | NACA/NACS 399-point buffer oracle |
+| `tests/data/xfoil-6.996/s15/cases/6996-naca-23012-200/cp.dat` | naca-23012-200 | `e489806a8b61dcac31e1442985064c6affdade3fa9713fa28b05c10994c2ba55` | external audit area: xfoil-6.996/s15/cases/6996-naca-23012-200/ | NACA/NACS inviscid Cp oracle |
+| `tests/data/xfoil-6.996/s15/cases/6996-naca-2412-200/buffer.dat` | naca-2412-200 | `f214690d60e69fcb1e97c57df7e6998bdb182b275e22b59609202c089eed62d1` | external audit area: xfoil-6.996/s15/cases/6996-naca-2412-200/ | NACA/NACS 399-point buffer oracle |
+| `tests/data/xfoil-6.996/s15/cases/6996-naca-2412-200/cp.dat` | naca-2412-200 | `9370bad76e19c6ad02c9be1ac35b8a818f2b60032523865cd02f22a66d71da75` | external audit area: xfoil-6.996/s15/cases/6996-naca-2412-200/ | NACA/NACS inviscid Cp oracle |
+| `tests/data/xfoil-6.996/s15/cases/6996-nacs-0012-200/buffer.dat` | nacs-0012-200 | `c41159da14c78858a19d4f646648eba47fd4222d3661dde2d20c7c3827befccd` | external audit area: xfoil-6.996/s15/cases/6996-nacs-0012-200/ | NACA/NACS 399-point buffer oracle |
+| `tests/data/xfoil-6.996/s15/cases/6996-nacs-0012-200/cp.dat` | nacs-0012-200 | `71a4fd8522a7e50f69834b18b2fa1ba7caa950a7af82562e3070fd716dae3468` | external audit area: xfoil-6.996/s15/cases/6996-nacs-0012-200/ | NACA/NACS inviscid Cp oracle |
+| `tests/data/xfoil-6.996/s15/cases/6996-nacs-23012-200/buffer.dat` | nacs-23012-200 | `3ad2bd02604311536d470abb061e70f58a18eb54657967f88fd947eeab1f8920` | external audit area: xfoil-6.996/s15/cases/6996-nacs-23012-200/ | NACA/NACS 399-point buffer oracle |
+| `tests/data/xfoil-6.996/s15/cases/6996-nacs-23012-200/cp.dat` | nacs-23012-200 | `07d10ea63245d8840fccc78e99c4538c7bc65b62b49f944f2185bfd3bc09f48c` | external audit area: xfoil-6.996/s15/cases/6996-nacs-23012-200/ | NACA/NACS inviscid Cp oracle |
+| `tests/data/xfoil-6.996/s15/cases/6996-nacs-2412-200/buffer.dat` | nacs-2412-200 | `763aec0b48a45233044df5fb231343d5385d7e1567cc3841882ea671b7a01c96` | external audit area: xfoil-6.996/s15/cases/6996-nacs-2412-200/ | NACA/NACS 399-point buffer oracle |
+| `tests/data/xfoil-6.996/s15/cases/6996-nacs-2412-200/cp.dat` | nacs-2412-200 | `f8474c3ff3b65a58e7cf6a37fbca33a6bd8930c9c1c71adeaf79728abb5cc457` | external audit area: xfoil-6.996/s15/cases/6996-nacs-2412-200/ | NACA/NACS inviscid Cp oracle |
+| `tests/data/xfoil-6.996/s15/command-probes/adeg/after.dat` | GDES ADEG | `14d4c1f7ca80eba4488c1176964a60ccca7ccea7e73c90b4dcae010eb9e5cd1a` | external audit area: xfoil-6.996/s15/command-probes/adeg/ | ADEG post-EXEC buffer oracle |
+| `tests/data/xfoil-6.996/s15/command-probes/circ/after.dat` | GDES CIRC | `94036eef0566066937a21aa9a487cb0e2d47302fe3a3be934247e13434597772` | external audit area: xfoil-6.996/s15/command-probes/circ/ | CIRC post-EXEC buffer oracle |
+| `tests/data/xfoil-6.996/s15/command-probes/sqte/after.dat` | GDES SQTE | `a1e6ba8fc4e5a7a67dbeea9d4c87471255554e01eeb8d53a701086437c97bd4a` | external audit area: xfoil-6.996/s15/command-probes/sqte/ | SQTE post-EXEC buffer oracle |
+| `tests/data/xfoil-6.996/s15/command-probes/sytb/after.dat` | GDES SYTB | `6940c47bff1be97bdff1c3723db72f0f141e38696409fa3883fd4ba22e5451b0` | external audit area: xfoil-6.996/s15/command-probes/sytb/ | SYTB post-EXEC buffer oracle |
+| `tests/data/xfoil-6.996/s15/command-probes/xcen/after.dat` | GDES XCEN | `f214690d60e69fcb1e97c57df7e6998bdb182b275e22b59609202c089eed62d1` | external audit area: xfoil-6.996/s15/command-probes/xcen/ | XCEN post-EXEC buffer oracle |
+| `tests/data/xfoil-6.996/s15/regression/polar-cseq-head-naca0012/generated/s2.dump` | polar-cseq-head-naca0012 | `09505d4b31b3e8de214d776c17898df29b57157efc89f4d0b19a34a747002e3a` | 6.996 stock/artifact and S15 product-path parity: polar-cseq-head-naca0012 | Regression generated artifact reference |
+| `tests/data/xfoil-6.996/s15/regression/polar-cseq-head-naca0012/generated/s2.pol` | polar-cseq-head-naca0012 | `42e0722167854bfbdabdb9f12b41a5f75e43f896c779077b931d2b95e5d53440` | 6.996 stock/artifact and S15 product-path parity: polar-cseq-head-naca0012 | Regression generated artifact reference |
+| `tests/data/xfoil-6.996/s15/regression/polar-cseq-head-naca0012/stdout.raw.txt` | polar-cseq-head-naca0012 | `a2ccb8f5fe3808784f7ff6b196d37f369a7f67b87ec61aee0051ed17c465938e` | 6.996 stock/artifact and S15 product-path parity: polar-cseq-head-naca0012 | Regression stdout reference |
+| `tests/data/xfoil-6.996/s15/regression/polar-inviscid-naca0012-aseq/generated/polar-inviscid-naca0012-aseq.dump` | polar-inviscid-naca0012-aseq | `6b77488d4bbd286a4c0001af168548279a356cd6d6a6a5254792fac0f42f0a4e` | 6.996 stock/artifact and S15 product-path parity: polar-inviscid-naca0012-aseq | Regression generated artifact reference |
+| `tests/data/xfoil-6.996/s15/regression/polar-inviscid-naca0012-aseq/generated/polar-inviscid-naca0012-aseq.pol` | polar-inviscid-naca0012-aseq | `e362ca938d85840b25de58d3af8b5ec715966faaccdab184153c22b30eb6ec54` | 6.996 stock/artifact and S15 product-path parity: polar-inviscid-naca0012-aseq | Regression generated artifact reference |
+| `tests/data/xfoil-6.996/s15/regression/polar-wake2-alfa6-naca0012/stdout.raw.txt` | polar-wake2-alfa6-naca0012 | `644cb0e9d218d43f136a8a13dbb06e1683862ea5651b04779c5616daf66adb82` | 6.996 stock/artifact and S15 product-path parity: polar-wake2-alfa6-naca0012 | Regression stdout reference |
+| `tests/data/xfoil-6.996/s15/top-file-export/bend-naca0012/stdout.raw.txt` | bend-naca0012 | `94267d7c1b9f6dc728ba1184d8ed5e5288981d2949f7abeb5a71231edf38bd4e` | 6.996 stock BEND/MSAV parity: bend-naca0012 | BEND report reference |
+| `tests/data/xfoil-6.996/s15/top-file-export/bend-naca2412/stdout.raw.txt` | bend-naca2412 | `60a2bf707c7578e06480a5557bd11483499e5b144b79a8c2f06912b2b3e01685` | 6.996 stock BEND/MSAV parity: bend-naca2412 | BEND report reference |
+| `tests/data/xfoil-6.996/s15/top-file-export/msav-isav-roundtrip/generated/single.mses` | msav-isav-roundtrip | `821b5de39049c1257b4519b44bbae35dbd956ed00c2b0587832be9a2c6a4678d` | 6.996 stock BEND/MSAV parity: msav-isav-roundtrip | MSAV generated artifact reference |
+
+## X6996-S15-R1 focused acceptance record
+
+The implementation commit is
+`8d4164125ae1e7e3f5e3fb0f6b1462a17ef4a52f`; its parent is
+`53b34fbc1877543b1d81ab8e3911cfedda23cbcf`. It was not amended. The R1
+follow-up is documentation-only and changes only:
+
+- `docs/xfoil-6.996/21-s15-geometry-command-acceptance.md`
+- `docs/xfoil-6.996/21-s15-geometry-command-acceptance_report.md`
+
+The already confirmed technical matrix remains valid. No additional Linux
+or Windows process was run because only documentation changed. Exactly one
+focused Windows process remains documented:
+
+```text
+integration.GeometryCommandS15
+5/5, 0 failures
+```
+
+Confirmed results:
+
+```text
+Full suite:        2042/2042
+Reference:          236/236
+Determinism:        236/236
+Harness families:     16/16
+Windows focused:        5/5
+Permanent gates:       PASS
+```
+
+No protected Fortran source, binary, patch, canonical 6.99 reference,
+product version, banner or tolerance was changed. No push, fetch, tag or
+release occurred.
+
+## Final decision
+
+X6996-S15: PASS
+X6996-S15-R1: PASS
