@@ -30,6 +30,8 @@
 #include <string>
 #include <vector>
 
+#include "xfoil/core/Result.h"
+
 namespace xfoil::io {
 
 // Delimiter selection of the canonical dump commands (KDELIM).
@@ -53,13 +55,34 @@ struct BoundaryLayerDumpInput {
   std::array<int, 2> nbl{};
   std::array<std::vector<int>, 2> ipan;
   std::array<std::vector<double>, 2> xssi, dstr, thet, tstr, tau, dis, uedg, ctau;
+  // S08 DSSR(IBL,IS), required by BLDUMP3 only.
+  std::array<std::vector<double>, 2> dssr;
 };
 
 // BLDUMP semantics: returns the exact file contents.
 std::string boundaryLayerDumpText(const BoundaryLayerDumpInput& input);
 
-// BLDUMP2 semantics (xoper.f:2050), 24 Columns.
-std::string boundaryLayerExtendedDumpText(const BoundaryLayerDumpInput& input);
+// BLDUMP2 value contract. The default keeps the existing 6.99 behavior.
+enum class BoundaryLayerExtendedDumpContract {
+  Xfoil699,
+  Xfoil6996DensityCorrected,
+};
+
+// BLDUMP2 semantics (xoper.f:2050), 24 columns. The 6.996 variant changes
+// only the eight RH-scaled values; header and widths are unchanged.
+[[nodiscard]] core::Result<std::string> boundaryLayerExtendedDumpTextChecked(
+    const BoundaryLayerDumpInput& input,
+    BoundaryLayerExtendedDumpContract contract =
+        BoundaryLayerExtendedDumpContract::Xfoil699);
+std::string boundaryLayerExtendedDumpText(
+    const BoundaryLayerDumpInput& input,
+    BoundaryLayerExtendedDumpContract contract =
+        BoundaryLayerExtendedDumpContract::Xfoil699);
+
+// S13 BLDUMP3 (xoper.f:2290): separate write-only 20-column format.
+[[nodiscard]] core::Result<std::string> boundaryLayerDump3TextChecked(
+    const BoundaryLayerDumpInput& input);
+std::string boundaryLayerDump3Text(const BoundaryLayerDumpInput& input);
 
 // CPDUMP semantics (xoper.f:2280).
 struct PressureDumpInput {

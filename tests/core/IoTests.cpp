@@ -38,6 +38,11 @@
 #include <vector>
 
 #include "TestSupport.h"
+#include "app/DatFileReader.h"
+#include "xfoil/AnalysisConfig.h"
+#include "xfoil/geometry/AirfoilGeometry.h"
+#include "xfoil/session/SessionOps.h"
+#include "xfoil/session/SessionState.h"
 #include "xfoil/core/inverse/OrrSommerfeldMap.h"
 #include "xfoil/io/DefaultsCodec.h"
 #include "xfoil/io/DumpCodec.h"
@@ -896,4 +901,113 @@ TEST(unit, IoOrrSommerfeldDecode) {
   CHECK(decoded.raw->nr > 0 && decoded.raw->nw > 0 && decoded.raw->nh > 0);
   const auto map = xfoil::core::inverse::OrrSommerfeldMap::fromRaw(std::move(*decoded.raw));
   CHECK(map.isOk());
+}
+
+namespace {
+
+xfoil::geometry::AirfoilGeometry clarkYGeometry() {
+  const auto read = xfoil::app::DatFileReader::read("sample/CLARK_Y.dat");
+  CHECK(read.success());
+  xfoil::geometry::AirfoilGeometry geometry;
+  const auto assigned = geometry.assign(
+      read.airfoil.name,
+      std::span<const xfoil::Point2D>(read.airfoil.coordinates));
+  CHECK(assigned.success());
+  return geometry;
+}
+
+xfoil::session::SessionComposition solvedClarkY(double reynolds, double mach) {
+  xfoil::session::SessionComposition session;
+  CHECK(xfoil::session::setGeometry(session, clarkYGeometry()).success());
+  xfoil::AnalysisConfig config;
+  config.reynoldsNumber = reynolds;
+  config.machNumber = mach;
+  config.viscous = true;
+  config.maximumIterations = 100;
+  CHECK(xfoil::session::configure(session, config).success());
+  const auto result =
+      xfoil::session::runOperAlphaPoint(session, xfoil::Degrees{4.0}, nullptr);
+  CHECK(result.successful);
+  CHECK(result.converged);
+  return session;
+}
+
+}  // namespace
+
+TEST(unit, BoundaryLayerOutputS13Bldump2M0Contract) {
+  const std::string path =
+      "tests/fortran-reference/cases/file-export/dmp-visc-clark-y/generated/"
+      "dmp-visc-clark-y.bl";
+  const auto in = xfoil::session::currentBoundaryLayerDumpInput(
+      solvedClarkY(3.0e6, 0.0));
+  const auto corrected = io::boundaryLayerExtendedDumpTextChecked(
+      in, io::BoundaryLayerExtendedDumpContract::Xfoil6996DensityCorrected);
+  CHECK(corrected.isOk());
+  if (corrected.isOk()) CHECK_EQ(corrected.value(), readFile(path));
+  const auto legacy = io::boundaryLayerExtendedDumpTextChecked(
+      in, io::BoundaryLayerExtendedDumpContract::Xfoil699);
+  CHECK(legacy.isOk());
+  if (legacy.isOk()) CHECK_EQ(legacy.value(), readFile(path));
+}
+
+TEST(unit, BoundaryLayerOutputS13Bldump2M03Contracts) {
+  const std::string correctedPath =
+      "tests/data/xfoil-6.996/s13/bldump2-m03.bl";
+  const auto correctedIn = xfoil::session::currentBoundaryLayerDumpInput(
+      solvedClarkY(3.0e6, 0.3));
+  const auto corrected = io::boundaryLayerExtendedDumpTextChecked(
+      correctedIn,
+      io::BoundaryLayerExtendedDumpContract::Xfoil6996DensityCorrected);
+  CHECK(corrected.isOk());
+  if (corrected.isOk()) CHECK_EQ(corrected.value(), readFile(correctedPath));
+
+  const std::string legacyPath =
+      "tests/data/xfoil-6.996/s13/bldump2-m03-legacy.bl";
+  const auto legacy = io::boundaryLayerExtendedDumpTextChecked(
+      correctedIn, io::BoundaryLayerExtendedDumpContract::Xfoil699);
+  CHECK(legacy.isOk());
+  if (legacy.isOk()) CHECK_EQ(legacy.value(), readFile(legacyPath));
+}
+
+TEST(unit, BoundaryLayerOutputS13Bldump3A28) {
+  const std::string path = "tests/data/xfoil-6.996/s13/bldump3-a28.bl";
+  const auto in = xfoil::session::currentBoundaryLayerDumpInput(
+      solvedClarkY(1.0e6, 0.0));
+  const auto result = io::boundaryLayerDump3TextChecked(in);
+  CHECK(result.isOk());
+  if (result.isOk()) CHECK_EQ(result.value(), readFile(path));
+}
+
+TEST(unit, BoundaryLayerOutputS13Bldump3Hs13M03) {
+  const std::string path =
+      "tests/data/xfoil-6.996/s13/bldump3-hs13-m03.bl";
+  const auto in = xfoil::session::currentBoundaryLayerDumpInput(
+      solvedClarkY(1.0e5, 0.3));
+  const auto result = io::boundaryLayerDump3TextChecked(in);
+  if (!result.isOk()) std::fprintf(stderr, "S13 bl3 error: %s\n", result.error().message.c_str());
+  CHECK(result.isOk());
+  if (result.isOk()) CHECK_EQ(result.value(), readFile(path));
+}
+
+TEST(unit, BoundaryLayerOutputS13RejectsInvalidInput) {
+  auto in = xfoil::session::currentBoundaryLayerDumpInput(
+      solvedClarkY(1.0e6, 0.0));
+  auto missingDssr = in;
+  missingDssr.dssr[0].clear();
+  CHECK(io::boundaryLayerDump3TextChecked(missingDssr).isErr());
+
+  auto nonFinite = in;
+  nonFinite.uedg[0][2] = std::numeric_limits<double>::quiet_NaN();
+  CHECK(io::boundaryLayerDump3TextChecked(nonFinite).isErr());
+
+  auto badRange = in;
+  badRange.iblte[1] = badRange.nbl[1] + 1;
+  CHECK(io::boundaryLayerDump3TextChecked(badRange).isErr());
+
+  auto badCompressibility = in;
+  badCompressibility.qinf = 0.0;
+  CHECK(io::boundaryLayerExtendedDumpTextChecked(
+            badCompressibility,
+            io::BoundaryLayerExtendedDumpContract::Xfoil6996DensityCorrected)
+            .isErr());
 }

@@ -1,0 +1,36 @@
+S13 boundary-layer output oracle fixtures
+=========================================
+
+Oracle: XFOIL 6.996, fortran-bin/xfoil-6.996
+Binary SHA-256: 000b0468d9a7f4fce42d6fac24bd14147d7d326c8a9035909c8e9f98d180f50e
+Locale: LC_ALL=C
+
+bldump2-m03.bl
+  BLDUMP2, M=0.3, Re=3e6, alpha=4, CLARK_Y
+  Command: OPER / VISC 3000000 / ITER 100 / MACH 0.3 / ALFA 4 / DMP dmp.bl
+  SHA-256: 19680d092f120958c6bcfe95e9cc0b29c9926080a30ea4dec2ac762b8dbdbfcd
+  Size: 44784 bytes
+
+bldump2-m03-legacy.bl
+  BLDUMP2, 6.99 value contract, same case
+  SHA-256: 917a4fe37e4e1962d6759a0143102a171f5da43e84c50f5d373855dc323afd5e
+  Size: 44784 bytes
+
+bldump2 M=0
+  Reuse tests/fortran-reference/cases/file-export/dmp-visc-clark-y/generated/dmp-visc-clark-y.bl
+  SHA-256: 9ad3d496b5436c1a55759273dc9d0beeb4b009fc2b5ac1511cf51abe82eee532
+  Size: 44784 bytes; 6.99 and 6.996 byte-identical.
+
+bldump3-a28.bl
+  BLDUMP3, M=0, Re=1e6, alpha=4, CLARK_Y
+  Command: OPER / VISC 1000000 / ITER 100 / ALFA 4 / BLOU blou3.bl
+  SHA-256: 04d81ba85130f109ef5d06f260a318f52e648bac9de7e792f1112d7047138c5d
+  Size: 42704 bytes
+
+bldump3-hs13-m03.bl
+  BLDUMP3, M=0.3, Re=1e5, alpha=4, CLARK_Y
+  Command: OPER / MACH 0.3 / VISC 100000 / ITER 100 / ALFA 4 / BLOU blou3.bl
+  SHA-256: 96fc1866202c1449fedb1ae17df4a62f5c9db75ff134fc28241d1f1de788b289
+  Size: 42704 bytes
+
+The BLDUMP3 fixtures are write-only oracle artifacts; no reader is implemented.

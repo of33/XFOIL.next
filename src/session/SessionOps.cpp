@@ -4146,6 +4146,7 @@ io::BoundaryLayerDumpInput currentBoundaryLayerDumpInput(
     const auto& dis = side == 0 ? viscals.dis.top : viscals.dis.bottom;
     const auto& uedg = side == 0 ? viscals.uedg.top : viscals.uedg.bottom;
     const auto& ctau = side == 0 ? viscals.ctau.top : viscals.ctau.bottom;
+    const auto& dssr = side == 0 ? viscals.dssr.top : viscals.dssr.bottom;
     input.dstr[static_cast<std::size_t>(side)] = withFortranPlaceholder(dstr);
     input.thet[static_cast<std::size_t>(side)] = withFortranPlaceholder(thet);
     input.tstr[static_cast<std::size_t>(side)] = withFortranPlaceholder(tstr);
@@ -4153,6 +4154,7 @@ io::BoundaryLayerDumpInput currentBoundaryLayerDumpInput(
     input.dis[static_cast<std::size_t>(side)] = withFortranPlaceholder(dis);
     input.uedg[static_cast<std::size_t>(side)] = withFortranPlaceholder(uedg);
     input.ctau[static_cast<std::size_t>(side)] = withFortranPlaceholder(ctau);
+    input.dssr[static_cast<std::size_t>(side)] = withFortranPlaceholder(dssr);
   }
   return input;
 }
