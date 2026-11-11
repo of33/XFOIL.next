@@ -907,7 +907,8 @@ OperCpmnCoreStatus handleOperCpmnCore(
 
 io::PolarWriteRequest makePolarWriteRequest(
     const core::polar::PolarDataset& slot, bool includeCpMin,
-    bool includeHingeMoment, int ia1, int ia2, bool echoHeader) {
+    bool includeHingeMoment, int ia1, int ia2, bool echoHeader,
+    const core::polar::PolarElementSelection& elementSelection) {
   io::PolarWriteRequest request;
   request.lhead = true;
   request.ia1 = ia1;
@@ -922,6 +923,10 @@ io::PolarWriteRequest makePolarWriteRequest(
     request.ipol.push_back(io::kIch);
   }
   request.jpol = {io::kJtn, io::kJti};
+  request.elementSelection = elementSelection;
+  if (slot.elementData.size() == slot.points.size()) {
+    request.elementData = slot.elementData;
+  }
   // NAMEPOL/CODEPOL are CHARACTER*48 (XFOIL.INC 32); all POLWRIT calls
   // in xoper.f passed these fields, the A edit fills to 48.
   request.code = echoHeader ? io::fortranA(48, slot.metadata.code)
@@ -1414,7 +1419,8 @@ OperPlisCoreStatus handleOperPlisCore(session::SessionComposition& session,
     const auto& slot = session.polar.slots[static_cast<std::size_t>(ip - 1)];
     const io::PolarWriteRequest request = makePolarWriteRequest(
         slot, session.polar.includeCpMin, session.polar.includeHingeMoment, 1,
-        static_cast<int>(slot.points.size()), false);
+        static_cast<int>(slot.points.size()), false,
+        session.polar.elementSelection);
     out << io::writePolarText(request);
   }
   return OperPlisCoreStatus::listed;
@@ -1463,6 +1469,10 @@ core::polar::PolarDataset polarDatasetFromParsed(
     dataset.points.push_back(point);
     dataset.sideData.push_back(sides);
   }
+  if (dataset.elementData.empty() &&
+      parsed.elementData.size() == parsed.points.size()) {
+    dataset.elementData = parsed.elementData;
+  }
   return dataset;
 }
 
@@ -1510,28 +1520,46 @@ OperPointResult makeOperPointResult(
   return result;
 }
 
-void appendPolarSavePoint(session::SessionComposition& session, int slot0) {
+bool appendPolarSavePoint(session::SessionComposition& session, int slot0) {
   const auto& slot = session.polar.slots[static_cast<std::size_t>(slot0)];
   io::PolarWriteRequest request = makePolarWriteRequest(
       slot, session.polar.includeCpMin, session.polar.includeHingeMoment,
       static_cast<int>(slot.points.size()),
-      static_cast<int>(slot.points.size()), false);
+      static_cast<int>(slot.points.size()), false,
+      session.polar.elementSelection);
   // POLWRIT call PLRADD (xpol.f 617-619) with LHEAD=0: only the
   // format line of the new point, no header.
   request.lhead = false;
-  const std::string line = io::writePolarText(request);
+  const auto lineResult = io::writePolarTextChecked(request);
+  if (!lineResult.isOk()) {
+    return false;
+  }
  // saveFileNames carries the logical names;
   // the prefix transformation happens exactly here at the OPEN point.
   const std::string effective = io::applyOutputPathPolicy(
       session.outputPaths,
       session.polar.saveFileNames[static_cast<std::size_t>(slot0)]);
+  std::ifstream existing(effective, std::ios::binary);
+  if (!existing) {
+    return false;
+  }
+  std::ostringstream contents;
+  contents << existing.rdbuf();
+  const io::PolarAppendCheck compatibility =
+      io::checkPolarAppend(contents.str(), request);
+  if (!compatibility.compatible) {
+    return false;
+  }
   // PUB-W2: byte-contract export - binary mode keeps canonical LF
   // line endings on every platform (text mode would rewrite LF to
   // CRLF on Windows).
   std::ofstream stream(effective, std::ios::app | std::ios::binary);
-  if (stream) {
-    stream << line;
+  if (!stream) {
+    return false;
   }
+  stream << lineResult.value();
+  stream.close();
+  return stream.good();
 }
 
 // PLXADD (xpol.f 645-720): append an unformatted record to the dump
@@ -1654,12 +1682,15 @@ std::string accumulateOperPointRecord(session::SessionComposition& session,
       // PLRADD file branch (xpol.f 614-638) and PLXADD (xpol.f 650-653):
       // without an opened save/dump file the canonical messages.
       if (session.polar.saveFileOpen) {
-        appendPolarSavePoint(session, added.slotIndex);
-        msg << " Point written to save file  "
-            << io::fortranA(
-                   48, session.polar.saveFileNames[static_cast<std::size_t>(
-                           added.slotIndex)])
-            << "\n";
+        if (appendPolarSavePoint(session, added.slotIndex)) {
+          msg << " Point written to save file  "
+              << io::fortranA(
+                     48, session.polar.saveFileNames[static_cast<std::size_t>(
+                             added.slotIndex)])
+              << "\n";
+        } else {
+          msg << " Save file schema incompatible; point not written\n";
+        }
       } else {
         msg << " Save file unspecified or not available\n";
       }

@@ -1,0 +1,97 @@
+XFOIL 6.996 S11 polar text I/O fixtures
+=======================================
+
+Version:            XFOIL 6.996 polar text I/O (S11)
+Purpose:            canonical base/side/element round-trip, exact-token
+                    rejection, append-schema preflight and explicit
+                    6.996 broken-side-order migration.
+Oracle policy:      no repository Fortran source, golden, reference or
+                    old 6.99 fixture changed.
+Source baseline:    fortran-src/xfoil-6.99 and
+                    fortran-src/xfoil-6.996.
+
+Canonical contract:
+  - base columns: alpha, CL, CD, CDp, CM;
+  - side columns: Top_/Bot_ pairs per JPOL, side-major data in the same
+    order;
+  - element columns after sides: N outer, K inner;
+  - element names Cx_n, Cy_n, Cm_n, CDv_n;
+  - element-free files retain the 6.99/current base bytes;
+  - canonical LF line endings.
+
+Reader compatibility:
+  - 6.996 Version 7.00 side-transposed files are rejected in canonical
+    mode;
+  - PolarReadCompatibility::xfoil6996BrokenSideOrder applies exactly one
+    documented side transpose and is never selected automatically.
+
+Canonical fixtures:
+  canonical-base.pol
+                    8f902f8abbe2082b4aee87d95d76c4d5e0eaec7b789dcbed642b5930f840e475
+                    controlled 6.99 base output, 2 points, NBL=1,
+                    NKPOL=0
+  canonical-elem1.pol
+                    04fe6c797fd2d784fd37dc11d29957d9e5a1e382457dbb96b65ddc91ff952dba
+                    NBL=1, one element column Cx_1
+  canonical-elem4.pol
+                    491a76f55eb0f7d6141600d8bdd5e403dbfb3a2f67c6acaebeecfb7fbe60b5f2
+                    NBL=1, all four element columns Cx_1..CDv_1
+  canonical-multiel.pol
+                    3e1ad1f397610b05b18807ce571c3c2d99e73e315c4e1a444ffc878f464636e8
+                    NBL=2, two side pairs plus four element columns per
+                    element; both element xtrf headers are the supported
+                    canonical 1.000/1.000 pair
+
+Malformed/migration fixtures:
+  broken-6996-base-v700.pol
+                    7211c173de1835eadebae59afb598632d7073fad3be819fb525bbb655ea88a88
+                    6.996 side-major data with Version 7.00; canonical
+                    read must reject, migration mode must recover
+                    Top_Xtr=0.11, Bot_Xtr=0.21, Top_Itr=11, Bot_Itr=21
+  unknown-column.pol
+                    9018235d954d36d88ce4c4038e5fad5dfe7cd76174b5301edc7beee06c85bd32
+                    extra unknown base label Foo
+  duplicate-column.pol
+                    80b56e41aeca3a90a53eedc4e032ca104b8ef2af24972e8f184fa6726fdb5428
+                    duplicate base label CD
+  truncated-row.pol
+                    b7b45403c1ef89dae34907ccb1b615daaf449196db880a3894864457f4c15173
+                    final data row with the last value removed
+  incompatible-append.pol
+                    ca1fa01ff024eab89a2ea79bbd0f73b2b56d60f1be28f479e2b7475c3bc25d8f
+                    canonical base header and point 1, then point 2 with
+                    an extra value; append preflight must refuse
+
+Generation:
+  canonical-base.pol:
+    controlled 6.99 format-probe output from the external audit area,
+    produced from the same fixed values used by the S11 matrix probe.
+  broken-6996-base-v700.pol:
+    controlled unpatched 6.996 POLWRIT base output from the external
+    audit area; only the header Version field was changed from 0.00 to
+    7.00. The side-major data defect itself is unchanged.
+  canonical-elem1/elem4/multiel.pol:
+    deterministic output of writePolarTextChecked on the controlled
+    S11 request, then stored as read-only round-trip fixtures. The
+    tests re-read them, rebuild the request from the parsed metadata and
+    require byte-identical output.
+  malformed fixtures:
+    derived from canonical-base.pol by one documented local change;
+    no oracle byte target is claimed for them.
+
+Case IDs:
+  canonical-base.pol: base regression against the existing 6.99 byte
+                      contract.
+  canonical-elem1/elem4/multiel.pol: exact header/data layout and
+                      byte-identical parsed -> write round trip.
+  broken-6996-base-v700.pol: canonical rejection and opt-in migration.
+  unknown/duplicate/truncated: exact-token and row-width rejection.
+  incompatible-append.pol: PolarAppendCheck refusal without filesystem
+                      mutation.
+
+Protected state:
+  tests/fortran-reference/**
+  tests/data/core-polar-io-reference/**
+  tests/golden/**
+  fortran-src/**, fortran-bin/**, patches/**
+  all unchanged.

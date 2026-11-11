@@ -326,7 +326,8 @@ OperCpmnCoreStatus handleOperCpmnCore(
 // file writer PWRT uses the literal 'XFOIL' instead (xoper.f 924).
 xfoil::io::PolarWriteRequest makePolarWriteRequest(
     const xfoil::core::polar::PolarDataset& slot, bool includeCpMin,
-    bool includeHingeMoment, int ia1, int ia2, bool echoHeader);
+    bool includeHingeMoment, int ia1, int ia2, bool echoHeader,
+    const xfoil::core::polar::PolarElementSelection& elementSelection);
 
 // PLRSUM (xpol.f 755): header plus one line per slot. ipact1 is the
 // active slot 1-based (0 = none); LPFILE is canonical only set with the

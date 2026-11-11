@@ -3,6 +3,10 @@
 # Die CLI-Transkripte werden bytegenau verglichen.
 tests/golden/cli/*.stdout.txt -whitespace
 
+# S11 polar fixtures are byte-exact Fortran text with fixed-width
+# trailing spaces.
+tests/data/xfoil-6.996/s11/*.pol -whitespace
+
 # Keep public text artifacts byte-stable across POSIX and Windows checkouts.
 * text=auto eol=lf
 

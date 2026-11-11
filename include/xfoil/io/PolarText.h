@@ -32,6 +32,9 @@
 #include <string_view>
 #include <vector>
 
+#include "xfoil/core/Result.h"
+#include "xfoil/core/polar/PolarTypes.h"
+
 namespace xfoil::io {
 
 // Canonical PINDEX indices (fortran-src/PINDEX.INC).
@@ -58,13 +61,41 @@ inline constexpr int kJptot = 4;
 
 inline constexpr int kNax = 800;
 inline constexpr int kNfx = 128;
-inline constexpr int kNpx = 12;
+inline constexpr int kNpx = 20;
+
+inline constexpr int kMaxPolarElements =
+    static_cast<int>(core::polar::maxPolarElements);
+
+enum class PolarFieldKind { base, sideTop, sideBottom, element };
+
+struct PolarField {
+  PolarFieldKind kind{PolarFieldKind::base};
+  int baseIndex{0};
+  int sideIndex{0};
+  int elementIndex{0};
+  core::polar::PolarElementQuantity elementQuantity{
+      core::polar::PolarElementQuantity::cx};
+
+  [[nodiscard]] bool operator==(const PolarField&) const = default;
+};
+
+struct PolarLayout {
+  int nbl{1};
+  std::vector<PolarField> fields;
+
+  [[nodiscard]] bool operator==(const PolarLayout&) const = default;
+};
+
+enum class PolarReadCompatibility {
+  canonical,
+  xfoil6996BrokenSideOrder,
+};
 
 // A polar point: 13 coefficient columns plus side values
-// (sides 1/2, per JPTOT quantities).
+// (up to 2*maxPolarElements sides, per JPTOT quantities).
 struct PolarPoint {
   std::array<double, kIptot> cpol{};
-  std::array<std::array<double, kJptot>, 2> side{};
+  std::array<std::array<double, kJptot>, 2 * kMaxPolarElements> side{};
 };
 
 // Parse result with canonical metadata and column layout.
@@ -87,12 +118,18 @@ struct ParsedPolar {
   std::array<bool, kJptot> sidePresent{};
   std::vector<int> ipolOrder;  // PINDEX columns in file order
   std::vector<int> jpolOrder;  // JP quantities in file order
+  PolarLayout layout;
+  core::polar::PolarElementSelection elementSelection;
+  std::vector<core::polar::PolarElementRow> elementData;
   std::vector<PolarPoint> points;
+  std::string errorMessage;
 };
 
 // POLREAD semantics on text. maxPoints corresponds to NAX; an overflow is
 // reported as a structured error without partial mutation.
-ParsedPolar readPolarText(std::string_view text, int maxPoints = kNax);
+ParsedPolar readPolarText(
+    std::string_view text, int maxPoints = kNax,
+    PolarReadCompatibility compatibility = PolarReadCompatibility::canonical);
 
 // Write request for POLWRIT. ia1/ia2 are 1-based; ia1 == 0 and
 // ia2 == -1 write only the header (PLRINI new-file path).
@@ -102,7 +139,9 @@ struct PolarWriteRequest {
   int ia2 = 0;
   std::vector<int> ipol;  // 1-based PINDEX columns
   std::vector<int> jpol;  // 1-based JPTOT quantities
+  core::polar::PolarElementSelection elementSelection;
   std::vector<PolarPoint> points;
+  std::vector<core::polar::PolarElementRow> elementData;
   std::string code = "XFOIL";
   double version = 6.99;
   std::string name;
@@ -117,9 +156,29 @@ struct PolarWriteRequest {
   double etap = 0.0;
 };
 
+// Builds the one canonical layout used by writer, reader and append check.
+[[nodiscard]] core::Result<PolarLayout> makePolarLayout(
+    const PolarWriteRequest& request);
+
 // POLWRIT semantics: returns the exact file bytes including
 // line endings. Overwrite queries (LQUERY) do not belong here.
+[[nodiscard]] core::Result<std::string> writePolarTextChecked(
+    const PolarWriteRequest& request);
+
+// Compatibility wrapper for existing callers. Invalid requests produce an
+// empty string; new code should use writePolarTextChecked.
 std::string writePolarText(const PolarWriteRequest& request);
+
+struct PolarAppendCheck {
+  bool compatible{false};
+  std::string message;
+};
+
+// Parses the existing canonical file and compares its layout and element
+// count with the requested writer layout. Does not access the filesystem.
+[[nodiscard]] PolarAppendCheck checkPolarAppend(
+    std::string_view existing, const PolarWriteRequest& request,
+    PolarReadCompatibility compatibility = PolarReadCompatibility::canonical);
 
 // POLREF semantics: four blocks with a 999.0 sentinel.
 struct ParsedReferencePolar {

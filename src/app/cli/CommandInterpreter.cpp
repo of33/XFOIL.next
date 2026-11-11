@@ -1965,6 +1965,7 @@ void CommandInterpreter::handleOperPget(const ParsedCommand& parsed) {
     output_ << " Polar file READ error\n";
     return;
   }
+  session_.polar.elementSelection = parsedPolar.elementSelection;
   const auto added = session::appendPolarSlot(
       session_, polarDatasetFromParsed(parsedPolar), fileName);
   if (added.capacityExceeded) {
@@ -1976,7 +1977,8 @@ void CommandInterpreter::handleOperPget(const ParsedCommand& parsed) {
       added.slotIndex)];
   output_ << io::writePolarText(makePolarWriteRequest(
       slot, session_.polar.includeCpMin, session_.polar.includeHingeMoment, 1,
-      static_cast<int>(slot.points.size()), true));
+      static_cast<int>(slot.points.size()), true,
+      session_.polar.elementSelection));
   output_ << "\n Stored as  Polar"
           << io::fortranI(4, added.slotIndex + 1) << "\n";
 }
@@ -2079,7 +2081,8 @@ void CommandInterpreter::handleOperPwrt(const ParsedCommand& parsed) {
         session_.polar.slots[static_cast<std::size_t>(slot - 1)];
     const std::string text = io::writePolarText(makePolarWriteRequest(
         dataset, session_.polar.includeCpMin, session_.polar.includeHingeMoment,
-        1, static_cast<int>(dataset.points.size()), false));
+        1, static_cast<int>(dataset.points.size()), false,
+        session_.polar.elementSelection));
     if (!writeWholeFile(effective, text)) {
       output_ << " Polar" << io::fortranI(3, slot) << "  not written\n";
     } else {
@@ -2183,7 +2186,8 @@ void CommandInterpreter::handleOperPrem(const ParsedCommand& parsed) {
     const auto& slot = session_.polar.slots[static_cast<std::size_t>(ip - 1)];
     output_ << io::writePolarText(makePolarWriteRequest(
         slot, session_.polar.includeCpMin, session_.polar.includeHingeMoment, 1,
-        static_cast<int>(slot.points.size()), false));
+        static_cast<int>(slot.points.size()), false,
+        session_.polar.elementSelection));
     for (;;) {
       output_ << "\n Enter alpha(s) of points to be removed:  ";
       output_.flush();
@@ -2247,7 +2251,7 @@ void CommandInterpreter::handleOperPnam(const ParsedCommand& parsed) {
   const auto& slot = session_.polar.slots[static_cast<std::size_t>(ip - 1)];
   output_ << io::writePolarText(makePolarWriteRequest(
       slot, session_.polar.includeCpMin, session_.polar.includeHingeMoment, 0,
-      -1, false));
+      -1, false, session_.polar.elementSelection));
   output_ << "\n Enter new airfoil name of polar:  ";
   output_.flush();
   std::string line;
@@ -2326,7 +2330,8 @@ void CommandInterpreter::initPolarSaveFile(int slot0) {
     // Label 60: create a new file with header.
     auto& slot = polar.slots[static_cast<std::size_t>(slot0)];
     const std::string header = io::writePolarText(makePolarWriteRequest(
-        slot, polar.includeCpMin, polar.includeHingeMoment, 0, -1, false));
+        slot, polar.includeCpMin, polar.includeHingeMoment, 0, -1, false,
+        polar.elementSelection));
     if (!writeWholeFile(effective, header)) {
       output_ << " New polar save file OPEN error\n";
       return;
@@ -2341,6 +2346,7 @@ void CommandInterpreter::initPolarSaveFile(int slot0) {
     output_ << " Old polar save file READ error\n";
     return;
   }
+  polar.elementSelection = parsed.elementSelection;
   auto& slot = polar.slots[static_cast<std::size_t>(slot0)];
   slot = polarDatasetFromParsed(parsed);
   saved = fileName;
@@ -2384,7 +2390,7 @@ void CommandInterpreter::initPolarSaveFile(int slot0) {
   output_ << "\n Old polar save file read in ...\n";
   output_ << io::writePolarText(makePolarWriteRequest(
       slot, polar.includeCpMin, polar.includeHingeMoment, 1,
-      static_cast<int>(slot.points.size()), true));
+      static_cast<int>(slot.points.size()), true, polar.elementSelection));
   polar.saveFileOpen = true;
   output_ << "\n Old polar save file available for appending\n";
 }
@@ -2565,7 +2571,7 @@ void CommandInterpreter::handleOperPacc(const ParsedCommand& parsed) {
         polar.slots[static_cast<std::size_t>(ipact - 1)];
     output_ << io::writePolarText(makePolarWriteRequest(
         slot, polar.includeCpMin, polar.includeHingeMoment, 1,
-        static_cast<int>(slot.points.size()), false));
+        static_cast<int>(slot.points.size()), false, polar.elementSelection));
     // Geometry comparison (xpol.f 55-64): N and DSFRAC <= 1e-5.
     const auto& panel = session_.paneling.panel;
     bool differs = panel.x.size() != slot.geometry.size();

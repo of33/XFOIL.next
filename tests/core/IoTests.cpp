@@ -49,6 +49,7 @@
 namespace io = xfoil::io;
 namespace ex = xfoil::core::export_data;
 namespace cmath = xfoil::core::math;
+namespace polar = xfoil::core::polar;
 
 namespace {
 
@@ -79,12 +80,47 @@ const char* kPolFixtures[] = {
     "polar-visc-clark-y/generated/polar-visc-clark-y.pol",
 };
 
+const char* kS11ElementFixtures[] = {
+    "canonical-elem1.pol",
+    "canonical-elem4.pol",
+    "canonical-multiel.pol",
+};
+
 const char* kDumpFixtures[] = {
     "polar-visc-0012/generated/polar-visc-0012.dump",
     "polar-visc-2412/generated/visc2412.dump",
     "polar-visc-2412-re3e6/generated/polar-visc-2412-re3e6.dump",
     "polar-visc-clark-y/generated/polar-visc-clark-y.dump",
 };
+
+io::PolarWriteRequest requestFromParsed(const io::ParsedPolar& parsed) {
+  io::PolarWriteRequest req;
+  req.lhead = true;
+  req.ia1 = 1;
+  req.ia2 = static_cast<int>(parsed.points.size());
+  req.ipol = parsed.ipolOrder;
+  req.jpol = parsed.jpolOrder;
+  req.points = parsed.points;
+  req.elementSelection = parsed.elementSelection;
+  req.elementData = parsed.elementData;
+  req.code = parsed.code;
+  req.version = parsed.version;
+  req.name = parsed.name;
+  req.nbl = parsed.nbl;
+  req.iretyp = parsed.iretyp;
+  req.imatyp = parsed.imatyp;
+  req.mach1 = parsed.mach1;
+  req.reyn1 = parsed.reyn1;
+  req.acrit = parsed.acrit;
+  req.xtrip = parsed.xtrip;
+  req.ptrat = parsed.ptrat;
+  req.etap = parsed.etap;
+  return req;
+}
+
+std::string s11Path(const char* name) {
+  return std::string("tests/data/xfoil-6.996/s11/") + name;
+}
 
 }  // namespace
 
@@ -118,26 +154,7 @@ TEST(unit, IoPolarRoundTripFixtures) {
     const std::string original = readFile(path);
     const io::ParsedPolar parsed = io::readPolarText(original);
     CHECK(!parsed.error);
-    io::PolarWriteRequest req;
-    req.lhead = true;
-    req.ia1 = 1;
-    req.ia2 = static_cast<int>(parsed.points.size());
-    req.ipol = parsed.ipolOrder;
-    req.jpol = parsed.jpolOrder;
-    req.points = parsed.points;
-    req.code = parsed.code;
-    req.version = parsed.version;
-    req.name = parsed.name;
-    req.nbl = parsed.nbl;
-    req.iretyp = parsed.iretyp;
-    req.imatyp = parsed.imatyp;
-    req.mach1 = parsed.mach1;
-    req.reyn1 = parsed.reyn1;
-    req.acrit = parsed.acrit;
-    req.xtrip = parsed.xtrip;
-    req.ptrat = parsed.ptrat;
-    req.etap = parsed.etap;
-    const std::string written = io::writePolarText(req);
+    const std::string written = io::writePolarText(requestFromParsed(parsed));
     CHECK_EQ(written, original);
   }
 }
@@ -155,6 +172,68 @@ TEST(unit, IoPolarReadMetadata) {
   CHECK(parsed.points.size() >= 4u);
   CHECK_EQ(parsed.ipolOrder.size(), 5u);
   CHECK_EQ(parsed.jpolOrder.size(), 2u);
+}
+
+TEST(unit, PolarTextS11CanonicalElementRoundTrip) {
+  for (const char* name : kS11ElementFixtures) {
+    const std::string original = readFile(s11Path(name));
+    const io::ParsedPolar parsed = io::readPolarText(original);
+    CHECK(!parsed.error);
+    CHECK_EQ(parsed.elementSelection.count,
+             std::size_t(name == std::string("canonical-multiel.pol") ? 4u
+                                                                     : 1u + (std::strcmp(name, "canonical-elem4.pol") == 0 ? 3u : 0u)));
+    CHECK_EQ(parsed.elementData.size(), parsed.points.size());
+    const std::string written = io::writePolarText(requestFromParsed(parsed));
+    CHECK_EQ(written, original);
+  }
+  const std::string elem4 = readFile(s11Path("canonical-elem4.pol"));
+  CHECK(elem4.find("CDv_1") != std::string::npos);
+  CHECK(elem4.find("CDv_1") == elem4.rfind("CDv_1"));
+}
+
+TEST(unit, PolarTextS11RejectsBroken6996Canonical) {
+  const std::string text = readFile(s11Path("broken-6996-base-v700.pol"));
+  const io::ParsedPolar parsed = io::readPolarText(text);
+  CHECK(parsed.error);
+  CHECK(parsed.errorMessage.find("compatibility mode") != std::string::npos);
+}
+
+TEST(unit, PolarTextS11Broken6996Migration) {
+  const std::string text = readFile(s11Path("broken-6996-base-v700.pol"));
+  const io::ParsedPolar parsed = io::readPolarText(
+      text, 10000, io::PolarReadCompatibility::xfoil6996BrokenSideOrder);
+  CHECK(!parsed.error);
+  CHECK_EQ(parsed.version, 7.0);
+  CHECK_EQ(parsed.nbl, 1);
+  CHECK_EQ(parsed.points.size(), 2u);
+  CHECK_NEAR(parsed.points[0].side[0][2], 0.11, 1e-12, 0.0);
+  CHECK_NEAR(parsed.points[0].side[1][2], 0.21, 1e-12, 0.0);
+  CHECK_NEAR(parsed.points[0].side[0][3], 11.0, 1e-12, 0.0);
+  CHECK_NEAR(parsed.points[0].side[1][3], 21.0, 1e-12, 0.0);
+}
+
+TEST(unit, PolarTextS11ExactTokensAndRows) {
+  for (const char* name : {"unknown-column.pol", "duplicate-column.pol",
+                           "truncated-row.pol"}) {
+    const io::ParsedPolar parsed = io::readPolarText(readFile(s11Path(name)));
+    CHECK(parsed.error);
+    CHECK(!parsed.errorMessage.empty());
+  }
+}
+
+TEST(unit, PolarTextS11AppendPreflight) {
+  const std::string canonical = readFile(s11Path("canonical-base.pol"));
+  const io::ParsedPolar parsed = io::readPolarText(canonical);
+  CHECK(!parsed.error);
+  io::PolarWriteRequest req = requestFromParsed(parsed);
+  req.lhead = false;
+  const io::PolarAppendCheck good = io::checkPolarAppend(canonical, req);
+  CHECK(good.compatible);
+
+  const std::string incompatible = readFile(s11Path("incompatible-append.pol"));
+  const io::PolarAppendCheck bad = io::checkPolarAppend(incompatible, req);
+  CHECK(!bad.compatible);
+  CHECK(!bad.message.empty());
 }
 
 TEST(unit, IoPolarEmptyAndLimits) {
