@@ -197,9 +197,9 @@ std::string stripBlanks(std::string_view text) {
 
 FloatParseResult parseFloatList(std::string_view line, std::size_t maxCount) {
   FloatParseResult result;
-  // GETFLT: only the first 128 characters, '!' terminates the line,
+  // GETFLT: only the first 256 characters, '!' terminates the line,
   // tabs become spaces, an appended " ," acts as sentinel.
-  const std::size_t ilen = std::min<std::size_t>(line.size(), 128);
+  const std::size_t ilen = std::min<std::size_t>(line.size(), 256);
   std::string rec(line.substr(0, ilen));
   const std::size_t bang = rec.find('!');
   if (bang != std::string::npos) rec = rec.substr(0, bang);

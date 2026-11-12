@@ -147,16 +147,6 @@ TEST(unit, RealArgumentsRejectNanAndInfinity) {
   CHECK(infinity.error == NumericArgumentError::invalidToken);
 }
 
-TEST(unit, RealArgumentsLimitToFirst128Characters) {
-  // FCPP013: GETFLT/GETINT parse only the first 128 characters; a value
-  // that starts only at character 129 is ignored.
-  const std::string input = "1 2 3" + std::string(123, ' ') + "4";
-  CHECK_EQ(input.size(), std::size_t{129});
-  const auto result = parseRealArguments(input);
-  CHECK(result.success());
-  CHECK(valuesEqual(result.values, std::vector<double>{1.0, 2.0, 3.0}));
-}
-
 TEST(unit, RealArgumentsTreatLeadingCommaAsSeparator) {
   // FCPP014/FCPP013: a leading separator comma (from ASKC: CARGS keeps
   // the comma) is treated as a separator and skipped, as in Fortran.
@@ -172,10 +162,10 @@ TEST(unit, RealArgumentsRejectOutOfRange) {
   CHECK_EQ(overflow.diagnostic,
            std::string{"Numeric argument out of range: 1e999"});
 
-  // FCPP013: pure digit strings are limited to 128 characters and
-  // therefore stay within the double range (max. ~1e127 < ~1.8e308); only
-  // an exponent can overflow.
-  const std::string maxDigits(128, '9');
+  // Pure digit strings are limited to 256 characters and therefore stay
+  // within the double range (max. ~1e256 < ~1.8e308); only an exponent
+  // can overflow.
+  const std::string maxDigits(256, '9');
   const auto inRange = parseRealArguments(maxDigits);
   CHECK(inRange.success());
   CHECK_EQ(inRange.values.size(), std::size_t{1});

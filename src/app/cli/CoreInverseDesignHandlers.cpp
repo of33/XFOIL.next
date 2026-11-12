@@ -195,7 +195,7 @@ bool askMdesReal(std::istream& in, std::ostream& out,
     if (blank) {
       return true;  // LINE.NE.' '-Test: requirement stays
     }
-    const auto parsed = parseRealArguments(line);
+    const auto parsed = parseRealArguments(line, 80);
     if (parsed.success() && !parsed.values.empty()) {
       value = parsed.values[0];
       return true;
@@ -215,7 +215,7 @@ bool readMdesRealList(std::istream& in, std::ostream& out,
       eof = true;
       return false;
     }
-    const auto parsed = parseRealArguments(line);
+    const auto parsed = parseRealArguments(line, 80);
     if (!parsed.success()) {
       continue;  // ERROR branch reprompt (FORMAT 1161/1172 loop)
     }

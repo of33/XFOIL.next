@@ -1795,7 +1795,7 @@ bool askRealOption(std::istream& in, std::ostream& out,
     if (stripSpaces(line).empty()) {
       return true;  // empty answer: default stays
     }
-    const auto parsed = parseRealArguments(line);
+    const auto parsed = parseRealArguments(line, 80);
     if (parsed.success() && !parsed.values.empty()) {
       value = parsed.values[0];
       return true;
@@ -2098,7 +2098,7 @@ bool readRealLine(std::istream& in, std::ostream& out,
     if (!std::getline(in, line)) {
       return false;
     }
-    const auto parsed = parseRealArguments(line);
+    const auto parsed = parseRealArguments(line, 80);
     if (!parsed.success()) {
       continue;  // GETFLT: ERROR=.TRUE.
     }
@@ -2117,7 +2117,7 @@ bool readIntLine(std::istream& in, std::ostream& out,
     if (!std::getline(in, line)) {
       return false;
     }
-    const auto parsed = parseIntegerArguments(line);
+    const auto parsed = parseIntegerArguments(line, 80);
     if (!parsed.success()) {
       continue;  // GETINT: ERROR=.TRUE.
     }
@@ -2338,7 +2338,7 @@ GeometryDesignCoreStatus handleGeometryDesignCore(
           out << "\n " << promptText;
           std::string answerLine;
           if (!std::getline(in, answerLine)) return false;
-          const auto answerValues = parseRealArguments(answerLine);
+          const auto answerValues = parseRealArguments(answerLine, 80);
           if (answerValues.success() && !answerValues.values.empty()) {
             value = answerValues.values[0];
             return true;

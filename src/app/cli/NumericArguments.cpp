@@ -50,11 +50,10 @@ bool isDigit(char character) {
 }
 
 // Removes the part from the first '!' as GETFLT/GETINT do and converts
-// tabs to spaces. FCPP013: as in the original, only the first 128
-// characters of the input are considered; the boundary applies before
-// '!' and tab processing.
-std::string prepareText(std::string_view text) {
-  const std::size_t limit = std::min<std::size_t>(text.size(), 128);
+// tabs to spaces. 6.996 GETFLT/GETINT consider the first 256 characters;
+// the boundary applies before '!' and tab processing.
+std::string prepareText(std::string_view text, std::size_t maxCharacters) {
+  const std::size_t limit = std::min(text.size(), maxCharacters);
   std::string prepared;
   prepared.reserve(limit);
   for (std::size_t index = 0; index < limit; ++index) {
@@ -179,9 +178,10 @@ NumericArgumentResult<T> makeOutOfRange(const std::string& token) {
 
 }  // namespace
 
-NumericArgumentResult<double> parseRealArguments(std::string_view text) {
+NumericArgumentResult<double> parseRealArguments(std::string_view text,
+                                                std::size_t maxCharacters) {
   NumericArgumentResult<double> result;
-  const std::string prepared = prepareText(text);
+  const std::string prepared = prepareText(text, maxCharacters);
 
   std::size_t position = 0;
   while (position < prepared.size()) {
@@ -215,9 +215,10 @@ NumericArgumentResult<double> parseRealArguments(std::string_view text) {
   return result;
 }
 
-NumericArgumentResult<int> parseIntegerArguments(std::string_view text) {
+NumericArgumentResult<int> parseIntegerArguments(std::string_view text,
+                                                  std::size_t maxCharacters) {
   NumericArgumentResult<int> result;
-  const std::string prepared = prepareText(text);
+  const std::string prepared = prepareText(text, maxCharacters);
 
   std::size_t position = 0;
   while (position < prepared.size()) {

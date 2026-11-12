@@ -298,6 +298,7 @@ TEST_SRCS := \
 	tests/unit/BatchConfigParserTests.cpp \
 	tests/unit/CommandParserTests.cpp \
 	tests/unit/NumericArgumentsTests.cpp \
+	tests/unit/InputCapacityS20Tests.cpp \
 	tests/unit/TypesAndLimitsTests.cpp \
 	tests/unit/OneBasedContainerTests.cpp \
 	tests/unit/FortranCompatTests.cpp \
@@ -385,6 +386,7 @@ TEST_SRCS := \
 	tests/integration/BlouCommandS16Tests.cpp \
 	tests/integration/StateInvalidationS17aTests.cpp \
 	tests/integration/SmooTargetS19Tests.cpp \
+	tests/integration/InputCapacityS20Tests.cpp \
 	tests/regression/ClarkYGoldenTests.cpp \
 	tests/regression/PaccDumpByteParityTests.cpp \
 	tests/regression/PaccInviscidDumpParityTests.cpp \

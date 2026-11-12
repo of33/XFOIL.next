@@ -748,7 +748,7 @@ void CommandInterpreter::handleMsave(const std::string& argument) {
           hasElementAnswer = true;
           break;
         }
-        const auto parsed = parseIntegerArguments(line);
+        const auto parsed = parseIntegerArguments(line, 80);
         if (parsed.success() && !parsed.values.empty()) {
           elementAnswer = line;
           hasElementAnswer = true;
@@ -1742,7 +1742,7 @@ bool CommandInterpreter::askReal(const std::string& promptText, double& value) {
     if (trimSpaces(line).empty()) {
       return true;  // empty input keeps the current value
     }
-    const auto parsed = parseRealArguments(line);
+    const auto parsed = parseRealArguments(line, 80);
     if (parsed.success() && !parsed.values.empty()) {
       value = parsed.values[0];
       return true;
@@ -1762,7 +1762,7 @@ bool CommandInterpreter::askInteger(const std::string& promptText, int& value) {
     if (!std::getline(input_, line)) {
       return false;
     }
-    const auto parsed = parseIntegerArguments(line);
+    const auto parsed = parseIntegerArguments(line, 80);
     if (parsed.success() && !parsed.values.empty()) {
       value = parsed.values[0];
       return true;

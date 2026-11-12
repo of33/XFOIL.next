@@ -31,6 +31,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -59,17 +60,21 @@ struct NumericArgumentResult {
 // invalid token:
 // "Invalid numeric argument: <token>", for overflow of the value:
 // "Numeric argument out of range: <token>". Everything after a '!' is
-// ignored, as in GETFLT/GETINT.
+// ignored, as in GETFLT/GETINT. maxCharacters defaults to the 6.996
+// GETFLT/GETINT view of 256; A80 prompt readers pass 80.
 [[nodiscard]]
 NumericArgumentResult<double> parseRealArguments(
-    std::string_view text);
+    std::string_view text,
+    std::size_t maxCharacters = 256);
 
 // Splits an argument string into int values. Fractions, exponents and
 // non-digits are invalid; values outside the int range count as a
-// range error.
+// range error. maxCharacters follows the same GETINT/A80 contract as
+// parseRealArguments.
 [[nodiscard]]
 NumericArgumentResult<int> parseIntegerArguments(
-    std::string_view text);
+    std::string_view text,
+    std::size_t maxCharacters = 256);
 
 }  // namespace xfoil::app::cli
 
