@@ -325,7 +325,7 @@ bool CommandInterpreter::loadStartupProfile(const std::string& path) {
   // format.
   core::geometry::AirfoilBuffer buffer(
       std::move(x), std::move(y), readResult.airfoil.name);
-  const auto buffered = session::setBufferGeometry(session_, buffer);
+  const auto buffered = session::setBufferOnlyGeometry(session_, buffer);
   if (!buffered.success()) {
     errorOutput_
         << "Error loading profile file \""

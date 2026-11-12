@@ -215,6 +215,16 @@ void resetBoundaryLayer(SessionComposition& session);
 GeometrySetResult setBufferGeometry(SessionComposition& session,
                                     core::geometry::AirfoilBuffer buffer);
 
+// Fortran INTE buffer commit (xfoil.f 2661-2675, 2705-2715): writes only
+// the buffer XB/YB/NB, its derived quantities, the airfoil name and the
+// buffer revision. The current panel contour, panel provenance,
+// panelSourceRevision, influence system, wake, BL, mapping, inverse,
+// polar, result and operating states remain unchanged. Errors leave the
+// previous session state untouched.
+[[nodiscard]]
+GeometrySetResult setBufferOnlyGeometry(SessionComposition& session,
+                                        core::geometry::AirfoilBuffer buffer);
+
 // Pure buffer mutation according to the
 // canonical INTX-/HALF contract. Fortran INTX (xfoil.f 2566-2580) and
 // TOP-HALF (xfoil.f 242-252) write exclusively XB/YB/NB and

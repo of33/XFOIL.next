@@ -1799,6 +1799,28 @@ BufferOnlyGeometryResult applyHalfBufferDecimation(
   return result;
 }
 
+GeometrySetResult setBufferOnlyGeometry(SessionComposition& session,
+                                        core::geometry::AirfoilBuffer buffer) {
+  GeometrySetResult result;
+  if (buffer.x.empty() || buffer.x.size() != buffer.y.size()) {
+    result.error = GeometrySetError::emptyGeometry;
+    result.message = "Buffer geometry is empty or incomplete";
+    return result;
+  }
+  if (buffer.x.size() > limits::maxInputCoordinates) {
+    result.error = GeometrySetError::tooManyPoints;
+    result.message = "Buffer exceeds the point limit";
+    return result;
+  }
+
+  const std::string name = canonicalFortranName(buffer.name);
+  commitBufferOnlyGeometry(session, std::move(buffer.x), std::move(buffer.y));
+  session.geometry.buffer.name = name;
+  session.geometry.name = name;
+  session.geometry.nameExplicitlySet = true;
+  return result;
+}
+
 SessionOperationStatus copyBufferToCurrent(SessionComposition& session) {
   SessionOperationStatus status;
   if (!session.geometry.valid) {

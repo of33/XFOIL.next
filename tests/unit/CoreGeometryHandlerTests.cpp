@@ -1766,26 +1766,46 @@ TEST(unit, CoreInteHandlerResultCoordinatesMatchFortran) {
   CHECK_EQ(got, readFileText(kInteResultRef));
 }
 
-// state contract: buffer revision incremented exactly once, panel invalidated
-// (INTE produces no current contour, no ABCOPY), panel parameters preserved.
-TEST(unit, CoreInteHandlerSetsBufferAndInvalidatesPanel) {
+// state contract: INTE writes only the buffer. The existing current panel,
+// panel provenance and analysis state remain unchanged until PCOP/PANE.
+TEST(unit, CoreInteHandlerPreservesCurrentPanelAndAnalysis) {
   session::SessionComposition composition;
   useXfoil699PanelDefaults(composition);
   std::ostringstream loadSink;
   app::cli::handleLoadCore(composition, kInteFile0, "0012src", loadSink);
-  const std::uint64_t revisionBefore = composition.geometry.bufferRevision;
   CHECK(composition.paneling.panelingValid);  // LOAD established an ABCOPY contour
+  const std::uint64_t revisionBefore = composition.geometry.bufferRevision;
+  const std::uint64_t panelRevisionBefore = composition.paneling.panelRevision;
+  const std::uint64_t panelSourceBefore = composition.paneling.panelSourceRevision;
+  const std::vector<double> panelXBefore = composition.paneling.panel.x;
+  const std::vector<double> panelYBefore = composition.paneling.panel.y;
+  const std::size_t panelCountBefore = composition.paneling.panel.x.size();
+  composition.viscous.systemValid = true;
+  composition.viscous.wakeValid = true;
+  composition.viscous.converged = true;
+  composition.viscous.viscals.lblini = true;
+  composition.result.lastResult.status = xfoil::AnalysisStatus::converged;
 
   std::ostringstream out;
   handleInteFF(composition, kInteFile0, kInteFile1, "0.5", "inte05", out);
 
   CHECK_EQ(composition.geometry.bufferRevision, revisionBefore + 1u);
   CHECK_EQ(composition.geometry.name, std::string("inte05"));
-  // canonical: INTE sets only the buffer, no current contour.
-  CHECK(!composition.paneling.panelingValid);
+  // canonical INTE: buffer only, the current contour stays installed.
+  CHECK(composition.paneling.panelingValid);
+  CHECK(composition.paneling.panel.x == panelXBefore);
+  CHECK(composition.paneling.panel.y == panelYBefore);
+  CHECK_EQ(composition.paneling.panel.x.size(), panelCountBefore);
+  CHECK_EQ(composition.paneling.panelRevision, panelRevisionBefore);
+  CHECK_EQ(composition.paneling.panelSourceRevision, panelSourceBefore);
   CHECK_EQ(static_cast<int>(composition.paneling.origin),
-           static_cast<int>(session::PanelingOrigin::none));
-  CHECK_EQ(composition.paneling.panelSourceRevision, 0u);
+           static_cast<int>(session::PanelingOrigin::abcopy));
+  // analysis state is preserved until PCOP/PANE.
+  CHECK(composition.viscous.systemValid);
+  CHECK(composition.viscous.wakeValid);
+  CHECK(composition.viscous.converged);
+  CHECK(composition.viscous.viscals.lblini);
+  CHECK(composition.result.lastResult.status == xfoil::AnalysisStatus::converged);
   // panel parameters are retained.
   CHECK_EQ(session::panelingParameters(composition).panelCount, 160);
 }

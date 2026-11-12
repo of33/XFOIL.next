@@ -350,6 +350,7 @@ TEST_SRCS := \
 	tests/unit/CoreGeometryHandlerTests.cpp \
 	tests/unit/GeometryCommandS15Tests.cpp \
 	tests/unit/BlouCommandS16Tests.cpp \
+	tests/unit/StateInvalidationS17aTests.cpp \
 	tests/unit/CoreOperHandlerTests.cpp \
 	tests/unit/CoreVparHandlerTests.cpp \
 	tests/unit/CoreOperSinglePointTests.cpp \
@@ -380,6 +381,7 @@ TEST_SRCS := \
 	tests/integration/NativeBatchTests.cpp \
 	tests/integration/GeometryCommandS15Tests.cpp \
 	tests/integration/BlouCommandS16Tests.cpp \
+	tests/integration/StateInvalidationS17aTests.cpp \
 	tests/regression/ClarkYGoldenTests.cpp \
 	tests/regression/PaccDumpByteParityTests.cpp \
 	tests/regression/PaccInviscidDumpParityTests.cpp \

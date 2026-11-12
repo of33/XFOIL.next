@@ -524,12 +524,18 @@ LoadCoreStatus handleLoadCore(session::SessionComposition& session,
     emitNormalized(out);
   }
 
-  // Buffer adoption and ABCOPY (canonical without PANGEN). After successful
-  // validation these are not missing; an unexpected failure is
-  // reported in a controlled way.
+  // Buffer adoption and ABCOPY (canonical without PANGEN). The buffer-only
+  // adoption preserves the previous current panel until ABCOPY evaluates the
+  // canonical N!=NB warm-start branch. A capacity failure is rejected before
+  // any state change.
   core::geometry::AirfoilBuffer buffer{x, y, name};
+  if (x.size() > static_cast<std::size_t>(
+                     core::paneling::kMaxAbcopyNodeCount)) {
+    emitLoadGeometryFailed(out);
+    return LoadCoreStatus::invalidGeometry;
+  }
   const GeometrySetResult set =
-      session::setBufferGeometry(session, std::move(buffer));
+      session::setBufferOnlyGeometry(session, std::move(buffer));
   if (!set.success()) {
     emitLoadGeometryFailed(out);
     return LoadCoreStatus::invalidGeometry;
@@ -1524,12 +1530,13 @@ InteCoreStatus handleInteCore(session::SessionComposition& session,
   // Completion: result only in the buffer, no ABCOPY/PANGEN.
   emitInteResultPlaced(out);
 
-  // Transactional buffer adoption (panel is invalidated, no current
-  // contour). Name set via the buffer.
+  // Transactional buffer-only adoption (xfoil.f INTE): the current panel
+  // and its analysis state stay untouched until PCOP or PANE commits the
+  // new buffer. Name set via the buffer.
   core::geometry::AirfoilBuffer buffer{std::move(result.x), std::move(result.y),
                                        resultName};
   const GeometrySetResult set =
-      session::setBufferGeometry(session, std::move(buffer));
+      session::setBufferOnlyGeometry(session, std::move(buffer));
   if (!set.success()) {
     return InteCoreStatus::invalidGeometry;
   }
