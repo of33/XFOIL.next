@@ -202,4 +202,46 @@ TEST(integration, OperSequenceStagnatingStepRunsFortranPointCount) {
            std::size_t{5});
 }
 
+TEST(integration, OperSequenceS17bBangAfterAseqRepeatsWholeSequence) {
+  const auto result = runOperSequenceSession("OPER\nASEQ 0 2 1\n!\n\nQUIT\n");
+  CHECK_EQ(result.exitCode, 0);
+  const auto points = collectPoints(result.outputText);
+  CHECK_EQ(points.size(), std::size_t{6});
+  if (points.size() == 6) {
+    CHECK_NEAR(points[0].first, 0.0, 1e-9, 0.0);
+    CHECK_NEAR(points[1].first, 1.0, 1e-9, 0.0);
+    CHECK_NEAR(points[2].first, 2.0, 1e-9, 0.0);
+    CHECK_NEAR(points[3].first, 0.0, 1e-9, 0.0);
+    CHECK_NEAR(points[4].first, 1.0, 1e-9, 0.0);
+    CHECK_NEAR(points[5].first, 2.0, 1e-9, 0.0);
+  }
+}
+
+TEST(integration, OperSequenceS17bBangAfterCseqRepeatsWholeSequence) {
+  const auto result =
+      runOperSequenceSession("OPER\nCSEQ 0.4 0.8 0.2\n!\n\nQUIT\n");
+  CHECK_EQ(result.exitCode, 0);
+  const auto points = collectPoints(result.outputText);
+  CHECK_EQ(points.size(), std::size_t{6});
+  if (points.size() == 6) {
+    CHECK_NEAR(points[0].second, 0.4, 1e-6, 0.0);
+    CHECK_NEAR(points[1].second, 0.6, 1e-6, 0.0);
+    CHECK_NEAR(points[2].second, 0.8, 1e-6, 0.0);
+    CHECK_NEAR(points[3].second, 0.4, 1e-6, 0.0);
+    CHECK_NEAR(points[4].second, 0.6, 1e-6, 0.0);
+    CHECK_NEAR(points[5].second, 0.8, 1e-6, 0.0);
+  }
+}
+
+TEST(integration, OperSequenceS17bBangAfterAliasesRepeatsWholeSequence) {
+  const auto asResult =
+      runOperSequenceSession("OPER\nAS 0 2 1\n!\n\nQUIT\n");
+  const auto csResult =
+      runOperSequenceSession("OPER\nCS 0.4 0.8 0.2\n!\n\nQUIT\n");
+  CHECK_EQ(asResult.exitCode, 0);
+  CHECK_EQ(csResult.exitCode, 0);
+  CHECK_EQ(collectPoints(asResult.outputText).size(), std::size_t{6});
+  CHECK_EQ(collectPoints(csResult.outputText).size(), std::size_t{6});
+}
+
 // end: tests/integration/OperSequenceTests.cpp

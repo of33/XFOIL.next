@@ -93,6 +93,9 @@ constexpr std::string_view kOperPlotCommands[] = {
     "CPV",  "CPVI", "BL",   "BLC",  "BLWT", "ANNO", "VPLO", "FREF",
     "PP",   "AP",   "CP",   "UE",   "VP"};
 
+constexpr std::string_view kOperSequenceCommands[] = {
+    "ASEQ", "AS", "CSEQ", "CS"};
+
 // OPER commands from the canonical list: recognized, reported as
 // plot-unavailable, and they change no state.
 // CPMN is handled by its own handler.
@@ -1242,6 +1245,10 @@ void CommandInterpreter::runOperMenu() {
         handleOperVelsCore(session_, input_, output_,
                            operRepeatCommand_->argument,
                            !operRepeatCommand_->argument.empty());
+      } else if (operRepeatCommand_ &&
+                 isOneOf(operRepeatCommand_->command,
+                         kOperSequenceCommands)) {
+        executeOperCommand(*operRepeatCommand_);
       } else {
         const auto bang = handleOperBangCore(
             session_, output_, session_.polar.accumulating);
