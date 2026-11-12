@@ -4564,50 +4564,24 @@ MdesCommandStatus mdesSmoothTargetSegment(SessionComposition& session,
     return MdesCommandStatus::notInitialized;
   }
   auto& inv = session.inverse;
-  const int kq = inv.shared.kqtarg;
-  if (kq >= inv.shared.nqsp ||
-      (kq >= 0 &&
-       static_cast<std::size_t>(kq) >= inv.shared.qspecs.size())) {
+  if (inv.shared.qspecs.empty()) {
     return MdesCommandStatus::invalidState;
   }
   auto fs = mdesSharedView(session);
   std::vector<core::inverse::QSpecDistribution> qspecs = inv.shared.qspecs;
-  if (kq < 0) {
-    // Canonical COMMON/CR07 alias: Fortran KQTARG=0 addresses
-    // QSPEC(:,0), which exactly overlays the range QGAMM(IBX).
-    // SMOO thus smooths QGAMM in place (xmdes.f 445-446), CNCALC
-    // runs on the same smoothed values, QSPCIR writes the
-    // actual columns 1..NQSP.
-    core::inverse::QSpecDistribution d;
-    d.s = fs.sspec;
-    d.q = fs.qgamm;
-    d.qp.assign(d.q.size(), 0.0);
-    const auto stA = core::inverse::smooQ(d, inv.shared.target.iq1,
-                                          inv.shared.target.iq2,
-                                          inv.flags.lqSlop);
-    if (stA.isErr()) {
-      return MdesCommandStatus::invalidState;
-    }
-    fs.qgamm = std::move(d.q);
-    const auto stB =
-        core::inverse::calcCoefficients(fs.circle, fs.qgamm,
-                                        inv.flags.lqSym);
-    if (stB.isErr()) {
-      return MdesCommandStatus::invalidState;
-    }
-  } else {
-    auto& d = qspecs[static_cast<std::size_t>(kq)];
-    const auto st1 = core::inverse::smooQ(d, inv.shared.target.iq1,
-                                          inv.shared.target.iq2,
-                                          inv.flags.lqSlop);
-    if (st1.isErr()) {
-      return MdesCommandStatus::invalidState;
-    }
-    const auto st2 =
-        core::inverse::calcCoefficients(fs.circle, d.q, inv.flags.lqSym);
-    if (st2.isErr()) {
-      return MdesCommandStatus::invalidState;
-    }
+  // SMOO always smooths QSPEC(:,1) (xmdes.f 445-446: KQSP = 1),
+  // independent of KQTARG. CNCALC consumes that first column;
+  // QSPCIR refreshes the actual columns 1..NQSP.
+  auto& d = qspecs[0];
+  const auto stSmooth = core::inverse::smooQ(
+      d, inv.shared.target.iq1, inv.shared.target.iq2, inv.flags.lqSlop);
+  if (stSmooth.isErr()) {
+    return MdesCommandStatus::invalidState;
+  }
+  const auto stCn =
+      core::inverse::calcCoefficients(fs.circle, d.q, inv.flags.lqSym);
+  if (stCn.isErr()) {
+    return MdesCommandStatus::invalidState;
   }
   mdesQspecCircAll(fs, qspecs, inv.shared.iacqsp);
   report = MdesSpectrumReport{};
@@ -4616,7 +4590,6 @@ MdesCommandStatus mdesSmoothTargetSegment(SessionComposition& session,
   report.cmgam = inv.shared.cmgam;
   mdesQspintPass(fs, qspecs, inv.shared.iacqsp, report);
   inv.shared.circle = std::move(fs.circle);
-  inv.shared.qgamm = std::move(fs.qgamm);
   inv.shared.qspecs = std::move(qspecs);
   inv.validity.qspec = QSpecValidity::present;
   inv.validity.qspecOrigin = QSpecOrigin::currentQ;

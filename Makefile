@@ -384,6 +384,7 @@ TEST_SRCS := \
 	tests/integration/GeometryCommandS15Tests.cpp \
 	tests/integration/BlouCommandS16Tests.cpp \
 	tests/integration/StateInvalidationS17aTests.cpp \
+	tests/integration/SmooTargetS19Tests.cpp \
 	tests/regression/ClarkYGoldenTests.cpp \
 	tests/regression/PaccDumpByteParityTests.cpp \
 	tests/regression/PaccInviscidDumpParityTests.cpp \

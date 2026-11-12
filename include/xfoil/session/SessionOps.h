@@ -1423,9 +1423,9 @@ bool mdesToggleSlopeMatch(SessionComposition& session);
 MdesCommandStatus mdesApplyFilter(SessionComposition& session,
                                   MdesSpectrumReport& report);
 
-// SMOO (xmdes.f 443-472): SMOOQ(IQ1,IQ2,KQTARG) in the target column,
-// CNCALC(LQSYM), QSPCIR; afterwards QSPINT update as FILT.
-// kqtarg must designate an active column (Fortran KQTARG>=1).
+// SMOO (xmdes.f 443-472): SMOOQ(IQ1,IQ2,1) always on QSPEC(:,1),
+// independent of KQTARG; CNCALC(LQSYM), QSPCIR; afterwards QSPINT
+// update as FILT.
 MdesCommandStatus mdesSmoothTargetSegment(SessionComposition& session,
                                           MdesSpectrumReport& report);
 

@@ -204,37 +204,15 @@ TEST(unit, MdesQspecColumnLimitsAndEmptyReturn) {
   CHECK_EQ(s.inverse.shared.qspecs.size(), 5u);
 }
 
-// SMOO without a valid target Q column (Fortran KQTARG>=1 prerequisite,
-// xmdes.f 444-445) stays without mutation.
-TEST(unit, MdesSmoothRequiresValidTargetColumn) {
+// S19: 6.996 SMOO always starts from QSPEC(:,1) (xmdes.f 445: KQSP=1).
+// MDES without a prior QDES run leaves KQTARG at its canonical 0 alias,
+// but QGAMM stays unchanged and the first Qspec column is smoothed.
+TEST(unit, SmooTargetS19WithoutQdesSmoothsFirstQspec) {
   SessionComposition s;
   setupPangenAirfoil(s, 2412);
   configureOper(s);
   enterMdes(s);
 
-  s.inverse.shared.kqtarg = 7;
-  session::MdesSpectrumReport report;
-  const auto before = s.inverse.shared.qspecs;
-  CHECK(session::mdesSmoothTargetSegment(s, report) ==
-        session::MdesCommandStatus::invalidState);
-  CHECK_EQ(report.columns.size(), 0u);
-  CHECK_EQ(s.inverse.shared.qspecs.size(), before.size());
-  CHECK_NEAR(s.inverse.shared.qspecs[0].q[10], before[0].q[10], 0.0, 0.0);
-}
-
-// SMOO on the active column: structural update (QSPEC changed,
-// validity present/currentQ, spline derivatives set). The
-// numerical SMOOQ accuracy is ultimately anchored;
-// the canonical MDES-only SMOO does not set Fortran KQTARG (CI01
-// null initialization), and a direct CLI anchor exists only with a prior QDES run.
-TEST(unit, MdesSmoothUpdatesActiveColumn) {
-  SessionComposition s;
-  setupPangenAirfoil(s, 2412);
-  configureOper(s);
-  enterMdes(s);
-
-  // MDES without a prior QDES run: KQTARG=0 -> COMMON alias on QGAMM.
-  // SMOO smooths QGAMM in place, not the QSPCIR column.
   CHECK_EQ(s.inverse.shared.kqtarg, -1);
   const auto qspecBefore = s.inverse.shared.qspecs[0].q;
   const auto qgammBefore = s.inverse.shared.qgamm;
@@ -242,20 +220,50 @@ TEST(unit, MdesSmoothUpdatesActiveColumn) {
   CHECK(session::mdesSmoothTargetSegment(s, report) ==
         session::MdesCommandStatus::ok);
   CHECK_EQ(report.columns.size(), 1u);
+  CHECK(s.inverse.shared.qgamm == qgammBefore);
+  CHECK(s.inverse.shared.qspecs[0].q != qspecBefore);
   CHECK(s.inverse.validity.qspec == session::QSpecValidity::present);
   CHECK(s.inverse.validity.qspecOrigin == session::QSpecOrigin::currentQ);
-  double qspecDelta = 0.0;
-  for (std::size_t i = 0; i < qspecBefore.size(); ++i) {
-    qspecDelta = std::max(qspecDelta,
-        std::abs(qspecBefore[i] - s.inverse.shared.qspecs[0].q[i]));
+}
+
+// S19: KQTARG no longer selects the SMOO column. Two identical MDES
+// states with different KQTARG values must produce identical QSPEC
+// state because both smooth QSPEC(:,1).
+TEST(unit, SmooTargetS19IgnoresKqtarg) {
+  SessionComposition zero;
+  setupPangenAirfoil(zero, 2412);
+  configureOper(zero);
+  enterMdes(zero);
+  SessionComposition two;
+  setupPangenAirfoil(two, 2412);
+  configureOper(two);
+  enterMdes(two);
+  const std::vector<double> alphas{5.0 * kDtor, 10.0 * kDtor};
+  CHECK(session::mdesSetQspecAlphas(zero, alphas) ==
+        session::MdesCommandStatus::ok);
+  CHECK(session::mdesSetQspecAlphas(two, alphas) ==
+        session::MdesCommandStatus::ok);
+  zero.inverse.shared.kqtarg = 0;
+  two.inverse.shared.kqtarg = 1;
+  session::MdesSpectrumReport zeroReport;
+  session::MdesSpectrumReport twoReport;
+  CHECK(session::mdesSmoothTargetSegment(zero, zeroReport) ==
+        session::MdesCommandStatus::ok);
+  CHECK(session::mdesSmoothTargetSegment(two, twoReport) ==
+        session::MdesCommandStatus::ok);
+  CHECK_EQ(zeroReport.columns.size(), twoReport.columns.size());
+  CHECK_EQ(zeroReport.columns.size(), 2u);
+  CHECK(zero.inverse.shared.qgamm == two.inverse.shared.qgamm);
+  CHECK_EQ(zero.inverse.shared.qspecs.size(),
+           two.inverse.shared.qspecs.size());
+  for (std::size_t k = 0; k < zero.inverse.shared.qspecs.size(); ++k) {
+    const auto& a = zero.inverse.shared.qspecs[k];
+    const auto& b = two.inverse.shared.qspecs[k];
+    CHECK(a.q == b.q);
+    CHECK_NEAR(a.al, b.al, 0.0, 0.0);
+    CHECK_NEAR(a.cl, b.cl, 0.0, 0.0);
+    CHECK_NEAR(a.cm, b.cm, 0.0, 0.0);
   }
-  CHECK(qspecDelta > 0.0);  // QSPCIR writes column from smoothed Q
-  double qgammDelta = 0.0;
-  for (std::size_t i = 0; i < qgammBefore.size(); ++i) {
-    qgammDelta = std::max(qgammDelta,
-        std::abs(qgammBefore[i] - s.inverse.shared.qgamm[i]));
-  }
-  CHECK(qgammDelta > 0.0);  // alias-column is in-place smoothed
 }
 
 // state commands: SLOP/VISC/REFL clamp only flags

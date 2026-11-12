@@ -38,7 +38,6 @@
 #include "app/cli/CoreInverseDesignHandlers.h"
 #include "xfoil/session/SessionOps.h"
 #include "xfoil/session/SessionState.h"
-#include "xfoil/io/MdesInverseFileCodec.h"
 
 #include <iostream>
 #include <sstream>
@@ -49,12 +48,6 @@ namespace {
 using namespace xfoil;
 namespace cli = xfoil::app::cli;
 namespace session = xfoil::session;
-namespace io = xfoil::io;
-
-bool contains(const std::string& text, const std::string& needle) {
-  return text.find(needle) != std::string::npos;
-}
-
 using session::SessionComposition;
 
 void setupPangenAirfoil(SessionComposition& s, int designation) {
@@ -550,46 +543,32 @@ TEST(unit, QdesRestLefindEventFlag) {
   CHECK(s.design.lgSame);
 }
 
-// KQTARG=0 COMMON alias (QGAMM column).
-
-// Fortran MDES SMOO without a prior QDES run: KQTARG=0 addresses
-// the column QSPEC(:,0) in COMMON/CR07, which exactly overlays QGAMM(IBX)
-// (XFOIL.INC 77-80). The session state models it as
-// kqtarg=-1 + QGAMM alias path; DUMP bytes against the
-// Fortran oracle (smoo.in, 3x deterministic).
-TEST(unit, MdesSmooKqtargZeroAliasesQGamm) {
+// S19: 6.996 MDES SMOO without a prior QDES run always smooths
+// QSPEC(:,1) (xmdes.f 445: KQSP=1), even though KQTARG is still 0 and
+// therefore aliases QGAMM in COMMON/CR07. QGAMM remains unchanged.
+// Exact 6.996 CLI DUMP bytes are anchored in integration.SmooTargetS19.
+TEST(unit, SmooTargetS19MdesWithoutQdesKeepsQgamm) {
   SessionComposition s;
   setupPangenAirfoil(s, 2412);
   configureOper(s);
   CHECK(session::initializeMdesNumerics(s).isOk());
   CHECK_EQ(s.inverse.shared.kqtarg, -1);
+  const auto qspecBefore = s.inverse.shared.qspecs[0].q;
   const auto qgammBefore = s.inverse.shared.qgamm;
   session::MdesSpectrumReport report;
   CHECK(session::mdesSmoothTargetSegment(s, report) ==
         session::MdesCommandStatus::ok);
-  // In-place smoothing of the alias (Fortran writes QSPEC(:,0)=QGAMM).
-  CHECK(s.inverse.shared.qgamm != qgammBefore);
-  session::MdesDumpData dump;
-  CHECK(session::currentMdesCnDumpData(s, dump) ==
-        session::MdesDumpStatus::available);
-  std::vector<io::CnDumpRow> rows;
-  for (const auto& r : dump.rows) {
-    rows.push_back(io::CnDumpRow{r.m, r.cnReal, r.cnImag, r.piqReal,
-                                 r.piqImag});
-  }
-  const std::string text = io::cnDumpText(rows);
-  CHECK(contains(text,
-                 "   0   0.000000  -0.036883   0.630521  -0.065509\n"));
-  CHECK(contains(text,
-                 "   1   0.899563  -0.003198   0.658254  -0.029856\n"));
+  CHECK_EQ(report.columns.size(), 1u);
+  CHECK(s.inverse.shared.qgamm == qgammBefore);
+  CHECK(s.inverse.shared.qspecs[0].q != qspecBefore);
+  CHECK(s.inverse.validity.qspec == session::QSpecValidity::present);
+  CHECK(s.inverse.validity.qspecOrigin == session::QSpecOrigin::currentQ);
 }
 
-// QDES entry sets KQTARG=1 (0-based 0) and LQSPEC=.TRUE.; QDES
-// is left canonically with a blank line (in the QDES menu MDES is
-// 'not recognized'). A subsequent MDES entry skips QSPCIR, and SMOO
-// smooths the actual target column (KQSP=KQTARG=1), not QGAMM.
-// oracle: s6.in (QDES, blank line, MDES, SMOO, DUMP), 3x deterministic.
-TEST(unit, MdesSmooAfterQdesUsesTargetColumn) {
+// S19: after QDES, KQTARG is 1 (0-based 0) and a subsequent MDES SMOO
+// still selects the fixed KQSP=1 column. QGAMM remains unchanged.
+// Exact 6.996 CLI DUMP bytes are anchored in integration.SmooTargetS19.
+TEST(unit, SmooTargetS19AfterQdesKeepsQgamm) {
   SessionComposition s;
   setupPangenAirfoil(s, 2412);
   configureOper(s);
@@ -598,20 +577,14 @@ TEST(unit, MdesSmooAfterQdesUsesTargetColumn) {
   session::leaveQdesMenuState(s);
   enterMdes(s);
   CHECK_EQ(s.inverse.shared.kqtarg, 0);
+  const auto qspecBefore = s.inverse.shared.qspecs[0].q;
   const auto qgammBefore = s.inverse.shared.qgamm;
   session::MdesSpectrumReport report;
   CHECK(session::mdesSmoothTargetSegment(s, report) ==
         session::MdesCommandStatus::ok);
+  CHECK_EQ(report.columns.size(), 1u);
   CHECK(s.inverse.shared.qgamm == qgammBefore);
-  session::MdesDumpData dump;
-  CHECK(session::currentMdesCnDumpData(s, dump) ==
-        session::MdesDumpStatus::available);
-  std::vector<io::CnDumpRow> rows;
-  for (const auto& r : dump.rows) {
-    rows.push_back(io::CnDumpRow{r.m, r.cnReal, r.cnImag, r.piqReal,
-                                 r.piqImag});
-  }
-  const std::string text = io::cnDumpText(rows);
-  CHECK(contains(text,
-                 "   1   0.899562  -0.003190   0.658269  -0.029857\n"));
+  CHECK(s.inverse.shared.qspecs[0].q != qspecBefore);
+  CHECK(s.inverse.validity.qspec == session::QSpecValidity::present);
+  CHECK(s.inverse.validity.qspecOrigin == session::QSpecOrigin::currentQ);
 }
