@@ -1,7 +1,7 @@
 # XFOIL 6.996 — S16 BLOU command acceptance
 
-Status: PASS — `X6996-S16` accepted. Implementation, Linux matrix,
-permanent gates and the single focused Windows process are green.
+Status: PASS — `X6996-S16` and `X6996-S16-R1` accepted. The implementation
+commit and the separate documentation-only R1 follow-up are complete.
 
 Slice: `S16` BLOU command only. SVG/DXF remain blocked by `G-EXPORT`.
 `S13` owns the BLDUMP3 format; S16 owns command activation.
@@ -87,14 +87,20 @@ and the stock trailing blank line.
 Linux:
 
 ```text
-Full suite:          2054/2054
-Reference:            236/236
-Determinism:          236/236
-Harness families:       16/16
-S16 focused unit:        2/2
-S16 focused integration: 10/10
-Permanent gates:       PASS
-Existing goldens changed: 0
+Full suite:                  2054/2054
+Reference:                    236/236
+Determinism:                  236/236
+Harness families:              16/16
+S16 focused unit:                2/2
+S16 focused integration:        10/10
+GCC 13.3 Debug:                 PASS
+GCC 13.3 Release:               PASS
+Clang 18.1.3 Debug:             PASS
+Clang 18.1.3 Release:           PASS
+ASan/UBSan:                     PASS
+Focused Valgrind:               PASS
+Permanent gates:                PASS
+Existing goldens changed:           0
 ```
 
 Exactly one focused Windows process confirmed:
@@ -104,8 +110,8 @@ integration.BlouCommandS16
 10/10, 0 failures
 ```
 
-The final commit is local only. No push, fetch, tag, release or amend is
-part of S16.
+The S16 implementation and R1 documentation commits are local only. No
+push, fetch, tag, release or amend is part of S16.
 
 ## Non-goals
 

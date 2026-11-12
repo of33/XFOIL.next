@@ -1,7 +1,7 @@
 # XFOIL 6.996 — S16 BLOU command report
 
-Status: PASS — `X6996-S16` accepted. Implementation, Linux matrix,
-permanent gates and the single focused Windows process are green.
+Status: PASS — `X6996-S16` and `X6996-S16-R1` accepted. The implementation
+commit and the separate documentation-only R1 follow-up are complete.
 
 Decision: activate only the hidden 6.996 OPER `BLOU` command on top of the
 accepted S13 BLDUMP3 writer. SVG/DXF remain excluded by `G-EXPORT`.
@@ -93,17 +93,23 @@ banner or global tolerance was changed.
 ## Linux and gate results
 
 ```text
-Full suite:             2054/2054
-Reference:               236/236
-Determinism:             236/236
-Harness families:           16/16
-S16 focused unit:            2/2
-S16 focused integration:    10/10
-Dependency gates:          PASS
-Release inventory:         PASS
-License headers:           PASS
-Public documentation:      PASS
-Existing goldens changed:     0
+Full suite:                 2054/2054
+Reference:                   236/236
+Determinism:                 236/236
+Harness families:              16/16
+S16 focused unit:                2/2
+S16 focused integration:        10/10
+GCC 13.3 Debug:                 PASS
+GCC 13.3 Release:               PASS
+Clang 18.1.3 Debug:             PASS
+Clang 18.1.3 Release:           PASS
+ASan/UBSan:                     PASS
+Focused Valgrind:               PASS
+Dependency gates:               PASS
+Release inventory:              PASS
+License headers:                PASS
+Public documentation:           PASS
+Existing goldens changed:           0
 ```
 
 The full-suite count rose from 2042 to 2054 through the 12 new S16 tests.
@@ -122,20 +128,100 @@ integration.BlouCommandS16
 No full Windows suite and no Windows golden was run. The earlier S15
 Windows process was not counted for S16.
 
-## Commit plan
+## Focused R1 acceptance — X6996-S16-R1
 
-Stage only the intended S16 files explicitly and create one local commit:
+Implementation commit: `9c58a984f147a2be166cc4941d66a911c6f2ebf5`
+
+Implementation parent: `69e77579c114ade5b48ec01b86a3180bf1566e4d`
+
+R1 start HEAD: `9c58a984f147a2be166cc4941d66a911c6f2ebf5`; worktree clean,
+staged 0, untracked 0, ahead 30 behind 0.
+
+The implementation commit was not amended, duplicated or otherwise
+changed. The R1 conclusion is a separate documentation-only follow-up
+commit with subject:
 
 ```text
-Integrate XFOIL 6.996 BLOU command
+Record X6996-S16-R1 focused acceptance
 ```
 
-No push, fetch, amend, tag or release. The final marker will be:
+That follow-up changes only the two existing S16 documents.
+
+### R1 scope
+
+- S16 activates only the hidden OPER command `BLOU`.
+- The accepted S13 BLDUMP3 writer is reused without a format rewrite.
+- `DUMP`, `DMP`, `CPWR`, BLDUMP and BLDUMP2 remain unchanged.
+- No automatic `:00.bl` sidefile and no automatic `.bl` extension were
+  added.
+- SVG and DXF were not implemented. `G-EXPORT` remains open.
+- No general export architecture, global tolerance or BL-numeric change
+  was introduced.
+- Existing goldens changed: 0.
+- Protected files and canonical 6.99 references are unchanged.
+
+### R1 fixture verification
+
+The fixture values were checked from the implementation commit objects:
 
 ```text
-X6996-S16: PASS
+blou-clark-y-re1e6-alfa4.bl
+  SHA-256: 04d81ba85130f109ef5d06f260a318f52e648bac9de7e792f1112d7047138c5d
+  size: 42704 bytes
+  lines: 177
+
+blou-no-stations.bl
+  SHA-256: f53e0956302c5cc3e153dc7b61a7874fcd5bf881083f88494b6c733b59cb7f94
+  size: 491 bytes
+  lines: 3
 ```
+
+The S16 `metadata.txt` records these values and the stock-6.996 oracle
+relationship. The no-station file keeps the canonical two header lines
+and the stock trailing blank line.
+
+### R1 acceptance
+
+```text
+Full suite:                  2054/2054
+Reference:                    236/236
+Determinism:                  236/236
+Harness families:              16/16
+S16 focused unit:                2/2
+S16 focused integration:        10/10
+GCC 13.3 Debug:                 PASS
+GCC 13.3 Release:               PASS
+Clang 18.1.3 Debug:             PASS
+Clang 18.1.3 Release:           PASS
+ASan/UBSan:                     PASS
+Focused Valgrind:               PASS
+Permanent gates:                PASS
+Existing goldens changed:           0
+```
+
+Focused Valgrind covers the established repository Valgrind target and
+the S16 integration group. No additional Windows process was run.
+
+### R1 Windows minimal policy
+
+```text
+integration.BlouCommandS16
+10/10, 0 failures
+```
+
+Exactly one focused Windows process is documented. No further Windows
+run was made for R1. No complete Windows suite and no Windows golden were
+run.
+
+### R1 protected state and publication freeze
+
+- Fortran sources, binaries and patches unchanged.
+- `tests/fortran-reference/**` unchanged.
+- Product version and banner unchanged; `v1.0.0` unchanged.
+- No global tolerance change and no existing golden change.
+- No push, fetch, amend, tag or release.
 
 ## Final decision
 
 X6996-S16: PASS
+X6996-S16-R1: PASS
