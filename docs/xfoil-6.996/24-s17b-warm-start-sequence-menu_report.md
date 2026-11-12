@@ -180,3 +180,8 @@ R1 was performed before the single S17b integration commit. It confirms:
 - Product version and banner unchanged; `v1.0.0` unchanged.
 - No global tolerance change and no existing golden change.
 - No push, fetch, amend, tag or release.
+
+## Final decision
+
+X6996-S17b: PASS
+X6996-S17b-R1: PASS
