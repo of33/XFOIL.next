@@ -1,7 +1,7 @@
 # XFOIL 6.996 — S18 text-only console contract
 
-Status: RELEASED — `G-TEXT-OFS` is decided and S18 may be implemented.
-S18 implementation has not started.
+Status: PASS — `X6996-S18` and `X6996-S18-R1` accepted. Implementation,
+Linux matrix, focused Windows process and R1 documentation check are green.
 
 Slice: `S18` of U6, group G09. Scope is the accepted text-only console
 contract: the project-specific inviscid `OFS:` output, `CLf`/`CDp` lines,

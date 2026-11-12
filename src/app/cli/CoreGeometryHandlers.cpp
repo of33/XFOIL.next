@@ -2038,9 +2038,19 @@ void emitGeoparLine(std::ostream& out,
   emitGeoparMetrics(out, session.design.work->metrics);
 }
 
-// TCBUF/TCSCAL/TCSET/HIPNT report (xtcam.f FORMAT 1000/1010): GETCAM
-// SOPPS failures first, then 2.0*TYMAX (F8.4) with trailing '/'.
+// TCBUF/TCSCAL report (xtcam.f FORMAT 1000): GETCAM SOPPS failures
+// first, then 2.0*TYMAX with the 6.996 F10.6/F8.4 fields.
 void emitTcbufReport(
+    std::ostream& out,
+    const core::geometry_design::ThicknessCamberReport& report) {
+  emitSoppsFailure(out, report.oppositePointFailures);
+  emitTcbufPlain(out, 2.0 * report.thickMax.y, report.thickMax.x,
+                 report.camberMax.y, report.camberMax.x);
+}
+
+// TCSET/HIPNT report (xtcam.f FORMAT 1000/1010): unchanged F8.4/F7.3
+// fields with the surrounding blank records.
+void emitTcbufLegacyReport(
     std::ostream& out,
     const core::geometry_design::ThicknessCamberReport& report) {
   emitSoppsFailure(out, report.oppositePointFailures);
@@ -2553,7 +2563,7 @@ GeometryDesignCoreStatus handleGeometryDesignCore(
         session.design.lpLcam = true;
       }
       const auto before = session::gdesThicknessCamberReport(session);
-      emitTcbufReport(out, before);
+      emitTcbufLegacyReport(out, before);
       std::optional<double> tnew;
       std::optional<double> cnew;
       bool proceed = true;
@@ -2651,7 +2661,7 @@ GeometryDesignCoreStatus handleGeometryDesignCore(
         out << " Proceeding anyway...\n";
       }
       const auto before = session::gdesThicknessCamberReport(session);
-      emitTcbufReport(out, before);
+      emitTcbufLegacyReport(out, before);
       double thpnt = 0.0;
       double chpnt = 0.0;
       bool proceed = true;
@@ -3300,7 +3310,7 @@ CamberDesignCoreStatus handleCamberDesignCore(
     } else if (cmd == "TSET") {
       // TCSET (xtcam.f 953-1024).
       const auto before = session::gdesThicknessCamberReport(session);
-      emitTcbufReport(out, before);
+      emitTcbufLegacyReport(out, before);
       std::optional<double> tnew;
       std::optional<double> cnew;
       bool proceed = true;
@@ -3391,7 +3401,7 @@ CamberDesignCoreStatus handleCamberDesignCore(
         out << " Proceeding anyway...\n";
       }
       const auto before = session::gdesThicknessCamberReport(session);
-      emitTcbufReport(out, before);
+      emitTcbufLegacyReport(out, before);
       double thpnt = 0.0;
       double chpnt = 0.0;
       bool proceed = true;

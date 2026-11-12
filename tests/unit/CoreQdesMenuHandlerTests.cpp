@@ -91,8 +91,6 @@ const char* const kPrompt = "\n.QDES   c>  ";
 // format 1150; oracle f_k1 (LC_ALL=C, 3x deterministic).
 const char* const kEntryText =
     " Calculating unit vorticity distributions ...\n"
-    "\n"
-    "OFS: alfa =   0.0000 cl =   0.2554 cdp =  -0.0011 cm =  -0.0557\n"
     "\n Current Q operating condition:"
     "\n alpha =    0.000 deg.      CL =   0.2554\n"
     "\n"

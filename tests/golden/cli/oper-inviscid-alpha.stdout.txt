@@ -58,7 +58,5 @@ Number of points : 151
  XFOIL   c>  
 .OPERi   c>   Calculating unit vorticity distributions ...
 
-OFS: alfa =   2.0000 cl =   0.6571 cdp =  -0.0007 cm =  -0.0911
-
 .OPERi   c>  
  XFOIL   c>  

@@ -153,7 +153,7 @@ TEST(integration, OperAliasHandlersAreProductive) {
   CHECK(result.outputText.find("Modified amplification") !=
         std::string::npos);
   // the following alfa point runs unchanged.
-  CHECK(result.outputText.find("OFS:") != std::string::npos);
+  CHECK(result.outputText.find("OFS:") == std::string::npos);
 }
 
 // FMOM/FNEW/VELS produce canonical reports/prompts;

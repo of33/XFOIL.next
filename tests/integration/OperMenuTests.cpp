@@ -146,8 +146,7 @@ TEST(integration, OperBangRepeatsPreviousCommand) {
   // COMAND=COMOLD and LRECALC=.TRUE.; the alfa branch then only calls
   // VISCAL. In inviscid mode VISCAL does not run, so the repetition
   // prints no text at all; the point was already executed.
-  CHECK_EQ(countOccurrences(result.outputText, "OFS: alfa =   2.0000"),
-           std::size_t{1});
+  CHECK(result.outputText.find("OFS:") == std::string::npos);
   CHECK(result.outputText.find("not recognized") == std::string::npos);
   CHECK(result.errorText.empty());
 }

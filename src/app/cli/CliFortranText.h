@@ -909,16 +909,6 @@ inline void emitContinueIteratingHint(std::ostream& out) {
 // the formatting uses the existing io::fortranF/fortranE/fortranI
 // helpers (asterisk fill on overflow, Fortran E exponent).
 
-// Format 333 (xoper.f 2816-2818): leading '/' produces the blank line;
-// Alfa in degrees (Alfa*180/PI in the write lists).
-inline void emitOfsSpecial(std::ostream& out, double alphaDeg, double cl,
-                           double cdp, double cm) {
-  out << "\nOFS: alfa = " << io::fortranF(8, 4, alphaDeg)
-      << " cl = " << io::fortranF(8, 4, cl)
-      << " cdp = " << io::fortranF(8, 4, cdp)
-      << " cm = " << io::fortranF(8, 4, cm) << "\n";
-}
-
 // ---C-D: MDES/QDES diagnostic texts (byte-exact) -------------------
 
 // gfortran list-directed default REAL(8) field: 17 significant digits,
@@ -1111,11 +1101,12 @@ inline void emitViscalIterationWithoutRelaxation(std::ostream& out, int iter,
       << io::fortranI(4, station) << io::fortranI(3, side) << "\n";
 }
 
-// Format 2020 (xoper.f 3108-3111): two lines without a leading '/';
-// CDp = CDPDIF = Cd - CDF per the write list (xoper.f 3012).
+// Format 2020 (xoper.f 3348-3353): two lines without a leading '/'.
+// The first CDp is CDPDIF = Cd - CDF; the appended fields are CLf,
+// CDP and CDP+CDF from the 6.996 write list.
 inline void emitViscalIterationLoads(std::ostream& out, double alphaDeg,
                                      double cl, double cm, double cd,
-                                     double cdf) {
+                                     double cdf, double clf, double cdp) {
   out << "    "
       << "   a =" << io::fortranF(7, 3, alphaDeg)
       << "      CL =" << io::fortranF(8, 4, cl) << "\n"
@@ -1123,7 +1114,10 @@ inline void emitViscalIterationLoads(std::ostream& out, double alphaDeg,
       << "  Cm =" << io::fortranF(8, 4, cm)
       << "     CD =" << io::fortranF(9, 5, cd)
       << "   =>   CDf =" << io::fortranF(9, 5, cdf)
-      << "    CDp =" << io::fortranF(9, 5, cd - cdf) << "\n";
+      << "    CDp =" << io::fortranF(9, 5, cd - cdf)
+      << "    CLf =" << io::fortranF(9, 5, clf)
+      << "   CDp =" << io::fortranF(9, 5, cdp)
+      << " CDp+CDf =" << io::fortranF(9, 5, cdp + cdf) << "\n";
 }
 
 // Format 9922 (xoper.f 3060): completion block xoper.f 3029-3057; the
@@ -1939,10 +1933,10 @@ inline void emitThicknessCamberReport(std::ostream& out, double thickMax,
 inline void emitTcbufPlain(std::ostream& out, double thickMax,
                            double thickX, double camberMax,
                            double camberX) {
-  out << " Max thickness = " << formatFortranF(8, 4, thickMax)
-      << "  at x = " << formatFortranF(7, 3, thickX) << "\n"
-      << " Max camber    = " << formatFortranF(8, 4, camberMax)
-      << "  at x = " << formatFortranF(7, 3, camberX) << "\n";
+  out << " Max thickness = " << formatFortranF(10, 6, thickMax)
+      << "  at x = " << formatFortranF(8, 4, thickX) << "\n"
+      << " Max camber    = " << formatFortranF(10, 6, camberMax)
+      << "  at x = " << formatFortranF(8, 4, camberX) << "\n";
 }
 
 // TFAC/TSET/HIGH enable the camber display (xgdes.f 438/455/472).

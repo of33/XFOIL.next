@@ -99,8 +99,6 @@
 ..VPAR   c>  
 ..VPAR   c>  
 .OPERv   c>   Calculating unit vorticity distributions ...
-
-OFS: alfa =   0.0000 cl =   0.5223 cdp =  -0.0013 cm =  -0.1125
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -202,28 +200,28 @@ OFS: alfa =   0.0000 cl =   0.5223 cdp =  -0.0013 cm =  -0.1125
 
    1   rms: 0.3592E+00   max: 0.2065E+01   D at  121  2   RLX: 0.276
        a =  0.000      CL =  0.5862
-      Cm = -0.1306     CD =  0.01196   =>   CDf =  0.00674    CDp =  0.00523
+      Cm = -0.1306     CD =  0.01196   =>   CDf =  0.00674    CDp =  0.00523    CLf =  0.00109   CDp =  0.01036 CDp+CDf =  0.01710
 
  Side 1  free  transition at x/c =  0.7338  100
  Side 2 forced transition at x/c =  1.0000  116
 
    2   rms: 0.2102E+00   max: 0.8632E+00   D at  126  2   RLX: 0.676
        a =  0.000      CL =  0.4896
-      Cm = -0.1127     CD =  0.01670   =>   CDf =  0.00692    CDp =  0.00978
+      Cm = -0.1127     CD =  0.01670   =>   CDf =  0.00692    CDp =  0.00978    CLf =  0.00110   CDp =  0.01003 CDp+CDf =  0.01695
 
  Side 1  free  transition at x/c =  0.7596  101
  Side 2 forced transition at x/c =  1.0000  117
 
    3   rms: 0.5189E-01   max: 0.3130E+00   D at  120  2
        a =  0.000      CL =  0.4811
-      Cm = -0.1103     CD =  0.01865   =>   CDf =  0.00713    CDp =  0.01152
+      Cm = -0.1103     CD =  0.01865   =>   CDf =  0.00713    CDp =  0.01152    CLf =  0.00096   CDp =  0.00963 CDp+CDf =  0.01676
 
  Side 1  free  transition at x/c =  0.7682  101
  Side 2 forced transition at x/c =  1.0000  117
 
    4   rms: 0.1551E+00   max: -.7561E+00   T at  101  1   RLX: 0.661
        a =  0.000      CL =  0.5565
-      Cm = -0.1209     CD =  0.01655   =>   CDf =  0.00704    CDp =  0.00951
+      Cm = -0.1209     CD =  0.01655   =>   CDf =  0.00704    CDp =  0.00951    CLf =  0.00095   CDp =  0.00688 CDp+CDf =  0.01391
 
  MRCHDU: Convergence failed at 106  side 1    Res =  0.4890E+01
  MRCHDU: Convergence failed at 107  side 1    Res =  0.1907E+02
@@ -251,52 +249,50 @@ OFS: alfa =   0.0000 cl =   0.5223 cdp =  -0.0013 cm =  -0.1125
 
    5   rms: 0.6791E+00   max: 0.3236E+01   T at  105  1   RLX: 0.208
        a =  0.000      CL =  0.5226
-      Cm = -0.1539     CD =  0.00947   =>   CDf =  0.00697    CDp =  0.00250
+      Cm = -0.1539     CD =  0.00947   =>   CDf =  0.00697    CDp =  0.00250    CLf =  0.00110   CDp =  0.03161 CDp+CDf =  0.03858
 
  Side 1  free  transition at x/c =  0.7667  100
  Side 2 forced transition at x/c =  1.0000  118
 
    6   rms: 0.1422E+00   max: 0.7186E+00   T at  100  1   RLX: 0.945
        a =  0.000      CL =  0.3333
-      Cm = -0.0875     CD =  0.02277   =>   CDf =  0.00698    CDp =  0.01579
+      Cm = -0.0875     CD =  0.02277   =>   CDf =  0.00698    CDp =  0.01579    CLf =  0.00093   CDp =  0.01409 CDp+CDf =  0.02107
 
  Side 1  free  transition at x/c =  0.7398   97
  Side 2 forced transition at x/c =  1.0000  119
 
    7   rms: 0.9773E+00   max: 0.5806E+01   C at  119  2   RLX: 0.087
        a =  0.000      CL =  0.3883
-      Cm = -0.0895     CD =  0.02531   =>   CDf =  0.00680    CDp =  0.01851
+      Cm = -0.0895     CD =  0.02531   =>   CDf =  0.00680    CDp =  0.01851    CLf =  0.00076   CDp =  0.00979 CDp+CDf =  0.01659
 
  Side 1  free  transition at x/c =  0.7658  100
  Side 2 forced transition at x/c =  1.0000  118
 
    8   rms: 0.1215E+00   max: 0.1052E+01   C at  118  2
        a =  0.000      CL =  0.5073
-      Cm = -0.1144     CD =  0.01794   =>   CDf =  0.00696    CDp =  0.01098
+      Cm = -0.1144     CD =  0.01794   =>   CDf =  0.00696    CDp =  0.01098    CLf =  0.00089   CDp =  0.00873 CDp+CDf =  0.01569
 
  Side 1  free  transition at x/c =  0.7734  102
  Side 2 forced transition at x/c =  1.0000  117
 
    9   rms: 0.2521E-01   max: 0.1467E+00   D at  121  2
        a =  0.000      CL =  0.4909
-      Cm = -0.1117     CD =  0.01864   =>   CDf =  0.00705    CDp =  0.01159
+      Cm = -0.1117     CD =  0.01864   =>   CDf =  0.00705    CDp =  0.01159    CLf =  0.00100   CDp =  0.00932 CDp+CDf =  0.01637
 
  Side 1  free  transition at x/c =  0.7702  102
  Side 2 forced transition at x/c =  1.0000  117
 
   10   rms: 0.3605E-02   max: -.1791E-01   C at  117  2
        a =  0.000      CL =  0.4867
-      Cm = -0.1109     CD =  0.01867   =>   CDf =  0.00703    CDp =  0.01164
+      Cm = -0.1109     CD =  0.01867   =>   CDf =  0.00703    CDp =  0.01164    CLf =  0.00096   CDp =  0.00931 CDp+CDf =  0.01634
 
  Side 1  free  transition at x/c =  0.7703  102
  Side 2 forced transition at x/c =  1.0000  117
 
   11   rms: 0.5480E-04   max: -.5332E-03   C at  117  2
        a =  0.000      CL =  0.4867
-      Cm = -0.1109     CD =  0.01867   =>   CDf =  0.00702    CDp =  0.01164
+      Cm = -0.1109     CD =  0.01867   =>   CDf =  0.00702    CDp =  0.01164    CLf =  0.00095   CDp =  0.00931 CDp+CDf =  0.01634
       9.000    8.4382   0.018667   0.004596   0.009200   0.004603    0.7703     #
-
-OFS: alfa =   0.5000 cl =   0.5841 cdp =  -0.0013 cm =  -0.1135
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -307,38 +303,36 @@ OFS: alfa =   0.5000 cl =   0.5841 cdp =  -0.0013 cm =  -0.1135
 
    1   rms: 0.9809E-01   max: -.1864E+00   n at  116  2
        a =  0.500      CL =  0.5586
-      Cm = -0.1130     CD =  0.01786   =>   CDf =  0.00701    CDp =  0.01084
+      Cm = -0.1130     CD =  0.01786   =>   CDf =  0.00701    CDp =  0.01084    CLf =  0.00091   CDp =  0.00822 CDp+CDf =  0.01523
 
  Side 1  free  transition at x/c =  0.7585  102
  Side 2 forced transition at x/c =  1.0000  116
 
    2   rms: 0.2525E-01   max: 0.1765E+00   T at  102  1
        a =  0.500      CL =  0.5361
-      Cm = -0.1096     CD =  0.01878   =>   CDf =  0.00735    CDp =  0.01143
+      Cm = -0.1096     CD =  0.01878   =>   CDf =  0.00735    CDp =  0.01143    CLf =  0.00109   CDp =  0.00900 CDp+CDf =  0.01635
 
  Side 1  free  transition at x/c =  0.7505  101
  Side 2 forced transition at x/c =  1.0000  116
 
    3   rms: 0.9567E-02   max: -.9051E-01   D at  101  1
        a =  0.500      CL =  0.5284
-      Cm = -0.1083     CD =  0.01888   =>   CDf =  0.00734    CDp =  0.01153
+      Cm = -0.1083     CD =  0.01888   =>   CDf =  0.00734    CDp =  0.01153    CLf =  0.00104   CDp =  0.00918 CDp+CDf =  0.01652
 
  Side 1  free  transition at x/c =  0.7489  101
  Side 2 forced transition at x/c =  1.0000  116
 
    4   rms: 0.2356E-02   max: 0.1382E-01   C at  116  2
        a =  0.500      CL =  0.5302
-      Cm = -0.1086     CD =  0.01880   =>   CDf =  0.00731    CDp =  0.01149
+      Cm = -0.1086     CD =  0.01880   =>   CDf =  0.00731    CDp =  0.01149    CLf =  0.00104   CDp =  0.00913 CDp+CDf =  0.01645
 
  Side 1  free  transition at x/c =  0.7494  101
  Side 2 forced transition at x/c =  1.0000  116
 
    5   rms: 0.5178E-04   max: -.3391E-03   C at  116  2
        a =  0.500      CL =  0.5302
-      Cm = -0.1086     CD =  0.01881   =>   CDf =  0.00731    CDp =  0.01150
+      Cm = -0.1086     CD =  0.01881   =>   CDf =  0.00731    CDp =  0.01150    CLf =  0.00104   CDp =  0.00913 CDp+CDf =  0.01644
       9.000    8.5118   0.018808   0.004608   0.009234   0.004626    0.7494     #
-
-OFS: alfa =   1.0000 cl =   0.6459 cdp =  -0.0013 cm =  -0.1146
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -349,31 +343,29 @@ OFS: alfa =   1.0000 cl =   0.6459 cdp =  -0.0013 cm =  -0.1146
 
    1   rms: 0.8153E-01   max: -.1404E+00   C at  116  2
        a =  1.000      CL =  0.5853
-      Cm = -0.1080     CD =  0.01869   =>   CDf =  0.00729    CDp =  0.01140
+      Cm = -0.1080     CD =  0.01869   =>   CDf =  0.00729    CDp =  0.01140    CLf =  0.00100   CDp =  0.00874 CDp+CDf =  0.01603
 
  Side 1  free  transition at x/c =  0.7329  101
  Side 2 forced transition at x/c =  1.0000  115
 
    2   rms: 0.1391E-01   max: -.1945E+00   D at  101  1
        a =  1.000      CL =  0.5863
-      Cm = -0.1081     CD =  0.01874   =>   CDf =  0.00760    CDp =  0.01115
+      Cm = -0.1081     CD =  0.01874   =>   CDf =  0.00760    CDp =  0.01115    CLf =  0.00114   CDp =  0.00877 CDp+CDf =  0.01637
 
  Side 1  free  transition at x/c =  0.7323  101
  Side 2 forced transition at x/c =  1.0000  115
 
    3   rms: 0.1082E-02   max: -.7622E-02   C at  115  2
        a =  1.000      CL =  0.5861
-      Cm = -0.1081     CD =  0.01874   =>   CDf =  0.00762    CDp =  0.01113
+      Cm = -0.1081     CD =  0.01874   =>   CDf =  0.00762    CDp =  0.01113    CLf =  0.00113   CDp =  0.00876 CDp+CDf =  0.01637
 
  Side 1  free  transition at x/c =  0.7326  101
  Side 2 forced transition at x/c =  1.0000  115
 
    4   rms: 0.1014E-04   max: -.5370E-04   D at  101  1
        a =  1.000      CL =  0.5860
-      Cm = -0.1081     CD =  0.01874   =>   CDf =  0.00761    CDp =  0.01113
+      Cm = -0.1081     CD =  0.01874   =>   CDf =  0.00761    CDp =  0.01113    CLf =  0.00113   CDp =  0.00876 CDp+CDf =  0.01637
       9.000    8.4066   0.018744   0.004656   0.009126   0.004470    0.7326     #
-
-OFS: alfa =   1.5000 cl =   0.7076 cdp =  -0.0013 cm =  -0.1157
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -384,38 +376,36 @@ OFS: alfa =   1.5000 cl =   0.7076 cdp =  -0.0013 cm =  -0.1157
 
    1   rms: 0.9696E-01   max: -.9643E-01   n at  111  2
        a =  1.500      CL =  0.6634
-      Cm = -0.1108     CD =  0.01810   =>   CDf =  0.00759    CDp =  0.01052
+      Cm = -0.1108     CD =  0.01810   =>   CDf =  0.00759    CDp =  0.01052    CLf =  0.00108   CDp =  0.00781 CDp+CDf =  0.01539
 
  Side 1  free  transition at x/c =  0.7221  101
  Side 2 forced transition at x/c =  1.0000  114
 
    2   rms: 0.3066E-01   max: 0.2179E+00   D at  103  1
        a =  1.500      CL =  0.6371
-      Cm = -0.1070     CD =  0.01916   =>   CDf =  0.00778    CDp =  0.01139
+      Cm = -0.1070     CD =  0.01916   =>   CDf =  0.00778    CDp =  0.01139    CLf =  0.00127   CDp =  0.00878 CDp+CDf =  0.01656
 
  Side 1  free  transition at x/c =  0.7135  100
  Side 2 forced transition at x/c =  1.0000  114
 
    3   rms: 0.1058E-01   max: -.1016E+00   D at  100  1
        a =  1.500      CL =  0.6274
-      Cm = -0.1054     CD =  0.01930   =>   CDf =  0.00783    CDp =  0.01147
+      Cm = -0.1054     CD =  0.01930   =>   CDf =  0.00783    CDp =  0.01147    CLf =  0.00121   CDp =  0.00901 CDp+CDf =  0.01684
 
  Side 1  free  transition at x/c =  0.7119  100
  Side 2 forced transition at x/c =  1.0000  114
 
    4   rms: 0.2620E-02   max: 0.1725E-01   C at  114  2
        a =  1.500      CL =  0.6295
-      Cm = -0.1057     CD =  0.01922   =>   CDf =  0.00780    CDp =  0.01142
+      Cm = -0.1057     CD =  0.01922   =>   CDf =  0.00780    CDp =  0.01142    CLf =  0.00121   CDp =  0.00896 CDp+CDf =  0.01676
 
  Side 1  free  transition at x/c =  0.7124  100
  Side 2 forced transition at x/c =  1.0000  114
 
    5   rms: 0.3889E-04   max: -.3046E-03   C at  114  2
        a =  1.500      CL =  0.6295
-      Cm = -0.1057     CD =  0.01922   =>   CDf =  0.00780    CDp =  0.01143
+      Cm = -0.1057     CD =  0.01922   =>   CDf =  0.00780    CDp =  0.01143    CLf =  0.00121   CDp =  0.00896 CDp+CDf =  0.01675
       9.000    8.6158   0.019222   0.004681   0.009334   0.004653    0.7124     #
-
-OFS: alfa =   2.0000 cl =   0.7692 cdp =  -0.0013 cm =  -0.1167
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -426,45 +416,43 @@ OFS: alfa =   2.0000 cl =   0.7692 cdp =  -0.0013 cm =  -0.1167
 
    1   rms: 0.8088E-01   max: -.9073E-01   C at  114  2
        a =  2.000      CL =  0.6892
-      Cm = -0.1058     CD =  0.01920   =>   CDf =  0.00776    CDp =  0.01144
+      Cm = -0.1058     CD =  0.01920   =>   CDf =  0.00776    CDp =  0.01144    CLf =  0.00116   CDp =  0.00867 CDp+CDf =  0.01644
 
  Side 1  free  transition at x/c =  0.6977  100
  Side 2 forced transition at x/c =  1.0000  113
 
    2   rms: 0.1030E-01   max: -.1629E+00   D at  100  1
        a =  2.000      CL =  0.6827
-      Cm = -0.1049     CD =  0.01953   =>   CDf =  0.00799    CDp =  0.01154
+      Cm = -0.1049     CD =  0.01953   =>   CDf =  0.00799    CDp =  0.01154    CLf =  0.00130   CDp =  0.00894 CDp+CDf =  0.01693
 
  Side 1  free  transition at x/c =  0.6954   99
  Side 2 forced transition at x/c =  1.0000  113
 
    3   rms: 0.1016E-01   max: -.4678E-01   D at  103  1
        a =  2.000      CL =  0.6900
-      Cm = -0.1059     CD =  0.01923   =>   CDf =  0.00803    CDp =  0.01120
+      Cm = -0.1059     CD =  0.01923   =>   CDf =  0.00803    CDp =  0.01120    CLf =  0.00128   CDp =  0.00866 CDp+CDf =  0.01669
 
  Side 1  free  transition at x/c =  0.6976  100
  Side 2 forced transition at x/c =  1.0000  113
 
    4   rms: 0.7104E-02   max: 0.5226E-01   D at  102  1
        a =  2.000      CL =  0.6855
-      Cm = -0.1053     CD =  0.01941   =>   CDf =  0.00802    CDp =  0.01139
+      Cm = -0.1053     CD =  0.01941   =>   CDf =  0.00802    CDp =  0.01139    CLf =  0.00129   CDp =  0.00882 CDp+CDf =  0.01685
 
  Side 1  free  transition at x/c =  0.6963  100
  Side 2 forced transition at x/c =  1.0000  113
 
    5   rms: 0.1402E-03   max: 0.1002E-02   C at  113  2
        a =  2.000      CL =  0.6855
-      Cm = -0.1053     CD =  0.01940   =>   CDf =  0.00803    CDp =  0.01138
+      Cm = -0.1053     CD =  0.01940   =>   CDf =  0.00803    CDp =  0.01138    CLf =  0.00128   CDp =  0.00883 CDp+CDf =  0.01685
 
  Side 1  free  transition at x/c =  0.6963  100
  Side 2 forced transition at x/c =  1.0000  113
 
    6   rms: 0.3012E-05   max: -.3311E-04   C at  113  2
        a =  2.000      CL =  0.6855
-      Cm = -0.1053     CD =  0.01940   =>   CDf =  0.00803    CDp =  0.01138
+      Cm = -0.1053     CD =  0.01940   =>   CDf =  0.00803    CDp =  0.01138    CLf =  0.00128   CDp =  0.00883 CDp+CDf =  0.01685
       9.000    8.6060   0.019402   0.004746   0.009337   0.004591    0.6963     #
-
-OFS: alfa =   2.5000 cl =   0.8308 cdp =  -0.0013 cm =  -0.1178
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -475,38 +463,36 @@ OFS: alfa =   2.5000 cl =   0.8308 cdp =  -0.0013 cm =  -0.1178
 
    1   rms: 0.9491E-01   max: -.8576E-01   n at  107  2
        a =  2.500      CL =  0.7616
-      Cm = -0.1079     CD =  0.01898   =>   CDf =  0.00798    CDp =  0.01100
+      Cm = -0.1079     CD =  0.01898   =>   CDf =  0.00798    CDp =  0.01100    CLf =  0.00123   CDp =  0.00806 CDp+CDf =  0.01604
 
  Side 1  free  transition at x/c =  0.6859  100
  Side 2 forced transition at x/c =  1.0000  112
 
    2   rms: 0.2964E-01   max: 0.2216E+00   D at  102  1
        a =  2.500      CL =  0.7356
-      Cm = -0.1042     CD =  0.02005   =>   CDf =  0.00811    CDp =  0.01194
+      Cm = -0.1042     CD =  0.02005   =>   CDf =  0.00811    CDp =  0.01194    CLf =  0.00142   CDp =  0.00908 CDp+CDf =  0.01719
 
  Side 1  free  transition at x/c =  0.6785   99
  Side 2 forced transition at x/c =  1.0000  112
 
    3   rms: 0.9031E-02   max: -.8804E-01   D at   99  1
        a =  2.500      CL =  0.7285
-      Cm = -0.1030     CD =  0.02013   =>   CDf =  0.00817    CDp =  0.01195
+      Cm = -0.1030     CD =  0.02013   =>   CDf =  0.00817    CDp =  0.01195    CLf =  0.00136   CDp =  0.00927 CDp+CDf =  0.01745
 
  Side 1  free  transition at x/c =  0.6773   99
  Side 2 forced transition at x/c =  1.0000  112
 
    4   rms: 0.1392E-02   max: 0.9603E-02   C at  112  2
        a =  2.500      CL =  0.7297
-      Cm = -0.1032     CD =  0.02008   =>   CDf =  0.00813    CDp =  0.01195
+      Cm = -0.1032     CD =  0.02008   =>   CDf =  0.00813    CDp =  0.01195    CLf =  0.00136   CDp =  0.00924 CDp+CDf =  0.01737
 
  Side 1  free  transition at x/c =  0.6775   99
  Side 2 forced transition at x/c =  1.0000  112
 
    5   rms: 0.1476E-04   max: -.1488E-03   C at  112  2
        a =  2.500      CL =  0.7297
-      Cm = -0.1032     CD =  0.02008   =>   CDf =  0.00813    CDp =  0.01195
+      Cm = -0.1032     CD =  0.02008   =>   CDf =  0.00813    CDp =  0.01195    CLf =  0.00136   CDp =  0.00924 CDp+CDf =  0.01737
       9.000    8.8706   0.020081   0.004789   0.009629   0.004840    0.6775     #
-
-OFS: alfa =   3.0000 cl =   0.8923 cdp =  -0.0014 cm =  -0.1189
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -517,31 +503,29 @@ OFS: alfa =   3.0000 cl =   0.8923 cdp =  -0.0014 cm =  -0.1189
 
    1   rms: 0.7444E-01   max: -.1338E+00   C at  112  2
        a =  3.000      CL =  0.7802
-      Cm = -0.1020     CD =  0.02058   =>   CDf =  0.00808    CDp =  0.01250
+      Cm = -0.1020     CD =  0.02058   =>   CDf =  0.00808    CDp =  0.01250    CLf =  0.00130   CDp =  0.00947 CDp+CDf =  0.01754
 
  Side 1  free  transition at x/c =  0.6615   99
  Side 2 forced transition at x/c =  1.0000  111
 
    2   rms: 0.1482E-01   max: -.1972E+00   D at   99  1
        a =  3.000      CL =  0.7835
-      Cm = -0.1025     CD =  0.02047   =>   CDf =  0.00826    CDp =  0.01220
+      Cm = -0.1025     CD =  0.02047   =>   CDf =  0.00826    CDp =  0.01220    CLf =  0.00143   CDp =  0.00936 CDp+CDf =  0.01762
 
  Side 1  free  transition at x/c =  0.6616   99
  Side 2 forced transition at x/c =  1.0000  111
 
    3   rms: 0.6539E-03   max: -.4872E-02   C at  111  2
        a =  3.000      CL =  0.7830
-      Cm = -0.1025     CD =  0.02051   =>   CDf =  0.00827    CDp =  0.01223
+      Cm = -0.1025     CD =  0.02051   =>   CDf =  0.00827    CDp =  0.01223    CLf =  0.00143   CDp =  0.00937 CDp+CDf =  0.01764
 
  Side 1  free  transition at x/c =  0.6616   99
  Side 2 forced transition at x/c =  1.0000  111
 
    4   rms: 0.6526E-05   max: 0.9460E-04   C at  111  2
        a =  3.000      CL =  0.7830
-      Cm = -0.1025     CD =  0.02050   =>   CDf =  0.00827    CDp =  0.01223
+      Cm = -0.1025     CD =  0.02050   =>   CDf =  0.00827    CDp =  0.01223    CLf =  0.00143   CDp =  0.00937 CDp+CDf =  0.01764
       9.000    8.9474   0.020505   0.004861   0.009748   0.004887    0.6616     #
-
-OFS: alfa =   3.5000 cl =   0.9538 cdp =  -0.0014 cm =  -0.1200
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -552,38 +536,36 @@ OFS: alfa =   3.5000 cl =   0.9538 cdp =  -0.0014 cm =  -0.1200
 
    1   rms: 0.8681E-01   max: -.4924E-01   D at  118  2
        a =  3.500      CL =  0.8518
-      Cm = -0.1040     CD =  0.02038   =>   CDf =  0.00821    CDp =  0.01217
+      Cm = -0.1040     CD =  0.02038   =>   CDf =  0.00821    CDp =  0.01217    CLf =  0.00136   CDp =  0.00892 CDp+CDf =  0.01713
 
  Side 1  free  transition at x/c =  0.6501   99
  Side 2 forced transition at x/c =  1.0000  110
 
    2   rms: 0.2196E-01   max: 0.1497E+00   D at  101  1
        a =  3.500      CL =  0.8314
-      Cm = -0.1011     CD =  0.02128   =>   CDf =  0.00834    CDp =  0.01295
+      Cm = -0.1011     CD =  0.02128   =>   CDf =  0.00834    CDp =  0.01295    CLf =  0.00153   CDp =  0.00976 CDp+CDf =  0.01810
 
  Side 1  free  transition at x/c =  0.6449   98
  Side 2 forced transition at x/c =  1.0000  110
 
    3   rms: 0.5392E-02   max: -.6166E-01   D at   98  1
        a =  3.500      CL =  0.8347
-      Cm = -0.1015     CD =  0.02106   =>   CDf =  0.00840    CDp =  0.01266
+      Cm = -0.1015     CD =  0.02106   =>   CDf =  0.00840    CDp =  0.01266    CLf =  0.00148   CDp =  0.00963 CDp+CDf =  0.01803
 
  Side 1  free  transition at x/c =  0.6457   98
  Side 2 forced transition at x/c =  1.0000  110
 
    4   rms: 0.1296E-02   max: 0.6353E-02   D at  101  1
        a =  3.500      CL =  0.8337
-      Cm = -0.1014     CD =  0.02111   =>   CDf =  0.00837    CDp =  0.01273
+      Cm = -0.1014     CD =  0.02111   =>   CDf =  0.00837    CDp =  0.01273    CLf =  0.00149   CDp =  0.00967 CDp+CDf =  0.01804
 
  Side 1  free  transition at x/c =  0.6455   98
  Side 2 forced transition at x/c =  1.0000  110
 
    5   rms: 0.2160E-04   max: 0.2331E-03   C at  110  2
        a =  3.500      CL =  0.8337
-      Cm = -0.1014     CD =  0.02110   =>   CDf =  0.00837    CDp =  0.01273
+      Cm = -0.1014     CD =  0.02110   =>   CDf =  0.00837    CDp =  0.01273    CLf =  0.00149   CDp =  0.00967 CDp+CDf =  0.01803
       9.000    9.0877   0.021103   0.004928   0.009953   0.005025    0.6455     #
-
-OFS: alfa =   4.0000 cl =   1.0152 cdp =  -0.0014 cm =  -0.1211
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -594,14 +576,14 @@ OFS: alfa =   4.0000 cl =   1.0152 cdp =  -0.0014 cm =  -0.1211
 
    1   rms: 0.8299E-01   max: 0.5468E+00   T at   98  1
        a =  4.000      CL =  0.8405
-      Cm = -0.0941     CD =  0.02351   =>   CDf =  0.00830    CDp =  0.01521
+      Cm = -0.0941     CD =  0.02351   =>   CDf =  0.00830    CDp =  0.01521    CLf =  0.00143   CDp =  0.01173 CDp+CDf =  0.02002
 
  Side 1  free  transition at x/c =  0.6221   97
  Side 2 forced transition at x/c =  1.0000  109
 
    2   rms: 0.1272E+00   max: -.5113E+00   D at  103  1   RLX: 0.978
        a =  4.000      CL =  0.9200
-      Cm = -0.1042     CD =  0.01972   =>   CDf =  0.00834    CDp =  0.01138
+      Cm = -0.1042     CD =  0.01972   =>   CDf =  0.00834    CDp =  0.01138    CLf =  0.00153   CDp =  0.00762 CDp+CDf =  0.01596
 
  MRCHDU: Convergence failed at 101  side 1    Res =  0.1353E+01
  MRCHDU: Convergence failed at 102  side 1    Res =  0.1082E+02
@@ -641,45 +623,43 @@ OFS: alfa =   4.0000 cl =   1.0152 cdp =  -0.0014 cm =  -0.1211
 
    3   rms: 0.4726E+00   max: 0.2076E+01   D at  133  1   RLX: 0.388
        a =  4.000      CL =  1.0028
-      Cm = -0.1741     CD =  0.00921   =>   CDf =  0.00780    CDp =  0.00141
+      Cm = -0.1741     CD =  0.00921   =>   CDf =  0.00780    CDp =  0.00141    CLf =  0.00182   CDp =  0.05080 CDp+CDf =  0.05860
 
  Side 1  free  transition at x/c =  0.6399   99
  Side 2 forced transition at x/c =  1.0000  109
 
    4   rms: 0.2480E+00   max: 0.8068E+00   C at  109  2
        a =  4.000      CL =  0.9903
-      Cm = -0.1196     CD =  0.01512   =>   CDf =  0.01011    CDp =  0.00500
+      Cm = -0.1196     CD =  0.01512   =>   CDf =  0.01011    CDp =  0.00500    CLf =  0.00101   CDp =  0.00865 CDp+CDf =  0.01876
 
  Side 1  free  transition at x/c =  0.6341   99
  Side 2 forced transition at x/c =  1.0000  108
 
    5   rms: 0.9424E-01   max: -.3789E+00   C at  108  2
        a =  4.000      CL =  0.8787
-      Cm = -0.0999     CD =  0.02218   =>   CDf =  0.00850    CDp =  0.01368
+      Cm = -0.0999     CD =  0.02218   =>   CDf =  0.00850    CDp =  0.01368    CLf =  0.00169   CDp =  0.01045 CDp+CDf =  0.01895
 
  Side 1  free  transition at x/c =  0.6271   98
  Side 2 forced transition at x/c =  1.0000  109
 
    6   rms: 0.7857E-02   max: -.5858E-01   D at  100  1
        a =  4.000      CL =  0.8803
-      Cm = -0.0998     CD =  0.02188   =>   CDf =  0.00840    CDp =  0.01348
+      Cm = -0.0998     CD =  0.02188   =>   CDf =  0.00840    CDp =  0.01348    CLf =  0.00156   CDp =  0.01018 CDp+CDf =  0.01858
 
  Side 1  free  transition at x/c =  0.6285   98
  Side 2 forced transition at x/c =  1.0000  109
 
    7   rms: 0.4613E-03   max: -.3457E-02   D at    3  2
        a =  4.000      CL =  0.8805
-      Cm = -0.0998     CD =  0.02188   =>   CDf =  0.00840    CDp =  0.01348
+      Cm = -0.0998     CD =  0.02188   =>   CDf =  0.00840    CDp =  0.01348    CLf =  0.00156   CDp =  0.01016 CDp+CDf =  0.01856
 
  Side 1  free  transition at x/c =  0.6285   98
  Side 2 forced transition at x/c =  1.0000  109
 
    8   rms: 0.4704E-05   max: -.2439E-04   D at  133  1
        a =  4.000      CL =  0.8805
-      Cm = -0.0998     CD =  0.02188   =>   CDf =  0.00840    CDp =  0.01348
+      Cm = -0.0998     CD =  0.02188   =>   CDf =  0.00840    CDp =  0.01348    CLf =  0.00156   CDp =  0.01016 CDp+CDf =  0.01856
       9.000    9.2953   0.021879   0.004986   0.010240   0.005254    0.6285     #
-
-OFS: alfa =   4.5000 cl =   1.0765 cdp =  -0.0014 cm =  -0.1222
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -690,31 +670,29 @@ OFS: alfa =   4.5000 cl =   1.0765 cdp =  -0.0014 cm =  -0.1222
 
    1   rms: 0.7468E-01   max: -.9928E-01   C at  109  2
        a =  4.500      CL =  0.9335
-      Cm = -0.0991     CD =  0.02242   =>   CDf =  0.00831    CDp =  0.01411
+      Cm = -0.0991     CD =  0.02242   =>   CDf =  0.00831    CDp =  0.01411    CLf =  0.00149   CDp =  0.01041 CDp+CDf =  0.01872
 
  Side 1  free  transition at x/c =  0.6138   98
  Side 2 forced transition at x/c =  1.0000  108
 
    2   rms: 0.1262E-01   max: -.1859E+00   D at   98  1
        a =  4.500      CL =  0.9333
-      Cm = -0.0991     CD =  0.02245   =>   CDf =  0.00845    CDp =  0.01401
+      Cm = -0.0991     CD =  0.02245   =>   CDf =  0.00845    CDp =  0.01401    CLf =  0.00162   CDp =  0.01043 CDp+CDf =  0.01888
 
  Side 1  free  transition at x/c =  0.6130   98
  Side 2 forced transition at x/c =  1.0000  108
 
    3   rms: 0.5827E-03   max: -.4784E-02   D at   98  1
        a =  4.500      CL =  0.9333
-      Cm = -0.0991     CD =  0.02246   =>   CDf =  0.00847    CDp =  0.01399
+      Cm = -0.0991     CD =  0.02246   =>   CDf =  0.00847    CDp =  0.01399    CLf =  0.00161   CDp =  0.01041 CDp+CDf =  0.01888
 
  Side 1  free  transition at x/c =  0.6131   98
  Side 2 forced transition at x/c =  1.0000  108
 
    4   rms: 0.6142E-05   max: 0.3832E-04   C at  108  2
        a =  4.500      CL =  0.9333
-      Cm = -0.0991     CD =  0.02246   =>   CDf =  0.00847    CDp =  0.01399
+      Cm = -0.0991     CD =  0.02246   =>   CDf =  0.00847    CDp =  0.01399    CLf =  0.00161   CDp =  0.01041 CDp+CDf =  0.01888
       9.000    9.3488   0.022460   0.005062   0.010389   0.005328    0.6131     #
-
-OFS: alfa =   5.0000 cl =   1.1377 cdp =  -0.0014 cm =  -0.1234
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -725,38 +703,36 @@ OFS: alfa =   5.0000 cl =   1.1377 cdp =  -0.0014 cm =  -0.1234
 
    1   rms: 0.8769E-01   max: -.4695E-01   D at  115  2
        a =  5.000      CL =  1.0031
-      Cm = -0.1007     CD =  0.02237   =>   CDf =  0.00837    CDp =  0.01400
+      Cm = -0.1007     CD =  0.02237   =>   CDf =  0.00837    CDp =  0.01400    CLf =  0.00155   CDp =  0.00996 CDp+CDf =  0.01833
 
  Side 1  free  transition at x/c =  0.6016   98
  Side 2 forced transition at x/c =  1.0000  107
 
    2   rms: 0.2356E-01   max: 0.1570E+00   D at  100  1
        a =  5.000      CL =  0.9809
-      Cm = -0.0976     CD =  0.02340   =>   CDf =  0.00845    CDp =  0.01495
+      Cm = -0.0976     CD =  0.02340   =>   CDf =  0.00845    CDp =  0.01495    CLf =  0.00171   CDp =  0.01091 CDp+CDf =  0.01936
 
  Side 1  free  transition at x/c =  0.5968   97
  Side 2 forced transition at x/c =  1.0000  107
 
    3   rms: 0.6172E-02   max: -.5905E-01   D at   97  1
        a =  5.000      CL =  0.9851
-      Cm = -0.0982     CD =  0.02311   =>   CDf =  0.00852    CDp =  0.01459
+      Cm = -0.0982     CD =  0.02311   =>   CDf =  0.00852    CDp =  0.01459    CLf =  0.00165   CDp =  0.01073 CDp+CDf =  0.01925
 
  Side 1  free  transition at x/c =  0.5976   97
  Side 2 forced transition at x/c =  1.0000  107
 
    4   rms: 0.9555E-03   max: 0.4555E-02   D at  100  1
        a =  5.000      CL =  0.9844
-      Cm = -0.0981     CD =  0.02315   =>   CDf =  0.00850    CDp =  0.01465
+      Cm = -0.0981     CD =  0.02315   =>   CDf =  0.00850    CDp =  0.01465    CLf =  0.00167   CDp =  0.01076 CDp+CDf =  0.01926
 
  Side 1  free  transition at x/c =  0.5975   97
  Side 2 forced transition at x/c =  1.0000  107
 
    5   rms: 0.7208E-05   max: 0.5164E-04   T at   97  1
        a =  5.000      CL =  0.9844
-      Cm = -0.0981     CD =  0.02315   =>   CDf =  0.00850    CDp =  0.01465
+      Cm = -0.0981     CD =  0.02315   =>   CDf =  0.00850    CDp =  0.01465    CLf =  0.00167   CDp =  0.01076 CDp+CDf =  0.01925
       9.000    9.4236   0.023150   0.005134   0.010580   0.005445    0.5975     #
-
-OFS: alfa =   5.5000 cl =   1.1989 cdp =  -0.0014 cm =  -0.1245
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -767,14 +743,14 @@ OFS: alfa =   5.5000 cl =   1.1989 cdp =  -0.0014 cm =  -0.1245
 
    1   rms: 0.9269E-01   max: 0.6048E+00   T at   97  1
        a =  5.500      CL =  0.9792
-      Cm = -0.0892     CD =  0.02621   =>   CDf =  0.00839    CDp =  0.01782
+      Cm = -0.0892     CD =  0.02621   =>   CDf =  0.00839    CDp =  0.01782    CLf =  0.00160   CDp =  0.01341 CDp+CDf =  0.02180
 
  Side 1  free  transition at x/c =  0.5739   96
  Side 2 forced transition at x/c =  1.0000  106
 
    2   rms: 0.1710E+00   max: -.6023E+00   D at  102  1   RLX: 0.830
        a =  5.500      CL =  1.0692
-      Cm = -0.1000     CD =  0.02173   =>   CDf =  0.00832    CDp =  0.01341
+      Cm = -0.1000     CD =  0.02173   =>   CDf =  0.00832    CDp =  0.01341    CLf =  0.00171   CDp =  0.00823 CDp+CDf =  0.01655
 
  MRCHDU: Convergence failed at 100  side 1    Res =  0.1427E+01
  MRCHDU: Convergence failed at 101  side 1    Res =  0.4242E+01
@@ -818,45 +794,43 @@ OFS: alfa =   5.5000 cl =   1.1989 cdp =  -0.0014 cm =  -0.1245
 
    3   rms: 0.5325E+00   max: 0.2244E+01   D at  136  1   RLX: 0.356
        a =  5.500      CL =  1.2043
-      Cm = -0.1960     CD =  0.00918   =>   CDf =  0.00765    CDp =  0.00153
+      Cm = -0.1960     CD =  0.00918   =>   CDf =  0.00765    CDp =  0.00153    CLf =  0.00206   CDp =  0.06947 CDp+CDf =  0.07712
 
  Side 1  free  transition at x/c =  0.5902   98
  Side 2 forced transition at x/c =  1.0000  106
 
    4   rms: 0.2788E+00   max: 0.8680E+00   C at  106  2
        a =  5.500      CL =  1.1577
-      Cm = -0.1191     CD =  0.01569   =>   CDf =  0.01065    CDp =  0.00504
+      Cm = -0.1191     CD =  0.01569   =>   CDf =  0.01065    CDp =  0.00504    CLf =  0.00098   CDp =  0.00955 CDp+CDf =  0.02020
 
  Side 1  free  transition at x/c =  0.5840   98
  Side 2 forced transition at x/c =  1.0000  105
 
    5   rms: 0.1040E+00   max: -.4399E+00   C at  105  2
        a =  5.500      CL =  1.0361
-      Cm = -0.0979     CD =  0.02421   =>   CDf =  0.00853    CDp =  0.01568
+      Cm = -0.0979     CD =  0.02421   =>   CDf =  0.00853    CDp =  0.01568    CLf =  0.00187   CDp =  0.01158 CDp+CDf =  0.02011
 
  Side 1  free  transition at x/c =  0.5796   97
  Side 2 forced transition at x/c =  1.0000  106
 
    6   rms: 0.8573E-02   max: -.1101E+00   C at  106  2
        a =  5.500      CL =  1.0287
-      Cm = -0.0962     CD =  0.02410   =>   CDf =  0.00844    CDp =  0.01566
+      Cm = -0.0962     CD =  0.02410   =>   CDf =  0.00844    CDp =  0.01566    CLf =  0.00173   CDp =  0.01140 CDp+CDf =  0.01984
 
  Side 1  free  transition at x/c =  0.5803   97
  Side 2 forced transition at x/c =  1.0000  106
 
    7   rms: 0.3795E-03   max: -.4090E-02   D at    3  2
        a =  5.500      CL =  1.0286
-      Cm = -0.0962     CD =  0.02410   =>   CDf =  0.00844    CDp =  0.01566
+      Cm = -0.0962     CD =  0.02410   =>   CDf =  0.00844    CDp =  0.01566    CLf =  0.00173   CDp =  0.01139 CDp+CDf =  0.01983
 
  Side 1  free  transition at x/c =  0.5803   97
  Side 2 forced transition at x/c =  1.0000  106
 
    8   rms: 0.2996E-05   max: -.2104E-04   D at  136  1
        a =  5.500      CL =  1.0286
-      Cm = -0.0962     CD =  0.02410   =>   CDf =  0.00844    CDp =  0.01566
+      Cm = -0.0962     CD =  0.02410   =>   CDf =  0.00844    CDp =  0.01566    CLf =  0.00173   CDp =  0.01139 CDp+CDf =  0.01983
       9.000    9.6017   0.024098   0.005189   0.010882   0.005693    0.5803     #
-
-OFS: alfa =   6.0000 cl =   1.2599 cdp =  -0.0014 cm =  -0.1256
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -867,31 +841,29 @@ OFS: alfa =   6.0000 cl =   1.2599 cdp =  -0.0014 cm =  -0.1256
 
    1   rms: 0.7353E-01   max: 0.3787E+00   T at   97  1
        a =  6.000      CL =  1.0790
-      Cm = -0.0951     CD =  0.02479   =>   CDf =  0.00832    CDp =  0.01647
+      Cm = -0.0951     CD =  0.02479   =>   CDf =  0.00832    CDp =  0.01647    CLf =  0.00166   CDp =  0.01175 CDp+CDf =  0.02007
 
  Side 1  free  transition at x/c =  0.5646   97
  Side 2 forced transition at x/c =  1.0000  105
 
    2   rms: 0.1991E-01   max: -.2195E+00   D at   97  1
        a =  6.000      CL =  1.0827
-      Cm = -0.0956     CD =  0.02462   =>   CDf =  0.00842    CDp =  0.01620
+      Cm = -0.0956     CD =  0.02462   =>   CDf =  0.00842    CDp =  0.01620    CLf =  0.00178   CDp =  0.01158 CDp+CDf =  0.01999
 
  Side 1  free  transition at x/c =  0.5646   97
  Side 2 forced transition at x/c =  1.0000  105
 
    3   rms: 0.1506E-02   max: 0.9173E-02   D at  100  1
        a =  6.000      CL =  1.0812
-      Cm = -0.0954     CD =  0.02472   =>   CDf =  0.00845    CDp =  0.01626
+      Cm = -0.0954     CD =  0.02472   =>   CDf =  0.00845    CDp =  0.01626    CLf =  0.00177   CDp =  0.01161 CDp+CDf =  0.02007
 
  Side 1  free  transition at x/c =  0.5645   97
  Side 2 forced transition at x/c =  1.0000  105
 
    4   rms: 0.1136E-04   max: -.6078E-04   D at  108  2
        a =  6.000      CL =  1.0813
-      Cm = -0.0954     CD =  0.02471   =>   CDf =  0.00846    CDp =  0.01626
+      Cm = -0.0954     CD =  0.02471   =>   CDf =  0.00846    CDp =  0.01626    CLf =  0.00177   CDp =  0.01161 CDp+CDf =  0.02007
       9.000    9.5408   0.024714   0.005270   0.010971   0.005701    0.5645     #
-
-OFS: alfa =   6.5000 cl =   1.3209 cdp =  -0.0014 cm =  -0.1267
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -902,38 +874,36 @@ OFS: alfa =   6.5000 cl =   1.3209 cdp =  -0.0014 cm =  -0.1267
 
    1   rms: 0.9335E-01   max: -.6119E-01   D at  113  2
        a =  6.500      CL =  1.1560
-      Cm = -0.0977     CD =  0.02441   =>   CDf =  0.00833    CDp =  0.01608
+      Cm = -0.0977     CD =  0.02441   =>   CDf =  0.00833    CDp =  0.01608    CLf =  0.00170   CDp =  0.01087 CDp+CDf =  0.01920
 
  Side 1  free  transition at x/c =  0.5520   97
  Side 2 forced transition at x/c =  1.0000  104
 
    2   rms: 0.2452E-01   max: 0.1640E+00   D at   99  1
        a =  6.500      CL =  1.1339
-      Cm = -0.0948     CD =  0.02554   =>   CDf =  0.00835    CDp =  0.01719
+      Cm = -0.0948     CD =  0.02554   =>   CDf =  0.00835    CDp =  0.01719    CLf =  0.00187   CDp =  0.01190 CDp+CDf =  0.02025
 
  Side 1  free  transition at x/c =  0.5479   96
  Side 2 forced transition at x/c =  1.0000  104
 
    3   rms: 0.8525E-02   max: -.5302E-01   D at   96  1
        a =  6.500      CL =  1.1274
-      Cm = -0.0937     CD =  0.02560   =>   CDf =  0.00846    CDp =  0.01714
+      Cm = -0.0937     CD =  0.02560   =>   CDf =  0.00846    CDp =  0.01714    CLf =  0.00180   CDp =  0.01207 CDp+CDf =  0.02053
 
  Side 1  free  transition at x/c =  0.5474   96
  Side 2 forced transition at x/c =  1.0000  104
 
    4   rms: 0.1549E-03   max: 0.1494E-02   T at   96  1
        a =  6.500      CL =  1.1275
-      Cm = -0.0937     CD =  0.02559   =>   CDf =  0.00840    CDp =  0.01719
+      Cm = -0.0937     CD =  0.02559   =>   CDf =  0.00840    CDp =  0.01719    CLf =  0.00182   CDp =  0.01208 CDp+CDf =  0.02048
 
  Side 1  free  transition at x/c =  0.5474   96
  Side 2 forced transition at x/c =  1.0000  104
 
    5   rms: 0.2050E-05   max: 0.1497E-04   D at  138  1
        a =  6.500      CL =  1.1275
-      Cm = -0.0937     CD =  0.02559   =>   CDf =  0.00840    CDp =  0.01719
+      Cm = -0.0937     CD =  0.02559   =>   CDf =  0.00840    CDp =  0.01719    CLf =  0.00182   CDp =  0.01208 CDp+CDf =  0.02048
       9.000    9.5713   0.025585   0.005334   0.011167   0.005833    0.5474     #
-
-OFS: alfa =   7.0000 cl =   1.3817 cdp =  -0.0014 cm =  -0.1279
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -944,45 +914,43 @@ OFS: alfa =   7.0000 cl =   1.3817 cdp =  -0.0014 cm =  -0.1279
 
    1   rms: 0.7353E-01   max: 0.5241E+00   T at   96  1
        a =  7.000      CL =  1.1405
-      Cm = -0.0874     CD =  0.02788   =>   CDf =  0.00826    CDp =  0.01962
+      Cm = -0.0874     CD =  0.02788   =>   CDf =  0.00826    CDp =  0.01962    CLf =  0.00175   CDp =  0.01391 CDp+CDf =  0.02217
 
  Side 1  free  transition at x/c =  0.5262   95
  Side 2 forced transition at x/c =  1.0000  103
 
    2   rms: 0.1121E+00   max: -.4071E+00   D at   96  1
        a =  7.000      CL =  1.2169
-      Cm = -0.0974     CD =  0.02411   =>   CDf =  0.00828    CDp =  0.01583
+      Cm = -0.0974     CD =  0.02411   =>   CDf =  0.00828    CDp =  0.01583    CLf =  0.00185   CDp =  0.01012 CDp+CDf =  0.01840
 
  Side 1  free  transition at x/c =  0.5383   96
  Side 2 forced transition at x/c =  1.0000  103
 
    3   rms: 0.1104E+00   max: 0.5608E+00   D at   98  1
        a =  7.000      CL =  1.1389
-      Cm = -0.0865     CD =  0.02793   =>   CDf =  0.00853    CDp =  0.01940
+      Cm = -0.0865     CD =  0.02793   =>   CDf =  0.00853    CDp =  0.01940    CLf =  0.00185   CDp =  0.01348 CDp+CDf =  0.02201
 
  Side 1  free  transition at x/c =  0.5269   96
  Side 2 forced transition at x/c =  1.0000  103
 
    4   rms: 0.3944E-01   max: -.1945E+00   D at  100  1
        a =  7.000      CL =  1.1779
-      Cm = -0.0928     CD =  0.02630   =>   CDf =  0.00843    CDp =  0.01787
+      Cm = -0.0928     CD =  0.02630   =>   CDf =  0.00843    CDp =  0.01787    CLf =  0.00180   CDp =  0.01245 CDp+CDf =  0.02088
 
  Side 1  free  transition at x/c =  0.5294   96
  Side 2 forced transition at x/c =  1.0000  103
 
    5   rms: 0.3242E-02   max: -.3430E-01   C at  103  2
        a =  7.000      CL =  1.1747
-      Cm = -0.0921     CD =  0.02634   =>   CDf =  0.00835    CDp =  0.01800
+      Cm = -0.0921     CD =  0.02634   =>   CDf =  0.00835    CDp =  0.01800    CLf =  0.00186   CDp =  0.01241 CDp+CDf =  0.02076
 
  Side 1  free  transition at x/c =  0.5297   96
  Side 2 forced transition at x/c =  1.0000  103
 
    6   rms: 0.5250E-04   max: -.2271E-03   D at  131  1
        a =  7.000      CL =  1.1748
-      Cm = -0.0921     CD =  0.02634   =>   CDf =  0.00834    CDp =  0.01800
+      Cm = -0.0921     CD =  0.02634   =>   CDf =  0.00834    CDp =  0.01800    CLf =  0.00186   CDp =  0.01241 CDp+CDf =  0.02075
       9.000    9.4992   0.026339   0.005404   0.011260   0.005856    0.5297     #
-
-OFS: alfa =   7.5000 cl =   1.4425 cdp =  -0.0014 cm =  -0.1290
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -993,38 +961,36 @@ OFS: alfa =   7.5000 cl =   1.4425 cdp =  -0.0014 cm =  -0.1290
 
    1   rms: 0.8916E-01   max: 0.4026E+00   T at   96  1
        a =  7.500      CL =  1.2433
-      Cm = -0.0934     CD =  0.02609   =>   CDf =  0.00819    CDp =  0.01790
+      Cm = -0.0934     CD =  0.02609   =>   CDf =  0.00819    CDp =  0.01790    CLf =  0.00180   CDp =  0.01174 CDp+CDf =  0.01992
 
  Side 1  free  transition at x/c =  0.5144   96
  Side 2 forced transition at x/c =  1.0000  102
 
    2   rms: 0.2364E-01   max: -.2261E+00   D at   96  1
        a =  7.500      CL =  1.2353
-      Cm = -0.0925     CD =  0.02668   =>   CDf =  0.00823    CDp =  0.01845
+      Cm = -0.0925     CD =  0.02668   =>   CDf =  0.00823    CDp =  0.01845    CLf =  0.00194   CDp =  0.01218 CDp+CDf =  0.02041
 
  Side 1  free  transition at x/c =  0.5126   95
  Side 2 forced transition at x/c =  1.0000  102
 
    3   rms: 0.1422E-01   max: -.6947E-01   C at  102  2
        a =  7.500      CL =  1.2227
-      Cm = -0.0905     CD =  0.02707   =>   CDf =  0.00837    CDp =  0.01870
+      Cm = -0.0905     CD =  0.02707   =>   CDf =  0.00837    CDp =  0.01870    CLf =  0.00188   CDp =  0.01258 CDp+CDf =  0.02094
 
  Side 1  free  transition at x/c =  0.5117   95
  Side 2 forced transition at x/c =  1.0000  102
 
    4   rms: 0.3842E-03   max: -.2441E-02   D at   97  1
        a =  7.500      CL =  1.2231
-      Cm = -0.0906     CD =  0.02702   =>   CDf =  0.00830    CDp =  0.01872
+      Cm = -0.0906     CD =  0.02702   =>   CDf =  0.00830    CDp =  0.01872    CLf =  0.00190   CDp =  0.01258 CDp+CDf =  0.02088
 
  Side 1  free  transition at x/c =  0.5117   95
  Side 2 forced transition at x/c =  1.0000  102
 
    5   rms: 0.9445E-05   max: -.4814E-04   D at  140  1
        a =  7.500      CL =  1.2231
-      Cm = -0.0906     CD =  0.02702   =>   CDf =  0.00830    CDp =  0.01872
+      Cm = -0.0906     CD =  0.02702   =>   CDf =  0.00830    CDp =  0.01872    CLf =  0.00190   CDp =  0.01258 CDp+CDf =  0.02088
       9.000    9.3073   0.027016   0.005479   0.011277   0.005798    0.5117     #
-
-OFS: alfa =   8.0000 cl =   1.5031 cdp =  -0.0014 cm =  -0.1302
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1035,45 +1001,43 @@ OFS: alfa =   8.0000 cl =   1.5031 cdp =  -0.0014 cm =  -0.1302
 
    1   rms: 0.7869E-01   max: 0.5750E+00   T at   95  1
        a =  8.000      CL =  1.2224
-      Cm = -0.0822     CD =  0.02973   =>   CDf =  0.00814    CDp =  0.02160
+      Cm = -0.0822     CD =  0.02973   =>   CDf =  0.00814    CDp =  0.02160    CLf =  0.00183   CDp =  0.01471 CDp+CDf =  0.02285
 
  Side 1  free  transition at x/c =  0.4887   94
  Side 2 forced transition at x/c =  1.0000  101
 
    2   rms: 0.1085E+00   max: 0.7784E+00   D at    2  1
        a =  8.000      CL =  1.2957
-      Cm = -0.0920     CD =  0.02600   =>   CDf =  0.00814    CDp =  0.01787
+      Cm = -0.0920     CD =  0.02600   =>   CDf =  0.00814    CDp =  0.01787    CLf =  0.00192   CDp =  0.01123 CDp+CDf =  0.01936
 
  Side 1  free  transition at x/c =  0.4969   95
  Side 2 forced transition at x/c =  1.0000  101
 
    3   rms: 0.3907E-01   max: 0.3011E+00   D at   97  1
        a =  8.000      CL =  1.2796
-      Cm = -0.0903     CD =  0.02734   =>   CDf =  0.00816    CDp =  0.01918
+      Cm = -0.0903     CD =  0.02734   =>   CDf =  0.00816    CDp =  0.01918    CLf =  0.00199   CDp =  0.01232 CDp+CDf =  0.02048
 
  Side 1  free  transition at x/c =  0.4927   95
  Side 2 forced transition at x/c =  1.0000  101
 
    4   rms: 0.8784E-02   max: -.5985E-01   C at  101  2
        a =  8.000      CL =  1.2708
-      Cm = -0.0890     CD =  0.02759   =>   CDf =  0.00822    CDp =  0.01937
+      Cm = -0.0890     CD =  0.02759   =>   CDf =  0.00822    CDp =  0.01937    CLf =  0.00194   CDp =  0.01260 CDp+CDf =  0.02083
 
  Side 1  free  transition at x/c =  0.4924   95
  Side 2 forced transition at x/c =  1.0000  101
 
    5   rms: 0.4422E-03   max: -.5826E-02   C at  101  2
        a =  8.000      CL =  1.2704
-      Cm = -0.0889     CD =  0.02759   =>   CDf =  0.00825    CDp =  0.01934
+      Cm = -0.0889     CD =  0.02759   =>   CDf =  0.00825    CDp =  0.01934    CLf =  0.00192   CDp =  0.01261 CDp+CDf =  0.02086
 
  Side 1  free  transition at x/c =  0.4924   95
  Side 2 forced transition at x/c =  1.0000  101
 
    6   rms: 0.2656E-05   max: -.1287E-04   C at  101  2
        a =  8.000      CL =  1.2704
-      Cm = -0.0889     CD =  0.02759   =>   CDf =  0.00825    CDp =  0.01934
+      Cm = -0.0889     CD =  0.02759   =>   CDf =  0.00825    CDp =  0.01934    CLf =  0.00192   CDp =  0.01261 CDp+CDf =  0.02086
       9.000    9.0267   0.027586   0.005555   0.011166   0.005611    0.4924     #
-
-OFS: alfa =   8.5000 cl =   1.5637 cdp =  -0.0014 cm =  -0.1313
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1084,31 +1048,29 @@ OFS: alfa =   8.5000 cl =   1.5637 cdp =  -0.0014 cm =  -0.1313
 
    1   rms: 0.1082E+00   max: 0.4606E+00   T at   95  1
        a =  8.500      CL =  1.3552
-      Cm = -0.0925     CD =  0.02651   =>   CDf =  0.00808    CDp =  0.01844
+      Cm = -0.0925     CD =  0.02651   =>   CDf =  0.00808    CDp =  0.01844    CLf =  0.00186   CDp =  0.01098 CDp+CDf =  0.01906
 
  Side 1  free  transition at x/c =  0.4751   94
  Side 2 forced transition at x/c =  1.0000  100
 
    2   rms: 0.4478E-01   max: 0.2022E+00   D at   96  1
        a =  8.500      CL =  1.3057
-      Cm = -0.0856     CD =  0.02861   =>   CDf =  0.00798    CDp =  0.02063
+      Cm = -0.0856     CD =  0.02861   =>   CDf =  0.00798    CDp =  0.02063    CLf =  0.00205   CDp =  0.01302 CDp+CDf =  0.02100
 
  Side 1  free  transition at x/c =  0.4710   94
  Side 2 forced transition at x/c =  1.0000  100
 
    3   rms: 0.6165E-02   max: -.4125E-01   D at   95  1
        a =  8.500      CL =  1.3110
-      Cm = -0.0862     CD =  0.02828   =>   CDf =  0.00816    CDp =  0.02013
+      Cm = -0.0862     CD =  0.02828   =>   CDf =  0.00816    CDp =  0.02013    CLf =  0.00195   CDp =  0.01275 CDp+CDf =  0.02090
 
  Side 1  free  transition at x/c =  0.4715   94
  Side 2 forced transition at x/c =  1.0000  100
 
    4   rms: 0.7617E-04   max: 0.5723E-03   D at  138  1
        a =  8.500      CL =  1.3110
-      Cm = -0.0862     CD =  0.02829   =>   CDf =  0.00814    CDp =  0.02015
+      Cm = -0.0862     CD =  0.02829   =>   CDf =  0.00814    CDp =  0.02015    CLf =  0.00196   CDp =  0.01274 CDp+CDf =  0.02088
       9.000    8.7212   0.028294   0.005615   0.011077   0.005463    0.4715     #
-
-OFS: alfa =   9.0000 cl =   1.6241 cdp =  -0.0015 cm =  -0.1325
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1119,31 +1081,29 @@ OFS: alfa =   9.0000 cl =   1.6241 cdp =  -0.0015 cm =  -0.1325
 
    1   rms: 0.7856E-01   max: 0.4830E+00   T at   94  1
        a =  9.000      CL =  1.3614
-      Cm = -0.0847     CD =  0.02836   =>   CDf =  0.00796    CDp =  0.02040
+      Cm = -0.0847     CD =  0.02836   =>   CDf =  0.00796    CDp =  0.02040    CLf =  0.00190   CDp =  0.01226 CDp+CDf =  0.02023
 
  Side 1  free  transition at x/c =  0.4509   93
  Side 2 forced transition at x/c =  1.0000   99
 
    2   rms: 0.2409E-01   max: -.2755E+00   D at   94  1
        a =  9.000      CL =  1.3531
-      Cm = -0.0837     CD =  0.02874   =>   CDf =  0.00801    CDp =  0.02073
+      Cm = -0.0837     CD =  0.02874   =>   CDf =  0.00801    CDp =  0.02073    CLf =  0.00201   CDp =  0.01259 CDp+CDf =  0.02060
 
  Side 1  free  transition at x/c =  0.4497   93
  Side 2 forced transition at x/c =  1.0000   99
 
    3   rms: 0.1616E-02   max: -.1317E-01   D at   94  1
        a =  9.000      CL =  1.3540
-      Cm = -0.0837     CD =  0.02874   =>   CDf =  0.00809    CDp =  0.02065
+      Cm = -0.0837     CD =  0.02874   =>   CDf =  0.00809    CDp =  0.02065    CLf =  0.00197   CDp =  0.01251 CDp+CDf =  0.02060
 
  Side 1  free  transition at x/c =  0.4500   93
  Side 2 forced transition at x/c =  1.0000   99
 
    4   rms: 0.4567E-04   max: 0.1859E-03   C at   99  2
        a =  9.000      CL =  1.3540
-      Cm = -0.0837     CD =  0.02875   =>   CDf =  0.00809    CDp =  0.02066
+      Cm = -0.0837     CD =  0.02875   =>   CDf =  0.00809    CDp =  0.02066    CLf =  0.00197   CDp =  0.01251 CDp+CDf =  0.02060
       9.000    8.2448   0.028749   0.005681   0.010796   0.005116    0.4500     #
-
-OFS: alfa =   9.5000 cl =   1.6844 cdp =  -0.0015 cm =  -0.1336
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1154,31 +1114,29 @@ OFS: alfa =   9.5000 cl =   1.6844 cdp =  -0.0015 cm =  -0.1336
 
    1   rms: 0.6614E-01   max: 0.5127E+00   T at   93  1
        a =  9.500      CL =  1.3732
-      Cm = -0.0779     CD =  0.03003   =>   CDf =  0.00790    CDp =  0.02213
+      Cm = -0.0779     CD =  0.03003   =>   CDf =  0.00790    CDp =  0.02213    CLf =  0.00192   CDp =  0.01311 CDp+CDf =  0.02101
 
  Side 1  free  transition at x/c =  0.4267   92
  Side 2 forced transition at x/c =  1.0000   98
 
    2   rms: 0.4154E-01   max: -.3374E+00   D at   93  1
        a =  9.500      CL =  1.3958
-      Cm = -0.0812     CD =  0.02897   =>   CDf =  0.00803    CDp =  0.02094
+      Cm = -0.0812     CD =  0.02897   =>   CDf =  0.00803    CDp =  0.02094    CLf =  0.00197   CDp =  0.01217 CDp+CDf =  0.02020
 
  Side 1  free  transition at x/c =  0.4270   92
  Side 2 forced transition at x/c =  1.0000   98
 
    3   rms: 0.2610E-02   max: -.1841E-01   C at   98  2
        a =  9.500      CL =  1.3937
-      Cm = -0.0807     CD =  0.02916   =>   CDf =  0.00803    CDp =  0.02113
+      Cm = -0.0807     CD =  0.02916   =>   CDf =  0.00803    CDp =  0.02113    CLf =  0.00199   CDp =  0.01216 CDp+CDf =  0.02020
 
  Side 1  free  transition at x/c =  0.4272   92
  Side 2 forced transition at x/c =  1.0000   98
 
    4   rms: 0.2960E-04   max: -.2991E-03   C at   98  2
        a =  9.500      CL =  1.3937
-      Cm = -0.0807     CD =  0.02916   =>   CDf =  0.00804    CDp =  0.02112
+      Cm = -0.0807     CD =  0.02916   =>   CDf =  0.00804    CDp =  0.02112    CLf =  0.00198   CDp =  0.01216 CDp+CDf =  0.02020
       9.000    7.6697   0.029157   0.005737   0.010408   0.004671    0.4272     #
-
-OFS: alfa =  10.0000 cl =   1.7445 cdp =  -0.0015 cm =  -0.1348
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1189,38 +1147,36 @@ OFS: alfa =  10.0000 cl =   1.7445 cdp =  -0.0015 cm =  -0.1348
 
    1   rms: 0.6711E-01   max: 0.5117E+00   T at   92  1
        a = 10.000      CL =  1.3973
-      Cm = -0.0726     CD =  0.03094   =>   CDf =  0.00805    CDp =  0.02289
+      Cm = -0.0726     CD =  0.03094   =>   CDf =  0.00805    CDp =  0.02289    CLf =  0.00191   CDp =  0.01314 CDp+CDf =  0.02120
 
  Side 1  free  transition at x/c =  0.4029   90
  Side 2 forced transition at x/c =  1.0000   98
 
    2   rms: 0.5153E-01   max: -.3573E+00   D at   91  1
        a = 10.000      CL =  1.4314
-      Cm = -0.0777     CD =  0.02936   =>   CDf =  0.00779    CDp =  0.02157
+      Cm = -0.0777     CD =  0.02936   =>   CDf =  0.00779    CDp =  0.02157    CLf =  0.00197   CDp =  0.01185 CDp+CDf =  0.01964
 
  Side 1  free  transition at x/c =  0.4027   91
  Side 2 forced transition at x/c =  1.0000   97
 
    3   rms: 0.7482E-02   max: -.4651E-01   C at   97  2
        a = 10.000      CL =  1.4264
-      Cm = -0.0767     CD =  0.02966   =>   CDf =  0.00794    CDp =  0.02172
+      Cm = -0.0767     CD =  0.02966   =>   CDf =  0.00794    CDp =  0.02172    CLf =  0.00200   CDp =  0.01184 CDp+CDf =  0.01978
 
  Side 1  free  transition at x/c =  0.4033   91
  Side 2 forced transition at x/c =  1.0000   97
 
    4   rms: 0.6736E-03   max: -.1003E-01   D at    4  1
        a = 10.000      CL =  1.4263
-      Cm = -0.0767     CD =  0.02965   =>   CDf =  0.00795    CDp =  0.02170
+      Cm = -0.0767     CD =  0.02965   =>   CDf =  0.00795    CDp =  0.02170    CLf =  0.00200   CDp =  0.01184 CDp+CDf =  0.01979
 
  Side 1  free  transition at x/c =  0.4033   91
  Side 2 forced transition at x/c =  1.0000   97
 
    5   rms: 0.3945E-05   max: -.1527E-04   D at  145  1
        a = 10.000      CL =  1.4263
-      Cm = -0.0767     CD =  0.02965   =>   CDf =  0.00795    CDp =  0.02170
+      Cm = -0.0767     CD =  0.02965   =>   CDf =  0.00795    CDp =  0.02170    CLf =  0.00200   CDp =  0.01184 CDp+CDf =  0.01979
       9.000    7.0815   0.029651   0.005768   0.009979   0.004211    0.4033     #
-
-OFS: alfa =  10.5000 cl =   1.8045 cdp =  -0.0015 cm =  -0.1359
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1231,38 +1187,36 @@ OFS: alfa =  10.5000 cl =   1.8045 cdp =  -0.0015 cm =  -0.1359
 
    1   rms: 0.6472E-01   max: 0.4797E+00   T at   91  1
        a = 10.500      CL =  1.4324
-      Cm = -0.0690     CD =  0.03113   =>   CDf =  0.00797    CDp =  0.02315
+      Cm = -0.0690     CD =  0.03113   =>   CDf =  0.00797    CDp =  0.02315    CLf =  0.00193   CDp =  0.01241 CDp+CDf =  0.02038
 
  Side 1  free  transition at x/c =  0.3785   89
  Side 2 forced transition at x/c =  1.0000   97
 
    2   rms: 0.5131E-01   max: -.3446E+00   D at   90  1
        a = 10.500      CL =  1.4537
-      Cm = -0.0720     CD =  0.02974   =>   CDf =  0.00769    CDp =  0.02205
+      Cm = -0.0720     CD =  0.02974   =>   CDf =  0.00769    CDp =  0.02205    CLf =  0.00199   CDp =  0.01149 CDp+CDf =  0.01918
 
  Side 1  free  transition at x/c =  0.3783   90
  Side 2 forced transition at x/c =  1.0000   96
 
    3   rms: 0.3210E-02   max: -.2985E-01   T at    2  1
        a = 10.500      CL =  1.4512
-      Cm = -0.0716     CD =  0.03024   =>   CDf =  0.00786    CDp =  0.02238
+      Cm = -0.0716     CD =  0.03024   =>   CDf =  0.00786    CDp =  0.02238    CLf =  0.00201   CDp =  0.01151 CDp+CDf =  0.01937
 
  Side 1  free  transition at x/c =  0.3785   90
  Side 2 forced transition at x/c =  1.0000   96
 
    4   rms: 0.9068E-03   max: -.1529E-01   D at    4  1
        a = 10.500      CL =  1.4511
-      Cm = -0.0716     CD =  0.03024   =>   CDf =  0.00786    CDp =  0.02237
+      Cm = -0.0716     CD =  0.03024   =>   CDf =  0.00786    CDp =  0.02237    CLf =  0.00201   CDp =  0.01151 CDp+CDf =  0.01938
 
  Side 1  free  transition at x/c =  0.3785   90
  Side 2 forced transition at x/c =  1.0000   96
 
    5   rms: 0.4349E-05   max: 0.5394E-04   D at    6  1
        a = 10.500      CL =  1.4511
-      Cm = -0.0716     CD =  0.03024   =>   CDf =  0.00786    CDp =  0.02237
+      Cm = -0.0716     CD =  0.03024   =>   CDf =  0.00786    CDp =  0.02237    CLf =  0.00201   CDp =  0.01151 CDp+CDf =  0.01938
       9.000    6.5595   0.030237   0.005762   0.009467   0.003704    0.3785     #
-
-OFS: alfa =  11.0000 cl =   1.8644 cdp =  -0.0015 cm =  -0.1371
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1273,31 +1227,29 @@ OFS: alfa =  11.0000 cl =   1.8644 cdp =  -0.0015 cm =  -0.1371
 
    1   rms: 0.6713E-01   max: 0.4544E+00   T at   90  1
        a = 11.000      CL =  1.4715
-      Cm = -0.0658     CD =  0.03085   =>   CDf =  0.00788    CDp =  0.02297
+      Cm = -0.0658     CD =  0.03085   =>   CDf =  0.00788    CDp =  0.02297    CLf =  0.00194   CDp =  0.01110 CDp+CDf =  0.01899
 
  Side 1  free  transition at x/c =  0.3538   88
  Side 2 forced transition at x/c =  1.0000   96
 
    2   rms: 0.2927E-01   max: -.3076E+00   D at   89  1
        a = 11.000      CL =  1.4688
-      Cm = -0.0654     CD =  0.03074   =>   CDf =  0.00778    CDp =  0.02296
+      Cm = -0.0654     CD =  0.03074   =>   CDf =  0.00778    CDp =  0.02296    CLf =  0.00201   CDp =  0.01111 CDp+CDf =  0.01889
 
  Side 1  free  transition at x/c =  0.3530   88
  Side 2 forced transition at x/c =  1.0000   96
 
    3   rms: 0.1289E-02   max: -.1376E-01   D at   89  1
        a = 11.000      CL =  1.4676
-      Cm = -0.0653     CD =  0.03094   =>   CDf =  0.00783    CDp =  0.02311
+      Cm = -0.0653     CD =  0.03094   =>   CDf =  0.00783    CDp =  0.02311    CLf =  0.00199   CDp =  0.01116 CDp+CDf =  0.01899
 
  Side 1  free  transition at x/c =  0.3532   88
  Side 2 forced transition at x/c =  1.0000   96
 
    4   rms: 0.7091E-04   max: -.2992E-03   D at  145  1
        a = 11.000      CL =  1.4677
-      Cm = -0.0653     CD =  0.03094   =>   CDf =  0.00783    CDp =  0.02311
+      Cm = -0.0653     CD =  0.03094   =>   CDf =  0.00783    CDp =  0.02311    CLf =  0.00199   CDp =  0.01116 CDp+CDf =  0.01899
       9.000    6.1073   0.030944   0.005718   0.008903   0.003185    0.3532     #
-
-OFS: alfa =  11.5000 cl =   1.9242 cdp =  -0.0015 cm =  -0.1383
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1308,31 +1260,29 @@ OFS: alfa =  11.5000 cl =   1.9242 cdp =  -0.0015 cm =  -0.1383
 
    1   rms: 0.8622E-01   max: 0.5171E+00   T at   88  1
        a = 11.500      CL =  1.5105
-      Cm = -0.0625     CD =  0.03055   =>   CDf =  0.00760    CDp =  0.02295
+      Cm = -0.0625     CD =  0.03055   =>   CDf =  0.00760    CDp =  0.02295    CLf =  0.00195   CDp =  0.00950 CDp+CDf =  0.01710
 
  Side 1  free  transition at x/c =  0.3275   86
  Side 2 forced transition at x/c =  1.0000   95
 
    2   rms: 0.3873E-01   max: -.2604E+00   D at   88  1
        a = 11.500      CL =  1.4756
-      Cm = -0.0581     CD =  0.03197   =>   CDf =  0.00757    CDp =  0.02440
+      Cm = -0.0581     CD =  0.03197   =>   CDf =  0.00757    CDp =  0.02440    CLf =  0.00208   CDp =  0.01103 CDp+CDf =  0.01860
 
  Side 1  free  transition at x/c =  0.3276   86
  Side 2 forced transition at x/c =  1.0000   95
 
    3   rms: 0.3500E-02   max: 0.2537E-01   D at   88  1
        a = 11.500      CL =  1.4738
-      Cm = -0.0581     CD =  0.03224   =>   CDf =  0.00779    CDp =  0.02445
+      Cm = -0.0581     CD =  0.03224   =>   CDf =  0.00779    CDp =  0.02445    CLf =  0.00199   CDp =  0.01123 CDp+CDf =  0.01903
 
  Side 1  free  transition at x/c =  0.3270   86
  Side 2 forced transition at x/c =  1.0000   95
 
    4   rms: 0.6932E-04   max: -.5959E-03   D at  112  2
        a = 11.500      CL =  1.4738
-      Cm = -0.0581     CD =  0.03222   =>   CDf =  0.00780    CDp =  0.02442
+      Cm = -0.0581     CD =  0.03222   =>   CDf =  0.00780    CDp =  0.02442    CLf =  0.00198   CDp =  0.01123 CDp+CDf =  0.01903
       9.000    5.7857   0.032220   0.027616   0.008469  -0.019146    0.3270     #
-
-OFS: alfa =  12.0000 cl =   1.9838 cdp =  -0.0015 cm =  -0.1394
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1343,45 +1293,43 @@ OFS: alfa =  12.0000 cl =   1.9838 cdp =  -0.0015 cm =  -0.1394
 
    1   rms: 0.8252E-01   max: 0.4000E+00   T at   86  1   RLX: 0.920
        a = 12.000      CL =  1.4430
-      Cm = -0.0476     CD =  0.03570   =>   CDf =  0.00782    CDp =  0.02788
+      Cm = -0.0476     CD =  0.03570   =>   CDf =  0.00782    CDp =  0.02788    CLf =  0.00191   CDp =  0.01423 CDp+CDf =  0.02205
 
  Side 1  free  transition at x/c =  0.3035   84
  Side 2 forced transition at x/c =  1.0000   95
 
    2   rms: 0.5268E-01   max: -.3272E+00   D at   85  1
        a = 12.000      CL =  1.4632
-      Cm = -0.0497     CD =  0.03378   =>   CDf =  0.00797    CDp =  0.02581
+      Cm = -0.0497     CD =  0.03378   =>   CDf =  0.00797    CDp =  0.02581    CLf =  0.00187   CDp =  0.01202 CDp+CDf =  0.01999
 
  Side 1  free  transition at x/c =  0.3017   84
  Side 2 forced transition at x/c =  1.0000   95
 
    3   rms: 0.9915E-02   max: 0.3857E-01   T at   84  1
        a = 12.000      CL =  1.4707
-      Cm = -0.0508     CD =  0.03426   =>   CDf =  0.00771    CDp =  0.02655
+      Cm = -0.0508     CD =  0.03426   =>   CDf =  0.00771    CDp =  0.02655    CLf =  0.00198   CDp =  0.01199 CDp+CDf =  0.01970
 
  Side 1  free  transition at x/c =  0.2991   84
  Side 2 forced transition at x/c =  1.0000   95
 
    4   rms: 0.1871E-02   max: -.1003E-01   D at   85  1
        a = 12.000      CL =  1.4717
-      Cm = -0.0509     CD =  0.03429   =>   CDf =  0.00776    CDp =  0.02653
+      Cm = -0.0509     CD =  0.03429   =>   CDf =  0.00776    CDp =  0.02653    CLf =  0.00197   CDp =  0.01195 CDp+CDf =  0.01970
 
  Side 1  free  transition at x/c =  0.2991   84
  Side 2 forced transition at x/c =  1.0000   95
 
    5   rms: 0.1376E-03   max: -.5870E-03   D at  135  1
        a = 12.000      CL =  1.4718
-      Cm = -0.0509     CD =  0.03429   =>   CDf =  0.00775    CDp =  0.02654
+      Cm = -0.0509     CD =  0.03429   =>   CDf =  0.00775    CDp =  0.02654    CLf =  0.00197   CDp =  0.01194 CDp+CDf =  0.01969
 
  Side 1  free  transition at x/c =  0.2991   84
  Side 2 forced transition at x/c =  1.0000   95
 
    6   rms: 0.7094E-05   max: -.2263E-04   D at  129  1
        a = 12.000      CL =  1.4718
-      Cm = -0.0509     CD =  0.03429   =>   CDf =  0.00775    CDp =  0.02654
+      Cm = -0.0509     CD =  0.03429   =>   CDf =  0.00775    CDp =  0.02654    CLf =  0.00197   CDp =  0.01194 CDp+CDf =  0.01969
       9.000    5.6122   0.034293   0.026717   0.008126  -0.018590    0.2991     #
-
-OFS: alfa =  12.5000 cl =   2.0432 cdp =  -0.0015 cm =  -0.1406
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1392,38 +1340,36 @@ OFS: alfa =  12.5000 cl =   2.0432 cdp =  -0.0015 cm =  -0.1406
 
    1   rms: 0.7204E-01   max: 0.5008E+00   T at   84  1   RLX: 0.892
        a = 12.500      CL =  1.4813
-      Cm = -0.0461     CD =  0.03599   =>   CDf =  0.00750    CDp =  0.02848
+      Cm = -0.0461     CD =  0.03599   =>   CDf =  0.00750    CDp =  0.02848    CLf =  0.00194   CDp =  0.01333 CDp+CDf =  0.02083
 
  Side 1  free  transition at x/c =  0.2753   83
  Side 2 forced transition at x/c =  1.0000   94
 
    2   rms: 0.2897E-01   max: -.3197E+00   D at   84  1
        a = 12.500      CL =  1.4677
-      Cm = -0.0445     CD =  0.03678   =>   CDf =  0.00772    CDp =  0.02907
+      Cm = -0.0445     CD =  0.03678   =>   CDf =  0.00772    CDp =  0.02907    CLf =  0.00196   CDp =  0.01292 CDp+CDf =  0.02063
 
  Side 1  free  transition at x/c =  0.2717   82
  Side 2 forced transition at x/c =  1.0000   94
 
    3   rms: 0.4212E-02   max: 0.3556E-01   D at   84  1
        a = 12.500      CL =  1.4661
-      Cm = -0.0445     CD =  0.03720   =>   CDf =  0.00779    CDp =  0.02941
+      Cm = -0.0445     CD =  0.03720   =>   CDf =  0.00779    CDp =  0.02941    CLf =  0.00194   CDp =  0.01328 CDp+CDf =  0.02108
 
  Side 1  free  transition at x/c =  0.2701   82
  Side 2 forced transition at x/c =  1.0000   94
 
    4   rms: 0.1105E-02   max: -.6934E-02   D at   83  1
        a = 12.500      CL =  1.4667
-      Cm = -0.0446     CD =  0.03714   =>   CDf =  0.00776    CDp =  0.02938
+      Cm = -0.0446     CD =  0.03714   =>   CDf =  0.00776    CDp =  0.02938    CLf =  0.00195   CDp =  0.01324 CDp+CDf =  0.02100
 
  Side 1  free  transition at x/c =  0.2702   82
  Side 2 forced transition at x/c =  1.0000   94
 
    5   rms: 0.6592E-04   max: -.2998E-03   D at  109  2
        a = 12.500      CL =  1.4667
-      Cm = -0.0446     CD =  0.03715   =>   CDf =  0.00775    CDp =  0.02940
+      Cm = -0.0446     CD =  0.03715   =>   CDf =  0.00775    CDp =  0.02940    CLf =  0.00195   CDp =  0.01324 CDp+CDf =  0.02099
       9.000    5.8787   0.037150   0.026036   0.007833  -0.018203    0.2702     #
-
-OFS: alfa =  13.0000 cl =   2.1025 cdp =  -0.0015 cm =  -0.1417
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1434,45 +1380,43 @@ OFS: alfa =  13.0000 cl =   2.1025 cdp =  -0.0015 cm =  -0.1417
 
    1   rms: 0.7588E-01   max: 0.4502E+00   T at   82  1   RLX: 0.769
        a = 13.000      CL =  1.4553
-      Cm = -0.0398     CD =  0.04076   =>   CDf =  0.00777    CDp =  0.03299
+      Cm = -0.0398     CD =  0.04076   =>   CDf =  0.00777    CDp =  0.03299    CLf =  0.00188   CDp =  0.01806 CDp+CDf =  0.02582
 
  Side 1  free  transition at x/c =  0.2488   80
  Side 2 forced transition at x/c =  1.0000   94
 
    2   rms: 0.2941E-01   max: -.3073E+00   D at   81  1
        a = 13.000      CL =  1.4502
-      Cm = -0.0384     CD =  0.04106   =>   CDf =  0.00791    CDp =  0.03315
+      Cm = -0.0384     CD =  0.04106   =>   CDf =  0.00791    CDp =  0.03315    CLf =  0.00186   CDp =  0.01553 CDp+CDf =  0.02344
 
  Side 1  free  transition at x/c =  0.2429   80
  Side 2 forced transition at x/c =  1.0000   94
 
    3   rms: 0.1832E-01   max: -.9148E-01   D at   81  1
        a = 13.000      CL =  1.4607
-      Cm = -0.0392     CD =  0.04035   =>   CDf =  0.00790    CDp =  0.03245
+      Cm = -0.0392     CD =  0.04035   =>   CDf =  0.00790    CDp =  0.03245    CLf =  0.00189   CDp =  0.01488 CDp+CDf =  0.02278
 
  Side 1  free  transition at x/c =  0.2418   79
  Side 2 forced transition at x/c =  1.0000   94
 
    4   rms: 0.2646E-02   max: 0.2797E-01   D at   80  1
        a = 13.000      CL =  1.4599
-      Cm = -0.0393     CD =  0.04080   =>   CDf =  0.00787    CDp =  0.03293
+      Cm = -0.0393     CD =  0.04080   =>   CDf =  0.00787    CDp =  0.03293    CLf =  0.00191   CDp =  0.01510 CDp+CDf =  0.02297
 
  Side 1  free  transition at x/c =  0.2412   79
  Side 2 forced transition at x/c =  1.0000   94
 
    5   rms: 0.1374E-03   max: -.9419E-03   T at   79  1
        a = 13.000      CL =  1.4598
-      Cm = -0.0393     CD =  0.04077   =>   CDf =  0.00785    CDp =  0.03292
+      Cm = -0.0393     CD =  0.04077   =>   CDf =  0.00785    CDp =  0.03292    CLf =  0.00191   CDp =  0.01509 CDp+CDf =  0.02294
 
  Side 1  free  transition at x/c =  0.2413   79
  Side 2 forced transition at x/c =  1.0000   94
 
    6   rms: 0.3590E-05   max: 0.1457E-04   C at   94  2
        a = 13.000      CL =  1.4598
-      Cm = -0.0393     CD =  0.04076   =>   CDf =  0.00785    CDp =  0.03291
+      Cm = -0.0393     CD =  0.04076   =>   CDf =  0.00785    CDp =  0.03291    CLf =  0.00191   CDp =  0.01509 CDp+CDf =  0.02294
       9.000    6.7550   0.040764   0.025615   0.007590  -0.018025    0.2413     #
-
-OFS: alfa =  13.5000 cl =   2.1617 cdp =  -0.0016 cm =  -0.1429
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1483,45 +1427,43 @@ OFS: alfa =  13.5000 cl =   2.1617 cdp =  -0.0016 cm =  -0.1429
 
    1   rms: 0.9115E-01   max: 0.4602E+00   T at   79  1   RLX: 0.684
        a = 13.500      CL =  1.4397
-      Cm = -0.0356     CD =  0.04579   =>   CDf =  0.00787    CDp =  0.03792
+      Cm = -0.0356     CD =  0.04579   =>   CDf =  0.00787    CDp =  0.03792    CLf =  0.00184   CDp =  0.02234 CDp+CDf =  0.03021
 
  Side 1  free  transition at x/c =  0.2217   77
  Side 2 forced transition at x/c =  1.0000   94
 
    2   rms: 0.3557E-01   max: -.2913E+00   D at   78  1
        a = 13.500      CL =  1.4368
-      Cm = -0.0340     CD =  0.04566   =>   CDf =  0.00782    CDp =  0.03784
+      Cm = -0.0340     CD =  0.04566   =>   CDf =  0.00782    CDp =  0.03784    CLf =  0.00184   CDp =  0.01843 CDp+CDf =  0.02624
 
  Side 1  free  transition at x/c =  0.2168   78
  Side 2 forced transition at x/c =  1.0000   93
 
    3   rms: 0.1630E-01   max: -.6946E-01   D at  125  1
        a = 13.500      CL =  1.4466
-      Cm = -0.0347     CD =  0.04508   =>   CDf =  0.00783    CDp =  0.03725
+      Cm = -0.0347     CD =  0.04508   =>   CDf =  0.00783    CDp =  0.03725    CLf =  0.00189   CDp =  0.01796 CDp+CDf =  0.02579
 
  Side 1  free  transition at x/c =  0.2141   78
  Side 2 forced transition at x/c =  1.0000   93
 
    4   rms: 0.3362E-02   max: -.1648E-01   D at   78  1
        a = 13.500      CL =  1.4486
-      Cm = -0.0348     CD =  0.04528   =>   CDf =  0.00790    CDp =  0.03738
+      Cm = -0.0348     CD =  0.04528   =>   CDf =  0.00790    CDp =  0.03738    CLf =  0.00189   CDp =  0.01786 CDp+CDf =  0.02575
 
  Side 1  free  transition at x/c =  0.2138   78
  Side 2 forced transition at x/c =  1.0000   93
 
    5   rms: 0.3990E-03   max: -.1823E-02   D at  110  2
        a = 13.500      CL =  1.4489
-      Cm = -0.0348     CD =  0.04532   =>   CDf =  0.00790    CDp =  0.03742
+      Cm = -0.0348     CD =  0.04532   =>   CDf =  0.00790    CDp =  0.03742    CLf =  0.00189   CDp =  0.01785 CDp+CDf =  0.02574
 
  Side 1  free  transition at x/c =  0.2138   78
  Side 2 forced transition at x/c =  1.0000   93
 
    6   rms: 0.3628E-04   max: -.2010E-03   D at  111  2
        a = 13.500      CL =  1.4490
-      Cm = -0.0349     CD =  0.04532   =>   CDf =  0.00790    CDp =  0.03742
+      Cm = -0.0349     CD =  0.04532   =>   CDf =  0.00790    CDp =  0.03742    CLf =  0.00189   CDp =  0.01785 CDp+CDf =  0.02575
       9.000    7.6420   0.045322   0.025373   0.007490  -0.017882    0.2138     #
-
-OFS: alfa =  14.0000 cl =   2.2206 cdp =  -0.0016 cm =  -0.1441
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1532,45 +1474,43 @@ OFS: alfa =  14.0000 cl =   2.2206 cdp =  -0.0016 cm =  -0.1441
 
    1   rms: 0.7701E-01   max: 0.6167E+00   T at   78  1   RLX: 0.654
        a = 14.000      CL =  1.4533
-      Cm = -0.0328     CD =  0.04815   =>   CDf =  0.00791    CDp =  0.04024
+      Cm = -0.0328     CD =  0.04815   =>   CDf =  0.00791    CDp =  0.04024    CLf =  0.00182   CDp =  0.02318 CDp+CDf =  0.03109
 
  Side 1  free  transition at x/c =  0.1985   76
  Side 2 forced transition at x/c =  1.0000   93
 
    2   rms: 0.3839E-01   max: -.2485E+00   D at   77  1
        a = 14.000      CL =  1.4327
-      Cm = -0.0314     CD =  0.05156   =>   CDf =  0.00794    CDp =  0.04362
+      Cm = -0.0314     CD =  0.05156   =>   CDf =  0.00794    CDp =  0.04362    CLf =  0.00185   CDp =  0.02185 CDp+CDf =  0.02979
 
  Side 1  free  transition at x/c =  0.1897   75
  Side 2 forced transition at x/c =  1.0000   93
 
    3   rms: 0.1973E-01   max: -.1078E+00   D at   76  1
        a = 14.000      CL =  1.4381
-      Cm = -0.0312     CD =  0.04979   =>   CDf =  0.00810    CDp =  0.04169
+      Cm = -0.0312     CD =  0.04979   =>   CDf =  0.00810    CDp =  0.04169    CLf =  0.00182   CDp =  0.02094 CDp+CDf =  0.02904
 
  Side 1  free  transition at x/c =  0.1902   75
  Side 2 forced transition at x/c =  1.0000   93
 
    4   rms: 0.2963E-02   max: 0.1940E-01   T at   75  1
        a = 14.000      CL =  1.4403
-      Cm = -0.0314     CD =  0.05025   =>   CDf =  0.00800    CDp =  0.04225
+      Cm = -0.0314     CD =  0.05025   =>   CDf =  0.00800    CDp =  0.04225    CLf =  0.00186   CDp =  0.02096 CDp+CDf =  0.02896
 
  Side 1  free  transition at x/c =  0.1892   75
  Side 2 forced transition at x/c =  1.0000   93
 
    5   rms: 0.2910E-03   max: -.2208E-02   D at   76  1
        a = 14.000      CL =  1.4404
-      Cm = -0.0314     CD =  0.05029   =>   CDf =  0.00799    CDp =  0.04229
+      Cm = -0.0314     CD =  0.05029   =>   CDf =  0.00799    CDp =  0.04229    CLf =  0.00186   CDp =  0.02096 CDp+CDf =  0.02895
 
  Side 1  free  transition at x/c =  0.1892   75
  Side 2 forced transition at x/c =  1.0000   93
 
    6   rms: 0.2515E-04   max: -.1422E-03   D at  112  2
        a = 14.000      CL =  1.4405
-      Cm = -0.0314     CD =  0.05029   =>   CDf =  0.00799    CDp =  0.04230
+      Cm = -0.0314     CD =  0.05029   =>   CDf =  0.00799    CDp =  0.04230    CLf =  0.00186   CDp =  0.02096 CDp+CDf =  0.02895
       9.000    8.4052   0.050292   0.025502   0.007483  -0.018019    0.1892     #
-
-OFS: alfa =  14.5000 cl =   2.2794 cdp =  -0.0016 cm =  -0.1452
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1581,42 +1521,42 @@ OFS: alfa =  14.5000 cl =   2.2794 cdp =  -0.0016 cm =  -0.1452
 
    1   rms: 0.8223E-01   max: 0.4927E+00   T at   75  1   RLX: 0.583
        a = 14.500      CL =  1.4297
-      Cm = -0.0301     CD =  0.05535   =>   CDf =  0.00801    CDp =  0.04734
+      Cm = -0.0301     CD =  0.05535   =>   CDf =  0.00801    CDp =  0.04734    CLf =  0.00179   CDp =  0.02941 CDp+CDf =  0.03742
 
  Side 1  free  transition at x/c =  0.1758   74
  Side 2 forced transition at x/c =  1.0000   93
 
    2   rms: 0.3095E-01   max: -.2076E+00   D at   74  1
        a = 14.500      CL =  1.4247
-      Cm = -0.0286     CD =  0.05636   =>   CDf =  0.00817    CDp =  0.04819
+      Cm = -0.0286     CD =  0.05636   =>   CDf =  0.00817    CDp =  0.04819    CLf =  0.00177   CDp =  0.02516 CDp+CDf =  0.03333
 
  Side 1  free  transition at x/c =  0.1696   73
  Side 2 forced transition at x/c =  1.0000   93
 
    3   rms: 0.1741E-01   max: -.8409E-01   D at  119  1
        a = 14.500      CL =  1.4304
-      Cm = -0.0286     CD =  0.05518   =>   CDf =  0.00786    CDp =  0.04732
+      Cm = -0.0286     CD =  0.05518   =>   CDf =  0.00786    CDp =  0.04732    CLf =  0.00188   CDp =  0.02455 CDp+CDf =  0.03240
 
  Side 1  free  transition at x/c =  0.1690   74
  Side 2 forced transition at x/c =  1.0000   92
 
    4   rms: 0.4593E-02   max: 0.3172E-01   D at    2  1
        a = 14.500      CL =  1.4337
-      Cm = -0.0288     CD =  0.05545   =>   CDf =  0.00803    CDp =  0.04743
+      Cm = -0.0288     CD =  0.05545   =>   CDf =  0.00803    CDp =  0.04743    CLf =  0.00185   CDp =  0.02443 CDp+CDf =  0.03245
 
  Side 1  free  transition at x/c =  0.1681   74
  Side 2 forced transition at x/c =  1.0000   92
 
    5   rms: 0.6089E-03   max: -.5512E-02   D at    4  1
        a = 14.500      CL =  1.4340
-      Cm = -0.0288     CD =  0.05554   =>   CDf =  0.00803    CDp =  0.04751
+      Cm = -0.0288     CD =  0.05554   =>   CDf =  0.00803    CDp =  0.04751    CLf =  0.00185   CDp =  0.02443 CDp+CDf =  0.03246
 
  Side 1  free  transition at x/c =  0.1681   74
  Side 2 forced transition at x/c =  1.0000   92
 
    6   rms: 0.4908E-04   max: -.2992E-03   D at  112  2
        a = 14.500      CL =  1.4340
-      Cm = -0.0288     CD =  0.05555   =>   CDf =  0.00803    CDp =  0.04752
+      Cm = -0.0288     CD =  0.05555   =>   CDf =  0.00803    CDp =  0.04752    CLf =  0.00185   CDp =  0.02443 CDp+CDf =  0.03246
       9.000    9.0693   0.055547   0.025876   0.007600  -0.018277    0.1681     #
 
 .OPERv   c>  

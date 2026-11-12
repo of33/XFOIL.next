@@ -86,7 +86,7 @@ Number of points : 151
    PSOR i   Sort stored polar
    PPlo ii. Plot stored polar(s)
    APlo ii. Plot stored airfoil(s) for each polar
-   ASET i   Copy stored airfoil into current airfoil
+   ASET i   Copy stored polar airfoil into current airfoil
    PREM ir. Remove point(s) from stored polar
    PNAM i   Change airfoil name of stored polar
    PPAX     Change polar plot axis limits
@@ -113,10 +113,12 @@ Number of points : 151
 
    FMOM     Calculate flap hinge moment and forces
    FNEW rr  Set new flap hinge point
+
    VELS rr  Calculate velocity components at a point
    DUMP f   Output Ue,Dstar,Theta,Cf vs s,x,y to file
    CPWR f   Output x vs Cp to file
    CPMN     Report minimum surface Cp
+
    NAME s   Specify new airfoil name
    NINC     Increment name version number
 

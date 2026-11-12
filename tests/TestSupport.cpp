@@ -26,6 +26,8 @@
 
 #include "TestSupport.h"
 
+#include <cstdio>
+
 #include "app/cli/CoreGeometryHandlers.h"
 #include "xfoil/session/SessionState.h"
 
@@ -816,6 +818,76 @@ bool loadTextFile(const std::string& path, std::string& contents) {
   buffer << stream.rdbuf();
   contents = buffer.str();
   return true;
+}
+
+
+std::string normalizeS18LegacyText(std::string text) {
+  std::string result;
+  std::size_t pos = 0;
+  while (pos < text.size()) {
+    const std::size_t eol = text.find('\n', pos);
+    const std::size_t end = eol == std::string::npos ? text.size() : eol;
+    std::string line = text.substr(pos, end - pos);
+    if (line.rfind("OFS: alfa = ", 0) == 0) {
+      if (result.size() >= 2 && result.ends_with("\n\n")) {
+        result.pop_back();
+      } else if (result == "\n") {
+        result.clear();
+      }
+    } else {
+      const std::size_t tail = line.find("    CLf =");
+      if (tail != std::string::npos &&
+          line.find("   =>   CDf =") != std::string::npos) {
+        line.resize(tail);
+      }
+      result += line;
+      if (eol != std::string::npos) {
+        result.push_back('\n');
+      }
+    }
+    pos = eol == std::string::npos ? text.size() : eol + 1;
+  }
+  return result;
+}
+
+std::string normalizeS18ThicknessCamber(std::string text) {
+  std::string result;
+  std::size_t pos = 0;
+  while (pos < text.size()) {
+    const std::size_t eol = text.find('\n', pos);
+    const std::size_t end = eol == std::string::npos ? text.size() : eol;
+    std::string line = text.substr(pos, end - pos);
+    double value = 0.0;
+    double xpos = 0.0;
+    char buffer[128];
+    std::size_t labelPos = line.find(" Max thickness = ");
+    const bool thickness = labelPos != std::string::npos;
+    if (!thickness) {
+      labelPos = line.find(" Max camber    = ");
+    }
+    const bool camber = !thickness && labelPos != std::string::npos;
+    const std::string field = line.substr(labelPos == std::string::npos ? 0
+                                                                        : labelPos);
+    if (thickness &&
+        std::sscanf(field.c_str(), " Max thickness = %lf  at x = %lf", &value,
+                    &xpos) == 2) {
+      std::snprintf(buffer, sizeof(buffer),
+                    " Max thickness = %8.4f  at x = %7.3f", value, xpos);
+      line.replace(labelPos, field.size(), buffer);
+    } else if (camber &&
+               std::sscanf(field.c_str(), " Max camber    = %lf  at x = %lf",
+                           &value, &xpos) == 2) {
+      std::snprintf(buffer, sizeof(buffer),
+                    " Max camber    = %8.4f  at x = %7.3f", value, xpos);
+      line.replace(labelPos, field.size(), buffer);
+    }
+    result += line;
+    if (eol != std::string::npos) {
+      result.push_back('\n');
+    }
+    pos = eol == std::string::npos ? text.size() : eol + 1;
+  }
+  return result;
 }
 
 }  // namespace testing

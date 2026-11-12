@@ -260,6 +260,8 @@ struct ViscalIterationRecord {
   double cm{0.0};      // Fortran CM from CLCALC this iteration
   double cd{0.0};      // Fortran Cd from CDCALC this iteration
   double cdf{0.0};     // Fortran CDF from CDCALC this iteration
+  double clf{0.0};     // Fortran CLF from CDCALC this iteration
+  double cdp{0.0};     // Fortran CDP from CLCALC this iteration
 };
 
 // Fortran: VISCAL completion block (xoper.f:3029-3057) before format 9922

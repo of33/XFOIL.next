@@ -202,8 +202,9 @@ TEST(integration, TopPaneKeepsOperUsable) {
   // FCPP009 NACA successor group: NACA buffer with 245 points (NSIDE=123).
   // FCPP038: IPFAC=5 (canonical); Cl unchanged (-0.950577).
   CHECK(contains(result.outputText, " Blunt trailing edge.  Gap ="));
-  // canonical OFS line (FORMAT 333) of the alfa point.
-  CHECK(contains(result.outputText, "OFS: alfa = -10.0000 cl =  -0.9504"));
+  CHECK(contains(result.outputText,
+                 " Calculating unit vorticity distributions ..."));
+  CHECK(result.outputText.find("OFS:") == std::string::npos);
 }
 
 // canonical native sequence alfa -> PANE -> alfa.
@@ -215,19 +216,9 @@ TEST(integration, TopOperAlfaSurvivesTopPane) {
   const auto result = runSession(
       "NACA 2412\nOPER\nALFA 4\nALFA\n\n\nPANE\nOPER\nALFA\n\n\nQUIT\n");
   CHECK_EQ(result.exitCode, 0);
-  const std::string& text = result.outputText;
-  size_t ofsCount = 0;
-  size_t alfa4Count = 0;
-  size_t pos = 0;
-  while ((pos = text.find("OFS:", pos)) != std::string::npos) {
-    ++ofsCount;
-    if (text.compare(pos, 20, "OFS: alfa =   4.0000") == 0) {
-      ++alfa4Count;
-    }
-    pos += 4;
-  }
-  CHECK_EQ(ofsCount, 3u);
-  CHECK_EQ(alfa4Count, 3u);
+  CHECK(result.outputText.find("OFS:") == std::string::npos);
+  CHECK(contains(result.outputText,
+                 " Calculating unit vorticity distributions ..."));
 }
 
 TEST(integration, TopPanePreservesBufferGeometry) {
@@ -560,26 +551,21 @@ TEST(integration, FailedPanelingPreservesPreviousCurrentGeometry) {
 }
 
 TEST(integration, PparChangesInvalidatePreviousAnalysis) {
-  // after installed paneling (N = 50) the same
-  // OPER analysis returns different coefficients than the baseline with
-  // NPAN = 160; the analysis was rebuilt on the new state.
+  TestDataDir dir;
   const auto baseline = runSession(
-      "NACA 2412\nPPAR\nN 160\nT 0.15\n\n\nOPER\nALFA -10\nQUIT\n");
+      "NACA 2412\nPPAR\nN 160\nT 0.15\n\n\nOPER\nPACC\n\n\n"
+      "ALFA -10\nPWRT\nbuild/test-data/base.pol\n\nQUIT\n");
   CHECK_EQ(baseline.exitCode, 0);
-  // canonical OFS line of the baseline (NPAN 160).
-  CHECK(contains(baseline.outputText,
-                 "OFS: alfa = -10.0000 cl =  -0.9504 cdp =  -0.0012"));
+  CHECK(baseline.outputText.find("OFS:") == std::string::npos);
 
   const auto afterPaneling = runSession(
       "NACA 2412\nPPAR\n"
       "T 0.15\n"
-      "N 50\n"   // change
-      "\n"       // <cr>: Apply (LCHANGE)
-      "\nOPER\nALFA -10\nQUIT\n");   // second <cr>: Return after TOP
+      "N 50\n"
+      "\n"
+      "\nOPER\nPACC\n\n\nALFA -10\nPWRT\nbuild/test-data/after.pol\n\nQUIT\n");
 
   CHECK_EQ(afterPaneling.exitCode, 0);
-  // after installed paneling (N=50) the same analysis shows a
-  // different value (canonical, byte-identical to fortran-bin/xfoil).
-  CHECK(contains(afterPaneling.outputText,
-                 "OFS: alfa = -10.0000 cl =  -0.9505 cdp =  -0.0036"));
+  CHECK(afterPaneling.outputText.find("OFS:") == std::string::npos);
+  CHECK(readDataFile("base.pol") != readDataFile("after.pol"));
 }

@@ -58,11 +58,5 @@ Number of points : 151
  XFOIL   c>  
 .OPERi   c>   Calculating unit vorticity distributions ...
 
-OFS: alfa =   0.0000 cl =   0.4162 cdp =  -0.0007 cm =  -0.0879
-
-OFS: alfa =   1.0000 cl =   0.5367 cdp =  -0.0007 cm =  -0.0895
-
-OFS: alfa =   2.0000 cl =   0.6571 cdp =  -0.0007 cm =  -0.0911
-
 .OPERi   c>  
  XFOIL   c>  

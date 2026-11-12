@@ -640,7 +640,7 @@ ViscalResult viscal(const ViscalInput& in,
     res.iterationRecords.push_back(ViscalIterationRecord{
         ures.rmsbl, ures.dac,   ures.rlx,  ures.rmxbl, ures.vmxbl,
         ures.imxbl, ures.ismxbl, state.alfa, load.cl,   load.cm,
-        cdc.cd,     cdc.cdf});
+        cdc.cd,     cdc.cdf,    cdc.clf,   load.cdp});
     res.iterations = iter;
     res.rmsbl = ures.rmsbl;
     if (ures.rmsbl < kEps1) {

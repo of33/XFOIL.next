@@ -1176,7 +1176,7 @@ void CommandInterpreter::printOperHelp() {
              "   PSOR i   Sort stored polar\n"
              "   PPlo ii. Plot stored polar(s)\n"
              "   APlo ii. Plot stored airfoil(s) for each polar\n"
-             "   ASET i   Copy stored airfoil into current airfoil\n"
+             "   ASET i   Copy stored polar airfoil into current airfoil\n"
              "   PREM ir. Remove point(s) from stored polar\n"
              "   PNAM i   Change airfoil name of stored polar\n"
              "   PPAX     Change polar plot axis limits\n"
@@ -1203,10 +1203,12 @@ void CommandInterpreter::printOperHelp() {
              "\n"
              "   FMOM     Calculate flap hinge moment and forces\n"
              "   FNEW rr  Set new flap hinge point\n"
+             "\n"
              "   VELS rr  Calculate velocity components at a point\n"
              "   DUMP f   Output Ue,Dstar,Theta,Cf vs s,x,y to file\n"
              "   CPWR f   Output x vs Cp to file\n"
              "   CPMN     Report minimum surface Cp\n"
+             "\n"
              "   NAME s   Specify new airfoil name\n"
              "   NINC     Increment name version number\n";
 }
@@ -2558,7 +2560,7 @@ void CommandInterpreter::handleOperPacc(const ParsedCommand& parsed) {
   int ipact = 0;
   if (ip > static_cast<int>(polar.slots.size())) {
     if (polar.slots.size() >= core::polar::maxPolarSlots) {
-      output_ << "\n Number of polars is at array limit\n"
+      output_ << "\n Number of polars is at array limit NPX\n"
               << " New polar will not be stored\n";
       ipact = 0;
     } else {

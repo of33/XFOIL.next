@@ -407,7 +407,7 @@ void emitOperPointText(std::ostream& out, bool viscous,
 
   std::size_t pos = 0;
   // Point and viscous prerequisite events before the VISCAL header:
-  // GGCALC, OFS marker, XYWAKE, QDCALC (preHead).
+  // GGCALC, XYWAKE, QDCALC (preHead).
   for (; pos < diag.events.size(); ++pos) {
     const auto& e = diag.events[pos];
     if (e.kind == OperPointEventKind::viscous &&
@@ -419,9 +419,6 @@ void emitOperPointText(std::ostream& out, bool viscous,
         emitGgcalcProgress(out);
         break;
       case OperPointEventKind::specifiedPointOutput:
-        emitOfsSpecial(out, toDegrees(Radians{diag.specalSnapshot.alpha}).value,
-                       diag.specalSnapshot.cl, diag.specalSnapshot.cdp,
-                       diag.specalSnapshot.cm);
         break;
       case OperPointEventKind::wakeTrajectoryCalculation:
         emitXywakeProgress(out);
@@ -481,7 +478,8 @@ void emitOperPointText(std::ostream& out, bool viscous,
                                            rec.vmxbl, rec.imxbl + 1,
                                            rec.ismxbl + 1);
     }
-    emitViscalIterationLoads(out, alphaDeg, rec.cl, rec.cm, rec.cd, rec.cdf);
+    emitViscalIterationLoads(out, alphaDeg, rec.cl, rec.cm, rec.cd, rec.cdf,
+                             rec.clf, rec.cdp);
   }
   if (!diag.viscalConverged) {
     emitViscalConvergenceFailed(out);

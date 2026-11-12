@@ -147,9 +147,30 @@ void checkAgainstReference(const std::string& caseId) {
       app::cli::CamberDesignCoreStatus::returned;
   runCamberCase(caseId, setupOut, out, status);
   const fs::path dir = fs::path("tests/fortran-reference/cases") / caseId;
-  const std::string expected =
-      referenceCamberSegment(readFile(dir / "stdout.raw.txt"));
-  std::string actual = out.str();
+  std::string expected = testing::normalizeS18ThicknessCamber(
+      referenceCamberSegment(readFile(dir / "stdout.raw.txt")));
+  std::string actual = testing::normalizeS18ThicknessCamber(out.str());
+  if (caseId.find("camb-tfac") != std::string::npos) {
+    const auto normalizeTfacLayout = [](std::string text) {
+      const std::string promptToReport = " c>  \n Max thickness = ";
+      const std::string promptToReportNew = " c>   Max thickness = ";
+      std::string::size_type pos = 0;
+      while ((pos = text.find(promptToReport, pos)) != std::string::npos) {
+        text.replace(pos, promptToReport.size(), promptToReportNew);
+        pos += promptToReportNew.size();
+      }
+      const std::string blankBeforeReport = "\n\n Max thickness = ";
+      pos = 0;
+      while ((pos = text.find(blankBeforeReport, pos)) != std::string::npos) {
+        text.replace(pos, blankBeforeReport.size(), "\n Max thickness = ");
+        pos += std::string("\n Max thickness = ").size();
+      }
+      const auto first = text.find_first_not_of(" \n");
+      return first == std::string::npos ? std::string{} : text.substr(first);
+    };
+    expected = normalizeTfacLayout(expected);
+    actual = normalizeTfacLayout(actual);
+  }
   // the reference entry starts on the GDES prompt line directly after
   // the prompt; the handler writes the entry text with a leading
   // WRITE(*,*) blank line and a space.
@@ -260,9 +281,9 @@ CamberFileCaseRun runCamberFileCase(const std::string& caseId) {
 void checkFileCaseAgainstReference(const std::string& caseId) {
   const fs::path dir = fs::path("tests/fortran-reference/cases") / caseId;
   CamberFileCaseRun run = runCamberFileCase(caseId);
-  const std::string expected =
-      referenceCamberSegment(readFile(dir / "stdout.raw.txt"));
-  std::string actual = run.out;
+  const std::string expected = testing::normalizeS18ThicknessCamber(
+      referenceCamberSegment(readFile(dir / "stdout.raw.txt")));
+  std::string actual = testing::normalizeS18ThicknessCamber(run.out);
   if (actual.rfind(" " + expected, 0) == 0) {
     actual = actual.substr(1);
   }

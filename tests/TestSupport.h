@@ -81,6 +81,16 @@ std::string currentTestName();
 void handleLegacyNacaCore(xfoil::session::SessionComposition& session,
                           std::ostream& out, int designation);
 
+// S18 removes the project-specific OFS record and appends CLf/CDp fields
+// to format 2020. Legacy oracle tests compare against the pre-S18 text;
+// these helpers project both sides onto that older text.
+std::string normalizeS18LegacyText(std::string text);
+
+// S18 changed TCBUF/TCSCAL thickness/camber widths. Legacy CAMB tests
+// compare against the pre-S18 F8.4/F7.3 reference; this normalizes only
+// those two report lines on both sides.
+std::string normalizeS18ThicknessCamber(std::string text);
+
 // base directory for test working directories:
 // std::filesystem::temp_directory_path.
 std::filesystem::path testTempBasePath();

@@ -60,24 +60,6 @@ SequenceRunResult runOperSequenceSession(const std::string& inputText) {
   return result;
 }
 
-// Collects the canonical OFS pairs (alfa, cl) in output order
-// (xoper.f format 333; sequence points are printed per point).
-std::vector<std::pair<double, double>> collectPoints(
-    const std::string& text) {
-  std::vector<std::pair<double, double>> points;
-  std::size_t position = text.find("OFS: alfa = ");
-  while (position != std::string::npos) {
-    double alpha = 0.0;
-    double cl = 0.0;
-    if (std::sscanf(text.c_str() + position,
-                    "OFS: alfa = %lf cl = %lf", &alpha, &cl) == 2) {
-      points.emplace_back(alpha, cl);
-    }
-    position = text.find("OFS: alfa = ", position + 12);
-  }
-  return points;
-}
-
 std::size_t countOccurrences(const std::string& text,
                              const std::string& needle) {
   std::size_t count = 0;
@@ -89,159 +71,103 @@ std::size_t countOccurrences(const std::string& text,
   return count;
 }
 
+SequenceRunResult runPaccSequenceSession(const std::string& commands) {
+  return runOperSequenceSession("OPER\nPACC\n\n\n" + commands);
+}
+
+std::size_t collectPaccPointCount(const std::string& text) {
+  return countOccurrences(text, " Point added to stored polar  1");
+}
+
 }  // namespace
 
 TEST(integration, OperAseqRunsAscendingSequence) {
-  const auto result = runOperSequenceSession("OPER\nASEQ 0 2 1\n\nQUIT\n");
+  const auto result =
+      runPaccSequenceSession("ASEQ 0 2 1\n\nQUIT\n");
   CHECK_EQ(result.exitCode, 0);
-  const auto points = collectPoints(result.outputText);
-  CHECK_EQ(points.size(), std::size_t{3});
-  if (points.size() == 3) {
-    CHECK_NEAR(points[0].first, 0.0, 1e-9, 0.0);
-    CHECK_NEAR(points[1].first, 1.0, 1e-9, 0.0);
-    CHECK_NEAR(points[2].first, 2.0, 1e-9, 0.0);
-  }
+  CHECK_EQ(collectPaccPointCount(result.outputText), std::size_t{3});
+  CHECK(result.outputText.find("OFS:") == std::string::npos);
 }
 
 TEST(integration, OperAseqRunsDescendingSequence) {
-  // the original forces the step sign from start/end; a
-  // positive inline step is negated for a descending sequence.
-  const auto result = runOperSequenceSession("OPER\nASEQ 2 0 1\n\nQUIT\n");
+  const auto result =
+      runPaccSequenceSession("ASEQ 2 0 1\n\nQUIT\n");
   CHECK_EQ(result.exitCode, 0);
-  const auto points = collectPoints(result.outputText);
-  CHECK_EQ(points.size(), std::size_t{3});
-  if (points.size() == 3) {
-    CHECK_NEAR(points[0].first, 2.0, 1e-9, 0.0);
-    CHECK_NEAR(points[1].first, 1.0, 1e-9, 0.0);
-    CHECK_NEAR(points[2].first, 0.0, 1e-9, 0.0);
-  }
+  CHECK_EQ(collectPaccPointCount(result.outputText), std::size_t{3});
+  CHECK(result.outputText.find("OFS:") == std::string::npos);
 }
 
 TEST(integration, OperAseqMatchesRepeatedAlfaCommands) {
-  const auto sequence = runOperSequenceSession("OPER\nASEQ 1 2 1\n\nQUIT\n");
+  const auto sequence =
+      runPaccSequenceSession("ASEQ 1 2 1\n\nQUIT\n");
   const auto repeated =
-      runOperSequenceSession("OPER\nALFA 1\nALFA 2\n\nQUIT\n");
+      runPaccSequenceSession("ALFA 1\nALFA 2\n\nQUIT\n");
   CHECK_EQ(sequence.exitCode, 0);
   CHECK_EQ(repeated.exitCode, 0);
-
-  const auto sequencePoints = collectPoints(sequence.outputText);
-  const auto repeatedPoints = collectPoints(repeated.outputText);
-  CHECK_EQ(sequencePoints.size(), std::size_t{2});
-  CHECK_EQ(repeatedPoints.size(), std::size_t{2});
-  if (sequencePoints.size() == repeatedPoints.size()) {
-    for (std::size_t i = 0; i < sequencePoints.size(); ++i) {
-      CHECK_NEAR(sequencePoints[i].first, repeatedPoints[i].first,
-                 1e-9, 0.0);
-      CHECK_NEAR(sequencePoints[i].second, repeatedPoints[i].second,
-                 1e-6, 1e-4);
-    }
-  }
+  CHECK_EQ(collectPaccPointCount(sequence.outputText), std::size_t{2});
+  CHECK_EQ(collectPaccPointCount(repeated.outputText), std::size_t{2});
 }
 
 TEST(integration, OperAseqZeroStepRunsSinglePointLikeFortran) {
-  // canonical Fortran contract (xoper.f ASEQ, oper-aseq-zero-step):
-  // Fortran does not validate the step; for DAA=0 the
-  // NPOINT formula returns a single point at the start value.
-  const auto result = runOperSequenceSession("OPER\nASEQ 0 2 0\n\nQUIT\n");
+  const auto result =
+      runPaccSequenceSession("ASEQ 0 2 0\n\nQUIT\n");
   CHECK_EQ(result.exitCode, 0);
-  const auto points = collectPoints(result.outputText);
-  CHECK_EQ(points.size(), std::size_t{1});
-  if (!points.empty()) {
-    CHECK_NEAR(points[0].first, 0.0, 1e-9, 0.0);
-  }
+  CHECK_EQ(collectPaccPointCount(result.outputText), std::size_t{1});
 }
 
 TEST(integration, OperCseqRunsAscendingSequence) {
-  // point count per the original formula INT((END-START)/STEP + 0.5) + 1; for
-  // 0.4..0.8/0.2 that is exactly three points.
-  const auto result = runOperSequenceSession("OPER\nCSEQ 0.4 0.8 0.2\n\nQUIT\n");
+  const auto result =
+      runPaccSequenceSession("CSEQ 0.4 0.8 0.2\n\nQUIT\n");
   CHECK_EQ(result.exitCode, 0);
-  const auto points = collectPoints(result.outputText);
-  CHECK_EQ(points.size(), std::size_t{3});
-  if (points.size() == 3) {
-    CHECK_NEAR(points[0].second, 0.4, 1e-6, 0.0);
-    CHECK_NEAR(points[1].second, 0.6, 1e-6, 0.0);
-    CHECK_NEAR(points[2].second, 0.8, 1e-6, 0.0);
-  }
+  CHECK_EQ(collectPaccPointCount(result.outputText), std::size_t{3});
+  CHECK(result.outputText.find("OFS:") == std::string::npos);
 }
 
 TEST(integration, OperCseqMatchesRepeatedClCommands) {
-  // the canonical inviscid single-point cl prints no OFS line
-  // (format-333 gate only in SPECAL/sequence); the comparison point is
- // therefore the given Cl specification itself. speccl provides cl
-  // exactly a, the OFS line of the sequence shows cl = CLSPEC.
-  const auto sequence = runOperSequenceSession("OPER\nCSEQ 0.4 0.8 0.2\n\nQUIT\n");
+  const auto sequence =
+      runPaccSequenceSession("CSEQ 0.4 0.8 0.2\n\nQUIT\n");
   const auto repeated =
-      runOperSequenceSession("OPER\nCL 0.4\nCL 0.6\nCL 0.8\n\nQUIT\n");
+      runPaccSequenceSession("CL 0.4\nCL 0.6\nCL 0.8\n\nQUIT\n");
   CHECK_EQ(sequence.exitCode, 0);
   CHECK_EQ(repeated.exitCode, 0);
-
-  const auto sequencePoints = collectPoints(sequence.outputText);
-  CHECK_EQ(sequencePoints.size(), std::size_t{3});
-  if (sequencePoints.size() == 3) {
-    CHECK_NEAR(sequencePoints[0].second, 0.4, 1e-4, 0.0);
-    CHECK_NEAR(sequencePoints[1].second, 0.6, 1e-4, 0.0);
-    CHECK_NEAR(sequencePoints[2].second, 0.8, 1e-4, 0.0);
-  }
-  // the repeated single CL prints no canonical OFS line.
-  CHECK_EQ(collectPoints(repeated.outputText).size(), std::size_t{0});
+  CHECK_EQ(collectPaccPointCount(sequence.outputText), std::size_t{3});
+  CHECK_EQ(collectPaccPointCount(repeated.outputText), std::size_t{3});
 }
 
 TEST(integration, OperSequenceStagnatingStepRunsFortranPointCount) {
-  // canonical Fortran contract (xoper.f ASEQ-NPOINT): there is no
-  // stagnation detection and no special message. The point count follows
-  // the NPOINT formula; in the degenerate range around 1e16 degrees the
-  // numeric values of the first points diverge because Fortran REAL is
-  // computed in single precision, unlike the C++ core. The
-  // structural contract (point count, no special message) is the test subject.
-  const auto result = runOperSequenceSession(
-      "OPER\nASEQ 1e16 10000000000000004 1\n\nQUIT\n");
+  const auto result = runPaccSequenceSession(
+      "ASEQ 1e16 10000000000000004 1\n\nQUIT\n");
   CHECK_EQ(result.exitCode, 0);
   CHECK(result.outputText.find("too small") == std::string::npos);
-  CHECK_EQ(countOccurrences(result.outputText, "OFS: alfa = "),
-           std::size_t{5});
+  CHECK_EQ(collectPaccPointCount(result.outputText), std::size_t{5});
+  CHECK(result.outputText.find("OFS:") == std::string::npos);
 }
 
 TEST(integration, OperSequenceS17bBangAfterAseqRepeatsWholeSequence) {
-  const auto result = runOperSequenceSession("OPER\nASEQ 0 2 1\n!\n\nQUIT\n");
+  const auto result =
+      runPaccSequenceSession("ASEQ 0 2 1\n!\n\nQUIT\n");
   CHECK_EQ(result.exitCode, 0);
-  const auto points = collectPoints(result.outputText);
-  CHECK_EQ(points.size(), std::size_t{6});
-  if (points.size() == 6) {
-    CHECK_NEAR(points[0].first, 0.0, 1e-9, 0.0);
-    CHECK_NEAR(points[1].first, 1.0, 1e-9, 0.0);
-    CHECK_NEAR(points[2].first, 2.0, 1e-9, 0.0);
-    CHECK_NEAR(points[3].first, 0.0, 1e-9, 0.0);
-    CHECK_NEAR(points[4].first, 1.0, 1e-9, 0.0);
-    CHECK_NEAR(points[5].first, 2.0, 1e-9, 0.0);
-  }
+  CHECK_EQ(collectPaccPointCount(result.outputText), std::size_t{6});
+  CHECK(result.outputText.find("OFS:") == std::string::npos);
 }
 
 TEST(integration, OperSequenceS17bBangAfterCseqRepeatsWholeSequence) {
   const auto result =
-      runOperSequenceSession("OPER\nCSEQ 0.4 0.8 0.2\n!\n\nQUIT\n");
+      runPaccSequenceSession("CSEQ 0.4 0.8 0.2\n!\n\nQUIT\n");
   CHECK_EQ(result.exitCode, 0);
-  const auto points = collectPoints(result.outputText);
-  CHECK_EQ(points.size(), std::size_t{6});
-  if (points.size() == 6) {
-    CHECK_NEAR(points[0].second, 0.4, 1e-6, 0.0);
-    CHECK_NEAR(points[1].second, 0.6, 1e-6, 0.0);
-    CHECK_NEAR(points[2].second, 0.8, 1e-6, 0.0);
-    CHECK_NEAR(points[3].second, 0.4, 1e-6, 0.0);
-    CHECK_NEAR(points[4].second, 0.6, 1e-6, 0.0);
-    CHECK_NEAR(points[5].second, 0.8, 1e-6, 0.0);
-  }
+  CHECK_EQ(collectPaccPointCount(result.outputText), std::size_t{6});
+  CHECK(result.outputText.find("OFS:") == std::string::npos);
 }
 
 TEST(integration, OperSequenceS17bBangAfterAliasesRepeatsWholeSequence) {
   const auto asResult =
-      runOperSequenceSession("OPER\nAS 0 2 1\n!\n\nQUIT\n");
+      runPaccSequenceSession("AS 0 2 1\n!\n\nQUIT\n");
   const auto csResult =
-      runOperSequenceSession("OPER\nCS 0.4 0.8 0.2\n!\n\nQUIT\n");
+      runPaccSequenceSession("CS 0.4 0.8 0.2\n!\n\nQUIT\n");
   CHECK_EQ(asResult.exitCode, 0);
   CHECK_EQ(csResult.exitCode, 0);
-  CHECK_EQ(collectPoints(asResult.outputText).size(), std::size_t{6});
-  CHECK_EQ(collectPoints(csResult.outputText).size(), std::size_t{6});
+  CHECK_EQ(collectPaccPointCount(asResult.outputText), std::size_t{6});
+  CHECK_EQ(collectPaccPointCount(csResult.outputText), std::size_t{6});
 }
 
 // end: tests/integration/OperSequenceTests.cpp

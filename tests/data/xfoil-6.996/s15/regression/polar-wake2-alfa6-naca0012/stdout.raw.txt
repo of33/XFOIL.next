@@ -80,8 +80,6 @@
  Re =  0.1000E+07
 
 .OPERv   c>   Calculating unit vorticity distributions ...
-
-OFS: alfa =   4.0000 cl =   0.4829 cdp =  -0.0011 cm =  -0.0056
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -104,14 +102,14 @@ OFS: alfa =   4.0000 cl =   0.4829 cdp =  -0.0011 cm =  -0.0056
 
    1   rms: 0.1316E+00   max: 0.1067E+01   D at   39  1   RLX: 0.512
        a =  4.000      CL =  0.4572
-      Cm = -0.0005     CD =  0.00654   =>   CDf =  0.00529    CDp =  0.00125
+      Cm = -0.0005     CD =  0.00654   =>   CDf =  0.00529    CDp =  0.00125    CLf = -0.00010   CDp =  0.00013 CDp+CDf =  0.00542
 
  Side 1  free  transition at x/c =  0.2271   39
  Side 2  free  transition at x/c =  0.9370   70
 
    2   rms: 0.7701E-01   max: -.6581E+00   D at   75  2   RLX: 0.760
        a =  4.000      CL =  0.4213
-      Cm =  0.0071     CD =  0.00710   =>   CDf =  0.00519    CDp =  0.00191
+      Cm =  0.0071     CD =  0.00710   =>   CDf =  0.00519    CDp =  0.00191    CLf = -0.00012   CDp =  0.00084 CDp+CDf =  0.00603
 
  MRCHDU: Convergence failed at  74  side 2    Res =  0.7354E+01
  MRCHDU: Convergence failed at  75  side 2    Res =  0.4548E+01
@@ -120,35 +118,35 @@ OFS: alfa =   4.0000 cl =   0.4829 cdp =  -0.0011 cm =  -0.0056
 
    3   rms: 0.6362E-01   max: 0.7245E+00   C at   74  2
        a =  4.000      CL =  0.4228
-      Cm =  0.0073     CD =  0.00708   =>   CDf =  0.00497    CDp =  0.00211
+      Cm =  0.0073     CD =  0.00708   =>   CDf =  0.00497    CDp =  0.00211    CLf = -0.00013   CDp =  0.00121 CDp+CDf =  0.00618
 
  Side 1  free  transition at x/c =  0.2567   41
  Side 2  free  transition at x/c =  0.9673   73
 
    4   rms: 0.1685E-01   max: -.3128E+00   D at   73  2
        a =  4.000      CL =  0.4264
-      Cm =  0.0063     CD =  0.00726   =>   CDf =  0.00495    CDp =  0.00231
+      Cm =  0.0063     CD =  0.00726   =>   CDf =  0.00495    CDp =  0.00231    CLf = -0.00013   CDp =  0.00118 CDp+CDf =  0.00613
 
  Side 1  free  transition at x/c =  0.2542   41
  Side 2  free  transition at x/c =  0.9704   73
 
    5   rms: 0.5950E-02   max: 0.7665E-01   C at   73  2
        a =  4.000      CL =  0.4275
-      Cm =  0.0061     CD =  0.00728   =>   CDf =  0.00496    CDp =  0.00231
+      Cm =  0.0061     CD =  0.00728   =>   CDf =  0.00496    CDp =  0.00231    CLf = -0.00013   CDp =  0.00118 CDp+CDf =  0.00615
 
  Side 1  free  transition at x/c =  0.2538   41
  Side 2  free  transition at x/c =  0.9686   73
 
    6   rms: 0.5264E-03   max: -.6258E-02   D at   75  2
        a =  4.000      CL =  0.4278
-      Cm =  0.0060     CD =  0.00728   =>   CDf =  0.00496    CDp =  0.00231
+      Cm =  0.0060     CD =  0.00728   =>   CDf =  0.00496    CDp =  0.00231    CLf = -0.00013   CDp =  0.00118 CDp+CDf =  0.00615
 
  Side 1  free  transition at x/c =  0.2537   41
  Side 2  free  transition at x/c =  0.9685   73
 
    7   rms: 0.1645E-05   max: -.1880E-04   D at   73  2
        a =  4.000      CL =  0.4278
-      Cm =  0.0060     CD =  0.00728   =>   CDf =  0.00497    CDp =  0.00231
+      Cm =  0.0060     CD =  0.00728   =>   CDf =  0.00497    CDp =  0.00231    CLf = -0.00013   CDp =  0.00118 CDp+CDf =  0.00615
       9.000    3.1650   0.007279   0.000000   0.000000   0.000000    0.2537     #
 
 .OPERv   c>  
@@ -165,9 +163,7 @@ OFS: alfa =   4.0000 cl =   0.4829 cdp =  -0.0011 cm =  -0.0056
 
 ..VPAR   c>  
 ..VPAR   c>  
-.OPERv   c>  
-OFS: alfa =   6.0000 cl =   0.7235 cdp =  -0.0011 cm =  -0.0083
- Calculating wake trajectory ...
+.OPERv   c>   Calculating wake trajectory ...
  Calculating source influence matrix ...
 
  Solving BL system ...
@@ -195,35 +191,35 @@ OFS: alfa =   6.0000 cl =   0.7235 cdp =  -0.0011 cm =  -0.0083
 
    1   rms: 0.2003E+00   max: 0.9598E+00   D at   75  2   RLX: 0.750
        a =  6.000      CL =  0.7301
-      Cm = -0.0111     CD =  0.00908   =>   CDf =  0.00589    CDp =  0.00319
+      Cm = -0.0111     CD =  0.00908   =>   CDf =  0.00589    CDp =  0.00319    CLf =  0.00003   CDp =  0.00217 CDp+CDf =  0.00806
 
  Side 1  free  transition at x/c =  0.0617   30
  Side 2  free  transition at x/c =  0.9909   71
 
    2   rms: 0.6157E-01   max: -.4117E+00   T at   30  1
        a =  6.000      CL =  0.6917
-      Cm = -0.0037     CD =  0.01003   =>   CDf =  0.00598    CDp =  0.00405
+      Cm = -0.0037     CD =  0.01003   =>   CDf =  0.00598    CDp =  0.00405    CLf = -0.00001   CDp =  0.00244 CDp+CDf =  0.00842
 
  Side 1  free  transition at x/c =  0.0762   32
  Side 2  free  transition at x/c =  0.9985   72
 
    3   rms: 0.2627E-01   max: 0.2915E+00   D at   32  1
        a =  6.000      CL =  0.6956
-      Cm = -0.0044     CD =  0.00965   =>   CDf =  0.00583    CDp =  0.00381
+      Cm = -0.0044     CD =  0.00965   =>   CDf =  0.00583    CDp =  0.00381    CLf = -0.00005   CDp =  0.00222 CDp+CDf =  0.00805
 
  Side 1  free  transition at x/c =  0.0820   32
  Side 2  free  transition at x/c =  0.9937   72
 
    4   rms: 0.2371E-02   max: -.3246E-01   D at   72  2
        a =  6.000      CL =  0.6949
-      Cm = -0.0043     CD =  0.00973   =>   CDf =  0.00578    CDp =  0.00395
+      Cm = -0.0043     CD =  0.00973   =>   CDf =  0.00578    CDp =  0.00395    CLf = -0.00005   CDp =  0.00224 CDp+CDf =  0.00802
 
  Side 1  free  transition at x/c =  0.0813   32
  Side 2  free  transition at x/c =  0.9940   72
 
    5   rms: 0.2908E-04   max: -.5430E-03   D at   32  1
        a =  6.000      CL =  0.6949
-      Cm = -0.0043     CD =  0.00973   =>   CDf =  0.00578    CDp =  0.00395
+      Cm = -0.0043     CD =  0.00973   =>   CDf =  0.00578    CDp =  0.00395    CLf = -0.00005   CDp =  0.00224 CDp+CDf =  0.00802
       9.000    3.8780   0.009728   0.000000   0.000000   0.000000    0.0813     #
 
 .OPERv   c>  

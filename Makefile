@@ -356,6 +356,7 @@ TEST_SRCS := \
 	tests/unit/CoreOperSinglePointTests.cpp \
 	tests/unit/CoreOperSinglePointHandlerTests.cpp \
 	tests/unit/TestSupportTests.cpp \
+	tests/unit/ConsoleTextS18Tests.cpp \
 	tests/integration/XFoilSessionTests.cpp \
 	tests/integration/ModernXFoilTests.cpp \
 	tests/integration/CommandInterpreterTests.cpp \
@@ -374,6 +375,7 @@ TEST_SRCS := \
 	tests/integration/TopFileExportTests.cpp \
 	tests/integration/DefaultsCommandsTests.cpp \
 	tests/integration/OperSequenceTests.cpp \
+	tests/integration/ConsoleTextS18Tests.cpp \
 	tests/integration/OperVparTests.cpp \
 	tests/integration/TopFileCommandsTests.cpp \
 	tests/integration/PanelingCommandsTests.cpp \
