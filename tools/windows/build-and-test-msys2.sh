@@ -36,8 +36,8 @@
 #
 # Expected suite totals are verified as final result lines, not only
 # via exit codes:
-#   core 414, unit 1668, integration 245, regression 5, batch 47,
-#   full suite 1968, PACC diagnostic 1.
+#   core 465, unit 1769, integration 297, regression 5, batch 47,
+#   full suite 2121, PACC diagnostic 1.
 #
 # Usage (normally invoked by the .bat entry point):
 #   build-and-test-msys2.sh <log-dir-outside-repo> <repo-dir>
@@ -94,12 +94,12 @@ mkdir "$LOGDIR" || exit 1
 
 cd "$REPO" || exit 1
 
-CORE_TOTAL=414
-UNIT_TOTAL=1668
-INTEGRATION_TOTAL=245
+CORE_TOTAL=465
+UNIT_TOTAL=1769
+INTEGRATION_TOTAL=297
 REGRESSION_TOTAL=5
 BATCH_TOTAL=47
-FULL_TOTAL=1968
+FULL_TOTAL=2121
 PACC_TOTAL=1
 
 SUMMARY="$LOGDIR/50-summary.txt"

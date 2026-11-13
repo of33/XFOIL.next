@@ -507,8 +507,8 @@ CORE_TEST_FLAGS  := -O0 -g3
 # Link sets, derived mechanically from the source groups:
 # - CORE_LINK_SRCS: pure core objects for the core link check
 # - SESSION_LINK_SRCS: session layer + pure value-type/core objects
-# - CORE_TEST_LINK_SRCS: full core test link set (without app/CLI
-# objects, except AirfoilGeometry/InviscidAnalysis)
+# - CORE_TEST_LINK_SRCS: full core test link set plus the app sources
+#   required by core test fixtures; no product main
 CORE_LINK_SRCS := \
 	$(FOUNDATION_SRCS) \
 	$(NUMERICS_SRCS) \
@@ -528,7 +528,7 @@ SESSION_LINK_SRCS := \
 	$(CORE_LINK_SRCS)
 
 CORE_TEST_LINK_SRCS := \
-	$(filter-out $(APP_SRCS) $(MATH_SRCS) $(BOUNDARY_LAYER_SRCS) \
+	$(filter-out $(MATH_SRCS) $(BOUNDARY_LAYER_SRCS) \
 	$(INVERSE_SRCS) src/core/geometry/GeometryAlgorithms.cpp,\
 	$(CORE_SRCS))
 
@@ -554,8 +554,8 @@ $(CORE_TEST_OBJDIR)/%.o: tests/%.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXSTD) $(CPPFLAGS) -Itests $(DEPFLAGS) $(WARNINGS) $(CORE_TEST_FLAGS) -c $< -o $@
 
-# Standalone core-test binary: only Framework + core tests + core +
-# session layer objects (no app/CLI object).
+# Standalone core-test binary: Framework + core tests + core/session/IO
+# and the fixed app test-support sources. No product main is linked.
 $(CORE_ROOT)/xfoil_core_tests: $(CORE_TEST_OBJS) $(CORE_TEST_LINK_OBJS)
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXSTD) $(CORE_TEST_FLAGS) $^ -o $@
