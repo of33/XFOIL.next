@@ -304,7 +304,7 @@ if [ "$BUILD_RC" = PASS ]; then
         ver_rc=$?
         echo "version exit: $ver_rc output: [$ver_out]"
         if [ "$ver_rc" -ne 0 ] \
-           || ! printf '%s' "$ver_out" | grep -q '^XFOIL\.next 1\.0\.0$'; then
+           || ! printf '%s' "$ver_out" | grep -q '^XFOIL\.next 1\.1\.0$'; then
           echo "VIOLATION: unexpected --version result for $bin"
           BIN_RC=FAIL
         fi

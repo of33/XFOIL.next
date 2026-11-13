@@ -27,7 +27,7 @@ alt="GPL-3.0-or-later">
 
 # XFOIL.next
 
-**Version 1.0.0**
+**Version 1.1.0**
 
 XFOIL.next implements the complete canonical non-graphical XFOIL
 functionality in modern C++.
@@ -147,7 +147,7 @@ described in [Windows](#windows).
 ### Supported environment
 
 Validated on **Windows 11 + MSYS2 UCRT64 + GCC/MinGW 16.1.0 Rev5**
-(the accepted Windows 1.0.0 baseline).
+(the accepted Windows baseline).
 
 - MSVC is not supported and not promised;
 - Cygwin is not supported and not promised;
@@ -244,9 +244,9 @@ creates a timestamped subdirectory instead, so existing logs are never
 overwritten. The run records environment metadata (Windows version,
 UCRT64 identity, compiler versions, commit, dirty-worktree note),
 builds Debug and Release with `-Werror`, runs the full debug suites
-(unit 1668, integration 245, batch 47), repeats core (414) and
+(unit 1769, integration 297, batch 47), repeats core (465) and
 regression (5) three times each from the same untouched debug build,
-executes the full release suite (1968), checks the binary contract
+executes the full release suite (2121), checks the binary contract
 (`xfoil.next.exe` present, `xfoil.exe` absent, `--version` output),
 and performs one focused `XFOIL_DUMP_DIAG=1` PACC dump diagnostic.
 It writes separate logs (`00-environment.txt` … `50-summary.txt`), a
@@ -285,8 +285,10 @@ See [numerical validation](docs/numerical-validation.md) and
 
 Linux is the canonical platform for the bit-exact and byte-exact reference
 contracts. The 1.0.0 release tree was validated with GCC 13.3, the
-GCC 16.2.0 point release (side-by-side installation), and Clang 18.1.3. The Fortran
-reference and harness checks use the documented system GNU Fortran
+GCC 16.2.0 point release (side-by-side installation), and Clang 18.1.3. The
+1.1.0 release preparation changes only the product version metadata and its
+banner goldens; the accepted cumulative numerical matrix is unchanged. The
+Fortran reference and harness checks use the documented system GNU Fortran
 baseline.
 
 Compiler and runtime differences can affect floating-point evaluation and

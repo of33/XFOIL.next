@@ -91,26 +91,26 @@ jobs:
         shell: msys2 {0}
         run: make release build/release/xfoil_tests
 
-      - name: Core tests (414)
+      - name: Core tests (465)
         shell: msys2 {0}
         run: |
           set -o pipefail
           make test-core | tee ci-core.log
-          grep -F "0 failure(s) in 414 test(s)" ci-core.log
+          grep -F "0 failure(s) in 465 test(s)" ci-core.log
 
-      - name: Unit tests (1668)
+      - name: Unit tests (1769)
         shell: msys2 {0}
         run: |
           set -o pipefail
           make test-unit | tee ci-unit.log
-          grep -F "0 failure(s) in 1668 test(s)" ci-unit.log
+          grep -F "0 failure(s) in 1769 test(s)" ci-unit.log
 
-      - name: Integration tests (245)
+      - name: Integration tests (297)
         shell: msys2 {0}
         run: |
           set -o pipefail
           make test-integration | tee ci-integration.log
-          grep -F "0 failure(s) in 245 test(s)" ci-integration.log
+          grep -F "0 failure(s) in 297 test(s)" ci-integration.log
 
       - name: Regression tests (5)
         shell: msys2 {0}
@@ -126,13 +126,13 @@ jobs:
           make test-batch | tee ci-batch.log
           grep -F "0 failure(s) in 47 test(s)" ci-batch.log
 
-      - name: Release full suite (1968)
+      - name: Release full suite (2121)
         shell: msys2 {0}
         run: |
           set -o pipefail
           XFOIL_CLI_PATH=build/release/xfoil.next.exe \
             ./build/release/xfoil_tests | tee ci-release-full.log
-          grep -F "0 failure(s) in 1968 test(s)" ci-release-full.log
+          grep -F "0 failure(s) in 2121 test(s)" ci-release-full.log
 
       - name: Focused PACC dump diagnostic (1, XFOIL_DUMP_DIAG=1)
         shell: msys2 {0}
@@ -140,7 +140,7 @@ jobs:
           set -o pipefail
           XFOIL_DUMP_DIAG=1 XFOIL_CLI_PATH=build/debug/xfoil.next.exe \
             ./build/debug/xfoil_tests \
-            regression.PaccDumpByteParityMatchesFortranReference \
+            regression.PaccDumpByteParityMatchesXfoil6996S12Target \
             | tee ci-pacc-diagnostic.log
           grep -F "0 failure(s) in 1 test(s)" ci-pacc-diagnostic.log
 
@@ -154,4 +154,4 @@ jobs:
           test ! -e build/release/xfoil.exe
           out=$(./build/release/xfoil.next.exe --version)
           echo "version output: [$out]"
-          test "$out" = "XFOIL.next 1.0.0"
+          test "$out" = "XFOIL.next 1.1.0"

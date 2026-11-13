@@ -4,6 +4,24 @@ All notable changes to XFOIL.next are documented here. The format follows
 a plain release log; this project does not advertise a strict
 keep-a-changelog layout.
 
+## 1.1.0
+
+Cumulative XFOIL 6.996 integration, based on the accepted 1.0.0 product.
+
+- XFOIL 6.996 capacity and workspace limits, geometry primitives and the
+  NACA/NACS 399-point contract.
+- GDES and geometry commands, updated paneling defaults, and the accepted
+  geometry normalization behaviour.
+- Polar text metadata, dump/element metadata and the BLDUMP2/BLDUMP3 plus
+  BLOU file contracts.
+- State invalidation and sequence behaviour, text/input capacity alignment,
+  and the SMOO target correction.
+- DXF R12 export and the hidden top-level `DXF` command.
+- Cumulative Linux and Windows acceptance of the integrated 6.996 scope.
+
+Explicit non-goals remain SVG (`NIMP-02`), NTS/LPPORT/NSPL (`NIMP-01`) and
+the deferred headless plot backend (`G-PLOT-HEADLESS`).
+
 ## 1.0.0
 
 First public release.

@@ -78,7 +78,7 @@ const char* const kProductSourceHeader = "src/app/ProductInfo.h";
 
 TEST(unit, ProductInfoValuesMatchContract) {
   CHECK_EQ(std::string{xfoil::app::product::name}, std::string{"XFOIL.next"});
-  CHECK_EQ(std::string{xfoil::app::product::version}, std::string{"1.0.0"});
+  CHECK_EQ(std::string{xfoil::app::product::version}, std::string{"1.1.0"});
   CHECK_EQ(std::string{xfoil::app::product::licenseId},
            std::string{"GPL-3.0-or-later"});
   CHECK_EQ(std::string{xfoil::app::product::projectUrl},

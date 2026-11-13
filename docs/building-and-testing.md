@@ -105,18 +105,18 @@ Without the confirmation the target aborts without writing. It performs
 three byte-identical runs per case and checks that each case exits 0 before
 writing. After an update, review and update `tests/golden/metadata.md`.
 
-## Current counts (as of version 1.0.0)
+## Current counts (as of version 1.1.0)
 
 The commands above are the durable contract; the counts below are a point-in-
 time measurement and may change with new tests.
 
 ```text
-core suite:        408
-unit:             1640
-integration:       234
+core suite:        465
+unit:             1769
+integration:       297
 regression:          5
-batch:              46
-full C++ suite:   1928
+batch:               47
+full C++ suite:   2121
 
 Fortran source integrity (SHA256SUMS): 48
 Fortran reference cases:              236

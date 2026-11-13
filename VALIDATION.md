@@ -1,14 +1,14 @@
 # Validation baseline
 
 This document records the compiler and platform baseline used to validate
-the XFOIL.next 1.0.0 release. Compiler and runtime differences can affect
+the XFOIL.next 1.1.0 release. Compiler and runtime differences can affect
 floating-point evaluation and the byte representation of generated
 numerical reference artifacts.
 
 ## Release
 
 - Product: XFOIL.next
-- Version: 1.0.0
+- Version: 1.1.0
 
 ## Canonical Linux reference platform
 
@@ -46,7 +46,7 @@ warning policy, including warnings treated as errors.
 - Reference verification: 236/236
 - Determinism: 236/236
 - Harness families: 16/16
-- Full suite: 1968/1968
+- Full suite: 2121/2121
 
 ## Windows validation
 
@@ -57,18 +57,22 @@ The release tree was also validated manually with:
 - GCC/MinGW 16.1.0 Rev5
 - GNU Make 4.4.1
 - Debug and Release builds with warnings treated as errors
-- Core tests: 414/414
-- Unit tests: 1668/1668
-- Integration tests: 245/245
+- Core tests: 465/465
+- Unit tests: 1769/1769
+- Integration tests: 297/297
 - Regression tests: 5/5
 - Batch tests: 47/47
-- Release full suite: 1968/1968
+- Release full suite: 2121/2121
 - PACC diagnostic: 1/1
 
 Windows uses narrow, measured, test-specific semantic contracts for the
 documented floating-point differences. Linux retains the strict bit-exact
 and byte-exact reference contracts. No Windows-specific golden files are
 used.
+
+The 1.1.0 release preparation changes only the product version metadata and
+its banner goldens. It does not change the accepted cumulative numerical test
+basis or the reference artifacts.
 
 ## Hosted Windows evaluation (not part of the accepted baseline)
 
@@ -80,7 +84,7 @@ large final-result deviations:
 `batch.ClarkYNativeBatchMatchesGolden` (88 instead of 33 iterations in
 one results row) and `batch.Naca0012NativeBatchMatchesGolden` (final
 polar deviations of up to approximately 0.147). This toolchain is
-therefore not part of the accepted Windows 1.0.0 validation baseline.
+therefore not part of the accepted Windows validation baseline.
 
 No tolerance and no golden file was changed for this finding, and no
 claim is made that GCC 16.2 is generally defective; the investigation

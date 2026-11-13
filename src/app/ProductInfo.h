@@ -41,7 +41,7 @@
 namespace xfoil::app::product {
 
 inline constexpr std::string_view name = "XFOIL.next";
-inline constexpr std::string_view version = "1.0.0";
+inline constexpr std::string_view version = "1.1.0";
 inline constexpr std::string_view licenseId = "GPL-3.0-or-later";
 inline constexpr std::string_view projectUrl =
     "https://github.com/of33/XFOIL.next";
