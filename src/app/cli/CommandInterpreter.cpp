@@ -57,6 +57,7 @@
 
 #include "app/ProductInfo.h"
 #include "app/cli/CliFortranText.h"
+#include "app/cli/CoreDxfHandlers.h"
 #include "app/cli/CoreGeometryHandlers.h"
 #include "app/cli/CoreInverseDesignHandlers.h"
 #include "app/cli/CoreOperHandlers.h"
@@ -472,6 +473,8 @@ CommandFlow CommandInterpreter::executeTopCommand(const ParsedCommand& parsed) {
     handleSave(AirfoilOutputFormat::ises, parsed.argument);
   } else if (command == "MSAV") {
     handleMsave(parsed.argument);
+  } else if (command == "DXF") {
+    handleDxf(parsed.argument);
   } else if (command == "BEND") {
     handleBend();
   } else if (command == "WDEF") {
@@ -693,6 +696,37 @@ void CommandInterpreter::handleSave(AirfoilOutputFormat format,
       continue;
     }
     if (status == 2) {  // overwriteConfirmationRequired
+      if (!readAnswerLine(overwriteAnswer)) {
+        return;
+      }
+      hasOverwriteAnswer = true;
+      continue;
+    }
+    return;
+  }
+}
+
+// TOP-level hidden DXF command (xfoil.f:189-190): prompt-answer state
+// machine around the S16 command handler. The handler emits the ASKS and
+// overwrite prompts; the interpreter only collects the raw answer.
+void CommandInterpreter::handleDxf(const std::string& argument) {
+  std::string filenameAnswer;
+  std::string overwriteAnswer;
+  bool hasFilenameAnswer = false;
+  bool hasOverwriteAnswer = false;
+
+  for (;;) {
+    const DxfExportStatus status = handleDxfExportCore(
+        session_, output_, argument, !argument.empty(), filenameAnswer,
+        hasFilenameAnswer, overwriteAnswer, hasOverwriteAnswer);
+    if (status == DxfExportStatus::filenamePromptRequested) {
+      if (!readAnswerLine(filenameAnswer)) {
+        return;
+      }
+      hasFilenameAnswer = true;
+      continue;
+    }
+    if (status == DxfExportStatus::overwriteConfirmationRequired) {
       if (!readAnswerLine(overwriteAnswer)) {
         return;
       }

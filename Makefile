@@ -87,6 +87,7 @@ APP_SRCS := \
 	src/app/cli/BatchRunner.cpp \
 	src/app/cli/CommandInterpreter.cpp \
 	src/app/cli/NumericArguments.cpp \
+	src/app/cli/CoreDxfHandlers.cpp \
 	src/app/cli/CoreGeometryHandlers.cpp \
 	src/app/cli/CoreInverseDesignHandlers.cpp \
 	src/app/cli/CoreOperHandlers.cpp \
@@ -353,6 +354,7 @@ TEST_SRCS := \
 	tests/unit/GeometryCommandS15Tests.cpp \
 	tests/unit/BlouCommandS16Tests.cpp \
 	tests/unit/DxfExportS14Tests.cpp \
+	tests/unit/DxfCommandS16Tests.cpp \
 	tests/unit/StateInvalidationS17aTests.cpp \
 	tests/unit/CoreOperHandlerTests.cpp \
 	tests/unit/CoreVparHandlerTests.cpp \
@@ -387,6 +389,7 @@ TEST_SRCS := \
 	tests/integration/GeometryCommandS15Tests.cpp \
 	tests/integration/BlouCommandS16Tests.cpp \
 	tests/integration/DxfExportS14Tests.cpp \
+	tests/integration/DxfCommandS16Tests.cpp \
 	tests/integration/StateInvalidationS17aTests.cpp \
 	tests/integration/SmooTargetS19Tests.cpp \
 	tests/integration/InputCapacityS20Tests.cpp \
@@ -672,6 +675,8 @@ VALGRIND_TEST_FILTERS := \
 	unit.SessionNaca0012SymmetricInviscidRegression \
 	unit.DxfExportS14 \
 	integration.DxfExportS14 \
+	unit.DxfCommandS16 \
+	integration.DxfCommandS16 \
 	unit.MdesInitNativeAlfaSurvivesPane \
 	unit.QdesMenuRedoRepeatsSmoo \
 	unit.OperBlfDefaultDprByteExactAgainstFortranCli \

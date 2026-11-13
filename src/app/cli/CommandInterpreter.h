@@ -262,6 +262,7 @@ class CommandInterpreter {
   void handleNorm();
   void handleSave(AirfoilOutputFormat format, const std::string& argument);
   void handleMsave(const std::string& argument);
+  void handleDxf(const std::string& argument);
   void handleBend();
   void handleWdef(const std::string& argument);
   void handleRdef(const std::string& argument);
