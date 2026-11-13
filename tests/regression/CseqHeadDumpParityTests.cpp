@@ -191,15 +191,16 @@ TEST(regression, CseqHeadDumpParityMatchesFortranReference) {
     reportFailure("produced stdout not readable");
     return;
   }
+  // PUB-W2: Windows stdout uses CRLF. Normalize before locating the
+  // injected RDEF block; the block markers are LF text.
+  actual = testing::canonicalizeCapturedText(actual);
   actual = testing::normalizeLegacyDefaultDisplay(
       testing::stripInjectedDefaultsBlock(std::move(actual)));
   if (!readBytes(std::string(kReferenceDir) + "/stdout.raw.txt", expected)) {
     reportFailure("reference stdout not readable");
     return;
   }
-  // Captured console output: canonicalize CRLF -> LF before the
-  // byte-parity comparison (reference is LF text; PUB-W2).
-  actual = testing::canonicalizeCapturedText(actual);
+  // Captured console output is already CRLF-normalized above.
   const int normalized = normalizeUnzoomClass(expected);
   if (normalized != 1) {
     reportFailure("Expected exactly 1 Unzoom-Classes-Replacement in the "
