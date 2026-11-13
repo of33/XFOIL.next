@@ -393,6 +393,10 @@ TEST(unit, PolarDumpS12Old699Compatibility) {
 TEST(unit, PolarDumpS12MalformedRejected) {
   const std::vector<std::uint8_t> bytes =
       readBytes("tests/data/xfoil-6.996/s12/polar-visc-clark-y.dump");
+  CHECK(bytes.size() > 4u);
+  if (bytes.size() <= 4u) {
+    return;
+  }
   std::vector<std::uint8_t> empty;
   CHECK(!io::decodeDump(empty.data(), empty.size()).file.has_value());
   const std::vector<std::uint8_t> truncated =
@@ -405,7 +409,7 @@ TEST(unit, PolarDumpS12MalformedRejected) {
         tail.error == io::DumpError::kMarkerMismatch);
 
   std::vector<std::uint8_t> corrupt = bytes;
-  corrupt[0] = static_cast<std::uint8_t>(corrupt[0] ^ 0xffu);
+  corrupt.at(0) = static_cast<std::uint8_t>(corrupt.at(0) ^ 0xffu);
   CHECK(!io::decodeDump(corrupt.data(), corrupt.size()).file.has_value());
 
   const auto spans = dumpRecordSpans(bytes);
@@ -423,10 +427,10 @@ TEST(unit, PolarDumpS12MalformedRejected) {
   CHECK(!io::decodeDump(badIblte.data(), badIblte.size()).file.has_value());
 
   std::vector<std::uint8_t> hugeMarker = bytes;
-  hugeMarker[0] = 0xff;
-  hugeMarker[1] = 0xff;
-  hugeMarker[2] = 0xff;
-  hugeMarker[3] = 0xff;
+  hugeMarker.at(0) = 0xff;
+  hugeMarker.at(1) = 0xff;
+  hugeMarker.at(2) = 0xff;
+  hugeMarker.at(3) = 0xff;
   CHECK(!io::decodeDump(hugeMarker.data(), hugeMarker.size()).file.has_value());
 
   io::DumpHeader badHeader;
