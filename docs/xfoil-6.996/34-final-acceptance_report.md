@@ -212,8 +212,23 @@ PASS. The cumulative XFOIL 6.996 integration scope is accepted on the canonical
 Linux baseline, the additional GCC 16.2 and Clang 18.1.3 Linux validation, and
 the accepted Windows 11 / MSYS2 UCRT64 / GCC 16.1.0 baseline.
 
-## 12. Exact next allowed step
+## Final acceptance markers
 
-Create the documentation-only final acceptance commit containing this report
-and `34-final-acceptance.md`. Do not push, tag or release. Stop after the
-acceptance commit; 1.1.0 remains a separate follow-up.
+X6996-CUMULATIVE: PASS
+X6996-1.1.0-RC-ACCEPTANCE: PASS
+
+## 12. Post-acceptance documentation closure
+
+The cumulative acceptance record was committed as
+`11dcb3ad6c4cf6be33167ab4fcacf06bd0e0477c`.
+
+Its technical test basis remains
+`d3927e7639921353d6766428d1c74fc1431a37d5`.
+
+This documentation follow-up commit only completes the record; it does not
+change the technical test basis and does not require a new Linux or Windows
+matrix run.
+
+The next separately authorized task is the local XFOIL.next 1.1.0 release
+preparation. It has not started. The product version remains 1.0.0; no push,
+tag or release has occurred.
