@@ -166,6 +166,7 @@ echo "   log directory: $LOGDIR"
 # 00 - environment metadata (read-only)
 # ---------------------------------------------------------------------------
 ENVLOG="$LOGDIR/00-environment.txt"
+ENV_DIRTY=0
 {
   date -Is
   echo "--- windows version (cmd ver) ---"
@@ -188,17 +189,30 @@ ENVLOG="$LOGDIR/00-environment.txt"
      && git -C "$REPO" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     echo "--- git (read-only) ---"
     git -C "$REPO" rev-parse HEAD
-    if [ -n "$(git -C "$REPO" status --porcelain)" ]; then
-      echo "WORKTREE STATE: contains uncommitted modifications; the audited tree is an uncommitted working tree on top of the recorded commit."
+    git -C "$REPO" status --porcelain > /tmp/xfoil-win-status.$$
+    if [ -s /tmp/xfoil-win-status.$$ ]; then
+      ENV_DIRTY=1
+      echo "WORKTREE STATE: DIRTY; the audited tree is not a clean commit checkout."
+      echo "--- git status --porcelain ---"
+      cat /tmp/xfoil-win-status.$$
+      echo "--- git diff --stat ---"
+      git -C "$REPO" diff --stat
     else
       echo "WORKTREE STATE: clean"
     fi
+    rm -f /tmp/xfoil-win-status.$$
   else
     echo "--- git (read-only) ---"
-    echo "WORKTREE STATE: not a git repository (exported audit tree); the commit basis is documented in EXPORT-INFO.txt stored alongside the exported tree."
+    echo "WORKTREE STATE: not a git repository (exported audit tree)."
+    if [ -f "$REPO/EXPORT-INFO.txt" ]; then
+      echo "--- export info ---"
+      cat "$REPO/EXPORT-INFO.txt"
+    else
+      echo "ERROR: exported tree has no EXPORT-INFO.txt; commit basis is not documented."
+    fi
   fi
 } > "$ENVLOG" 2>&1
-if [ -s "$ENVLOG" ]; then
+if [ -s "$ENVLOG" ] && [ "$ENV_DIRTY" -eq 0 ]; then
   mark environment PASS
 else
   mark environment FAIL
@@ -269,7 +283,7 @@ if [ "$BUILD_RC" = PASS ]; then
   step "PACC diagnostic" "$LOGDIR/31-pacc-diagnostic.txt" \
     "0 failure(s) in $PACC_TOTAL test(s)" \
     env XFOIL_DUMP_DIAG=1 XFOIL_CLI_PATH="$CLI_DEBUG" \
-      "./$RUNNER_DEBUG" regression.PaccDumpByteParityMatchesFortranReference || true
+      "./$RUNNER_DEBUG" regression.PaccDumpByteParityMatchesXfoil6996S12Target || true
 
   # Binary contract (debug and release). On Windows the product binary
   # is xfoil.next.exe; xfoil.exe must never exist.
