@@ -217,6 +217,7 @@ IO_SRCS := \
 	src/io/PolarText.cpp \
 	src/io/DumpCodec.cpp \
 	src/io/DefaultsCodec.cpp \
+	src/io/DxfExport.cpp \
 	src/io/ExportFormats.cpp \
 	src/io/OrrSommerfeldCodec.cpp \
 	src/io/MsesMultielementCodec.cpp \
@@ -351,6 +352,7 @@ TEST_SRCS := \
 	tests/unit/CoreGeometryHandlerTests.cpp \
 	tests/unit/GeometryCommandS15Tests.cpp \
 	tests/unit/BlouCommandS16Tests.cpp \
+	tests/unit/DxfExportS14Tests.cpp \
 	tests/unit/StateInvalidationS17aTests.cpp \
 	tests/unit/CoreOperHandlerTests.cpp \
 	tests/unit/CoreVparHandlerTests.cpp \
@@ -384,6 +386,7 @@ TEST_SRCS := \
 	tests/integration/NativeBatchTests.cpp \
 	tests/integration/GeometryCommandS15Tests.cpp \
 	tests/integration/BlouCommandS16Tests.cpp \
+	tests/integration/DxfExportS14Tests.cpp \
 	tests/integration/StateInvalidationS17aTests.cpp \
 	tests/integration/SmooTargetS19Tests.cpp \
 	tests/integration/InputCapacityS20Tests.cpp \
@@ -667,6 +670,8 @@ VALGRIND_TEST_FILTERS := \
 	unit.ApiRunSpecAlphaColdStartUnchanged \
 	unit.SessionOperClSequenceIndependentSessions \
 	unit.SessionNaca0012SymmetricInviscidRegression \
+	unit.DxfExportS14 \
+	integration.DxfExportS14 \
 	unit.MdesInitNativeAlfaSurvivesPane \
 	unit.QdesMenuRedoRepeatsSmoo \
 	unit.OperBlfDefaultDprByteExactAgainstFortranCli \

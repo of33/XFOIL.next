@@ -5,12 +5,14 @@ include/xfoil/io/TextFormat.h
 include/xfoil/io/PolarText.h
 include/xfoil/io/DumpCodec.h
 include/xfoil/io/DefaultsCodec.h
+include/xfoil/io/DxfExport.h
 include/xfoil/io/ExportFormats.h
 include/xfoil/io/OrrSommerfeldCodec.h
 src/io/TextFormat.cpp
 src/io/PolarText.cpp
 src/io/DumpCodec.cpp
 src/io/DefaultsCodec.cpp
+src/io/DxfExport.cpp
 src/io/ExportFormats.cpp
 src/io/OrrSommerfeldCodec.cpp
 src/io/MsesMultielementCodec.cpp

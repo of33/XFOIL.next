@@ -1,0 +1,58 @@
+XFOIL 6.996 S14 DXF R12 oracle fixtures
+=======================================
+
+Oracle: XFOIL 6.996 stock binary, external oracle run S14.
+Binary SHA-256:
+  000b0468d9a7f4fce42d6fac24bd14147d7d326c8a9035909c8e9f98d180f50e
+Locale: LC_ALL=C
+No product-generated file is stored here.
+
+Common case setup:
+  NACA 0012 or NACA 2412 or NACS 0012
+  PANE
+  DXF <name>
+  QUIT
+
+The default PANE settings produce 240 panel nodes. The DXF content is
+independent of the selected filename. All fixture files use LF only and
+end with an unterminated EOF token.
+
+dxf-naca0012-240.dxf
+  case: NACA 0012, 240 panel nodes
+  size: 16013 bytes
+  sha256: a0c0d13cdf9de48bc01cced1299282ce146a217794c041631c26960037e5eaed
+  text records: 2900 (2899 LF characters plus final EOF)
+  LINE entities: 239
+  extents: -0.1000,-0.1600 to 1.1000,0.1600
+
+dxf-naca2412-240.dxf
+  case: NACA 2412, 240 panel nodes
+  size: 16009 bytes
+  sha256: f6bae1a2d674c3eb3b4f36de16583604a5a4c3befadc9584480d94271c4c3edf
+  LINE entities: 239
+
+dxf-nacs0012-240.dxf
+  case: NACS 0012, 240 panel nodes, sharp trailing edge
+  size: 16013 bytes
+  sha256: 9be1f3eac93159fbbc125c11007de63caca5578f992b7bdb362a0c684dd61482
+  LINE entities: 239
+
+dxf-empty.dxf
+  case: no current contour
+  size: 239 bytes
+  sha256: 818684425bb64f551a01a01a669e1c8945a06dd1d6309b1480e21db177c254c2
+  text records: 32 (31 LF characters plus final EOF)
+  LINE entities: 0
+  extents: 0.0000,0.0000 to 0.0000,0.0000
+
+Additional oracle observations (not stored as fixtures):
+  same NACA 0012 contour with inline or prompted filename: identical bytes
+  repeated run: identical bytes
+  output filename is not present in the DXF content
+  Y direction is unchanged
+  no unit prompt and no unit scaling
+
+Protected state:
+  fortran-src/**, fortran-bin/**, patches/**
+  tests/fortran-reference/**
+  all unchanged.
