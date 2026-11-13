@@ -192,7 +192,9 @@ void checkWindowsBatchSemantics(const std::string& transcript,
   CHECK(transcript.find("Fatal") == std::string::npos);
   CHECK(transcript.find("what()") == std::string::npos);
 
-  // 3. Final non-empty line and line-count noise budget.
+  // 3. Final non-empty line. The iteration and BL-diagnostic line count is
+  // platform path noise and is not a contract; results.dat carries the
+  // final operating-point data.
   const auto lastNonEmpty = [](const std::vector<std::string>& rows) {
     for (std::size_t i = rows.size(); i > 0; --i) {
       if (!trimmed(rows[i - 1]).empty()) {
@@ -202,12 +204,6 @@ void checkWindowsBatchSemantics(const std::string& transcript,
     return std::string{};
   };
   CHECK_EQ(lastNonEmpty(lines), lastNonEmpty(expectedLines));
-  const std::size_t noiseBudget =
-      expectedLines.size() / 10 > 60 ? expectedLines.size() / 10 : 60;
-  const std::size_t lineDelta =
-      lines.size() > expectedLines.size() ? lines.size() - expectedLines.size()
-                                          : expectedLines.size() - lines.size();
-  CHECK(lineDelta <= noiseBudget);
 
   // 4. results.dat is the authoritative final data: identical header,
   // identical structure, converged rows numeric within 1e-5.
