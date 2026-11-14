@@ -9,8 +9,6 @@
    Top    side refined area x/c limits  1.000 1.000
    Bottom side refined area x/c limits  1.000 1.000
  Calculating unit vorticity distributions ...
-
-OFS: alfa =   4.0000 cl =   0.7376 cdp =  -0.0011 cm =  -0.0616
 ALFA =     0.69813170079773181897E-01
 MINF =     0.00000000000000000000E+00
 QINF =     0.10000000000000000000E+01

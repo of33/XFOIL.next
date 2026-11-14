@@ -1,8 +1,6 @@
 
  Current airfoil nodes set from buffer airfoil nodes ( 151 )
  Calculating unit vorticity distributions ...
-
-OFS: alfa =   0.0000 cl =   0.4162 cdp =  -0.0007 cm =  -0.0879
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -3075,8 +3073,6 @@ OFS: alfa =   0.0000 cl =   0.4162 cdp =  -0.0007 cm =  -0.0879
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  0.0000000000000000E+00
-
-OFS: alfa =   0.5000 cl =   0.4765 cdp =  -0.0007 cm =  -0.0887
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -3391,8 +3387,6 @@ OFS: alfa =   0.5000 cl =   0.4765 cdp =  -0.0007 cm =  -0.0887
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  8.7266462599716477E-03
-
-OFS: alfa =   1.0000 cl =   0.5367 cdp =  -0.0007 cm =  -0.0895
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -3645,8 +3639,6 @@ OFS: alfa =   1.0000 cl =   0.5367 cdp =  -0.0007 cm =  -0.0895
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  1.7453292519943295E-02
-
-OFS: alfa =   1.5000 cl =   0.5969 cdp =  -0.0007 cm =  -0.0903
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -3899,8 +3891,6 @@ OFS: alfa =   1.5000 cl =   0.5969 cdp =  -0.0007 cm =  -0.0903
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  2.6179938779914945E-02
-
-OFS: alfa =   2.0000 cl =   0.6571 cdp =  -0.0007 cm =  -0.0911
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -4124,8 +4114,6 @@ OFS: alfa =   2.0000 cl =   0.6571 cdp =  -0.0007 cm =  -0.0911
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  3.4906585039886591E-02
-
-OFS: alfa =   2.5000 cl =   0.7172 cdp =  -0.0007 cm =  -0.0919
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -4492,8 +4480,6 @@ OFS: alfa =   2.5000 cl =   0.7172 cdp =  -0.0007 cm =  -0.0919
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  4.3633231299858237E-02
-
-OFS: alfa =   3.0000 cl =   0.7773 cdp =  -0.0007 cm =  -0.0927
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -5114,8 +5100,6 @@ OFS: alfa =   3.0000 cl =   0.7773 cdp =  -0.0007 cm =  -0.0927
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  5.2359877559829890E-02
-
-OFS: alfa =   3.5000 cl =   0.8373 cdp =  -0.0007 cm =  -0.0935
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -5501,8 +5485,6 @@ OFS: alfa =   3.5000 cl =   0.8373 cdp =  -0.0007 cm =  -0.0935
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  6.1086523819801536E-02
-
-OFS: alfa =   4.0000 cl =   0.8972 cdp =  -0.0007 cm =  -0.0943
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -5970,8 +5952,6 @@ OFS: alfa =   4.0000 cl =   0.8972 cdp =  -0.0007 cm =  -0.0943
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  6.9813170079773182E-02
-
-OFS: alfa =   4.5000 cl =   0.9571 cdp =  -0.0007 cm =  -0.0951
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -6327,8 +6307,6 @@ OFS: alfa =   4.5000 cl =   0.9571 cdp =  -0.0007 cm =  -0.0951
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  7.8539816339744828E-02
-
-OFS: alfa =   5.0000 cl =   1.0168 cdp =  -0.0007 cm =  -0.0960
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -6748,8 +6726,6 @@ OFS: alfa =   5.0000 cl =   1.0168 cdp =  -0.0007 cm =  -0.0960
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  8.7266462599716474E-02
-
-OFS: alfa =   5.5000 cl =   1.0766 cdp =  -0.0007 cm =  -0.0968
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -7228,8 +7204,6 @@ OFS: alfa =   5.5000 cl =   1.0766 cdp =  -0.0007 cm =  -0.0968
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  9.5993108859688120E-02
-
-OFS: alfa =   6.0000 cl =   1.1362 cdp =  -0.0007 cm =  -0.0977
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -7529,8 +7503,6 @@ OFS: alfa =   6.0000 cl =   1.1362 cdp =  -0.0007 cm =  -0.0977
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  1.0471975511965978E-01
-
-OFS: alfa =   6.5000 cl =   1.1957 cdp =  -0.0007 cm =  -0.0985
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -7859,8 +7831,6 @@ OFS: alfa =   6.5000 cl =   1.1957 cdp =  -0.0007 cm =  -0.0985
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  1.1344640137963143E-01
-
-OFS: alfa =   7.0000 cl =   1.2552 cdp =  -0.0007 cm =  -0.0994
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -8128,8 +8098,6 @@ OFS: alfa =   7.0000 cl =   1.2552 cdp =  -0.0007 cm =  -0.0994
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  1.2217304763960307E-01
-
-OFS: alfa =   7.5000 cl =   1.3145 cdp =  -0.0007 cm =  -0.1002
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -8770,8 +8738,6 @@ OFS: alfa =   7.5000 cl =   1.3145 cdp =  -0.0007 cm =  -0.1002
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  1.3089969389957470E-01
-
-OFS: alfa =   8.0000 cl =   1.3738 cdp =  -0.0008 cm =  -0.1011
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -9359,8 +9325,6 @@ OFS: alfa =   8.0000 cl =   1.3738 cdp =  -0.0008 cm =  -0.1011
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  1.3962634015954636E-01
-
-OFS: alfa =   8.5000 cl =   1.4329 cdp =  -0.0008 cm =  -0.1020
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -9867,8 +9831,6 @@ OFS: alfa =   8.5000 cl =   1.4329 cdp =  -0.0008 cm =  -0.1020
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  1.4835298641951802E-01
-
-OFS: alfa =   9.0000 cl =   1.4920 cdp =  -0.0008 cm =  -0.1028
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -10792,8 +10754,6 @@ OFS: alfa =   9.0000 cl =   1.4920 cdp =  -0.0008 cm =  -0.1028
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  1.5707963267948966E-01
-
-OFS: alfa =   9.5000 cl =   1.5509 cdp =  -0.0008 cm =  -0.1037
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -12142,8 +12102,6 @@ OFS: alfa =   9.5000 cl =   1.5509 cdp =  -0.0008 cm =  -0.1037
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  1.6580627893946132E-01
-
-OFS: alfa =  10.0000 cl =   1.6097 cdp =  -0.0008 cm =  -0.1046
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -12825,8 +12783,6 @@ OFS: alfa =  10.0000 cl =   1.6097 cdp =  -0.0008 cm =  -0.1046
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  1.7453292519943295E-01
-
-OFS: alfa =  10.5000 cl =   1.6684 cdp =  -0.0008 cm =  -0.1055
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -13769,8 +13725,6 @@ OFS: alfa =  10.5000 cl =   1.6684 cdp =  -0.0008 cm =  -0.1055
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  1.8325957145940461E-01
-
-OFS: alfa =  11.0000 cl =   1.7270 cdp =  -0.0008 cm =  -0.1064
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -14621,8 +14575,6 @@ OFS: alfa =  11.0000 cl =   1.7270 cdp =  -0.0008 cm =  -0.1064
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  1.9198621771937624E-01
-
-OFS: alfa =  11.5000 cl =   1.7854 cdp =  -0.0008 cm =  -0.1073
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -15792,8 +15744,6 @@ OFS: alfa =  11.5000 cl =   1.7854 cdp =  -0.0008 cm =  -0.1073
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  2.0071286397934790E-01
-
-OFS: alfa =  12.0000 cl =   1.8437 cdp =  -0.0009 cm =  -0.1082
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -17042,8 +16992,6 @@ OFS: alfa =  12.0000 cl =   1.8437 cdp =  -0.0009 cm =  -0.1082
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  2.0943951023931956E-01
-
-OFS: alfa =  12.5000 cl =   1.9019 cdp =  -0.0009 cm =  -0.1091
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -17819,8 +17767,6 @@ OFS: alfa =  12.5000 cl =   1.9019 cdp =  -0.0009 cm =  -0.1091
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  2.1816615649929119E-01
-
-OFS: alfa =  13.0000 cl =   1.9599 cdp =  -0.0009 cm =  -0.1099
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -20727,8 +20673,6 @@ OFS: alfa =  13.0000 cl =   1.9599 cdp =  -0.0009 cm =  -0.1099
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  2.2689280275926285E-01
-
-OFS: alfa =  13.5000 cl =   2.0177 cdp =  -0.0009 cm =  -0.1108
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -23892,8 +23836,6 @@ OFS: alfa =  13.5000 cl =   2.0177 cdp =  -0.0009 cm =  -0.1108
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  2.3561944901923448E-01
-
-OFS: alfa =  14.0000 cl =   2.0755 cdp =  -0.0009 cm =  -0.1117
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -24629,8 +24571,6 @@ OFS: alfa =  14.0000 cl =   2.0755 cdp =  -0.0009 cm =  -0.1117
  BATCH MVISC      0.0000000000000000E+00
  BATCH MINF       0.0000000000000000E+00
  BATCH STARTNEXT  2.4434609527920614E-01
-
-OFS: alfa =  14.5000 cl =   2.1330 cdp =  -0.0009 cm =  -0.1126
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 

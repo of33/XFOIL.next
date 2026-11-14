@@ -1,8 +1,6 @@
 
  Current airfoil nodes set from buffer airfoil nodes ( 151 )
  Calculating unit vorticity distributions ...
-
-OFS: alfa =  -0.1344 cl =   0.4000 cdp =  -0.0007 cm =  -0.0877
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -58,8 +56,6 @@ OFS: alfa =  -0.1344 cl =   0.4000 cdp =  -0.0007 cm =  -0.0877
  CSEQ MVISC      0.0000000000000000E+00
  CSEQ MINF       0.0000000000000000E+00
  CSEQ STARTNEXT  1.7210743763227388E-03
-
-OFS: alfa =   1.5254 cl =   0.6000 cdp =  -0.0007 cm =  -0.0903
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -104,8 +100,6 @@ OFS: alfa =   1.5254 cl =   0.6000 cdp =  -0.0007 cm =  -0.0903
  CSEQ MVISC      0.0000000000000000E+00
  CSEQ MINF       0.0000000000000000E+00
  CSEQ STARTNEXT  2.8379285580906671E-02
-
-OFS: alfa =   3.1894 cl =   0.8000 cdp =  -0.0007 cm =  -0.0930
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -150,8 +144,6 @@ OFS: alfa =   3.1894 cl =   0.8000 cdp =  -0.0007 cm =  -0.0930
  CSEQ MVISC      0.0000000000000000E+00
  CSEQ MINF       0.0000000000000000E+00
  CSEQ STARTNEXT  5.7052876494584182E-02
-
-OFS: alfa =   4.8591 cl =   1.0000 cdp =  -0.0007 cm =  -0.0957
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 

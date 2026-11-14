@@ -3,9 +3,10 @@
 ## Version decision
 
 The owner keeps the release identity `XFOIL.next 1.0.1`. No 1.0.2 release is
-created. The already published tag `v1.0.1` is moved to the source-corrected
-commit only after the correction is accepted and only with the explicit owner
-authorization recorded with this maintenance work.
+created. The already published tag `v1.0.1` is moved to the
+harness-reference-corrected commit only after the full correction is accepted
+and only with the explicit owner authorization recorded with this maintenance
+work.
 
 ## Scope and chronology
 
@@ -30,6 +31,13 @@ on `release/1.0.x`, followed by a new normal branch push and a separately
 authorized replacement of the annotated tag `v1.0.1`. No branch force-push is
 authorized. `main`, `v1.0.0` and the 1.1.0 preparation are outside this task.
 
+The first GitHub Actions run on the source-correction commit showed 9 of 16
+source-based harness families failing. Their references still contained the
+historical local OFS blocks. The owner authorized a second, narrowly scoped
+correction commit that removes only those blocks from the source-harness
+references, followed by the same normal branch push and tag-replacement
+procedure.
+
 ## Upstream originals
 
 The external XFOIL 6.99 originals are read-only reference inputs:
@@ -49,8 +57,10 @@ The external XFOIL 6.99 originals are read-only reference inputs:
   source entry changes.
 - The local OFS block and the `READR` adjustment are absent from the archived
   sources.
-- Product C++, product tests, product goldens, canonical reference data and
-  the historical binary are unchanged.
+- Product C++, product test logic, product goldens, canonical
+  `tests/fortran-reference/**` data and the historical binary are unchanged.
+- The source-based harness references were corrected separately: 21 reference
+  files in 9 harness families lost only the historical local OFS blocks.
 
 ## Historical oracle binary
 
@@ -63,6 +73,25 @@ reference outputs remain historical compatibility records. Its SHA-256 stays
 The archived upstream sources and the historical oracle are therefore
 documented separately. `fortran-bin/SHA256SUMS` and
 `tests/fortran-reference/` remain unchanged.
+
+## Source-harness reference correction
+
+The 1.0.1 source correction made the archived sources original, but the
+source-based harness references still contained the historical local OFS
+blocks. The GitHub Actions run on the corrected commit showed 9 of 16 harness
+families failing for exactly this reason.
+
+The correction removes only the historical OFS blocks:
+
+- 21 reference files in 9 harness families;
+- 106 OFS blocks, 212 lines;
+- every corrected reference is byte-identical to the actual output of the
+  corresponding harness built from the restored sources;
+- no numeric value, other text line or tolerance changed;
+- historical binary references (`tests/fortran-reference/**`) and
+  `fortran-bin/xfoil` are unchanged.
+
+The detailed per-reference hashes are recorded in the companion report.
 
 ## Validation
 
@@ -78,21 +107,24 @@ make release
 build/release/xfoil_tests
 make test-reference
 make test-reference-determinism
+make test-harnesses
 ```
 
-The product version remains 1.0.1. No reference migration and no binary
-rebuild are performed. Because no product, build or test file changes in the
-correction, the already accepted focused Windows 1.0.1 run remains valid; no
-additional Windows process is started.
+The product version remains 1.0.1. No historical-binary reference migration
+and no binary rebuild are performed. Source-harness references are corrected
+only for the removed OFS blocks. Because no product, build or Windows test
+file changes, the already accepted focused Windows 1.0.1 run remains valid;
+no additional Windows process is started.
 
 ## Acceptance markers
 
 ```text
 XFOILNEXT-1.0.1-MAINTENANCE: PASS
 XFOILNEXT-1.0.1-SOURCE-CORRECTION: PASS
+XFOILNEXT-1.0.1-HARNESS-REFERENCE-CORRECTION: PASS
 XFOILNEXT-1.0.1-R1: PASS
 ```
 
-After acceptance, the correction commit is pushed normally to
-`release/1.0.x`; the annotated tag `v1.0.1` is then replaced to point at that
-commit. No GitHub release is created in this correction step.
+After acceptance, the harness-reference correction commit is pushed normally
+to `release/1.0.x`; the annotated tag `v1.0.1` is then replaced to point at
+that commit. No GitHub release is created in this correction step.

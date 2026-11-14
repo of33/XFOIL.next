@@ -13,8 +13,6 @@
    Top    side refined area x/c limits  1.000 1.000
    Bottom side refined area x/c limits  1.000 1.000
  Calculating unit vorticity distributions ...
-
-OFS: alfa =   2.0000 cl =   0.2416 cdp =  -0.0011 cm =  -0.0028
 CASE A TOPS BOTS  1.01957973592082585E+00  1.01966281048855256E+00
 CASE A HMOM HFX HFY  6.31548549722426439E-02 -8.09899166621076000E-03  2.41389300001960683E-01
 CASE B TOPS BOTS  3.02100718831389337E-01  1.73714182757798952E+00
@@ -30,8 +28,6 @@ CASE D XOF YOF  6.99999999999999956E-01  0.00000000000000000E+00
   Top    surface:  y =  0.0366     y/t = 1.0
   Bottom surface:  y = -0.0366     y/t = 0.0
 CASE D HMOM HFX HFY  1.78712478449604990E-03 -1.02337713686714953E-02  1.76958349235039406E-02
-
-OFS: alfa =   2.0000 cl =   0.2416 cdp =  -0.0011 cm =  -0.0028
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -107,7 +103,5 @@ CASE C HMOM HFX HFY  1.27207182642534054E-03 -1.23895351713690996E-02  9.1193466
    Top    side refined area x/c limits  1.000 1.000
    Bottom side refined area x/c limits  1.000 1.000
  Calculating unit vorticity distributions ...
-
-OFS: alfa =   2.0000 cl =   0.4968 cdp =  -0.0011 cm =  -0.0587
 CASE F TOPS BOTS  3.04268939442671915E-01  1.74055687179285390E+00
 CASE F HMOM HFX HFY  8.63599123305021713E-03 -2.96753267117934386E-02  7.02967706507049012E-02
