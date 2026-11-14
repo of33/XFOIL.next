@@ -192,7 +192,7 @@ void CommandInterpreter::printBanner() {
   // Fortran format 1005 from xfoil.f (51 '=' characters, leading space,
   // blank lines); product name and product version derive exclusively from
   // the central source app/ProductInfo.h. The line
-  // `Based upon XFOIL Version 6.99` is the original-XFOIL attribution and
+  // `Based upon XFOIL Version 6.996` is the integrated-XFOIL attribution and
   // not a product version.
   output_ << "\n"
              " ===================================================\n"
@@ -201,7 +201,7 @@ void CommandInterpreter::printBanner() {
           << "\n"
              " Copyright (C) 2026 Olaf Frommann\n"
              "\n"
-             " Based upon XFOIL Version 6.99\n"
+             " Based upon XFOIL Version 6.996\n"
              " Copyright (C) 2000   Mark Drela, Harold Youngren\n"
              "\n"
              " This software comes with ABSOLUTELY NO WARRANTY,\n"

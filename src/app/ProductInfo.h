@@ -21,6 +21,9 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+// Product attribution: XFOIL.next is based on XFOIL by Mark Drela and
+// Harold Youngren and integrates the accepted XFOIL 6.996 changes.
+
 // File: src/app/ProductInfo.h
 // Central internal product and version source of XFOIL.next.
 // Header-only, no dynamic initialization, no public header

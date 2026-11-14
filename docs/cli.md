@@ -24,7 +24,7 @@ profile, then enters the menu loop. The banner is:
  XFOIL.next Version 1.1.0
  Copyright (C) 2026 Olaf Frommann
 
- Based upon XFOIL Version 6.99
+ Based upon XFOIL Version 6.996
  Copyright (C) 2000   Mark Drela, Harold Youngren
 
  This software comes with ABSOLUTELY NO WARRANTY,

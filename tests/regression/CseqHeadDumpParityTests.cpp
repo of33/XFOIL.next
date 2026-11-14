@@ -107,7 +107,7 @@ int normalizeProductBannerClass(std::string& text) {
       std::string{xfoil::app::product::name} + " Version " +
       std::string{xfoil::app::product::version} +
       "\n Copyright (C) 2026 Olaf Frommann\n"
-      "\n Based upon XFOIL Version 6.99\n"
+      "\n Based upon XFOIL Version 6.996\n"
       " Copyright (C) 2000   Mark Drela, Harold Youngren\n"
       "\n This software comes with ABSOLUTELY NO WARRANTY,\n"
       "   subject to the GNU General Public License.\n"
