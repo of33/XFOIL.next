@@ -551,7 +551,7 @@ C
  72    WRITE(*,1092) XRF(1), XRF(2)
  1092  FORMAT(1X,
      &   'Enter refinement x limits:', 2F10.5)
-       CALL READR(1,XRF(1),ERROR)
+       CALL READR(2,XRF,ERROR)
        IF(ERROR) GO TO 72
 C
  74    CONTINUE

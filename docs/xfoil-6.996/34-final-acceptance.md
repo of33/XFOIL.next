@@ -16,6 +16,13 @@ HEAD d3927e7639921353d6766428d1c74fc1431a37d5
 subject "Treat Windows batch transcript length as path noise"
 ```
 
+> **Post-publication provenance errata (2026-11-14).** The XFOIL 6.99 source
+> tree was later restored to the original upstream state and 21 source-based
+> harness references were corrected for historical local `OFS:` output.
+> Statements in this historical report about `fortran-src/**` or 6.99
+> reference data remaining unchanged describe the pre-correction basis. See
+> [the 6.99 provenance correction](36-xfoil-699-source-provenance-correction_report.md).
+
 This document decides the cumulative XFOIL 6.996 integration scope. It does
 not push, tag, release or change the product version. It is followed by one
 documentation-only acceptance commit.

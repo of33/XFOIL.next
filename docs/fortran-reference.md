@@ -6,10 +6,17 @@ from C++ output.
 
 ## `fortran-src/xfoil-6.99/`
 
-The original XFOIL 6.99 Fortran sources. They are the highest domain
+The restored original XFOIL 6.99 Fortran sources. They are the highest domain
 authority and are kept content-unmodified; C++ changes are not back-ported
-into them. They are not compiled or linked in the normal C++ build. See
-`fortran-src/xfoil-6.99/README.md`.
+into them. They are not compiled or linked in the normal C++ build. The two
+previously modified files are restored to their original hashes:
+
+```text
+xoper.f  23f0b6354d6c544b2539ee0ad01b9975838da265f59493b026c28326b69f6524
+xgdes.f  513d71d2eea3b69b5fdb3544ff506bdda68b2b51c2edbf3703f8ac268c4bd622
+```
+
+See `fortran-src/xfoil-6.99/README.md`.
 
 Integrity is pinned by `fortran-src/xfoil-6.99/SHA256SUMS` (48 entries, including the
 active and inactive OSMAP artifacts) and by
@@ -22,15 +29,20 @@ make check-fortran-sha          # verifies both source manifests
 
 ## `fortran-bin/xfoil`
 
-The reference oracle: a Linux x86-64 binary built from `fortran-src/xfoil-6.99/`. It is
-used only to generate and verify canonical reference artifacts. It is not the
-product binary. Its SHA-256 is pinned in `fortran-bin/SHA256SUMS`:
+The historical binary oracle: a Linux x86-64 binary built from an earlier
+local XFOIL 6.99 source state. It is used only to generate and verify the
+existing binary-based canonical reference artifacts. It is not the product
+binary. The binary is unchanged and is not an exact rebuild of the restored
+archive; source-based harness references now follow the restored sources while
+binary-based references remain tied to this binary. Its SHA-256 is pinned in
+`fortran-bin/SHA256SUMS`:
 
 ```text
 f5779d6954d0b8fdc152e0e0633f18732e00b7b69228d561d629bd524bba598c  xfoil
 ```
 
-See `fortran-bin/README.txt`.
+See `fortran-bin/README.txt` and
+`xfoil-6.996/36-xfoil-699-source-provenance-correction.md`.
 
 ## `tests/fortran-reference/`
 
@@ -120,8 +132,9 @@ compiles `osmap_DP.f`. Harness rebuilds require `gfortran`.
 - Never change reference data merely to make a test pass.
 - Reference values come only from the Fortran oracle, never from C++ output.
 - `generate` is used only after explicit domain authorization.
-- The Fortran sources remain the higher domain authority; the binary is the
-  executable oracle for deterministic visible output and generated files.
+- The restored Fortran sources remain the higher domain authority; the
+  historical binary is the executable oracle for the existing binary-based
+  references and generated files.
 - Historical C++ golden files are not Fortran references.
 
 ## License and provenance

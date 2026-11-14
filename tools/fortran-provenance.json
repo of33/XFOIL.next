@@ -196,7 +196,7 @@
         },
         {
           "path": "xgdes.f",
-          "sha256": "4d32ef2f75d2069e1708f32ba789940517c512369de82eaa242cf994792dcf16",
+          "sha256": "513d71d2eea3b69b5fdb3544ff506bdda68b2b51c2edbf3703f8ac268c4bd622",
           "notice_expected": true
         },
         {
@@ -211,7 +211,7 @@
         },
         {
           "path": "xoper.f",
-          "sha256": "303191f22c055480561c2a037447ae62c859c7fa70fb21b1c8a1216ff34bba22",
+          "sha256": "23f0b6354d6c544b2539ee0ad01b9975838da265f59493b026c28326b69f6524",
           "notice_expected": true
         },
         {

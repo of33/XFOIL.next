@@ -13,8 +13,6 @@
  MRCL: CL too low for chosen Mach(CL) dependence
        Aritificially limiting Mach to  0.99
  SPECAL:  Minf convergence failed
-
-OFS: alfa =      NaN cl =      NaN cdp =      NaN cm =      NaN
  SPECF-ALFA ALFA =       0.000000
  SPECF-ALFA CL =            NaN
  SPECF-ALFA CM =            NaN

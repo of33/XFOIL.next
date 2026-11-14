@@ -4,6 +4,13 @@ This report records the implementation and independent acceptance of the
 U0 inventory, source freeze, and version-aware Fortran provenance gate.
 Detailed machine-generated logs remain in the external audit area.
 
+> **Post-publication provenance errata (2026-11-14).** The XFOIL 6.99 source
+> tree was later restored to the original upstream state and 21 source-based
+> harness references were corrected for historical local `OFS:` output.
+> Statements in this historical report about `fortran-src/**` or 6.99
+> reference data remaining unchanged describe the pre-correction basis. See
+> [the 6.99 provenance correction](36-xfoil-699-source-provenance-correction_report.md).
+
 ## X6996-U0-G1-R1 — Abschlussbericht (read-only)
 
 **Entscheidung: `X6996-U0-G1-R1: PASS`**

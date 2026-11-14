@@ -5,9 +5,13 @@ Fortran implementation.
 
 ## Authority
 
-The Fortran sources under `fortran-src/xfoil-6.99/` are the numerical authority. The
-precompiled `fortran-bin/xfoil` is the executable reference oracle for
-deterministic visible output and generated files.
+The restored Fortran sources under `fortran-src/xfoil-6.99/` are the
+numerical authority. The precompiled `fortran-bin/xfoil` is the historical
+binary oracle for its existing binary-based references and generated files.
+It was built from an earlier local 6.99 source state and is not an exact
+rebuild of the restored archive. Source-based harness references follow the
+restored sources; binary-based references remain tied to the historical
+binary.
 
 Reference target values are taken exclusively from the Fortran reference.
 
@@ -16,8 +20,8 @@ Reference target values are taken exclusively from the Fortran reference.
 The canonical Fortran reference build uses default REAL(8)
 (`-fdefault-real-8`). Accordingly, the C++ port computes in `double`.
 
-The reference binary was built with GCC 11.4.0 using `-O` (equivalent to
-`-O1`) and `-fdefault-real-8`. The focused Fortran harnesses are rebuilt with
+The historical reference binary was built with GCC 11.4.0 using `-O`
+(equivalent to `-O1`) and `-fdefault-real-8`. The focused Fortran harnesses are rebuilt with
 `gfortran` using `-fdefault-real-8 -fdefault-double-8`; the
 `-fdefault-double-8` flag has no effect on the reference binary because the
 sources contain no `DOUBLE PRECISION` declarations.
@@ -63,10 +67,13 @@ make test-reference-determinism     # 236/236 byte-deterministic reruns
 make test-harnesses                 # 16/16 harness rebuild/check
 ```
 
-Reference verification and determinism use the precompiled Fortran binary and
-do not require a Fortran compiler. Harness rebuilds require `gfortran`.
-Reference regeneration is used only after explicit domain authorization;
-verification and determinism never modify references.
+Reference verification and determinism use the historical precompiled Fortran
+binary and do not require a Fortran compiler. The source-based harness rebuilds
+use `gfortran` and the restored 6.99 source tree. Reference regeneration is used
+only after explicit domain authorization; verification and determinism never
+modify references. See
+[the 6.99 provenance correction](xfoil-6.996/36-xfoil-699-source-provenance-correction.md)
+for the source/binary separation.
 
 ## Compiler, mode, and tool coverage
 

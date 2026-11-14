@@ -8,6 +8,13 @@ This report records the U6 planning result. It is documentation only: no C++,
 Fortran, test, Golden, reference, tolerance or product-version change was made.
 All implementation starts only after U6 acceptance.
 
+> **Post-publication provenance errata (2026-11-14).** The XFOIL 6.99 source
+> tree was later restored to the original upstream state and 21 source-based
+> harness references were corrected for historical local `OFS:` output.
+> Statements in this historical report about `fortran-src/**` or 6.99
+> reference data remaining unchanged describe the pre-correction basis. See
+> [the 6.99 provenance correction](36-xfoil-699-source-provenance-correction_report.md).
+
 ## Starting state
 
 - HEAD: `910a507a5a54a48cbb0e4581826bd31d499df1b3`.

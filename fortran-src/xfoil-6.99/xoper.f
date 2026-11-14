@@ -2812,12 +2812,6 @@ C---- set final Mach, CL, Cp distributions, and hinge moment
       ENDIF
       IF(LFLAP) CALL MHINGE
 C
-C     OF Special
- 333  format(/'OFS: alfa = ',F8.4,' cl = ',F8.4,' cdp = ',F8.4,
-     &  ' cm = ',F8.4)
-C 333  format('alfa = ', F8.4 'cl', F8.4)
-      write(*,333) alfa*180.0/PI, cl, cdp, cm
-C      write(*,333) alfa, cl
       RETURN
       END ! SPECAL
  

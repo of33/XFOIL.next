@@ -1,8 +1,6 @@
 
  Current airfoil nodes set from buffer airfoil nodes ( 151 )
  Calculating unit vorticity distributions ...
-
-OFS: alfa =   0.0000 cl =   0.4162 cdp =  -0.0007 cm =  -0.0879
  SNAP P0B LIPAN F
  SNAP P0B LBLINIF
  SNAP P0B LVCONVF
@@ -7706,8 +7704,6 @@ OFS: alfa =   0.0000 cl =   0.4162 cdp =  -0.0007 cm =  -0.0879
  SNAP P1A WGAP     20  0.0000000000000000E+00
  SNAP P1A WGAP     21  0.0000000000000000E+00
  SNAP P1A WGAP     22  0.0000000000000000E+00
-
-OFS: alfa =   0.5000 cl =   0.4765 cdp =  -0.0007 cm =  -0.0887
  SNAP P1B LIPAN F
  SNAP P1B LBLINIF
  SNAP P1B LVCONVF

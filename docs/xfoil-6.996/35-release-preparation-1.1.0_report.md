@@ -21,6 +21,13 @@ POSIX binary:               xfoil.next
 Windows binary:             xfoil.next.exe
 ```
 
+> **Post-publication provenance errata (2026-11-14).** The XFOIL 6.99 source
+> tree was later restored to the original upstream state and 21 source-based
+> harness references were corrected for historical local `OFS:` output.
+> Statements in this historical report about `fortran-src/**` or 6.99
+> reference data remaining unchanged describe the pre-correction basis. See
+> [the 6.99 provenance correction](36-xfoil-699-source-provenance-correction_report.md).
+
 This is a local release-preparation record. It does not create a tag, push,
 publish or otherwise release the product. Version 1.0.0 remains the published
 tag.

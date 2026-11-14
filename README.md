@@ -267,9 +267,11 @@ bundled runtime.
 
 ## Numerical validation
 
-The Fortran sources under `fortran-src/xfoil-6.99/` are the numerical authority, and
-`fortran-bin/xfoil` is the executable reference oracle. The port is checked
-against them with:
+The restored Fortran sources under `fortran-src/xfoil-6.99/` are the numerical
+authority, and the historical `fortran-bin/xfoil` is the binary reference
+oracle for existing binary-based references. The binary was built from an
+earlier local source state and is not an exact rebuild of the restored archive.
+The port is checked against them with:
 
 ```sh
 make check-fortran-sha              # Fortran source integrity (SHA256SUMS)
@@ -279,7 +281,9 @@ make test-harnesses                 # 16 focused Fortran harness families
 ```
 
 See [numerical validation](docs/numerical-validation.md) and
-[Fortran reference](docs/fortran-reference.md).
+[Fortran reference](docs/fortran-reference.md). The source/binary separation
+and the 6.99 provenance correction are recorded in
+[the correction report](docs/xfoil-6.996/36-xfoil-699-source-provenance-correction.md).
 
 ## Validation baseline
 

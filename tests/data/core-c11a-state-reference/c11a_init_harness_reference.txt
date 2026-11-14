@@ -1,8 +1,6 @@
 
  Current airfoil nodes set from buffer airfoil nodes ( 151 )
  Calculating unit vorticity distributions ...
-
-OFS: alfa =   2.0000 cl =   0.6571 cdp =  -0.0007 cm =  -0.0911
  IN SPECAL_DONE
  IN SPECAL_ALFA  3.4906585039886591E-02
  IN SPECAL_CL    6.5709867960858614E-01

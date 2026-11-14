@@ -35,10 +35,10 @@ e101bbbd11147d94716fb94fb39cdd5b55897645dc864cc69056c4f4747c1e53  fortran-src/xf
 ceb6d7930b354004d1be8a9748f68922ae4593305bd9c270b233c223e1fa67d9  fortran-src/xfoil-6.99/xbl.f
 da0fa508a9f4a739eac0bcdc9ff3e9f28d8f217929a0ab61b529983ca6a8d46d  fortran-src/xfoil-6.99/xblsys.f
 57b14c9e0c71097ede0f7989f8d92db161265962e9de9b3f7a5320b4ef4a23fe  fortran-src/xfoil-6.99/xfoil.f
-4d32ef2f75d2069e1708f32ba789940517c512369de82eaa242cf994792dcf16  fortran-src/xfoil-6.99/xgdes.f
+513d71d2eea3b69b5fdb3544ff506bdda68b2b51c2edbf3703f8ac268c4bd622  fortran-src/xfoil-6.99/xgdes.f
 4c1b592f0b3f612900c4d6a04474e0b53bf46a6cde2667c6c97d8e4ff3e53a5c  fortran-src/xfoil-6.99/xgeom.f
 11e730087eb607d86dcc9efb9c8c4bfafc4ee799872e69498734fe1dd99e1d84  fortran-src/xfoil-6.99/xmdes.f
-303191f22c055480561c2a037447ae62c859c7fa70fb21b1c8a1216ff34bba22  fortran-src/xfoil-6.99/xoper.f
+23f0b6354d6c544b2539ee0ad01b9975838da265f59493b026c28326b69f6524  fortran-src/xfoil-6.99/xoper.f
 77e39d06112b038673623efaf2d00ae17342cee712044661b9b46bb683c74621  fortran-src/xfoil-6.99/xpanel.f
 77ee1f753624067baf54c4ffe2df1afbaa54d66cb57f50b4bd05a28859920edf  fortran-src/xfoil-6.99/xplots.f
 b69cd3201335ede432f0d5524bc5535fc007ecb8b63f7546758effa09c97eefe  fortran-src/xfoil-6.99/xpol.f

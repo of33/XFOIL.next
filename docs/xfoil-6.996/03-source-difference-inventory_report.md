@@ -6,6 +6,13 @@ This report records the raw and classified differences between the frozen
 XFOIL 6.99 and XFOIL 6.996 Fortran source baselines. Generated raw diffs
 and machine-readable inventories remain in the external audit area.
 
+> **Post-publication provenance errata (2026-11-14).** The XFOIL 6.99 source
+> tree was later restored to the original upstream state and 21 source-based
+> harness references were corrected for historical local `OFS:` output.
+> Statements in this historical report about `fortran-src/**` or 6.99
+> reference data remaining unchanged describe the pre-correction basis. See
+> [the 6.99 provenance correction](36-xfoil-699-source-provenance-correction_report.md).
+
 ## Starting state
 
 - HEAD: `a73122e19bb0f7e2f4001ccd639b27b16e25c3f2`.

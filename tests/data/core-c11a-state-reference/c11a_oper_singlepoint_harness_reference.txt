@@ -9,8 +9,6 @@
    Top    side refined area x/c limits  1.000 1.000
    Bottom side refined area x/c limits  1.000 1.000
  Calculating unit vorticity distributions ...
-
-OFS: alfa =   2.0000 cl =   0.4968 cdp =  -0.0011 cm =  -0.0587
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -85,8 +83,6 @@ OFS: alfa =   2.0000 cl =   0.4968 cdp =  -0.0011 cm =  -0.0587
  SP A-ALFA2-KALT CPMNV    -7.8848483112256673E-01
  SP A-ALFA2-KALT XCPMNI    9.8886936974917405E-02
  SP A-ALFA2-KALT XCPMNV    1.1179420465998029E-01
-
-OFS: alfa =   2.0000 cl =   0.4968 cdp =  -0.0011 cm =  -0.0587
 
  Side 1  free  transition at x/c =  0.5256   55
  Side 2  free  transition at x/c =  0.9675   75
@@ -310,8 +306,6 @@ OFS: alfa =   2.0000 cl =   0.4968 cdp =  -0.0011 cm =  -0.0587
    Top    side refined area x/c limits  1.000 1.000
    Bottom side refined area x/c limits  1.000 1.000
  Calculating unit vorticity distributions ...
-
-OFS: alfa =   2.0000 cl =   0.4968 cdp =  -0.0011 cm =  -0.0587
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 

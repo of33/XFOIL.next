@@ -21,9 +21,18 @@ The following files are part of the original XFOIL provenance and come from
 the XFOIL 6.99 distribution. They are kept unmodified and keep their own
 notices:
 
-  fortran-src/xfoil-6.99/          original XFOIL 6.99 Fortran reference sources
-  fortran-bin/xfoil     reference binary built from fortran-src/xfoil-6.99/
+  fortran-src/xfoil-6.99/          restored original XFOIL 6.99 Fortran sources
+  fortran-bin/xfoil     historical reference binary built from an earlier
+                        local XFOIL 6.99 source state
   fortran-src/xfoil-6.99/osmap.dat active Orr-Sommerfeld database (REAL*4)
+
+The archived 6.99 source tree was restored to the original upstream state.
+The historical `fortran-bin/xfoil` binary is preserved unchanged as the
+behavior oracle for its existing binary-based references. It was built from
+the earlier local source state and is not an exact rebuild of the restored
+source tree. Source-based harness references follow the restored sources;
+binary-based references remain tied to the historical binary. See
+`docs/xfoil-6.996/36-xfoil-699-source-provenance-correction.md`.
 
 Active and inactive OSMAP artifacts
 -----------------------------------
