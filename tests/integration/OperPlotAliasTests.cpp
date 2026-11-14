@@ -136,7 +136,10 @@ TEST(integration, OperPlotAliasesLeaveSessionStateUnchanged) {
       "OPER\nALFA 2\nPSUM\nCINC\n\nQUIT\n";
   const auto base = runSession(reference);
   CHECK_EQ(base.exitCode, 0);
-  CHECK(base.outputText.find("OFS:") != std::string::npos);
+  CHECK(base.outputText.find("OFS:") == std::string::npos);
+  CHECK(base.outputText.find(
+            " Calculating unit vorticity distributions ...") !=
+        std::string::npos);
 
   for (const auto& [alias, langform] : kAliasPairs) {
     const std::string withAlias =
@@ -148,9 +151,11 @@ TEST(integration, OperPlotAliasesLeaveSessionStateUnchanged) {
              std::size_t{2});
     // the production portion from the first point's output onward must be
     // byte-identical (the alias lines only add prompt/plot lines before).
-    const auto baseTail = base.outputText.substr(base.outputText.find("OFS:"));
+    const char* const pointMarker =
+        " Calculating unit vorticity distributions ...";
+    const auto baseTail = base.outputText.substr(base.outputText.find(pointMarker));
     const auto aliasTail =
-        result.outputText.substr(result.outputText.find("OFS:"));
+        result.outputText.substr(result.outputText.find(pointMarker));
     CHECK_EQ(aliasTail, baseTail);
   }
 }
@@ -163,7 +168,10 @@ TEST(integration, OperPlotAliasKeepsMenuSynchronization) {
   CHECK_EQ(result.exitCode, 0);
   CHECK_EQ(countOccurrences(result.outputText, kPlotUnavailable),
            std::size_t{1});
-  CHECK(result.outputText.find("OFS:") != std::string::npos);
+  CHECK(result.outputText.find("OFS:") == std::string::npos);
+  CHECK(result.outputText.find(
+            " Calculating unit vorticity distributions ...") !=
+        std::string::npos);
   CHECK(result.outputText.find("not recognized") == std::string::npos);
 }
 
@@ -200,8 +208,8 @@ TEST(integration, OperCpioCpvCpviAndProductiveAliasesUnchanged) {
   CHECK_EQ(countOccurrences(result.outputText, kPlotUnavailable),
            std::size_t{3});
   CHECK(result.outputText.find("not recognized") == std::string::npos);
-  // Alfa 2 and A produce two point outputs.
-  CHECK_EQ(countOccurrences(result.outputText, "OFS:"), std::size_t{2});
+  // Alfa 2 and A run two points; the non-upstream OFS line is gone.
+  CHECK(result.outputText.find("OFS:") == std::string::npos);
 }
 
 // 7.4 delimitation: the V/VISC alias stays productive (viscous prompt).
@@ -244,5 +252,8 @@ TEST(integration, OperPlotAliasFullMatrixSingleSequence) {
   CHECK_EQ(countOccurrences(result.outputText, kPlotUnavailable),
            std::size_t{10});
   CHECK(result.outputText.find("not recognized") == std::string::npos);
-  CHECK(result.outputText.find("OFS:") != std::string::npos);
+  CHECK(result.outputText.find("OFS:") == std::string::npos);
+  CHECK(result.outputText.find(
+            " Calculating unit vorticity distributions ...") !=
+        std::string::npos);
 }

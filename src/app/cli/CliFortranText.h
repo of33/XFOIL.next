@@ -864,13 +864,13 @@ inline void emitViscalConvergenceFailed(std::ostream& out) {
 }
 
 // SPECAL convergence abort (xoper.f 2799): WRITE(*,*) list-directed,
-// two spaces after the colon; fallthrough to OFS.
+// two spaces after the colon; fallthrough to the point continuation.
 inline void emitSpecalConvergenceFailed(std::ostream& out) {
   out << " SPECAL:  Minf convergence failed\n";
 }
 
 // SPECCL convergence abort (xoper.f 2874): WRITE(*,*) list-directed,
-// two spaces after the colon; no OFS.
+// two spaces after the colon; no specified-point text.
 inline void emitSpecclConvergenceFailed(std::ostream& out) {
   out << " SPECCL:  CL convergence failed\n";
 }
@@ -908,16 +908,6 @@ inline void emitContinueIteratingHint(std::ostream& out) {
 // value data sets. All field widths follow the Fortran FORMATs directly;
 // the formatting uses the existing io::fortranF/fortranE/fortranI
 // helpers (asterisk fill on overflow, Fortran E exponent).
-
-// Format 333 (xoper.f 2816-2818): leading '/' produces the blank line;
-// Alfa in degrees (Alfa*180/PI in the write lists).
-inline void emitOfsSpecial(std::ostream& out, double alphaDeg, double cl,
-                           double cdp, double cm) {
-  out << "\nOFS: alfa = " << io::fortranF(8, 4, alphaDeg)
-      << " cl = " << io::fortranF(8, 4, cl)
-      << " cdp = " << io::fortranF(8, 4, cdp)
-      << " cm = " << io::fortranF(8, 4, cm) << "\n";
-}
 
 // ---C-D: MDES/QDES diagnostic texts (byte-exact) -------------------
 

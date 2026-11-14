@@ -29,11 +29,13 @@
 
 #include "TestSupport.h"
 #include "app/InteractiveApplication.h"
+#include "app/cli/CommandInterpreter.h"
 
 #include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace {
 
@@ -41,6 +43,7 @@ struct SessionResult {
   int exitCode{};
   std::string outputText;
   std::string errorText;
+  std::vector<xfoil::app::cli::OperPointResult> points;
 };
 
 SessionResult runSession(const std::string& inputText) {
@@ -50,10 +53,12 @@ SessionResult runSession(const std::string& inputText) {
   std::ostringstream errorOutput;
 
   xfoil::app::cli::InteractiveStartupOptions options;
-  result.exitCode = xfoil::app::runInteractiveApplication(
-      input, output, errorOutput, options);
+  xfoil::app::cli::CommandInterpreter interpreter(input, output,
+                                                   errorOutput);
+  result.exitCode = interpreter.run(options);
   result.outputText = output.str();
   result.errorText = errorOutput.str();
+  result.points = interpreter.lastRunSummary().pointResults;
   return result;
 }
 
@@ -202,8 +207,10 @@ TEST(integration, TopPaneKeepsOperUsable) {
   // FCPP009 NACA successor group: NACA buffer with 245 points (NSIDE=123).
   // FCPP038: IPFAC=5 (canonical); Cl unchanged (-0.950577).
   CHECK(contains(result.outputText, " Blunt trailing edge.  Gap ="));
-  // canonical OFS line (FORMAT 333) of the alfa point.
-  CHECK(contains(result.outputText, "OFS: alfa = -10.0000 cl =  -0.9504"));
+  CHECK(result.outputText.find("OFS:") == std::string::npos);
+  CHECK_EQ(result.points.size(), std::size_t{1});
+  CHECK_NEAR(result.points.front().alpha, -10.0, 1.0e-9, 0.0);
+  CHECK_NEAR(result.points.front().cl, -0.9504, 1.0e-4, 0.0);
 }
 
 // canonical native sequence alfa -> PANE -> alfa.
@@ -215,19 +222,11 @@ TEST(integration, TopOperAlfaSurvivesTopPane) {
   const auto result = runSession(
       "NACA 2412\nOPER\nALFA 4\nALFA\n\n\nPANE\nOPER\nALFA\n\n\nQUIT\n");
   CHECK_EQ(result.exitCode, 0);
-  const std::string& text = result.outputText;
-  size_t ofsCount = 0;
-  size_t alfa4Count = 0;
-  size_t pos = 0;
-  while ((pos = text.find("OFS:", pos)) != std::string::npos) {
-    ++ofsCount;
-    if (text.compare(pos, 20, "OFS: alfa =   4.0000") == 0) {
-      ++alfa4Count;
-    }
-    pos += 4;
+  CHECK_EQ(result.points.size(), std::size_t{3});
+  for (const auto& point : result.points) {
+    CHECK_NEAR(point.alpha, 4.0, 1.0e-9, 0.0);
   }
-  CHECK_EQ(ofsCount, 3u);
-  CHECK_EQ(alfa4Count, 3u);
+  CHECK(result.outputText.find("OFS:") == std::string::npos);
 }
 
 TEST(integration, TopPanePreservesBufferGeometry) {
@@ -565,9 +564,11 @@ TEST(integration, PparChangesInvalidatePreviousAnalysis) {
   const auto baseline = runSession(
       "NACA 2412\nOPER\nALFA -10\nQUIT\n");
   CHECK_EQ(baseline.exitCode, 0);
-  // canonical OFS line of the baseline (NPAN 160).
-  CHECK(contains(baseline.outputText,
-                 "OFS: alfa = -10.0000 cl =  -0.9504 cdp =  -0.0012"));
+  CHECK(baseline.outputText.find("OFS:") == std::string::npos);
+  CHECK_EQ(baseline.points.size(), std::size_t{1});
+  CHECK_NEAR(baseline.points.front().alpha, -10.0, 1.0e-9, 0.0);
+  CHECK_NEAR(baseline.points.front().cl, -0.9504, 1.0e-4, 0.0);
+  CHECK_NEAR(baseline.points.front().cdp, -0.0012, 1.0e-4, 0.0);
 
   const auto afterPaneling = runSession(
       "NACA 2412\nPPAR\n"
@@ -578,6 +579,9 @@ TEST(integration, PparChangesInvalidatePreviousAnalysis) {
   CHECK_EQ(afterPaneling.exitCode, 0);
   // after installed paneling (N=50) the same analysis shows a
   // different value (canonical, byte-identical to fortran-bin/xfoil).
-  CHECK(contains(afterPaneling.outputText,
-                 "OFS: alfa = -10.0000 cl =  -0.9505 cdp =  -0.0036"));
+  CHECK(afterPaneling.outputText.find("OFS:") == std::string::npos);
+  CHECK_EQ(afterPaneling.points.size(), std::size_t{1});
+  CHECK_NEAR(afterPaneling.points.front().alpha, -10.0, 1.0e-9, 0.0);
+  CHECK_NEAR(afterPaneling.points.front().cl, -0.9505, 1.0e-4, 0.0);
+  CHECK_NEAR(afterPaneling.points.front().cdp, -0.0036, 1.0e-4, 0.0);
 }

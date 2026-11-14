@@ -28,6 +28,7 @@
 
 #include "TestSupport.h"
 #include "app/InteractiveApplication.h"
+#include "app/cli/CommandInterpreter.h"
 
 #include <cstdio>
 #include <optional>
@@ -42,6 +43,7 @@ struct SequenceRunResult {
   int exitCode{};
   std::string outputText;
   std::string errorText;
+  std::vector<xfoil::app::cli::OperPointResult> points;
 };
 
 SequenceRunResult runOperSequenceSession(const std::string& inputText) {
@@ -52,41 +54,14 @@ SequenceRunResult runOperSequenceSession(const std::string& inputText) {
   xfoil::app::cli::InteractiveStartupOptions options;
   options.inputPath = std::string("sample/CLARK_Y.dat");
 
+  xfoil::app::cli::CommandInterpreter interpreter(input, output,
+                                                   errorOutput);
   SequenceRunResult result;
-  result.exitCode = xfoil::app::runInteractiveApplication(
-      input, output, errorOutput, options);
+  result.exitCode = interpreter.run(options);
   result.outputText = output.str();
   result.errorText = errorOutput.str();
+  result.points = interpreter.lastRunSummary().pointResults;
   return result;
-}
-
-// Collects the canonical OFS pairs (alfa, cl) in output order
-// (xoper.f format 333; sequence points are printed per point).
-std::vector<std::pair<double, double>> collectPoints(
-    const std::string& text) {
-  std::vector<std::pair<double, double>> points;
-  std::size_t position = text.find("OFS: alfa = ");
-  while (position != std::string::npos) {
-    double alpha = 0.0;
-    double cl = 0.0;
-    if (std::sscanf(text.c_str() + position,
-                    "OFS: alfa = %lf cl = %lf", &alpha, &cl) == 2) {
-      points.emplace_back(alpha, cl);
-    }
-    position = text.find("OFS: alfa = ", position + 12);
-  }
-  return points;
-}
-
-std::size_t countOccurrences(const std::string& text,
-                             const std::string& needle) {
-  std::size_t count = 0;
-  std::size_t position = text.find(needle);
-  while (position != std::string::npos) {
-    ++count;
-    position = text.find(needle, position + needle.size());
-  }
-  return count;
 }
 
 }  // namespace
@@ -94,12 +69,12 @@ std::size_t countOccurrences(const std::string& text,
 TEST(integration, OperAseqRunsAscendingSequence) {
   const auto result = runOperSequenceSession("OPER\nASEQ 0 2 1\n\nQUIT\n");
   CHECK_EQ(result.exitCode, 0);
-  const auto points = collectPoints(result.outputText);
+  const auto& points = result.points;
   CHECK_EQ(points.size(), std::size_t{3});
   if (points.size() == 3) {
-    CHECK_NEAR(points[0].first, 0.0, 1e-9, 0.0);
-    CHECK_NEAR(points[1].first, 1.0, 1e-9, 0.0);
-    CHECK_NEAR(points[2].first, 2.0, 1e-9, 0.0);
+    CHECK_NEAR(points[0].alpha, 0.0, 1e-9, 0.0);
+    CHECK_NEAR(points[1].alpha, 1.0, 1e-9, 0.0);
+    CHECK_NEAR(points[2].alpha, 2.0, 1e-9, 0.0);
   }
 }
 
@@ -108,12 +83,12 @@ TEST(integration, OperAseqRunsDescendingSequence) {
   // positive inline step is negated for a descending sequence.
   const auto result = runOperSequenceSession("OPER\nASEQ 2 0 1\n\nQUIT\n");
   CHECK_EQ(result.exitCode, 0);
-  const auto points = collectPoints(result.outputText);
+  const auto& points = result.points;
   CHECK_EQ(points.size(), std::size_t{3});
   if (points.size() == 3) {
-    CHECK_NEAR(points[0].first, 2.0, 1e-9, 0.0);
-    CHECK_NEAR(points[1].first, 1.0, 1e-9, 0.0);
-    CHECK_NEAR(points[2].first, 0.0, 1e-9, 0.0);
+    CHECK_NEAR(points[0].alpha, 2.0, 1e-9, 0.0);
+    CHECK_NEAR(points[1].alpha, 1.0, 1e-9, 0.0);
+    CHECK_NEAR(points[2].alpha, 0.0, 1e-9, 0.0);
   }
 }
 
@@ -124,15 +99,15 @@ TEST(integration, OperAseqMatchesRepeatedAlfaCommands) {
   CHECK_EQ(sequence.exitCode, 0);
   CHECK_EQ(repeated.exitCode, 0);
 
-  const auto sequencePoints = collectPoints(sequence.outputText);
-  const auto repeatedPoints = collectPoints(repeated.outputText);
+  const auto& sequencePoints = sequence.points;
+  const auto& repeatedPoints = repeated.points;
   CHECK_EQ(sequencePoints.size(), std::size_t{2});
   CHECK_EQ(repeatedPoints.size(), std::size_t{2});
   if (sequencePoints.size() == repeatedPoints.size()) {
     for (std::size_t i = 0; i < sequencePoints.size(); ++i) {
-      CHECK_NEAR(sequencePoints[i].first, repeatedPoints[i].first,
+      CHECK_NEAR(sequencePoints[i].alpha, repeatedPoints[i].alpha,
                  1e-9, 0.0);
-      CHECK_NEAR(sequencePoints[i].second, repeatedPoints[i].second,
+      CHECK_NEAR(sequencePoints[i].cl, repeatedPoints[i].cl,
                  1e-6, 1e-4);
     }
   }
@@ -144,10 +119,10 @@ TEST(integration, OperAseqZeroStepRunsSinglePointLikeFortran) {
   // NPOINT formula returns a single point at the start value.
   const auto result = runOperSequenceSession("OPER\nASEQ 0 2 0\n\nQUIT\n");
   CHECK_EQ(result.exitCode, 0);
-  const auto points = collectPoints(result.outputText);
+  const auto& points = result.points;
   CHECK_EQ(points.size(), std::size_t{1});
   if (!points.empty()) {
-    CHECK_NEAR(points[0].first, 0.0, 1e-9, 0.0);
+    CHECK_NEAR(points[0].alpha, 0.0, 1e-9, 0.0);
   }
 }
 
@@ -156,35 +131,34 @@ TEST(integration, OperCseqRunsAscendingSequence) {
   // 0.4..0.8/0.2 that is exactly three points.
   const auto result = runOperSequenceSession("OPER\nCSEQ 0.4 0.8 0.2\n\nQUIT\n");
   CHECK_EQ(result.exitCode, 0);
-  const auto points = collectPoints(result.outputText);
+  const auto& points = result.points;
   CHECK_EQ(points.size(), std::size_t{3});
   if (points.size() == 3) {
-    CHECK_NEAR(points[0].second, 0.4, 1e-6, 0.0);
-    CHECK_NEAR(points[1].second, 0.6, 1e-6, 0.0);
-    CHECK_NEAR(points[2].second, 0.8, 1e-6, 0.0);
+    CHECK_NEAR(points[0].cl, 0.4, 1e-6, 0.0);
+    CHECK_NEAR(points[1].cl, 0.6, 1e-6, 0.0);
+    CHECK_NEAR(points[2].cl, 0.8, 1e-6, 0.0);
   }
 }
 
 TEST(integration, OperCseqMatchesRepeatedClCommands) {
-  // the canonical inviscid single-point cl prints no OFS line
-  // (format-333 gate only in SPECAL/sequence); the comparison point is
- // therefore the given Cl specification itself. speccl provides cl
-  // exactly a, the OFS line of the sequence shows cl = CLSPEC.
+  // The structured point records are the comparison surface; the
+  // non-upstream OFS console line is not emitted in 1.0.1.
   const auto sequence = runOperSequenceSession("OPER\nCSEQ 0.4 0.8 0.2\n\nQUIT\n");
   const auto repeated =
       runOperSequenceSession("OPER\nCL 0.4\nCL 0.6\nCL 0.8\n\nQUIT\n");
   CHECK_EQ(sequence.exitCode, 0);
   CHECK_EQ(repeated.exitCode, 0);
 
-  const auto sequencePoints = collectPoints(sequence.outputText);
+  const auto& sequencePoints = sequence.points;
   CHECK_EQ(sequencePoints.size(), std::size_t{3});
   if (sequencePoints.size() == 3) {
-    CHECK_NEAR(sequencePoints[0].second, 0.4, 1e-4, 0.0);
-    CHECK_NEAR(sequencePoints[1].second, 0.6, 1e-4, 0.0);
-    CHECK_NEAR(sequencePoints[2].second, 0.8, 1e-4, 0.0);
+    CHECK_NEAR(sequencePoints[0].cl, 0.4, 1e-4, 0.0);
+    CHECK_NEAR(sequencePoints[1].cl, 0.6, 1e-4, 0.0);
+    CHECK_NEAR(sequencePoints[2].cl, 0.8, 1e-4, 0.0);
   }
-  // the repeated single CL prints no canonical OFS line.
-  CHECK_EQ(collectPoints(repeated.outputText).size(), std::size_t{0});
+  CHECK_EQ(repeated.points.size(), std::size_t{3});
+  CHECK(sequence.outputText.find("OFS:") == std::string::npos);
+  CHECK(repeated.outputText.find("OFS:") == std::string::npos);
 }
 
 TEST(integration, OperSequenceStagnatingStepRunsFortranPointCount) {
@@ -198,8 +172,8 @@ TEST(integration, OperSequenceStagnatingStepRunsFortranPointCount) {
       "OPER\nASEQ 1e16 10000000000000004 1\n\nQUIT\n");
   CHECK_EQ(result.exitCode, 0);
   CHECK(result.outputText.find("too small") == std::string::npos);
-  CHECK_EQ(countOccurrences(result.outputText, "OFS: alfa = "),
-           std::size_t{5});
+  CHECK_EQ(result.points.size(), std::size_t{5});
+  CHECK(result.outputText.find("OFS:") == std::string::npos);
 }
 
 // end: tests/integration/OperSequenceTests.cpp

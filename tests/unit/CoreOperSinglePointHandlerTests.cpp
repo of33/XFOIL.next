@@ -89,13 +89,9 @@ constexpr const char* kCliPrompt =
     "\nEnter inviscid lift coefficient   r>  ";
 constexpr const char* kClPrompt = "\nEnter lift coefficient   r>  ";
 
-// format-333 OFS lines (xoper.f 2816-2818) from the oracle. The leading
-// '/' produces the blank line, which appears here as a leading '\n' at
-// the start of the block or after the GGCALC line.
-const std::string kOfsAlfa2 =
-    "\nOFS: alfa =   2.0000 cl =   0.4968 cdp =  -0.0011 cm =  -0.0587\n";
-const std::string kOfsAlfa0 =
-    "\nOFS: alfa =   0.0000 cl =   0.2554 cdp =  -0.0011 cm =  -0.0557\n";
+// The non-upstream format-333 OFS console output was removed in 1.0.1.
+// The specifiedPointOutput event remains part of the chronology.
+const std::string kOfsAlfa2 = "";
 
 // iteration blocks of oracle b_alfa2_twice (alpha 2, NACA 2412, Re=1e6,
 // It24.16, ITER 100), point 1 (9 iterations): per iteration first the
@@ -572,6 +568,25 @@ std::string oracleSlice(const std::string& raw,
   return raw.substr(i, j - i);
 }
 
+// The canonical Fortran stdout still carries the non-upstream OFS line;
+// 1.0.1 removed it from the product. Strip exactly that block from the
+// oracle slice at test time without changing the reference file.
+std::string stripNonUpstreamOfs(std::string text, std::size_t& removed) {
+  const std::string marker = "\nOFS: alfa = ";
+  removed = 0;
+  std::size_t pos = text.find(marker);
+  while (pos != std::string::npos) {
+    const auto end = text.find('\n', pos + 1);
+    if (end == std::string::npos) {
+      break;
+    }
+    text.erase(pos, end + 1 - pos);
+    ++removed;
+    pos = text.find(marker, pos);
+  }
+  return text;
+}
+
 }  // namespace
 
 // C oracle (a_alfa2_inviscid): inviscid CLI emits exactly the GGCALC
@@ -593,6 +608,32 @@ TEST(unit, OperCliInviscidHandlerTextMatchesFortranOracle) {
              8.0000000000000082e-01, 1.0e-9, 1.0e-9);
   // CLI/Cl produce no SPECAL OFS snapshot (Fortran writes no OFS).
   CHECK(!composition.result.lastDiagnostics.specalSnapshot.valid);
+}
+
+// 1.0.1 maintenance: the non-upstream OFS console text is gone from the
+// OPER single-point path, while the specifiedPointOutput event remains.
+TEST(unit, OfsRemoval101) {
+  session::SessionComposition composition;
+  buildNaca2412Paned(composition);
+  configure(composition, false, 100);
+
+  std::istringstream in;
+  std::ostringstream out;
+  CHECK(handleOperAlphaCore(composition, in, out, "2") ==
+        app::cli::OperAlphaCoreStatus::analyzed);
+  CHECK(out.str().find("OFS:") == std::string::npos);
+  CHECK(out.str().find(
+            " Calculating unit vorticity distributions ...") !=
+        std::string::npos);
+  CHECK(composition.result.lastDiagnostics.specalSnapshot.valid);
+
+  bool hasSpecifiedPointEvent = false;
+  for (const auto& event : composition.result.lastDiagnostics.events) {
+    if (event.kind == session::OperPointEventKind::specifiedPointOutput) {
+      hasSpecifiedPointEvent = true;
+    }
+  }
+  CHECK(hasSpecifiedPointEvent);
 }
 
 // inviscid Cl also emits exactly only the GGCALC line.
@@ -665,7 +706,7 @@ TEST(unit, OperSpecclFailureAfterSuccessfulPointMatchesFortranOracle) {
   std::ostringstream alphaOut;
   CHECK(handleOperAlphaCore(composition, in, alphaOut, "2") ==
         app::cli::OperAlphaCoreStatus::analyzed);
-  CHECK_EQ(alphaOut.str(), std::string(kGgcalcLine) + kOfsAlfa2);
+  CHECK_EQ(alphaOut.str(), std::string(kGgcalcLine));
 
   std::ostringstream clOut;
   CHECK(handleOperClCore(composition, in, clOut, "1.0E6") ==
@@ -693,14 +734,12 @@ TEST(unit, OperAlphaViscousStfindHeadMatchesFortranOracle) {
   CHECK(status == app::cli::OperAlphaCoreStatus::nonConverged);
 
   const std::string expectedPrefix =
-      std::string(kGgcalcLine) +
-      "\nOFS: alfa = 180.0000 cl =  -0.2554 cdp =   0.0011 cm =  -0.0557\n" +
-      kXywakeLine +
+      std::string(kGgcalcLine) + kXywakeLine +
       " STFIND: Stagnation point not found. Continuing ...\n" +
       kQdcalcLine + kSolvingBlSystem + "\n Initializing BL ...\n";
   CHECK(out.str().compare(0, expectedPrefix.size(), expectedPrefix) == 0);
 
-  // chronology: GGCALC, OFS-marker, XYWAKE, STFIND (preHead),
+  // chronology: GGCALC, specifiedPointOutput, XYWAKE, STFIND (preHead),
   // QDCALC (preHead), then BL-events.
   const auto& ev = composition.result.lastDiagnostics.events;
   CHECK(ev.size() >= 5u);
@@ -786,9 +825,12 @@ TEST(unit, OperAlphaViscousAlfa180FullTextMatchesFortranOracle) {
   const std::string raw = readWholeFile(
       "tests/fortran-reference/cases/oper-state/"
       "oper-alfa180-viscous-iter20/stdout.raw.txt");
-  const std::string expected =
-      oracleSlice(raw, " Calculating unit vorticity distributions");
+  std::size_t removed = 0;
+  const std::string expected = stripNonUpstreamOfs(
+      oracleSlice(raw, " Calculating unit vorticity distributions"), removed);
+  CHECK_EQ(removed, std::size_t{1});
   CHECK(out.str() == expected);
+  CHECK(out.str().find("OFS:") == std::string::npos);
 }
 
 // COM1 persistence is limited to each ViscousState: two independent
@@ -834,7 +876,6 @@ TEST(unit, OperAlphaViscousStfindRepeatedPointMatchesFortranOracle) {
   CHECK(status == app::cli::OperAlphaCoreStatus::nonConverged);
 
   const std::string expectedPrefix =
-      "\nOFS: alfa = 180.0000 cl =  -0.2554 cdp =   0.0011 cm =  -0.0557\n" +
       std::string(kSolvingBlSystem);
   CHECK(second.str().compare(0, expectedPrefix.size(), expectedPrefix) == 0);
 
@@ -1100,8 +1141,7 @@ TEST(unit, OperBangAfterPanelingChangeNotContinuable) {
   CHECK_EQ(bang.str(), std::string());
 }
 
-// oracle w_aseq_inv: ASEQ 0 4 2 inviscid. GGCALC once, OFS per point
-// (SPECAL also writes OFS in the sequence).
+// oracle w_aseq_inv: ASEQ 0 4 2 inviscid. GGCALC once; no OFS output.
 TEST(unit, OperAseqInviscidMatchesFortranOracle) {
   session::SessionComposition composition;
   buildNaca2412Paned(composition);
@@ -1111,11 +1151,7 @@ TEST(unit, OperAseqInviscidMatchesFortranOracle) {
   std::ostringstream out;
   CHECK(handleOperAseqCore(composition, in, out, "0 4 2") ==
         app::cli::OperAseqCoreStatus::completed);
-  CHECK_EQ(out.str(),
-           std::string(kGgcalcLine) +
-               "\nOFS: alfa =   0.0000 cl =   0.2554 cdp =  -0.0011 cm =  -0.0557\n"
-               "\nOFS: alfa =   2.0000 cl =   0.4968 cdp =  -0.0011 cm =  -0.0587\n"
-               "\nOFS: alfa =   4.0000 cl =   0.7376 cdp =  -0.0011 cm =  -0.0616\n");
+  CHECK_EQ(out.str(), std::string(kGgcalcLine));
 }
 
 // oracle y_aseq_down: ASEQ 4 0 2 -> a positive step is forced negative
@@ -1129,11 +1165,7 @@ TEST(unit, OperAseqDescendingForcesNegativeStep) {
   std::ostringstream out;
   CHECK(handleOperAseqCore(composition, in, out, "4 0 2") ==
         app::cli::OperAseqCoreStatus::completed);
-  CHECK_EQ(out.str(),
-           std::string(kGgcalcLine) +
-               "\nOFS: alfa =   4.0000 cl =   0.7376 cdp =  -0.0011 cm =  -0.0616\n"
-               "\nOFS: alfa =   2.0000 cl =   0.4968 cdp =  -0.0011 cm =  -0.0587\n"
-               "\nOFS: alfa =   0.0000 cl =   0.2554 cdp =  -0.0011 cm =  -0.0557\n");
+  CHECK_EQ(out.str(), std::string(kGgcalcLine));
 }
 
 // oracle z_aseq_single: DAA=0 -> exactly one point (xoper.f 583-584).
@@ -1146,9 +1178,7 @@ TEST(unit, OperAseqZeroStepSinglePoint) {
   std::ostringstream out;
   CHECK(handleOperAseqCore(composition, in, out, "2 2 0") ==
         app::cli::OperAseqCoreStatus::completed);
-  CHECK_EQ(out.str(),
-           std::string(kGgcalcLine) +
-               "\nOFS: alfa =   2.0000 cl =   0.4968 cdp =  -0.0011 cm =  -0.0587\n");
+  CHECK_EQ(out.str(), std::string(kGgcalcLine));
 }
 
 // oracle aa_aseq_nseqex: viscous ITER 1, ASEQ 0 10 1. After four
@@ -1171,11 +1201,11 @@ TEST(unit, OperAseqNseqexHaltMatchesFortranOracle) {
   CHECK_EQ(countOccurrences(out.str(), kViscalFailed), std::size_t{4});
   CHECK(out.str().find(kContinueHint) == std::string::npos);
   CHECK_EQ(countOccurrences(out.str(), kGgcalcLine), std::size_t{1});
-  CHECK_EQ(countOccurrences(out.str(), "OFS:"), std::size_t{4});
+  CHECK(out.str().find("OFS:") == std::string::npos);
 }
 
-// oracle from_cseq_visc: CSEQ 0.2 0.8 0.3. OFS per point from the
-// SPECAL share; the alpha comes from SPECCL and is chained.
+// oracle from_cseq_visc: CSEQ 0.2 0.8 0.3. The alpha comes from SPECCL
+// and is chained; the non-upstream OFS output is gone.
 TEST(unit, OperCseqViscousChainedAlphaMatchesFortranOracle) {
   session::SessionComposition composition;
   buildNaca2412Paned(composition);
@@ -1183,18 +1213,17 @@ TEST(unit, OperCseqViscousChainedAlphaMatchesFortranOracle) {
 
   std::istringstream in;
   std::ostringstream out;
-  CHECK(handleOperCseqCore(composition, in, out, "0.2 0.8 0.3") ==
+  std::vector<app::cli::OperPointResult> points;
+  CHECK(handleOperCseqCore(composition, in, out, "0.2 0.8 0.3", false,
+                           &points) ==
         app::cli::OperCseqCoreStatus::completed);
-  CHECK_EQ(countOccurrences(out.str(),
-                            "OFS: alfa =  -0.4583 cl =   0.2000 cdp =  -0.0011 cm =  -0.0551"),
-           std::size_t{1});
-  CHECK_EQ(countOccurrences(out.str(),
-                            "OFS: alfa =   2.0267 cl =   0.5000 cdp =  -0.0011 cm =  -0.0587"),
-           std::size_t{1});
-  CHECK_EQ(countOccurrences(out.str(),
-                            "OFS: alfa =   4.5196 cl =   0.8000 cdp =  -0.0011 cm =  -0.0624"),
-           std::size_t{1});
+  CHECK_EQ(points.size(), std::size_t{3});
+  // The structured records are the completed VISCAL points, not the
+  // removed SPECAL OFS snapshot; the chained order remains canonical.
+  CHECK(points[0].alpha < points[1].alpha);
+  CHECK(points[1].alpha < points[2].alpha);
   CHECK_EQ(countOccurrences(out.str(), kXywakeLine), std::size_t{3});
+  CHECK(out.str().find("OFS:") == std::string::npos);
   CHECK_EQ(countOccurrences(out.str(), kQdcalcLine), std::size_t{3});
   CHECK(out.str().find(kContinueHint) == std::string::npos);
 }
@@ -1241,15 +1270,17 @@ TEST(unit, OperCseqDescendingMatchesFortranOracle) {
 
   std::istringstream in;
   std::ostringstream out;
-  CHECK(handleOperCseqCore(composition, in, out, "0.8 0.2 0.3") ==
+  std::vector<app::cli::OperPointResult> points;
+  CHECK(handleOperCseqCore(composition, in, out, "0.8 0.2 0.3", false,
+                           &points) ==
         app::cli::OperCseqCoreStatus::completed);
-  const std::string& text = out.str();
-  const auto first = text.find("OFS: alfa =   4.5196");
-  const auto second = text.find("OFS: alfa =   2.0267");
-  const auto third = text.find("OFS: alfa =  -0.4583");
-  CHECK(first != std::string::npos && second != std::string::npos &&
-        third != std::string::npos);
-  CHECK(first < second && second < third);
+  CHECK_EQ(points.size(), std::size_t{3});
+  CHECK_NEAR(points[0].cl, 0.8000, 5.0e-5, 0.0);
+  CHECK_NEAR(points[1].cl, 0.5000, 5.0e-5, 0.0);
+  CHECK_NEAR(points[2].cl, 0.2000, 5.0e-5, 0.0);
+  CHECK(points[0].alpha > points[1].alpha);
+  CHECK(points[1].alpha > points[2].alpha);
+  CHECK(out.str().find("OFS:") == std::string::npos);
 }
 
 // oracle ad_cseq_single: DCL=0 -> one point.
@@ -1262,9 +1293,8 @@ TEST(unit, OperCseqZeroStepSinglePoint) {
   std::ostringstream out;
   CHECK(handleOperCseqCore(composition, in, out, "0.5 0.5 0") ==
         app::cli::OperCseqCoreStatus::completed);
-  CHECK_EQ(out.str(),
-           std::string(kGgcalcLine) +
-               "\nOFS: alfa =   2.0267 cl =   0.5000 cdp =  -0.0011 cm =  -0.0587\n");
+  CHECK_EQ(out.str(), std::string(kGgcalcLine));
+  CHECK(out.str().find("OFS:") == std::string::npos);
 }
 
 // oracle af_aseq_partial: ASEQ 0 -> prompt order last, step;
@@ -1283,7 +1313,7 @@ TEST(unit, OperAseqPartialPromptOrderMatchesFortranOracle) {
       "\nEnter alfa increment   (deg)   r>  ";
   CHECK(out.str().rfind(prompts, 0) == 0);
   CHECK(out.str().find(kGgcalcLine) != std::string::npos);
-  CHECK_EQ(countOccurrences(out.str(), "OFS:"), std::size_t{3});
+  CHECK(out.str().find("OFS:") == std::string::npos);
 }
 
 // oracle ah_aseq_eof: EOF in the prompt -> controlled abort without
@@ -1359,10 +1389,10 @@ TEST(unit, OperSequenceSessionsIndependentAndGeometryStable) {
   CHECK(a.paneling.panelingValid);
 }
 
-// A oracle (a_alfa2_inviscid, point 1): GGCALC line + OFS line
-// (format 333) byte-exact; the OFS snapshot comes from the SPECAL state
+// A oracle (a_alfa2_inviscid, point 1): only the GGCALC line is emitted.
+// The non-upstream OFS line was removed in 1.0.1; the snapshot remains
 // before VISCAL (inviscid: final value = snapshot).
-TEST(unit, OperAlphaInviscidHandlerEmitsGgcalcAndOfsLine) {
+TEST(unit, OperAlphaInviscidHandlerEmitsOnlyGgcalcLine) {
   session::SessionComposition composition;
   buildNaca2412Paned(composition);
   configure(composition, false, 100);
@@ -1371,7 +1401,8 @@ TEST(unit, OperAlphaInviscidHandlerEmitsGgcalcAndOfsLine) {
   std::ostringstream out;
   const auto status = handleOperAlphaCore(composition, in, out, "2");
   CHECK(status == app::cli::OperAlphaCoreStatus::analyzed);
-  CHECK_EQ(out.str(), std::string(kGgcalcLine) + kOfsAlfa2);
+  CHECK_EQ(out.str(), std::string(kGgcalcLine));
+  CHECK(out.str().find("OFS:") == std::string::npos);
 
   const session::SpecifiedPointSnapshot& snap =
       composition.result.lastDiagnostics.specalSnapshot;
@@ -1384,8 +1415,8 @@ TEST(unit, OperAlphaInviscidHandlerEmitsGgcalcAndOfsLine) {
 }
 
 // second identical inviscid point: GGCALC does not run again,
-// SPECAL runs again -> only the OFS line (oracle a_alfa2_inviscid point 2).
-TEST(unit, OperAlphaInviscidSecondPointEmitsOnlyOfsLine) {
+// SPECAL runs again -> no additional console text (oracle a_alfa2_inviscid point 2).
+TEST(unit, OperAlphaInviscidSecondPointEmitsNoText) {
   session::SessionComposition composition;
   buildNaca2412Paned(composition);
   configure(composition, false, 100);
@@ -1397,7 +1428,7 @@ TEST(unit, OperAlphaInviscidSecondPointEmitsOnlyOfsLine) {
   std::ostringstream second;
   CHECK(handleOperAlphaCore(composition, in, second, "2") ==
         app::cli::OperAlphaCoreStatus::analyzed);
-  CHECK_EQ(second.str(), kOfsAlfa2);
+  CHECK_EQ(second.str(), std::string());
 }
 
 // ASKR prompts (userio.f 1000) byte-exact; after the input the
@@ -1410,7 +1441,7 @@ TEST(unit, OperSinglePointPromptsMatchFortranAskrFormat) {
   std::ostringstream alphaOut;
   CHECK(handleOperAlphaCore(alphaSession, alphaIn, alphaOut, "") ==
         app::cli::OperAlphaCoreStatus::analyzed);
-  CHECK_EQ(alphaOut.str(), std::string(kAlphaPrompt) + kGgcalcLine + kOfsAlfa2);
+  CHECK_EQ(alphaOut.str(), std::string(kAlphaPrompt) + kGgcalcLine);
 
   session::SessionComposition cliSession;
   buildNaca2412Paned(cliSession);
@@ -1442,7 +1473,7 @@ TEST(unit, OperSinglePointBlankLineKeepsDefaultArgument) {
   std::ostringstream out;
   CHECK(handleOperAlphaCore(composition, in, out, "") ==
         app::cli::OperAlphaCoreStatus::analyzed);
-  CHECK_EQ(out.str(), std::string(kAlphaPrompt) + kGgcalcLine + kOfsAlfa0);
+  CHECK_EQ(out.str(), std::string(kAlphaPrompt) + kGgcalcLine);
   CHECK_NEAR(composition.result.lastResult.alpha.value, 0.0, 0.0, 0.0);
 }
 
@@ -1457,7 +1488,7 @@ TEST(unit, OperAlphaInvalidInlineFallsBackToPrompt) {
   std::ostringstream out;
   CHECK(handleOperAlphaCore(composition, in, out, "foo") ==
         app::cli::OperAlphaCoreStatus::analyzed);
-  CHECK_EQ(out.str(), std::string(kAlphaPrompt) + kGgcalcLine + kOfsAlfa2);
+  CHECK_EQ(out.str(), std::string(kAlphaPrompt) + kGgcalcLine);
   CHECK_NEAR(composition.result.lastResult.alpha.value, 2.0, 1.0e-12, 0.0);
 }
 
@@ -1475,7 +1506,7 @@ TEST(unit, OperSinglePointPromptEofAbortsControlled) {
 }
 
 // B oracle (b_alfa2_twice, point 1): the complete numerical
-// surface of a viscous alpha point byte-exact: GGCALC, OFS, XYWAKE,
+// surface of a viscous alpha point byte-exact: GGCALC, XYWAKE,
 // QDCALC, VISCAL header, nine iteration blocks including the canonical
 // BL event lines (Initializing BL, MRCHUE sides / inverse,
 // MRCHDU error, transitions FORMAT 9100/9200) and FORMAT
@@ -1503,7 +1534,7 @@ TEST(unit, OperAlphaViscousFullNumericSurfaceMatchesFortranOracle) {
   CHECK(composition.result.lastDiagnostics.completionValid);
 }
 
-// B oracle point 2 (warm start): OFS again, VISCAL header, one iteration
+// B oracle point 2 (warm start): VISCAL header, one iteration
 // (FORMAT 2010, RLX=1), completion 9922.
 TEST(unit, OperAlphaViscousWarmStartSecondPointMatchesFortranOracle) {
   session::SessionComposition composition;
@@ -1569,7 +1600,6 @@ TEST(unit, OperAlphaViscousMarchFailureSurfaceMatchesFortranOracle) {
   CHECK(status == app::cli::OperAlphaCoreStatus::nonConverged);
 
   const std::string expected = std::string(kGgcalcLine) +
-                               "\nOFS: alfa =  25.0000 cl =   3.1569 cdp =  -0.0018 cm =  -0.0920\n" +
                                std::string(kXywakeLine) + kQdcalcLine + std::string(kSolvingBlSystem) +
                                kNonConvIter1 + kViscalFailed +
                                kNonConvCompletion + kContinueHint;
@@ -2842,7 +2872,7 @@ TEST(unit, SessionIdampExplicitZeroMatchesDefaultBaseline) {
 
 // NT reaches the next viscous computation.
 // Fortran oracle nt4_visc (VPAR NT 4.0, VISC 1e6, ALFA 2): 6
-// MRCHUE messages (baseline without NT: 10), OFS line as in the oracle.
+// MRCHUE messages (baseline without NT: 10); no OFS output in 1.0.1.
 TEST(unit, SessionNcritTopReachesViscousPointMatchesFortranOracle) {
   session::SessionComposition base;
   buildNaca2412Paned(base);
@@ -2866,9 +2896,7 @@ TEST(unit, SessionNcritTopReachesViscousPointMatchesFortranOracle) {
 
   CHECK(outNt.str() != outBase.str());
   CHECK_EQ(countOccurrences(outNt.str(), "MRCHUE"), std::size_t{6});
-  CHECK(outNt.str().find(
-            "OFS: alfa =   2.0000 cl =   0.4968 cdp =  -0.0011 "
-            "cm =  -0.0587") != std::string::npos);
+  CHECK(outNt.str().find("OFS:") == std::string::npos);
   CHECK_NEAR(nt.operating.criticalReynoldsExponents[0], 4.0, 0.0, 0.0);
   CHECK_NEAR(nt.operating.criticalReynoldsExponents[1], 9.0, 0.0, 0.0);
 }

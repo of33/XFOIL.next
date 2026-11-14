@@ -152,8 +152,10 @@ TEST(integration, OperAliasHandlersAreProductive) {
   CHECK(result.outputText.find("xBL, Fint") != std::string::npos);
   CHECK(result.outputText.find("Modified amplification") !=
         std::string::npos);
-  // the following alfa point runs unchanged.
-  CHECK(result.outputText.find("OFS:") != std::string::npos);
+  // the following alfa point runs unchanged; the non-upstream OFS line is gone.
+  CHECK(result.outputText.find("OFS:") == std::string::npos);
+  CHECK(result.outputText.find(" Solving BL system ...") !=
+        std::string::npos);
 }
 
 // FMOM/FNEW/VELS produce canonical reports/prompts;

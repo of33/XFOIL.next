@@ -285,7 +285,7 @@ struct SpecifiedPointSnapshot {
 // Pure value records without formatted texts.
 enum class OperPointEventKind {
   influenceSystemCalculation,      // GGCALC (xpanel.f:1000)
-  specifiedPointOutput,            // OFS FORMAT 333 (xoper.f:2816)
+  specifiedPointOutput,            // SPECAL point snapshot; text removed in 1.0.1
   wakeTrajectoryCalculation,       // XYWAKE (xpanel.f:1277)
   specalConvergenceFailure,        // xoper.f:2799
   specclConvergenceFailure,        // xoper.f:2874

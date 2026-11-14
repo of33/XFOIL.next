@@ -27,7 +27,7 @@ alt="GPL-3.0-or-later">
 
 # XFOIL.next
 
-**Version 1.0.0**
+**Version 1.0.1**
 
 XFOIL.next implements the complete canonical non-graphical XFOIL 6.99
 functionality in modern C++.
@@ -147,7 +147,7 @@ described in [Windows](#windows).
 ### Supported environment
 
 Validated on **Windows 11 + MSYS2 UCRT64 + GCC/MinGW 16.1.0 Rev5**
-(the accepted Windows 1.0.0 baseline).
+(the accepted Windows 1.0.1 baseline).
 
 - MSVC is not supported and not promised;
 - Cygwin is not supported and not promised;
@@ -244,9 +244,9 @@ creates a timestamped subdirectory instead, so existing logs are never
 overwritten. The run records environment metadata (Windows version,
 UCRT64 identity, compiler versions, commit, dirty-worktree note),
 builds Debug and Release with `-Werror`, runs the full debug suites
-(unit 1668, integration 245, batch 47), repeats core (414) and
+(unit 1669, integration 246, batch 47), repeats core (414) and
 regression (5) three times each from the same untouched debug build,
-executes the full release suite (1968), checks the binary contract
+executes the full release suite (1970), checks the binary contract
 (`xfoil.next.exe` present, `xfoil.exe` absent, `--version` output),
 and performs one focused `XFOIL_DUMP_DIAG=1` PACC dump diagnostic.
 It writes separate logs (`00-environment.txt` … `50-summary.txt`), a

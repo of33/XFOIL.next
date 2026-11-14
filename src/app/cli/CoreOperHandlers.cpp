@@ -392,9 +392,10 @@ namespace {
 
 // Canonical order of the numeric output blocks of an
 // OPER single point, taken exclusively from the chronological
-// event stream of the point core (GGCALC, OFS format 333, XYWAKE,
-// QDCALC, VISCAL header, iterations format 2000/2010/2020,
-// completion format 9922, non-convergence, note). No
+// event stream of the point core (GGCALC, specifiedPointOutput,
+// XYWAKE, QDCALC, VISCAL header, iterations format 2000/2010/2020,
+// completion format 9922, non-convergence, note). The OFS console
+// text is intentionally suppressed since 1.0.1. No
 // prediction from pre-state flags; each event is captured at its
 // actual execution site.
 void emitOperPointText(std::ostream& out, bool viscous,
@@ -407,7 +408,7 @@ void emitOperPointText(std::ostream& out, bool viscous,
 
   std::size_t pos = 0;
   // Point and viscous prerequisite events before the VISCAL header:
-  // GGCALC, OFS marker, XYWAKE, QDCALC (preHead).
+  // GGCALC, XYWAKE, QDCALC (preHead).
   for (; pos < diag.events.size(); ++pos) {
     const auto& e = diag.events[pos];
     if (e.kind == OperPointEventKind::viscous &&
@@ -419,9 +420,6 @@ void emitOperPointText(std::ostream& out, bool viscous,
         emitGgcalcProgress(out);
         break;
       case OperPointEventKind::specifiedPointOutput:
-        emitOfsSpecial(out, toDegrees(Radians{diag.specalSnapshot.alpha}).value,
-                       diag.specalSnapshot.cl, diag.specalSnapshot.cdp,
-                       diag.specalSnapshot.cm);
         break;
       case OperPointEventKind::wakeTrajectoryCalculation:
         emitXywakeProgress(out);

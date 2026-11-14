@@ -34,9 +34,9 @@
 // completion block.
 //
 // No golden change: the reference stdout is read unchanged;
-// the normalizations are the documented unzoom class
-// and the branding class (product banner), each with counted
-// replacement.
+// the normalizations are the documented unzoom class, the 1.0.1 OFS
+// class (non-upstream line removed from the reference copy) and the
+// branding class (product banner), each with counted replacement.
 
 #include <cstdlib>
 #include <filesystem>
@@ -88,6 +88,26 @@ int normalizeUnzoomClass(std::string& text) {
   while ((pos = text.find(from, pos)) != std::string::npos) {
     text.replace(pos, from.size(), to);
     pos += to.size();
+    ++count;
+  }
+  return count;
+}
+
+// 1.0.1 maintenance class: the canonical Fortran reference still
+// contains the project-specific, non-upstream OFS format-333 line. The
+// product no longer emits it. Remove exactly the documented block
+// (blank line + OFS line) from the reference copy at test time; the
+// reference file itself stays byte-unchanged.
+int normalizeNonUpstreamOfsClass(std::string& text) {
+  const std::string marker = "\nOFS: alfa = ";
+  int count = 0;
+  std::string::size_type pos = 0;
+  while ((pos = text.find(marker, pos)) != std::string::npos) {
+    const auto end = text.find('\n', pos + 1);
+    if (end == std::string::npos) {
+      break;
+    }
+    text.erase(pos, end + 1 - pos);
     ++count;
   }
   return count;
@@ -190,6 +210,12 @@ TEST(regression, Wake2Alfa6ConvergenceParityMatchesFortranReference) {
   // byte-parity comparison (reference is LF text; PUB-W2).
   actual = testing::canonicalizeCapturedText(actual);
 
+  const int ofsNormalized = normalizeNonUpstreamOfsClass(expected);
+  if (ofsNormalized != 2) {
+    reportFailure("Expected exactly 2 Non-Upstream-OFS-Replacements in the "
+                  "Reference, found: " +
+                  std::to_string(ofsNormalized));
+  }
   const int normalized = normalizeUnzoomClass(expected);
   if (normalized != 1) {
     reportFailure("Expected exactly 1 Unzoom-Classes-Replacement in the "

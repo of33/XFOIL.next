@@ -4,6 +4,14 @@ All notable changes to XFOIL.next are documented here. The format follows
 a plain release log; this project does not advertise a strict
 keep-a-changelog layout.
 
+## 1.0.1
+
+Maintenance release.
+
+- Removed the project-specific, non-upstream `OFS:` console output from the
+  OPER and inverse-design paths.
+- No aerodynamic, numerical, file-format or command behavior was changed.
+
 ## 1.0.0
 
 First public release.

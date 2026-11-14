@@ -1,6 +1,6 @@
 
  ===================================================
- XFOIL.next Version 1.0.0
+ XFOIL.next Version 1.0.1
  Copyright (C) 2026 Olaf Frommann
 
  Based upon XFOIL Version 6.99
@@ -99,8 +99,6 @@
 ..VPAR   c>  
 ..VPAR   c>  
 .OPERv   c>   Calculating unit vorticity distributions ...
-
-OFS: alfa =   0.0000 cl =   0.5219 cdp =  -0.0014 cm =  -0.1124
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -291,8 +289,6 @@ OFS: alfa =   0.0000 cl =   0.5219 cdp =  -0.0014 cm =  -0.1124
        a =  0.000      CL =  0.4804
       Cm = -0.1099     CD =  0.01883   =>   CDf =  0.00700    CDp =  0.01183
       9.000    8.5482   0.018834   0.004578   0.009312   0.004734    0.7680     #
-
-OFS: alfa =   0.5000 cl =   0.5836 cdp =  -0.0014 cm =  -0.1134
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -368,8 +364,6 @@ OFS: alfa =   0.5000 cl =   0.5836 cdp =  -0.0014 cm =  -0.1134
        a =  0.500      CL =  0.5302
       Cm = -0.1086     CD =  0.01879   =>   CDf =  0.00732    CDp =  0.01147
       9.000    8.4865   0.018793   0.004605   0.009244   0.004639    0.7490     #
-
-OFS: alfa =   1.0000 cl =   0.6454 cdp =  -0.0014 cm =  -0.1145
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -424,8 +418,6 @@ OFS: alfa =   1.0000 cl =   0.6454 cdp =  -0.0014 cm =  -0.1145
        a =  1.000      CL =  0.5805
       Cm = -0.1072     CD =  0.01892   =>   CDf =  0.00759    CDp =  0.01133
       9.000    8.5070   0.018918   0.004640   0.009245   0.004605    0.7304     #
-
-OFS: alfa =   1.5000 cl =   0.7070 cdp =  -0.0014 cm =  -0.1156
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -480,8 +472,6 @@ OFS: alfa =   1.5000 cl =   0.7070 cdp =  -0.0014 cm =  -0.1156
        a =  1.500      CL =  0.6308
       Cm = -0.1059     CD =  0.01918   =>   CDf =  0.00781    CDp =  0.01137
       9.000    8.5822   0.019180   0.004684   0.009312   0.004628    0.7122     #
-
-OFS: alfa =   2.0000 cl =   0.7687 cdp =  -0.0014 cm =  -0.1166
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -536,8 +526,6 @@ OFS: alfa =   2.0000 cl =   0.7687 cdp =  -0.0014 cm =  -0.1166
        a =  2.000      CL =  0.6809
       Cm = -0.1046     CD =  0.01957   =>   CDf =  0.00800    CDp =  0.01157
       9.000    8.6989   0.019566   0.004733   0.009439   0.004707    0.6944     #
-
-OFS: alfa =   2.5000 cl =   0.8302 cdp =  -0.0014 cm =  -0.1177
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -592,8 +580,6 @@ OFS: alfa =   2.5000 cl =   0.8302 cdp =  -0.0014 cm =  -0.1177
        a =  2.500      CL =  0.7305
       Cm = -0.1033     CD =  0.02007   =>   CDf =  0.00814    CDp =  0.01192
       9.000    8.8550   0.020068   0.004788   0.009625   0.004837    0.6771     #
-
-OFS: alfa =   3.0000 cl =   0.8917 cdp =  -0.0014 cm =  -0.1188
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -634,8 +620,6 @@ OFS: alfa =   3.0000 cl =   0.8917 cdp =  -0.0014 cm =  -0.1188
        a =  3.000      CL =  0.7796
       Cm = -0.1020     CD =  0.02066   =>   CDf =  0.00825    CDp =  0.01241
       9.000    9.0266   0.020659   0.004853   0.009847   0.004994    0.6601     #
-
-OFS: alfa =   3.5000 cl =   0.9532 cdp =  -0.0014 cm =  -0.1199
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -683,8 +667,6 @@ OFS: alfa =   3.5000 cl =   0.9532 cdp =  -0.0014 cm =  -0.1199
        a =  3.500      CL =  0.8285
       Cm = -0.1007     CD =  0.02132   =>   CDf =  0.00832    CDp =  0.01300
       9.000    9.1982   0.021323   0.004911   0.010090   0.005179    0.6435     #
-
-OFS: alfa =   4.0000 cl =   1.0145 cdp =  -0.0014 cm =  -0.1210
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -725,8 +707,6 @@ OFS: alfa =   4.0000 cl =   1.0145 cdp =  -0.0014 cm =  -0.1210
        a =  4.000      CL =  0.8771
       Cm = -0.0994     CD =  0.02205   =>   CDf =  0.00837    CDp =  0.01368
       9.000    9.3680   0.022050   0.004973   0.010342   0.005369    0.6272     #
-
-OFS: alfa =   4.5000 cl =   1.0758 cdp =  -0.0014 cm =  -0.1221
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -760,8 +740,6 @@ OFS: alfa =   4.5000 cl =   1.0758 cdp =  -0.0014 cm =  -0.1221
        a =  4.500      CL =  0.9260
       Cm = -0.0981     CD =  0.02281   =>   CDf =  0.00839    CDp =  0.01441
       9.000    9.5267   0.022809   0.005042   0.010583   0.005541    0.6112     #
-
-OFS: alfa =   5.0000 cl =   1.1370 cdp =  -0.0014 cm =  -0.1232
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -795,8 +773,6 @@ OFS: alfa =   5.0000 cl =   1.1370 cdp =  -0.0014 cm =  -0.1232
        a =  5.000      CL =  0.9755
       Cm = -0.0969     CD =  0.02357   =>   CDf =  0.00840    CDp =  0.01516
       9.000    9.6363   0.023567   0.005106   0.010793   0.005687    0.5954     #
-
-OFS: alfa =   5.5000 cl =   1.1981 cdp =  -0.0015 cm =  -0.1243
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -830,8 +806,6 @@ OFS: alfa =   5.5000 cl =   1.1981 cdp =  -0.0015 cm =  -0.1243
        a =  5.500      CL =  1.0258
       Cm = -0.0958     CD =  0.02430   =>   CDf =  0.00841    CDp =  0.01589
       9.000    9.6837   0.024300   0.005177   0.010966   0.005789    0.5796     #
-
-OFS: alfa =   6.0000 cl =   1.2592 cdp =  -0.0015 cm =  -0.1255
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -872,8 +846,6 @@ OFS: alfa =   6.0000 cl =   1.2592 cdp =  -0.0015 cm =  -0.1255
        a =  6.000      CL =  1.0767
       Cm = -0.0948     CD =  0.02500   =>   CDf =  0.00841    CDp =  0.01659
       9.000    9.6664   0.025004   0.005256   0.011102   0.005847    0.5635     #
-
-OFS: alfa =   6.5000 cl =   1.3201 cdp =  -0.0015 cm =  -0.1266
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -914,8 +886,6 @@ OFS: alfa =   6.5000 cl =   1.3201 cdp =  -0.0015 cm =  -0.1266
        a =  6.500      CL =  1.1273
       Cm = -0.0938     CD =  0.02570   =>   CDf =  0.00839    CDp =  0.01731
       9.000    9.5960   0.025700   0.005332   0.011210   0.005878    0.5469     #
-
-OFS: alfa =   7.0000 cl =   1.3809 cdp =  -0.0015 cm =  -0.1277
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -963,8 +933,6 @@ OFS: alfa =   7.0000 cl =   1.3809 cdp =  -0.0015 cm =  -0.1277
        a =  7.000      CL =  1.1760
       Cm = -0.0924     CD =  0.02643   =>   CDf =  0.00836    CDp =  0.01807
       9.000    9.4911   0.026428   0.005403   0.011297   0.005894    0.5296     #
-
-OFS: alfa =   7.5000 cl =   1.4417 cdp =  -0.0015 cm =  -0.1288
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1012,8 +980,6 @@ OFS: alfa =   7.5000 cl =   1.4417 cdp =  -0.0015 cm =  -0.1288
        a =  7.500      CL =  1.2214
       Cm = -0.0905     CD =  0.02720   =>   CDf =  0.00828    CDp =  0.01892
       9.000    9.3544   0.027201   0.005470   0.011360   0.005890    0.5111     #
-
-OFS: alfa =   8.0000 cl =   1.5023 cdp =  -0.0015 cm =  -0.1300
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1054,8 +1020,6 @@ OFS: alfa =   8.0000 cl =   1.5023 cdp =  -0.0015 cm =  -0.1300
        a =  8.000      CL =  1.2640
       Cm = -0.0881     CD =  0.02797   =>   CDf =  0.00817    CDp =  0.01980
       9.000    9.1557   0.027970   0.005532   0.011366   0.005834    0.4915     #
-
-OFS: alfa =   8.5000 cl =   1.5628 cdp =  -0.0015 cm =  -0.1311
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1096,8 +1060,6 @@ OFS: alfa =   8.5000 cl =   1.5628 cdp =  -0.0015 cm =  -0.1311
        a =  8.500      CL =  1.3059
       Cm = -0.0856     CD =  0.02861   =>   CDf =  0.00808    CDp =  0.02053
       9.000    8.8338   0.028610   0.005596   0.011245   0.005649    0.4707     #
-
-OFS: alfa =   9.0000 cl =   1.6232 cdp =  -0.0015 cm =  -0.1323
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1131,8 +1093,6 @@ OFS: alfa =   9.0000 cl =   1.6232 cdp =  -0.0015 cm =  -0.1323
        a =  9.000      CL =  1.3497
       Cm = -0.0832     CD =  0.02899   =>   CDf =  0.00803    CDp =  0.02096
       9.000    8.3325   0.028991   0.005664   0.010902   0.005238    0.4491     #
-
-OFS: alfa =   9.5000 cl =   1.6834 cdp =  -0.0015 cm =  -0.1334
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1166,8 +1126,6 @@ OFS: alfa =   9.5000 cl =   1.6834 cdp =  -0.0015 cm =  -0.1334
        a =  9.500      CL =  1.3992
       Cm = -0.0816     CD =  0.02906   =>   CDf =  0.00810    CDp =  0.02096
       9.000    7.6102   0.029061   0.005749   0.010405   0.004656    0.4269     #
-
-OFS: alfa =  10.0000 cl =   1.7435 cdp =  -0.0015 cm =  -0.1346
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1280,8 +1238,6 @@ OFS: alfa =  10.0000 cl =   1.7435 cdp =  -0.0015 cm =  -0.1346
        a = 10.000      CL =  1.4227
       Cm = -0.0763     CD =  0.02988   =>   CDf =  0.00790    CDp =  0.02198
       9.000    7.1565   0.029882   0.005750   0.010084   0.004334    0.4028     #
-
-OFS: alfa =  10.5000 cl =   1.8035 cdp =  -0.0016 cm =  -0.1357
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1322,8 +1278,6 @@ OFS: alfa =  10.5000 cl =   1.8035 cdp =  -0.0016 cm =  -0.1357
        a = 10.500      CL =  1.4523
       Cm = -0.0718     CD =  0.03026   =>   CDf =  0.00787    CDp =  0.02239
       9.000    6.5625   0.030261   0.005762   0.009491   0.003729    0.3779     #
-
-OFS: alfa =  11.0000 cl =   1.8634 cdp =  -0.0016 cm =  -0.1369
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1437,8 +1391,6 @@ OFS: alfa =  11.0000 cl =   1.8634 cdp =  -0.0016 cm =  -0.1369
        a = 11.000      CL =  1.4638
       Cm = -0.0649     CD =  0.03118   =>   CDf =  0.00777    CDp =  0.02342
       9.000    6.1741   0.031183   0.005703   0.008997   0.003294    0.3528     #
-
-OFS: alfa =  11.5000 cl =   1.9231 cdp =  -0.0016 cm =  -0.1380
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1479,8 +1431,6 @@ OFS: alfa =  11.5000 cl =   1.9231 cdp =  -0.0016 cm =  -0.1380
        a = 11.500      CL =  1.4767
       Cm = -0.0585     CD =  0.03218   =>   CDf =  0.00783    CDp =  0.02435
       9.000    5.7562   0.032177   0.027695   0.008447  -0.019248    0.3263     #
-
-OFS: alfa =  12.0000 cl =   1.9827 cdp =  -0.0016 cm =  -0.1392
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1772,8 +1722,6 @@ OFS: alfa =  12.0000 cl =   1.9827 cdp =  -0.0016 cm =  -0.1392
        a = 12.000      CL =  1.4705
       Cm = -0.0509     CD =  0.03444   =>   CDf =  0.00770    CDp =  0.02673
       9.000    5.6408   0.034437   0.026711   0.008168  -0.018543    0.2985     #
-
-OFS: alfa =  12.5000 cl =   2.0421 cdp =  -0.0016 cm =  -0.1403
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1814,8 +1762,6 @@ OFS: alfa =  12.5000 cl =   2.0421 cdp =  -0.0016 cm =  -0.1403
        a = 12.500      CL =  1.4654
       Cm = -0.0446     CD =  0.03731   =>   CDf =  0.00771    CDp =  0.02960
       9.000    5.9007   0.037309   0.026023   0.007884  -0.018139    0.2695     #
-
-OFS: alfa =  13.0000 cl =   2.1014 cdp =  -0.0016 cm =  -0.1415
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1863,8 +1809,6 @@ OFS: alfa =  13.0000 cl =   2.1014 cdp =  -0.0016 cm =  -0.1415
        a = 13.000      CL =  1.4575
       Cm = -0.0393     CD =  0.04102   =>   CDf =  0.00777    CDp =  0.03325
       9.000    6.7940   0.041019   0.025573   0.007672  -0.017901    0.2405     #
-
-OFS: alfa =  13.5000 cl =   2.1605 cdp =  -0.0016 cm =  -0.1427
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1905,8 +1849,6 @@ OFS: alfa =  13.5000 cl =   2.1605 cdp =  -0.0016 cm =  -0.1427
        a = 13.500      CL =  1.4489
       Cm = -0.0349     CD =  0.04542   =>   CDf =  0.00789    CDp =  0.03754
       9.000    7.6321   0.045421   0.025433   0.007554  -0.017879    0.2131     #
-
-OFS: alfa =  14.0000 cl =   2.2194 cdp =  -0.0016 cm =  -0.1438
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 
@@ -1954,8 +1896,6 @@ OFS: alfa =  14.0000 cl =   2.2194 cdp =  -0.0016 cm =  -0.1438
        a = 14.000      CL =  1.4391
       Cm = -0.0315     CD =  0.05048   =>   CDf =  0.00795    CDp =  0.04252
       9.000    8.4289   0.050475   0.025454   0.007496  -0.017958    0.1886     #
-
-OFS: alfa =  14.5000 cl =   2.2782 cdp =  -0.0017 cm =  -0.1450
  Calculating wake trajectory ...
  Calculating source influence matrix ...
 

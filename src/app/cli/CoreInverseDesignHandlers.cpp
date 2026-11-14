@@ -728,17 +728,11 @@ QdesCoreStatus handleQdesCore(session::SessionComposition& session,
     return QdesCoreStatus::returned;
   }
   // Chronological point diagnostics of the executed SPECAL run:
-  // GGCALC header only for an actual ggCalc run, OFS (format 333)
-  // from the real snapshot at execution time. No VISCAL.
+  // GGCALC header only for an actual ggCalc run. No VISCAL and no
+  // project-specific OFS output.
   for (const auto& ev : init.pointEvents) {
     if (ev.kind == session::OperPointEventKind::influenceSystemCalculation) {
       emitGgCalcHeader(out);
-    } else if (ev.kind == session::OperPointEventKind::specifiedPointOutput &&
-               init.specalSnapshot.valid) {
-      emitOfsSpecial(out, init.specalSnapshot.alpha * 180.0 /
-                              std::numbers::pi,
-                     init.specalSnapshot.cl, init.specalSnapshot.cdp,
-                     init.specalSnapshot.cm);
     }
   }
   emitQdesOperatingCondition(out, session.inverse.shared.algam,

@@ -228,7 +228,10 @@ TEST(integration, OperBlfGuardWithoutBlData) {
                             " Boundary-layer data are not available."),
            std::size_t{1});
   CHECK(result.outputText.find("xBL, Fint") == std::string::npos);
-  CHECK(result.outputText.find("OFS:") != std::string::npos);
+  CHECK(result.outputText.find("OFS:") == std::string::npos);
+  CHECK(result.outputText.find(
+            " Calculating unit vorticity distributions ...") !=
+        std::string::npos);
 }
 
 // VELS-redo production: '!' repeats VELS with ARGOLD (xoper.f

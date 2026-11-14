@@ -26,7 +26,7 @@
 // handlers handleQdesCore (xqdes.f 40-540). The text anchors derive
 // from canonical Fortran transcripts (LC_ALL=C fortran-bin/xfoil <
 // input, three times byte-identical). SPECAL-specific diagnostic text
-// (OFS line, 'Calculating unit vorticity distributions ...') is
+// ('Calculating unit vorticity distributions ...') is
 // core-internal and not part of the handlers. The test drives the
 // QDES menu handler directly, and there is no
 // plot backend.
@@ -81,13 +81,11 @@ std::size_t countOccurrences(const std::string& text,
 const char* const kPrompt = "\n.QDES   c>  ";
 
 // FORMAT 1150 + 1155 (entry NACA 2412, ALFA=0, Qspec rebuild).
-// Extended: the GGCALC header (xpanel.f 1000, cache invalid) and
-// OFS format 333 (xoper.f 2816) from the executed SPECAL run precede
-// format 1150; oracle f_k1 (LC_ALL=C, 3x deterministic).
+// Extended: the GGCALC header (xpanel.f 1000, cache invalid) from the
+// executed SPECAL run precedes format 1150; oracle f_k1 (LC_ALL=C, 3x
+// deterministic). The non-upstream OFS line was removed in 1.0.1.
 const char* const kEntryText =
     " Calculating unit vorticity distributions ...\n"
-    "\n"
-    "OFS: alfa =   0.0000 cl =   0.2554 cdp =  -0.0011 cm =  -0.0557\n"
     "\n Current Q operating condition:"
     "\n alpha =    0.000 deg.      CL =   0.2554\n"
     "\n"

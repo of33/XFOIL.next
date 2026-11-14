@@ -59,7 +59,7 @@ Four native batch cases (G1–G4):
   followed by `QUIT`, because the OPER menu has no native `QUIT`).
 - Compared byte-for-byte: the transcript (interpreter stdout via a tee
   stream), `results.dat` (version header `# XFOIL_BATCH_RESULTS 1` and the
-  product metadata line `# product XFOIL.next 1.0.0`), and the exit code.
+  product metadata line `# product XFOIL.next 1.0.1`), and the exit code.
   stderr stays empty in the successful golden cases.
 - Tests: `batch.ClarkYNativeBatchMatchesGolden`,
   `batch.Naca2312NativeBatchMatchesGolden`,
@@ -68,13 +68,17 @@ Four native batch cases (G1–G4):
 
 ## Banner
 
-The C++ product banner is `XFOIL.next Version 1.0.0`, taken from a single
+The C++ product banner is `XFOIL.next Version 1.0.1`, taken from a single
 product-identity source. The 18 CLI stdout goldens and the 4 batch
 transcripts carry this banner. The reference banner of the canonical Fortran
 oracle (`tests/fortran-reference/cases/**`) is unchanged; the two stdout
-parity tests normalise only the documented branding region with a counted
-replacement (exactly one replacement expected), and all numerical and
-domain stdout regions stay byte-pinned.
+parity tests normalise the documented branding region and the non-upstream
+OFS class (the 1.0.1 product no longer emits it), each with counted
+replacements, and all remaining numerical and domain stdout regions stay
+byte-pinned.
+
+The three interactive OPER goldens and the four batch transcripts no longer
+contain the project-specific `OFS:` line.
 
 ## Update rules
 

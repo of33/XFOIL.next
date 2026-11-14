@@ -36,8 +36,8 @@
 #
 # Expected suite totals are verified as final result lines, not only
 # via exit codes:
-#   core 414, unit 1668, integration 245, regression 5, batch 47,
-#   full suite 1968, PACC diagnostic 1.
+#   core 414, unit 1669, integration 246, regression 5, batch 47,
+#   full suite 1970, PACC diagnostic 1.
 #
 # Usage (normally invoked by the .bat entry point):
 #   build-and-test-msys2.sh <log-dir-outside-repo> <repo-dir>
@@ -95,11 +95,11 @@ mkdir "$LOGDIR" || exit 1
 cd "$REPO" || exit 1
 
 CORE_TOTAL=414
-UNIT_TOTAL=1668
-INTEGRATION_TOTAL=245
+UNIT_TOTAL=1669
+INTEGRATION_TOTAL=246
 REGRESSION_TOTAL=5
 BATCH_TOTAL=47
-FULL_TOTAL=1968
+FULL_TOTAL=1970
 PACC_TOTAL=1
 
 SUMMARY="$LOGDIR/50-summary.txt"
@@ -290,7 +290,7 @@ if [ "$BUILD_RC" = PASS ]; then
         ver_rc=$?
         echo "version exit: $ver_rc output: [$ver_out]"
         if [ "$ver_rc" -ne 0 ] \
-           || ! printf '%s' "$ver_out" | grep -q '^XFOIL\.next 1\.0\.0$'; then
+           || ! printf '%s' "$ver_out" | grep -q '^XFOIL\.next 1\.0\.1$'; then
           echo "VIOLATION: unexpected --version result for $bin"
           BIN_RC=FAIL
         fi
