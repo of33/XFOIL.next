@@ -601,6 +601,7 @@ SESSION_ALLOWED_PUBLIC_HEADERS = (
     "xfoil/AnalysisResult.h",
     "xfoil/AnalysisData.h",
     "xfoil/CancellationToken.h",
+    "xfoil/Session.h",
     "xfoil/Diagnostic.h",
     "xfoil/Result.h",
     "xfoil/SequenceResult.h",
@@ -619,6 +620,7 @@ L2_PUBLIC_HEADERS = (
     "include/xfoil/Diagnostic.h",
     "include/xfoil/AnalysisData.h",
     "include/xfoil/SequenceResult.h",
+    "include/xfoil/Session.h",
 )
 L2_FORBIDDEN_INCLUDE_PREFIXES = (
     "xfoil/session/",

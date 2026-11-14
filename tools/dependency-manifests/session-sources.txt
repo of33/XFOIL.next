@@ -4,9 +4,11 @@
 # (tools/check-core-dependencies.py: SESSION_ALLOWED_PUBLIC_HEADERS).
 # Forbidden: app/, cli/, tests, xfoil/XFoil.h,
 # globally mutable solver state.
+include/xfoil/session/SessionErrorMapping.h
 include/xfoil/session/SessionState.h
 include/xfoil/session/SessionOps.h
 include/xfoil/session/SessionProjections.h
+src/session/PublicSession.cpp
 src/session/SessionOps.cpp
 src/session/SessionProjections.cpp
 src/session/XFoilSession.cpp

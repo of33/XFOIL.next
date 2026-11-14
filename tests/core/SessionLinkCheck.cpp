@@ -39,6 +39,7 @@
 #include "xfoil/Diagnostic.h"
 #include "xfoil/Result.h"
 #include "xfoil/SequenceResult.h"
+#include "xfoil/Session.h"
 #include "xfoil/XFoil.h"
 #include "xfoil/XFoilSession.h"
 #include "xfoil/geometry/AirfoilGeometry.h"
@@ -46,6 +47,7 @@
 #include "xfoil/session/SessionState.h"
 #include "xfoil/Types.h"
 
+#include <utility>
 #include <vector>
 
 int main() {
@@ -105,6 +107,17 @@ int main() {
   if (sequence.points.size() != 1) {
     return 1;
   }
+
+  // Public in-memory session links without app/CLI symbols. The empty
+  // session reports a structured error instead of throwing.
+  Session librarySession;
+  const Result<OperatingPointData> noPoint =
+      librarySession.lastOperatingPoint();
+  if (noPoint.isOk()) {
+    return 1;
+  }
+  Session movedSession = std::move(librarySession);
+  movedSession.reset();
 
   return 0;
 }

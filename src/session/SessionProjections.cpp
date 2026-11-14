@@ -28,6 +28,8 @@
 
 #include "xfoil/session/SessionProjections.h"
 
+#include "xfoil/session/SessionErrorMapping.h"
+
 #include <utility>
 #include <vector>
 
@@ -53,60 +55,6 @@ ConvergenceStatus convergenceFromStatus(AnalysisStatus status) noexcept {
     default:
       return ConvergenceStatus::failed;
   }
-}
-
-Error errorFromStatus(AnalysisStatus status) {
-  switch (status) {
-    case AnalysisStatus::notAnalyzed:
-      return makeError(ErrorCategory::invalidState, "analysis.notAnalyzed",
-                       "No analysis point has been run", "analysis");
-    case AnalysisStatus::missingGeometry:
-      return makeError(ErrorCategory::invalidState, "analysis.missingGeometry",
-                       "No valid panel geometry is available", "analysis");
-    case AnalysisStatus::missingConfiguration:
-      return makeError(ErrorCategory::invalidState,
-                       "analysis.missingConfiguration",
-                       "No validated analysis configuration is available",
-                       "analysis");
-    case AnalysisStatus::invalidConfiguration:
-      return makeError(ErrorCategory::invalidArgument,
-                       "analysis.invalidConfiguration",
-                       "The analysis configuration is invalid", "analysis");
-    case AnalysisStatus::geometryTooLarge:
-      return makeError(ErrorCategory::capacityExceeded,
-                       "analysis.geometryTooLarge",
-                       "The geometry exceeds the supported capacity",
-                       "analysis");
-    case AnalysisStatus::geometryInitializationFailed:
-      return makeError(ErrorCategory::invalidState,
-                       "analysis.geometryInitializationFailed",
-                       "Geometry initialization failed", "analysis");
-    case AnalysisStatus::analysisInitializationFailed:
-      return makeError(ErrorCategory::invalidState,
-                       "analysis.analysisInitializationFailed",
-                       "Analysis initialization failed", "analysis");
-    case AnalysisStatus::invalidAnalysisSettings:
-      return makeError(ErrorCategory::invalidArgument,
-                       "analysis.invalidAnalysisSettings",
-                       "The analysis settings were rejected by the solver",
-                       "analysis");
-    case AnalysisStatus::compressibilityFailure:
-      return makeError(ErrorCategory::numericalFailure,
-                       "analysis.compressibilityFailure",
-                       "The compressibility calculation failed", "analysis");
-    case AnalysisStatus::finalizationFailed:
-      return makeError(ErrorCategory::internal,
-                       "analysis.finalizationFailed",
-                       "Analysis finalization failed", "analysis");
-    case AnalysisStatus::cancelled:
-      return makeError(ErrorCategory::cancelled, "analysis.cancelled",
-                       "The analysis was cancelled", "analysis");
-    case AnalysisStatus::converged:
-    case AnalysisStatus::unconverged:
-      break;
-  }
-  return makeError(ErrorCategory::internal, "analysis.unexpectedStatus",
-                   "Unexpected successful analysis status", "analysis");
 }
 
 std::vector<Diagnostic> diagnosticsFromResult(const AnalysisResult& result) {
@@ -221,7 +169,8 @@ Result<OperatingPointData> projectLastOperatingPoint(
     const SessionComposition& session) {
   const AnalysisResult& result = session.result.lastResult;
   if (!result.successful) {
-    return Result<OperatingPointData>::fail(errorFromStatus(result.status));
+    return Result<OperatingPointData>::fail(
+        analysisStatusError(result.status));
   }
 
   OperatingPointData point;
