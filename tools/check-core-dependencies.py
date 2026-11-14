@@ -599,7 +599,11 @@ SESSION_ALLOWED_PUBLIC_HEADERS = (
     "xfoil/SessionTypes.h",
     "xfoil/AnalysisConfig.h",
     "xfoil/AnalysisResult.h",
+    "xfoil/AnalysisData.h",
     "xfoil/CancellationToken.h",
+    "xfoil/Diagnostic.h",
+    "xfoil/Result.h",
+    "xfoil/SequenceResult.h",
     "xfoil/Types.h",
     "xfoil/Limits.h",
     "xfoil/geometry/AirfoilGeometry.h",
@@ -607,6 +611,47 @@ SESSION_ALLOWED_PUBLIC_HEADERS = (
 )
 
 SESSION_INCLUDE_RE = re.compile(r'^\s*#\s*include\s*[<"]([^>"]+)[>"]')
+
+# Public L2 data-model headers. They must stay free of internal
+# session/core/io/app includes and of direct filesystem/stream headers.
+L2_PUBLIC_HEADERS = (
+    "include/xfoil/Result.h",
+    "include/xfoil/Diagnostic.h",
+    "include/xfoil/AnalysisData.h",
+    "include/xfoil/SequenceResult.h",
+)
+L2_FORBIDDEN_INCLUDE_PREFIXES = (
+    "xfoil/session/",
+    "xfoil/core/",
+    "xfoil/io/",
+    "app/",
+)
+L2_FORBIDDEN_INCLUDE_HEADERS = ("filesystem", "fstream", "iostream")
+
+
+def check_public_l2_headers(root):
+    """Check the public L2 headers for forbidden internal/IO includes."""
+    messages = []
+    for rel_path in L2_PUBLIC_HEADERS:
+        path = os.path.join(root, rel_path)
+        if not os.path.isfile(path):
+            continue
+        with open(path, "rb") as handle:
+            text = handle.read().decode("utf-8")
+        for index, line in enumerate(text.splitlines(), start=1):
+            match = INCLUDE_RE.match(line)
+            if not match:
+                continue
+            target = normalize_include_target(match.group(1))
+            forbidden = target in L2_FORBIDDEN_INCLUDE_HEADERS or any(
+                target.startswith(prefix)
+                for prefix in L2_FORBIDDEN_INCLUDE_PREFIXES)
+            if forbidden:
+                messages.append(
+                    (rel_path, index,
+                     "public L2 header includes forbidden "
+                     "internal/IO header: %s" % target))
+    return messages
 
 
 def classify_session_include(target):
@@ -1175,12 +1220,18 @@ def main(argv):
         sys.stdout.write("session:%s:%d: %s\n"
                          % (rel_path, line_no, message))
 
-    if exit_code == 1 or io_messages or session_messages:
+    public_messages = check_public_l2_headers(root)
+    for rel_path, line_no, message in public_messages:
+        sys.stdout.write("public:%s:%d: %s\n"
+                         % (rel_path, line_no, message))
+
+    total_violations = (len(messages) + len(io_messages)
+                        + len(session_messages) + len(public_messages))
+    if exit_code == 1 or io_messages or session_messages or public_messages:
         sys.stdout.write(
             "Dependency check: %d %s.\n"
-            % (len(messages) + len(io_messages) + len(session_messages),
-               "violation" if (len(messages) + len(io_messages)
-                               + len(session_messages)) == 1
+            % (total_violations,
+               "violation" if total_violations == 1
                else "violations"))
         return 1
     if exit_code == 2:

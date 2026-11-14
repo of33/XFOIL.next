@@ -6,5 +6,7 @@
 # globally mutable solver state.
 include/xfoil/session/SessionState.h
 include/xfoil/session/SessionOps.h
+include/xfoil/session/SessionProjections.h
 src/session/SessionOps.cpp
+src/session/SessionProjections.cpp
 src/session/XFoilSession.cpp

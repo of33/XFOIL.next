@@ -33,8 +33,12 @@
 // success, otherwise a non-zero exit code.
 
 #include "xfoil/AnalysisConfig.h"
+#include "xfoil/AnalysisData.h"
 #include "xfoil/AnalysisResult.h"
 #include "xfoil/CancellationToken.h"
+#include "xfoil/Diagnostic.h"
+#include "xfoil/Result.h"
+#include "xfoil/SequenceResult.h"
 #include "xfoil/XFoil.h"
 #include "xfoil/XFoilSession.h"
 #include "xfoil/geometry/AirfoilGeometry.h"
@@ -74,6 +78,31 @@ int main() {
   }
   const ConfigValidationResult configured = foil.configure(AnalysisConfig{});
   if (!configured.success()) {
+    return 1;
+  }
+
+  // Public L2 data model links as standalone values without app/CLI
+  // symbols.
+  const Result<int> dataResult = Result<int>::ok(1);
+  if (!dataResult.isOk() || dataResult.value() != 1) {
+    return 1;
+  }
+  const Result<void> dataStatus = Result<void>::ok();
+  if (!dataStatus.isOk()) {
+    return 1;
+  }
+  Diagnostic diagnostic;
+  diagnostic.code = "link";
+  SurfaceGeometry surfaceGeometry;
+  surfaceGeometry.points.push_back(Point2D{0.0, 0.0});
+  SurfaceDistribution surfaceDistribution;
+  surfaceDistribution.cp.push_back(0.0);
+  OperatingPointData operatingPoint;
+  operatingPoint.convergence = ConvergenceStatus::converged;
+  PolarPoint polarPoint;
+  SequenceResult sequence;
+  sequence.points.push_back(polarPoint);
+  if (sequence.points.size() != 1) {
     return 1;
   }
 

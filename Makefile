@@ -129,6 +129,7 @@ SESSION_SRCS := \
 	src/core/AnalysisConfig.cpp \
 	src/core/XFoilFacade.cpp \
 	src/session/SessionOps.cpp \
+	src/session/SessionProjections.cpp \
 	src/session/XFoilSession.cpp
 
 # 0-based core: foundation without app dependency.
@@ -327,6 +328,8 @@ TEST_SRCS := \
 	tests/unit/OperFmomCoreTests.cpp \
 	tests/unit/OperFnewCoreTests.cpp \
 	tests/unit/OperVelsCoreTests.cpp \
+	tests/unit/LibraryDataModelL2HeaderSmoke.cpp \
+	tests/unit/LibraryDataModelL2Tests.cpp \
 	tests/unit/SessionPolarOpsTests.cpp \
 	tests/unit/SessionDefaultsOpsTests.cpp \
 	tests/unit/SessionDesignStateTests.cpp \
