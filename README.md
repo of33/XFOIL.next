@@ -268,8 +268,8 @@ bundled runtime.
 ## Numerical validation
 
 The Fortran sources under `fortran-src/` are the numerical authority, and
-`fortran-bin/xfoil` is the executable reference oracle. The port is checked
-against them with:
+`fortran-bin/xfoil` is the retained historical 1.0.0 executable reference
+oracle. The port is checked against them with:
 
 ```sh
 make check-fortran-sha              # Fortran source integrity (SHA256SUMS)

@@ -17,13 +17,21 @@ the file LICENSE in the repository root.
 
 Original XFOIL provenance
 ------------------------
-The following files are part of the original XFOIL provenance and come from
-the XFOIL 6.99 distribution. They are kept unmodified and keep their own
-notices:
+The following files are part of the original XFOIL provenance. The archived
+sources and data come from the XFOIL 6.99 distribution and are kept
+unmodified. The historical binary is a separate build from an earlier local
+source state and keeps its own provenance note:
 
   fortran-src/          original XFOIL 6.99 Fortran reference sources
-  fortran-bin/xfoil     reference binary built from fortran-src/
+  fortran-bin/xfoil     historical 1.0.0 reference binary built from an
+                        earlier local source state; see fortran-bin/README.txt
   fortran-src/osmap.dat active Orr-Sommerfeld database (REAL*4)
+
+The archived Fortran sources are byte-identical to the external XFOIL 6.99
+originals after the 1.0.1 source correction. The historical binary is kept
+separately: it was built before that correction, still contains the local
+OFS extension, and is not rebuilt from the restored sources. Its archived
+reference outputs remain historical compatibility records.
 
 Active and inactive OSMAP artifacts
 -----------------------------------

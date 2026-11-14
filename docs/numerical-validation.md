@@ -6,8 +6,11 @@ Fortran implementation.
 ## Authority
 
 The Fortran sources under `fortran-src/` are the numerical authority. The
-precompiled `fortran-bin/xfoil` is the executable reference oracle for
-deterministic visible output and generated files.
+precompiled `fortran-bin/xfoil` is the retained historical 1.0.0 executable
+reference oracle for deterministic visible output and generated files. It was
+built from an earlier local source state that contained the local OFS
+extension and the READR adjustment; it was not rebuilt from the restored
+upstream sources in the 1.0.1 correction. See `fortran-bin/README.txt`.
 
 Reference target values are taken exclusively from the Fortran reference.
 

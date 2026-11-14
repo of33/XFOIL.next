@@ -8,8 +8,9 @@ from C++ output.
 
 The original XFOIL 6.99 Fortran sources. They are the highest domain
 authority and are kept content-unmodified; C++ changes are not back-ported
-into them. They are not compiled or linked in the normal C++ build. See
-`fortran-src/README.md`.
+into them. The 1.0.1 source correction restored `xoper.f` and `xgdes.f`
+byte-identically to the external XFOIL 6.99 originals. They are not compiled
+or linked in the normal C++ build. See `fortran-src/README.md`.
 
 Integrity is pinned by `fortran-src/SHA256SUMS` (48 entries, including the
 active and inactive OSMAP artifacts):
@@ -20,9 +21,13 @@ make check-fortran-sha          # sha256sum --check fortran-src/SHA256SUMS
 
 ## `fortran-bin/xfoil`
 
-The reference oracle: a Linux x86-64 binary built from `fortran-src/`. It is
-used only to generate and verify canonical reference artifacts. It is not the
-product binary. Its SHA-256 is pinned in `fortran-bin/SHA256SUMS`:
+The retained historical 1.0.0 reference oracle: a Linux x86-64 binary built
+from an earlier local XFOIL 6.99 source state. That state contained the local
+OFS extension in `xoper.f` and the READR adjustment in `xgdes.f`. The binary
+still emits the historical OFS line and its archived reference outputs remain
+historical compatibility records. It was not rebuilt from the restored
+upstream sources in the 1.0.1 correction and is not the product binary. Its
+SHA-256 is pinned in `fortran-bin/SHA256SUMS`:
 
 ```text
 f5779d6954d0b8fdc152e0e0633f18732e00b7b69228d561d629bd524bba598c  xfoil

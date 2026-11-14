@@ -1,70 +1,98 @@
 # XFOIL.next 1.0.1 maintenance plan
 
-## Scope
+## Version decision
 
-XFOIL.next 1.0.1 is a maintenance release on `release/1.0.x`, based on
-`v1.0.0`. It removes the project-specific, non-upstream `OFS:` console line
-from the OPER and QDES/SPECAL paths. Solver values, files, command semantics,
-API and the canonical Fortran sources remain unchanged.
+The owner keeps the release identity `XFOIL.next 1.0.1`. No 1.0.2 release is
+created. The already published tag `v1.0.1` is moved to the source-corrected
+commit only after the correction is accepted and only with the explicit owner
+authorization recorded with this maintenance work.
 
-The release deliberately excludes all 1.1.0/S18 backports: CLf/CDp console
-changes, xT/cam widths, DXF/BLOU/NACS work, help/PACC changes and 6.996
-behaviour.
+## Scope and chronology
 
-## Upstream evidence
+The first 1.0.1 maintenance commit removed the project-specific, non-upstream
+`OFS:` console output from the C++ product and updated the product version,
+tests, goldens and documentation. That commit did not restore the archived
+Fortran sources.
 
-The external original sources were read only:
+A read-only provenance audit then found that `fortran-src/xoper.f` and
+`fortran-src/xgdes.f` still contained local modifications:
+
+- `xoper.f`: the local `OF Special` block with label 333 and `write(*,333)`;
+- `xgdes.f`: `CALL READR(1,XRF(1),ERROR)` instead of
+  `CALL READR(2,XRF,ERROR)`.
+
+The audit also found that current provenance documents incorrectly implied
+that these files were byte-identical to upstream and that the historical
+binary had been built from the restored source tree.
+
+The owner decided to remain at 1.0.1 and authorized a source-correction commit
+on `release/1.0.x`, followed by a new normal branch push and a separately
+authorized replacement of the annotated tag `v1.0.1`. No branch force-push is
+authorized. `main`, `v1.0.0` and the 1.1.0 preparation are outside this task.
+
+## Upstream originals
+
+The external XFOIL 6.99 originals are read-only reference inputs:
 
 | File | SHA-256 |
 |---|---|
-| `../Xfoil-6.99/src/xoper.f` | `23f0b6354d6c544b2539ee0ad01b9975838da265f59493b026c28326b69f6524` |
-| `../Xfoil-6.99/src/xgdes.f` | `513d71d2eea3b69b5fdb3544ff506bdda68b2b51c2edbf3703f8ac268c4bd622` |
+| external `xoper.f` | `23f0b6354d6c544b2539ee0ad01b9975838da265f59493b026c28326b69f6524` |
+| external `xgdes.f` | `513d71d2eea3b69b5fdb3544ff506bdda68b2b51c2edbf3703f8ac268c4bd622` |
 
-At `v1.0.0` the local Fortran is flat under `fortran-src/`. The only local
-OFS addition is at `xoper.f:2816` (`333 format(...)` and the
-`write(*,333)`); it is absent from the external original. The local `xgdes.f`
-difference is a `READR` call change (`READR(2,XRF,ERROR)` to
-`READR(1,XRF(1),ERROR)`), not OFS, and is not ported.
+## Corrected repository state
 
-## Product changes
+- `fortran-src/xoper.f` is byte-identical to the external original:
+  `23f0b6354d6c544b2539ee0ad01b9975838da265f59493b026c28326b69f6524`.
+- `fortran-src/xgdes.f` is byte-identical to the external original:
+  `513d71d2eea3b69b5fdb3544ff506bdda68b2b51c2edbf3703f8ac268c4bd622`.
+- `fortran-src/SHA256SUMS` pins exactly these two original hashes; no other
+  source entry changes.
+- The local OFS block and the `READR` adjustment are absent from the archived
+  sources.
+- Product C++, product tests, product goldens, canonical reference data and
+  the historical binary are unchanged.
 
-- Remove `emitOfsSpecial` and its OPER call site.
-- Suppress the QDES/SPECAL `specifiedPointOutput` text emission while keeping
-  the event and SPECAL snapshot for chronology and structured results.
-- Bump the central product version from `1.0.0` to `1.0.1`.
-- Update the CLI and batch banner/metadata goldens and the focused tests.
-- Add `unit.OfsRemoval101` and `integration.OfsRemoval101`.
-- Add this plan and the companion report.
+## Historical oracle binary
 
-## Protected inputs
+`fortran-bin/xfoil` remains the historical 1.0.0 reference oracle. It was
+built from the earlier local source state and still contains the local OFS
+output. It is not rebuilt or replaced in this correction. Its existing
+reference outputs remain historical compatibility records. Its SHA-256 stays
+`f5779d6954d0b8fdc152e0e0633f18732e00b7b69228d561d629bd524bba598c`.
 
-- `fortran-src/`, `fortran-bin/`, `patches/`: unchanged.
-- `tests/fortran-reference/`: unchanged. The two stdout parity tests remove
-  the known non-upstream OFS block from their reference copy at test time,
-  with a counted replacement; the reference files remain byte-identical.
-- No Windows golden or tolerance changes.
+The archived upstream sources and the historical oracle are therefore
+documented separately. `fortran-bin/SHA256SUMS` and
+`tests/fortran-reference/` remain unchanged.
 
 ## Validation
 
-Linux:
-
 ```text
+git diff --check
 make check-fortran-sha
+make check-license-headers
+make check-dependencies
+make check-release-inventory
+make check-public-docs
 make test
-make test CXX=clang++ BUILDROOT=build/clang
-make release build/release/xfoil_tests
-./build/release/xfoil_tests
-make test-sanitize
+make release
+build/release/xfoil_tests
+make test-reference
+make test-reference-determinism
 ```
 
-Windows: exactly one focused UCRT64 process, including debug/release build,
-version/OFS smoke checks and the focused binary contract. No full Windows
-matrix.
+The product version remains 1.0.1. No reference migration and no binary
+rebuild are performed. Because no product, build or test file changes in the
+correction, the already accepted focused Windows 1.0.1 run remains valid; no
+additional Windows process is started.
 
-## Acceptance
+## Acceptance markers
 
-- Full Linux debug, debug-Clang, release and sanitizer suites green.
-- One focused Windows process green.
-- No protected file changed; no 1.1.0/S18 backport.
-- Local maintenance commit `Prepare XFOIL.next 1.0.1 maintenance release`
-  and local annotated tag `v1.0.1`; no push, fetch, tag push or release.
+```text
+XFOILNEXT-1.0.1-MAINTENANCE: PASS
+XFOILNEXT-1.0.1-SOURCE-CORRECTION: PASS
+XFOILNEXT-1.0.1-R1: PASS
+```
+
+After acceptance, the correction commit is pushed normally to
+`release/1.0.x`; the annotated tag `v1.0.1` is then replaced to point at that
+commit. No GitHub release is created in this correction step.
