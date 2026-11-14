@@ -41,8 +41,8 @@ binary-based references remain tied to this binary. Its SHA-256 is pinned in
 f5779d6954d0b8fdc152e0e0633f18732e00b7b69228d561d629bd524bba598c  xfoil
 ```
 
-See `fortran-bin/README.txt` and
-`xfoil-6.996/36-xfoil-699-source-provenance-correction.md`.
+See `fortran-bin/README.txt` and [NOTICE](../NOTICE) for the source/binary
+separation.
 
 ## `tests/fortran-reference/`
 

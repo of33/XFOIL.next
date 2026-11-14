@@ -14,7 +14,7 @@ to the original upstream state. This binary is unchanged and remains the
 behavior oracle for its existing binary-based references. It is not an exact
 rebuild of the restored source tree. Source-based harness references follow the
 restored sources; binary-based references remain tied to this binary. See
-docs/xfoil-6.996/36-xfoil-699-source-provenance-correction.md.
+README.md in this directory and NOTICE at the repository root.
 
 Integrity:
   The binary's SHA-256 is pinned in fortran-bin/SHA256SUMS:

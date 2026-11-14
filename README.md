@@ -281,9 +281,13 @@ make test-harnesses                 # 16 focused Fortran harness families
 ```
 
 See [numerical validation](docs/numerical-validation.md) and
-[Fortran reference](docs/fortran-reference.md). The source/binary separation
-and the 6.99 provenance correction are recorded in
-[the correction report](docs/xfoil-6.996/36-xfoil-699-source-provenance-correction.md).
+[Fortran reference](docs/fortran-reference.md). The source/binary separation is
+recorded in [NOTICE](NOTICE), [the Fortran reference sources](fortran-src/xfoil-6.99/README.md)
+and [the reference binary](fortran-bin/README.txt): the archived sources under
+`fortran-src/xfoil-6.99/` are the numerical authority, while the historical
+`fortran-bin/xfoil` oracle and the existing binary-based references derive from
+an earlier local 6.99 source state and are not an exact rebuild of the restored
+archive.
 
 ## Validation baseline
 
