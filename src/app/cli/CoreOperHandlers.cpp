@@ -48,6 +48,7 @@
 
 #include "CliFortranText.h"
 #include "NumericArguments.h"
+#include "app/DumpFileAdapter.h"
 #include "xfoil/core/boundary_layer/BlForceReport.h"
 #include "xfoil/core/export_data/ExportData.h"
 #include "xfoil/core/inviscid/Compressibility.h"
@@ -1668,7 +1669,7 @@ bool appendPolarDumpPoint(session::SessionComposition& session, int slot0) {
   const std::string effective = io::applyOutputPathPolicy(
       session.outputPaths,
       session.polar.dumpFileNames[static_cast<std::size_t>(slot0)]);
-  return io::appendDumpPointFile(effective, header, dumpPoint).isOk();
+  return xfoil::app::appendDumpPointFile(effective, header, dumpPoint).isOk();
 }
 
 std::string accumulateOperPointRecord(session::SessionComposition& session,

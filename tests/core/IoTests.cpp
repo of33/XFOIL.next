@@ -39,6 +39,7 @@
 
 #include "TestSupport.h"
 #include "app/DatFileReader.h"
+#include "app/DumpFileAdapter.h"
 #include "xfoil/AnalysisConfig.h"
 #include "xfoil/geometry/AirfoilGeometry.h"
 #include "xfoil/session/SessionOps.h"
@@ -53,6 +54,7 @@
 #include "xfoil/io/TextFormat.h"
 
 namespace io = xfoil::io;
+namespace app = xfoil::app;
 namespace ex = xfoil::core::export_data;
 namespace cmath = xfoil::core::math;
 namespace polar = xfoil::core::polar;
@@ -476,7 +478,7 @@ TEST(unit, PolarDumpS12AppendPreflight) {
       (std::istreambuf_iterator<char>(original)),
       std::istreambuf_iterator<char>());
   const auto incompatible =
-      io::appendDumpPointFile(path, wrongName, decoded.file->points[0]);
+      app::appendDumpPointFile(path, wrongName, decoded.file->points[0]);
   CHECK(incompatible.isErr());
   std::ifstream unchanged(path, std::ios::binary);
   const std::vector<std::uint8_t> unchangedBytes(
@@ -488,7 +490,7 @@ TEST(unit, PolarDumpS12AppendPreflight) {
       io::encodeDumpPointChecked(decoded.file->points[0]);
   CHECK(pointBytes.isOk());
   const auto appended =
-      io::appendDumpPointFile(path, expected, decoded.file->points[0]);
+      app::appendDumpPointFile(path, expected, decoded.file->points[0]);
   CHECK(appended.isOk());
   std::ifstream after(path, std::ios::binary);
   const std::vector<std::uint8_t> afterBytes(

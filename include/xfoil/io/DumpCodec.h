@@ -142,13 +142,6 @@ struct DumpAppendCheck {
     const std::uint8_t* data, std::size_t size, const DumpHeader& expected,
     DumpRealWidth realWidth = DumpRealWidth::k8);
 
-// Append one validated PLXADD group. The existing file is read and checked
-// before it is opened for writing; an incompatible or malformed file is
-// left byte-identical.
-[[nodiscard]] core::Status appendDumpPointFile(
-    const std::string& path, const DumpHeader& expected,
-    const DumpPoint& point, DumpRealWidth realWidth = DumpRealWidth::k8);
-
 }  // namespace xfoil::io
 
 #endif  // XFOIL_IO_DUMPCODEC_H

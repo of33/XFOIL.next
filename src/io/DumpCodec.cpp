@@ -26,9 +26,7 @@
 #include "xfoil/io/DumpCodec.h"
 
 #include <cstring>
-#include <fstream>
 #include <limits>
-#include <sstream>
 #include <string>
 #include <string_view>
 
@@ -521,48 +519,6 @@ DumpAppendCheck checkDumpAppend(const std::uint8_t* data, std::size_t size,
     return {false, "dump append geometry size differs"};
   }
   return {true, {}};
-}
-
-core::Status appendDumpPointFile(const std::string& path,
-                                 const DumpHeader& expected,
-                                 const DumpPoint& point,
-                                 DumpRealWidth realWidth) {
-  std::ifstream existing(path, std::ios::binary);
-  if (!existing) {
-    return core::Status::fail(
-        core::Error::make(core::ErrorCode::ioError,
-                          "Cannot read existing polar dump file"));
-  }
-  std::ostringstream buffer;
-  buffer << existing.rdbuf();
-  const std::string contents = buffer.str();
-  const DumpAppendCheck check =
-      checkDumpAppend(reinterpret_cast<const std::uint8_t*>(contents.data()),
-                      contents.size(), expected, realWidth);
-  if (!check.compatible) {
-    return core::Status::fail(
-        core::Error::make(core::ErrorCode::invalidState, check.message));
-  }
-  const core::Result<std::vector<std::uint8_t>> encoded =
-      encodeDumpPointChecked(point, realWidth);
-  if (!encoded.isOk()) {
-    return core::Status::fail(encoded.error());
-  }
-  std::ofstream stream(path, std::ios::app | std::ios::binary);
-  if (!stream) {
-    return core::Status::fail(
-        core::Error::make(core::ErrorCode::ioError,
-                          "Cannot append to polar dump file"));
-  }
-  stream.write(reinterpret_cast<const char*>(encoded.value().data()),
-               static_cast<std::streamsize>(encoded.value().size()));
-  stream.close();
-  if (!stream.good()) {
-    return core::Status::fail(
-        core::Error::make(core::ErrorCode::ioError,
-                          "Polar dump append write failed"));
-  }
-  return core::Status::ok();
 }
 
 }  // namespace xfoil::io

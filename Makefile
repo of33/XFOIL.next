@@ -80,6 +80,7 @@ XFOIL_CLI := $(XFOIL_CLI_NAME)$(EXEEXT)
 APP_SRCS := \
 	src/app/AirfoilWriter.cpp \
 	src/app/DatFileReader.cpp \
+	src/app/DumpFileAdapter.cpp \
 	src/app/CommandLine.cpp \
 	src/app/InteractiveApplication.cpp \
 	src/app/cli/CommandParser.cpp \
