@@ -34,6 +34,8 @@
 
 #include "xfoil/AnalysisConfig.h"
 #include "xfoil/AnalysisData.h"
+#include "xfoil/AnalysisRequest.h"
+#include "xfoil/Analyze.h"
 #include "xfoil/AnalysisResult.h"
 #include "xfoil/CancellationToken.h"
 #include "xfoil/Diagnostic.h"
@@ -118,6 +120,15 @@ int main() {
   }
   Session movedSession = std::move(librarySession);
   movedSession.reset();
+
+  // One-shot analysis links through the public request/analyze headers
+  // only. The default request has empty geometry and returns a
+  // structured error.
+  AnalysisRequest oneShotRequest;
+  const Result<OperatingPointData> oneShot = analyze(oneShotRequest);
+  if (oneShot.isOk()) {
+    return 1;
+  }
 
   return 0;
 }

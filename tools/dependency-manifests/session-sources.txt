@@ -8,6 +8,7 @@ include/xfoil/session/SessionErrorMapping.h
 include/xfoil/session/SessionState.h
 include/xfoil/session/SessionOps.h
 include/xfoil/session/SessionProjections.h
+src/session/Analyze.cpp
 src/session/PublicSession.cpp
 src/session/SessionOps.cpp
 src/session/SessionProjections.cpp

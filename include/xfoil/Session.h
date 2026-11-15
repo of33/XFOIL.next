@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include <cstddef>
 #include <memory>
 #include <string_view>
 
@@ -39,24 +38,11 @@
 #include "xfoil/CancellationToken.h"
 #include "xfoil/Result.h"
 #include "xfoil/SequenceResult.h"
+#include "xfoil/SessionOptions.h"
 #include "xfoil/Types.h"
 #include "xfoil/geometry/AirfoilGeometry.h"
 
 namespace xfoil {
-
-// Paneling inputs. Defaults are the canonical INIT values. panelCount is
-// the requested panel-node count and must be in [2, 595]; the remaining
-// fields are passed unchanged to the existing PANGEN contract.
-struct PanelingOptions {
-  std::size_t panelCount{240};
-  double bunchingParameter{1.0};
-  double teToLeDensityRatio{0.3};
-  double refinementDensityRatio{0.2};
-  double upperRefinementStart{1.0};
-  double upperRefinementEnd{1.0};
-  double lowerRefinementStart{1.0};
-  double lowerRefinementEnd{1.0};
-};
 
 // Alpha sequence with an exclusive end boundary, matching the existing
 // session sequence contract. step must be non-zero and its direction must

@@ -128,6 +128,7 @@ INVERSE_SRCS := \
 SESSION_SRCS := \
 	src/core/AnalysisConfig.cpp \
 	src/core/XFoilFacade.cpp \
+	src/session/Analyze.cpp \
 	src/session/PublicSession.cpp \
 	src/session/SessionOps.cpp \
 	src/session/SessionProjections.cpp \
@@ -332,6 +333,8 @@ TEST_SRCS := \
 	tests/unit/LibraryDataModelL2HeaderSmoke.cpp \
 	tests/unit/LibraryDataModelL2Tests.cpp \
 	tests/unit/LibrarySessionL3Tests.cpp \
+	tests/unit/LibraryOneShotL4HeaderSmoke.cpp \
+	tests/unit/LibraryOneShotL4Tests.cpp \
 	tests/unit/SessionPolarOpsTests.cpp \
 	tests/unit/SessionDefaultsOpsTests.cpp \
 	tests/unit/SessionDesignStateTests.cpp \
@@ -400,6 +403,7 @@ TEST_SRCS := \
 	tests/integration/SmooTargetS19Tests.cpp \
 	tests/integration/InputCapacityS20Tests.cpp \
 	tests/integration/LibrarySessionL3Tests.cpp \
+	tests/integration/LibraryOneShotL4Tests.cpp \
 	tests/regression/ClarkYGoldenTests.cpp \
 	tests/regression/PaccDumpByteParityTests.cpp \
 	tests/regression/PaccInviscidDumpParityTests.cpp \
@@ -679,6 +683,8 @@ VALGRIND_FLAGS := -q \
 VALGRIND_TEST_FILTERS := \
 	unit.LibrarySessionL3 \
 	integration.LibrarySessionL3 \
+	unit.LibraryOneShotL4 \
+	integration.LibraryOneShotL4 \
 	unit.ApiRunSpecAlphaColdStartUnchanged \
 	unit.SessionOperClSequenceIndependentSessions \
 	unit.SessionNaca0012SymmetricInviscidRegression \

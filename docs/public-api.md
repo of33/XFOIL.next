@@ -11,6 +11,14 @@ xfoil/XFoil.h                     facade class xfoil::XFoil
 xfoil/XFoilSession.h              xfoil::XFoilSession
 xfoil/AnalysisConfig.h            configuration and validation
 xfoil/AnalysisResult.h            per-point result and status
+xfoil/AnalysisData.h              owning operating-point and surface data
+xfoil/Result.h                    Error, ErrorCategory, Result<T>
+xfoil/Diagnostic.h                structured diagnostic record
+xfoil/SequenceResult.h            owning sequence/polar result
+xfoil/SessionOptions.h            PanelingOptions
+xfoil/Session.h                   stateful in-memory xfoil::Session
+xfoil/AnalysisRequest.h           one-shot request and Alpha/CL targets
+xfoil/Analyze.h                   xfoil::analyze one-shot entry point
 xfoil/CancellationToken.h         instance-scoped cancellation
 xfoil/SessionTypes.h              GeometrySetResult / GeometrySetError
 xfoil/Types.h                     Point2D, Vector2D, Degrees, Radians
@@ -98,6 +106,84 @@ if (!ok.success()) { /* ok.error, ok.message */ }
 from `start` to `endExclusive` in `step` increments and returns one result
 per point.
 
+## In-memory session API
+
+`xfoil::Session` is the stateful, in-memory interface introduced in L3.
+It owns one isolated session state and accepts only memory objects. It
+performs no file or console I/O and never terminates the host process.
+
+```cpp
+xfoil::Session session;
+
+auto set = session.setGeometry(geom);
+if (set.isErr()) { /* set.error() */ }
+
+xfoil::PanelingOptions paneling;   // defaults: 240 nodes, canonical INIT
+auto panel = session.generatePanel(paneling);
+if (panel.isErr()) { /* panel.error() */ }
+
+xfoil::AnalysisConfig config;      // the only analysis configuration source
+auto configured = session.configure(config);
+if (configured.isErr()) { /* configured.error() */ }
+
+auto point = session.solveAlpha(xfoil::Degrees{4.0});
+// or: auto point = session.solveCl(0.5);
+```
+
+Additional read-only projections:
+
+```cpp
+session.currentPanel();
+session.currentSurfaceDistribution();
+session.lastOperatingPoint();
+session.activePolar();
+```
+
+`Session` is move-only and not thread-safe. Separate sessions have
+isolated state. Sequences remain available through
+`Session::solveAlphaSequence`.
+
+## One-shot analysis API
+
+`xfoil::analyze(request)` is the stateless convenience layer introduced in
+L4. Every call creates a fresh call-local `xfoil::Session`, sets the
+geometry, generates the panel, applies the configuration, runs exactly one
+alpha or CL point, and returns an owning `Result<OperatingPointData>`.
+
+```cpp
+#include "xfoil/Analyze.h"
+#include "xfoil/AnalysisRequest.h"
+
+xfoil::AnalysisRequest request;
+request.geometry = geom;            // owning AirfoilGeometry
+request.paneling = {};              // PanelingOptions defaults
+request.configuration = config;     // AnalysisConfig
+request.target = xfoil::AlphaTarget{xfoil::Degrees{4.0}};
+// or: request.target = xfoil::LiftTarget{0.5};
+
+auto result = xfoil::analyze(request);
+if (result.isErr()) {
+  // result.error().category, result.error().code, result.error().message
+} else {
+  const xfoil::OperatingPointData& point = result.value();
+  // point.liftCoefficient, point.dragCoefficient, point.surface, ...
+}
+```
+
+The request contains exactly one target through
+`std::variant<AlphaTarget, LiftTarget>`. It contains no filenames, paths,
+streams, callbacks or session state. A default request has an empty
+geometry and therefore fails at the geometry step.
+
+Error order follows execution order: geometry, paneling, configuration,
+target value, solver.
+
+A non-converged but executed point is a successful value with
+`ConvergenceStatus::unconverged`; diagnostics and available values are
+preserved. A cancellation returns the same structured error as the L3
+session API. `analyze` performs no file or console I/O, uses no global or
+hidden session cache, and does not mutate the request.
+
 ## Result and error status
 
 `AnalysisResult` is a copyable value type. `successful` is true when the
@@ -184,10 +270,12 @@ int main() {
 }
 ```
 
-There is no install step and no prebuilt shared library. Compile against the
-headers under `include/` and link the core, session, and IO objects that the
-build produces under `build/<mode>/obj/` (the application/CLI objects and the
-`main` object are not needed by the API). For example, after `make release`:
+The product version remains 1.1.0. There is no install step, no prebuilt
+shared library, no pkg-config/CMake package and no stable C++ ABI promise in
+this API generation. Compile against the headers under `include/` and link
+the core, session, and IO objects that the build produces under
+`build/<mode>/obj/` (the application/CLI objects and the `main` object are
+not needed by the API). For example, after `make release`:
 
 ```sh
 g++ -std=c++20 -Iinclude example.cpp \
