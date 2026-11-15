@@ -323,6 +323,34 @@ C++ standard library and compiler/ABI. The pkg-config file is
 against a staged install only and prints one `LibraryConsumer PASS` per
 consumer.
 
+## Standalone consumer demo
+
+`demo-lib/` is a complete external consumer. It uses only installed
+public headers and pkg-config metadata, reads a two-column profile file
+in the application, and passes the coordinates to `xfoil::Session`
+through `xfoil::geometry::AirfoilGeometry`. The analysis workflow is an
+alpha sequence followed by a specified-CL point in the same session.
+
+```sh
+PKG_CONFIG_PATH=/usr/local/lib/pkgconfig make -C demo-lib
+xfoil-next-lib-demo \
+  --airfoil demo-lib/profiles/naca0012.dat \
+  --re 1000000 \
+  --alpha-start -2 \
+  --alpha-end 8 \
+  --alpha-step 1 \
+  --cl 0.6
+```
+
+The required arguments are `--airfoil`, `--re`, `--alpha-start`,
+`--alpha-end`, `--alpha-step`, and `--cl`. `--mach`, `--iterations`, and
+`--panels` are optional and otherwise use `xfoil::AnalysisConfig{}` and
+`xfoil::PanelingOptions{}` defaults. `--re 0` selects inviscid analysis;
+positive `--re` selects viscous analysis. `--alpha-end` is exclusive.
+The demo application owns profile file I/O; the library performs no file
+or console I/O. `make test-demo-lib` builds and runs the static and shared
+demo against a staged install.
+
 ## No-I/O, isolation and concurrency contract
 
 During library API calls the implementation performs no application file,

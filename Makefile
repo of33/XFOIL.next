@@ -394,6 +394,7 @@ TEST_SRCS := \
 	tests/unit/LibraryOneShotL4Tests.cpp \
 	tests/unit/LibraryIsolationL7Tests.cpp \
 	tests/unit/LibraryConcurrencyL7Tests.cpp \
+	tests/unit/LibraryDemoL9Tests.cpp \
 	tests/unit/SessionPolarOpsTests.cpp \
 	tests/unit/SessionDefaultsOpsTests.cpp \
 	tests/unit/SessionDesignStateTests.cpp \
@@ -465,6 +466,7 @@ TEST_SRCS := \
 	tests/integration/LibraryOneShotL4Tests.cpp \
 	tests/integration/LibraryCliParityL5Tests.cpp \
 	tests/integration/LibraryIsolationL7Tests.cpp \
+	tests/integration/LibraryDemoL9Tests.cpp \
 	tests/regression/ClarkYGoldenTests.cpp \
 	tests/regression/PaccDumpByteParityTests.cpp \
 	tests/regression/PaccInviscidDumpParityTests.cpp \
@@ -512,7 +514,7 @@ LIB_SHARED_IMPORT_FLAG := -Wl,--out-implib
 	library library-static library-shared install \
 	install-headers install-libraries install-cli install-metadata \
 	l6-stage-install test-consumer-static test-consumer-shared test-consumers \
-	update-golden clean help
+	demo-lib test-demo-lib update-golden clean help
 
 all: release
 
@@ -528,7 +530,8 @@ CORE_OBJS_$(1) := $$(patsubst src/%.cpp,$(BUILDROOT)/$(1)/obj/%.o,$(CORE_SRCS))
 APP_OBJS_$(1) := $$(patsubst src/%.cpp,$(BUILDROOT)/$(1)/obj/%.o,$$(APP_SRCS))
 CLI_OBJS_$(1) := $(BUILDROOT)/$(1)/obj/main.o $$(APP_OBJS_$(1))
 TEST_OBJS_$(1) := $$(patsubst tests/%.cpp,$(BUILDROOT)/$(1)/obj-tests/%.o,$(TEST_SRCS))
-TEST_DEPS_$(1) := $$(TEST_OBJS_$(1):.o=.d)
+DEMO_SUPPORT_OBJ_$(1) := $(BUILDROOT)/$(1)/obj-demo-support/DemoSupport.o
+TEST_DEPS_$(1) := $$(TEST_OBJS_$(1):.o=.d) $$(DEMO_SUPPORT_OBJ_$(1):.o=.d)
 LIB_STATIC_$(1) := $(BUILDROOT)/$(1)/lib/$(LIB_STATIC_NAME)
 LIB_SHARED_$(1) := $(BUILDROOT)/$(1)/lib/$(LIB_SHARED_NAME)
 LIB_IMPORT_$(1) := $(BUILDROOT)/$(1)/lib/$(LIB_IMPORT_NAME)
@@ -565,11 +568,15 @@ $(BUILDROOT)/$(1)/$(XFOIL_CLI): $$(CLI_OBJS_$(1)) $(BUILDROOT)/$(1)/lib/$(LIB_ST
 	@mkdir -p $$(dir $$@)
 	$$(CXX) $$(CXXSTD) $$($(1)_FLAGS) $$(CLI_OBJS_$(1)) $(BUILDROOT)/$(1)/lib/$(LIB_STATIC_NAME) -o $$@
 
+$(BUILDROOT)/$(1)/obj-demo-support/%.o: demo-lib/%.cpp
+	@mkdir -p $$(dir $$@)
+	$$(CXX) $$(CXXSTD) $$(CPPFLAGS) -Idemo-lib $$(DEPFLAGS) $$(WARNINGS) $$($(1)_FLAGS) -c $$< -o $$@
+
 $(BUILDROOT)/$(1)/obj-tests/%.o: tests/%.cpp
 	@mkdir -p $$(dir $$@)
-	$$(CXX) $$(CXXSTD) $$(CPPFLAGS) -Itests $$(DEPFLAGS) $$(WARNINGS) $$($(1)_FLAGS) -c $$< -o $$@
+	$$(CXX) $$(CXXSTD) $$(CPPFLAGS) -Itests -Idemo-lib $$(DEPFLAGS) $$(WARNINGS) $$($(1)_FLAGS) -c $$< -o $$@
 
-$(BUILDROOT)/$(1)/xfoil_tests: $$(TEST_OBJS_$(1)) $$(CORE_OBJS_$(1))
+$(BUILDROOT)/$(1)/xfoil_tests: $$(TEST_OBJS_$(1)) $$(DEMO_SUPPORT_OBJ_$(1)) $$(CORE_OBJS_$(1))
 	@mkdir -p $$(dir $$@)
 	$$(CXX) $$(CXXSTD) $$($(1)_FLAGS) $$^ -o $$@
 
@@ -836,6 +843,36 @@ test-consumer-shared: $(L6_STAGE_MARKER)
 test-consumers: test-consumer-static test-consumer-shared
 
 # ---------------------------------------------------------------------------
+# L9 standalone library demo. The demo is built only against the staged
+# installed package and is not part of the default product build.
+# ---------------------------------------------------------------------------
+DEMO_LIB_DIR := demo-lib
+DEMO_BUILD_ROOT := $(DEMO_LIB_DIR)/build
+DEMO_SHARED := $(DEMO_BUILD_ROOT)/shared/xfoil-next-lib-demo$(EXEEXT)
+DEMO_STATIC := $(DEMO_BUILD_ROOT)/static/xfoil-next-lib-demo$(EXEEXT)
+DEMO_PROFILE := $(CURDIR)/demo-lib/profiles/naca0012.dat
+DEMO_PKG_CONFIG_PATH := $(abspath $(L6_STAGE))/usr/lib/pkgconfig
+DEMO_PKG_CONFIG_SYSROOT := $(abspath $(L6_STAGE))
+
+demo-lib: $(L6_STAGE_MARKER)
+	$(MAKE) -C $(DEMO_LIB_DIR) clean
+	PKG_CONFIG_PATH="$(DEMO_PKG_CONFIG_PATH)" \
+	PKG_CONFIG_SYSROOT_DIR="$(DEMO_PKG_CONFIG_SYSROOT)" \
+	XFOIL_NEXT_PREFIX="$(abspath $(L6_STAGE))/usr" \
+	$(MAKE) -C $(DEMO_LIB_DIR) LINK_MODE=shared
+	PKG_CONFIG_PATH="$(DEMO_PKG_CONFIG_PATH)" \
+	PKG_CONFIG_SYSROOT_DIR="$(DEMO_PKG_CONFIG_SYSROOT)" \
+	XFOIL_NEXT_PREFIX="$(abspath $(L6_STAGE))/usr" \
+	$(MAKE) -C $(DEMO_LIB_DIR) LINK_MODE=static
+
+test-demo-lib: demo-lib $(BUILDROOT)/debug/xfoil_tests
+	XFOIL_DEMO_SHARED_PATH="$(abspath $(DEMO_SHARED))" \
+	XFOIL_DEMO_STATIC_PATH="$(abspath $(DEMO_STATIC))" \
+	XFOIL_DEMO_PROFILE="$(DEMO_PROFILE)" \
+	XFOIL_DEMO_STAGE="$(abspath $(L6_STAGE))" \
+	$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) integration.LibraryDemoL9
+
+# ---------------------------------------------------------------------------
 # L7 armed no-I/O proof (Linux). The interposition shim is disarmed for
 # loader/harness work and is armed only around the public API workflow.
 # ---------------------------------------------------------------------------
@@ -1085,7 +1122,7 @@ clean:
 		$(BUILDROOT)/c11a-state-harness-dbl \
 		$(BUILDROOT)/core-xycm-harness-dbl \
 		$(BUILDROOT)/fortran-reference-* \
-		$(L6_STAGE) $(L6_CONSUMER)
+		$(L6_STAGE) $(L6_CONSUMER) $(DEMO_BUILD_ROOT)
 
 help:
 	@echo "Build:"
@@ -1098,6 +1135,8 @@ help:
 	@echo "  make library-shared  - shared library/DLL only"
 	@echo "  make install         - staged install via DESTDIR/PREFIX"
 	@echo "  make test-consumers  - static/shared consumer smoke"
+	@echo "  make demo-lib        - standalone staged-library demo (static/shared)"
+	@echo "  make test-demo-lib   - standalone demo integration tests"
 	@echo "  make check-library-dependencies - LIB_SRCS/header dependency gate"
 	@echo "  make library-symbol-check       - static/shared symbol audit"
 	@echo "  make test-library-isolation     - L7 session isolation tests"

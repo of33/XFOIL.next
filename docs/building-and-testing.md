@@ -28,6 +28,8 @@ make library-static
 make library-shared
 make library-link-check     external consumer against the static library
 make test-consumers         static/shared staged-install consumer smoke
+make demo-lib               standalone staged-library demo (static/shared)
+make test-demo-lib          demo integration tests
 make install    staged install (DESTDIR/PREFIX)
 ```
 
@@ -52,6 +54,7 @@ make test-library-isolation L7 session isolation tests
 make test-library-concurrency L7 parallel diagnostic test
 make test-library-noio      armed static/shared no-I/O proof (Linux)
 make test-tsan-library      ThreadSanitizer concurrency diagnostic
+make test-demo-lib          standalone demo static/shared integration runs
 make check-library-dependencies LIB_SRCS/public-header dependency gate
 make library-symbol-check   static/shared forbidden-symbol audit
 ```
@@ -76,6 +79,25 @@ builds `tests/consumer/LibraryConsumer.cpp` once against the static
 archive and once against the shared library, and runs both. The shared
 consumer is compiled with `XFOIL_NEXT_USE_SHARED`; on Windows the staged
 DLL directory is added to `PATH`. No system install is required.
+
+`make demo-lib` builds the standalone `demo-lib/` consumer once shared
+and once static against the staged installation through pkg-config. It
+does not include repository sources. `make test-demo-lib` runs the
+inviscid, viscous, optional-parameter, negative-sequence, CRLF-profile
+and exit-code checks against the staged package. A direct build can use:
+
+```sh
+PKG_CONFIG_PATH="$PWD/build/l6-stage/usr/lib/pkgconfig" \
+PKG_CONFIG_SYSROOT_DIR="$PWD/build/l6-stage" \
+make -C demo-lib LINK_MODE=shared
+```
+
+The demo application reads the supplied profile file. The library
+continues to perform no file or console I/O during API calls. The
+`--alpha-end` value is exclusive, and `--re 0` selects the inviscid path.
+When `pkg-config` is unavailable, the demo Makefile accepts
+`XFOIL_NEXT_PREFIX` (or explicit `XFOIL_NEXT_INCLUDE` and
+`XFOIL_NEXT_LIBDIR`) and still links only against installed artifacts.
 
 ## Library no-I/O and isolation proof
 

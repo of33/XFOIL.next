@@ -124,10 +124,18 @@ make test-batch   # native batch-mode suite
 make test-library-isolation
 make test-library-noio        # Linux armed no-I/O proof
 make test-library-concurrency
+make demo-lib                 # standalone staged-library demo
+make test-demo-lib            # demo integration tests
 ```
 
 See [building and testing](docs/building-and-testing.md) for the complete
 target list, compiler requirements, and validation gates.
+
+The standalone consumer in [demo-lib](demo-lib/README.md) builds only
+against an installed package. It reads an airfoil profile itself, passes
+the coordinates through public in-memory values, runs an alpha sequence
+and a specified-CL point in the same session, and writes structured
+results to stdout. The library still performs no file or console I/O.
 
 ## Platform support
 
