@@ -48,9 +48,12 @@
 #include "xfoil/Export.h"
 #include "xfoil/SessionTypes.h"
 #include "xfoil/geometry/AirfoilGeometry.h"
-#include "xfoil/session/SessionState.h"
 
 namespace xfoil {
+
+namespace session {
+struct SessionComposition;
+}
 
 class XFOIL_API XFoilSession {
  public:
@@ -108,9 +111,11 @@ class XFOIL_API XFoilSession {
   bool hasConfiguration() const noexcept;
 
  private:
-  // Domain-separated session composition. The public
-  // methods delegate to xfoil::session::SessionOps.
-  session::SessionComposition state_;
+  // Domain-separated session composition. The public methods delegate
+  // to xfoil::session::SessionOps. The implementation type is opaque so
+  // this public header does not include internal session headers.
+  struct Impl;
+  std::unique_ptr<Impl> impl_;
 };
 
 }  // namespace xfoil

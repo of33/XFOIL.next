@@ -48,6 +48,12 @@ make test-regression        regression. prefix filter
 make test-batch             native batch suite (batch. prefix)
 make test-sanitize          full suite against the sanitizer binary
 make test-valgrind          representative paths under Valgrind
+make test-library-isolation L7 session isolation tests
+make test-library-concurrency L7 parallel diagnostic test
+make test-library-noio      armed static/shared no-I/O proof (Linux)
+make test-tsan-library      ThreadSanitizer concurrency diagnostic
+make check-library-dependencies LIB_SRCS/public-header dependency gate
+make library-symbol-check   static/shared forbidden-symbol audit
 ```
 
 ## Library build and installation
@@ -70,6 +76,26 @@ builds `tests/consumer/LibraryConsumer.cpp` once against the static
 archive and once against the shared library, and runs both. The shared
 consumer is compiled with `XFOIL_NEXT_USE_SHARED`; on Windows the staged
 DLL directory is added to `PATH`. No system install is required.
+
+## Library no-I/O and isolation proof
+
+`make test-library-isolation` runs the L7 unit and integration isolation
+tests. `make test-library-concurrency` runs the independent-session
+parallel diagnostic; `make test-tsan-library` builds the focused test with
+ThreadSanitizer. Concurrent use of one session is not supported.
+
+`make test-library-noio` builds an interposition shim and static/shared
+proof consumers against the staged installation. The shim is armed only
+around the public API window, records forbidden calls in memory, and the
+consumer runs in an empty read-only directory with cwd/environment checks.
+This target is Linux-only. The focused Windows check uses the import table,
+source/dependency gate, empty-directory inventory, cwd and stdout/stderr
+evidence instead.
+
+The library dependency gate (`make check-library-dependencies`) verifies
+the expanded `LIB_SRCS` closure and public-header boundary.
+`make library-symbol-check` checks debug and release static/shared artifacts
+for forbidden unresolved symbols and app/CLI exports.
 
 ## Fortran reference and integrity targets
 
@@ -143,11 +169,11 @@ time measurement and may change with new tests.
 
 ```text
 core suite:        465
-unit:             1811
-integration:       313
+unit:             1815
+integration:       315
 regression:          5
 batch:               47
-full C++ suite:   2179
+full C++ suite:   2185
 
 Fortran source integrity (SHA256SUMS): 48
 Fortran reference cases:              236

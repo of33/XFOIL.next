@@ -35,14 +35,19 @@
 #include <utility>
 
 #include "xfoil/session/SessionOps.h"
+#include "xfoil/session/SessionState.h"
 
 namespace xfoil {
 
-XFoilSession::XFoilSession() = default;
+struct XFoilSession::Impl {
+  session::SessionComposition state;
+};
+
+XFoilSession::XFoilSession() : impl_(std::make_unique<Impl>()) {}
 
 XFoilSession::~XFoilSession() = default;
 
-// Trivial move: all part states are movable value types; no
+// Trivial move: the implementation owns movable value types; no
 // bound diagnostic stream that would need rebinding.
 XFoilSession::XFoilSession(XFoilSession&&) = default;
 
@@ -50,28 +55,28 @@ XFoilSession& XFoilSession::operator=(XFoilSession&&) = default;
 
 GeometrySetResult XFoilSession::setGeometry(
     geometry::AirfoilGeometry geometry) {
-  return session::setGeometry(state_, std::move(geometry));
+  return session::setGeometry(impl_->state, std::move(geometry));
 }
 
 ConfigValidationResult XFoilSession::configure(const AnalysisConfig& config) {
-  return session::configure(state_, config);
+  return session::configure(impl_->state, config);
 }
 
 AnalysisResult XFoilSession::analyzeAtAlpha(Degrees alpha) {
-  return session::runSpecAlpha(state_, alpha, nullptr);
+  return session::runSpecAlpha(impl_->state, alpha, nullptr);
 }
 
 AnalysisResult XFoilSession::analyzeAtAlpha(
     Degrees alpha,
     const CancellationToken& cancellation) {
-  return session::runSpecAlpha(state_, alpha, &cancellation);
+  return session::runSpecAlpha(impl_->state, alpha, &cancellation);
 }
 
 std::vector<AnalysisResult> XFoilSession::analyzePolar(
     Degrees start,
     Degrees endExclusive,
     Degrees step) {
-  return session::runAlphaSequence(state_, start, endExclusive, step, nullptr);
+  return session::runAlphaSequence(impl_->state, start, endExclusive, step, nullptr);
 }
 
 std::vector<AnalysisResult> XFoilSession::analyzePolar(
@@ -79,28 +84,28 @@ std::vector<AnalysisResult> XFoilSession::analyzePolar(
     Degrees endExclusive,
     Degrees step,
     const CancellationToken& cancellation) {
-  return session::runAlphaSequence(state_, start, endExclusive, step,
+  return session::runAlphaSequence(impl_->state, start, endExclusive, step,
                                    &cancellation);
 }
 
 const geometry::AirfoilGeometry& XFoilSession::geometry() const noexcept {
-  return state_.geometry.airfoil;
+  return impl_->state.geometry.airfoil;
 }
 
 const AnalysisConfig& XFoilSession::config() const noexcept {
-  return state_.config;
+  return impl_->state.config;
 }
 
 const AnalysisResult& XFoilSession::lastResult() const noexcept {
-  return state_.result.lastResult;
+  return impl_->state.result.lastResult;
 }
 
 bool XFoilSession::hasGeometry() const noexcept {
-  return state_.geometry.valid;
+  return impl_->state.geometry.valid;
 }
 
 bool XFoilSession::hasConfiguration() const noexcept {
-  return state_.operating.configured;
+  return impl_->state.operating.configured;
 }
 
 }  // namespace xfoil

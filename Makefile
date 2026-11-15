@@ -29,7 +29,7 @@
 
 CXX      ?= g++
 CPPFLAGS := -Iinclude -Isrc
-CXXSTD   := -std=c++20
+CXXSTD   := -std=c++20 -pthread
 DEPFLAGS := -MMD -MP
 
 WARNINGS := \
@@ -53,6 +53,11 @@ SANITIZE_FLAGS := \
 	-O1 \
 	-g3 \
 	-fsanitize=address,undefined \
+	-fno-omit-frame-pointer
+TSAN_FLAGS := \
+	-O1 \
+	-g3 \
+	-fsanitize=thread \
 	-fno-omit-frame-pointer
 
 # Native C++ CLI product binary. POSIX: xfoil.next; MSYS2/MinGW/
@@ -387,6 +392,8 @@ TEST_SRCS := \
 	tests/unit/LibrarySessionL3Tests.cpp \
 	tests/unit/LibraryOneShotL4HeaderSmoke.cpp \
 	tests/unit/LibraryOneShotL4Tests.cpp \
+	tests/unit/LibraryIsolationL7Tests.cpp \
+	tests/unit/LibraryConcurrencyL7Tests.cpp \
 	tests/unit/SessionPolarOpsTests.cpp \
 	tests/unit/SessionDefaultsOpsTests.cpp \
 	tests/unit/SessionDesignStateTests.cpp \
@@ -457,6 +464,7 @@ TEST_SRCS := \
 	tests/integration/LibrarySessionL3Tests.cpp \
 	tests/integration/LibraryOneShotL4Tests.cpp \
 	tests/integration/LibraryCliParityL5Tests.cpp \
+	tests/integration/LibraryIsolationL7Tests.cpp \
 	tests/regression/ClarkYGoldenTests.cpp \
 	tests/regression/PaccDumpByteParityTests.cpp \
 	tests/regression/PaccInviscidDumpParityTests.cpp \
@@ -473,6 +481,7 @@ CAPTURE_DIR := $(BUILDROOT)/regression-capture
 debug_FLAGS    := $(DEBUG_FLAGS)
 release_FLAGS  := $(RELEASE_FLAGS)
 sanitize_FLAGS := $(SANITIZE_FLAGS)
+tsan_FLAGS     := $(TSAN_FLAGS)
 
 # Shared-library objects use hidden visibility on ELF and explicit
 # XFOIL_API exports for the public API. MinGW gets the same public
@@ -497,6 +506,9 @@ LIB_SHARED_IMPORT_FLAG := -Wl,--out-implib
 	check-release-inventory check-license-headers \
 	check-public-docs \
 	core-link-check session-link-check library-link-check \
+	check-library-dependencies library-symbol-check print-library-sources \
+	test-library-isolation test-library-concurrency test-tsan-library \
+	test-library-noio test-library-noio-static test-library-noio-shared \
 	library library-static library-shared install \
 	install-headers install-libraries install-cli install-metadata \
 	l6-stage-install test-consumer-static test-consumer-shared test-consumers \
@@ -564,7 +576,7 @@ $(BUILDROOT)/$(1)/xfoil_tests: $$(TEST_OBJS_$(1)) $$(CORE_OBJS_$(1))
 -include $$(DEPS_$(1)) $$(TEST_DEPS_$(1)) $$(LIB_STATIC_DEPS_$(1)) $$(LIB_SHARED_DEPS_$(1))
 endef
 
-$(foreach mode,debug release sanitize,$(eval $(call MODE_RULES,$(mode))))
+$(foreach mode,debug release sanitize tsan,$(eval $(call MODE_RULES,$(mode))))
 
 # ---------------------------------------------------------------------------
 # Tests: standard run against the debug binary, sanitizer run against
@@ -700,12 +712,44 @@ LIB_LINK_FLAGS := $(if $(filter debug,$(LIB_MODE)),$(DEBUG_FLAGS),$(if $(filter 
 LIBRARY_LINKCHECK := $(BUILDROOT)/$(LIB_MODE)/library-link-check$(EXEEXT)
 
 .PHONY: library library-static library-shared library-link-check \
+	print-library-sources check-library-dependencies library-symbol-check \
+	test-library-isolation test-library-concurrency test-tsan-library \
+	test-library-noio test-library-noio-static test-library-noio-shared \
 	install install-headers install-libraries install-cli install-metadata \
 	l6-stage-install test-consumer-static test-consumer-shared test-consumers
 
 library-static: $(LIB_STATIC_$(LIB_MODE))
 library-shared: $(LIB_SHARED_$(LIB_MODE))
 library: library-static library-shared
+
+print-library-sources:
+	@for source in $(LIB_SRCS); do printf '%s\n' "$$source"; done
+
+check-library-dependencies:
+	python3 tools/check-core-dependencies.py --scope=library
+
+ifeq ($(EXEEXT),.exe)
+library-symbol-check: library
+	@echo "library-symbol-check: use the focused Windows import-table audit."
+	@exit 1
+else
+library-symbol-check: library
+	python3 tools/check-library-symbols.py \
+		--static "$(LIB_STATIC_$(LIB_MODE))" \
+		--shared "$(LIB_SHARED_$(LIB_MODE))"
+endif
+
+test-library-isolation: $(BUILDROOT)/debug/xfoil_tests $(BUILDROOT)/debug/$(XFOIL_CLI)
+	XFOIL_CLI_PATH=$(BUILDROOT)/debug/$(XFOIL_CLI) \
+		$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) unit.LibraryIsolationL7
+	XFOIL_CLI_PATH=$(BUILDROOT)/debug/$(XFOIL_CLI) \
+		$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) integration.LibraryIsolationL7
+
+test-library-concurrency: $(BUILDROOT)/debug/xfoil_tests
+	$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) unit.LibraryConcurrencyL7
+
+test-tsan-library: $(BUILDROOT)/tsan/xfoil_tests
+	$(BUILDROOT)/tsan/xfoil_tests unit.LibraryConcurrencyL7
 
 $(LIBRARY_LINKCHECK): tests/consumer/LibraryConsumer.cpp $(LIB_STATIC_$(LIB_MODE))
 	@mkdir -p $(dir $@)
@@ -786,6 +830,53 @@ test-consumer-shared: $(L6_STAGE_MARKER)
 	fi
 
 test-consumers: test-consumer-static test-consumer-shared
+
+# ---------------------------------------------------------------------------
+# L7 armed no-I/O proof (Linux). The interposition shim is disarmed for
+# loader/harness work and is armed only around the public API workflow.
+# ---------------------------------------------------------------------------
+NOIO_ROOT := $(BUILDROOT)/library-noio
+NOIO_SHIM := $(NOIO_ROOT)/libxfoil_noio_shim.so
+NOIO_STATIC := $(NOIO_ROOT)/noio-static$(EXEEXT)
+NOIO_SHARED := $(NOIO_ROOT)/noio-shared$(EXEEXT)
+NOIO_RUNNER := tests/tools/run-library-noio.sh
+
+ifneq ($(EXEEXT),.exe)
+$(NOIO_SHIM): tests/tools/LibraryNoIoShim.cpp tests/tools/LibraryNoIoShim.h
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXSTD) $(WARNINGS) -fPIC -shared $< -ldl -o $@
+
+$(NOIO_STATIC): tests/tools/LibraryNoIoProof.cpp tests/tools/LibraryNoIoShim.h $(L6_STAGE_MARKER) $(NOIO_SHIM)
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXSTD) $(WARNINGS) $(RELEASE_FLAGS) \
+		-I"$(L6_STAGE)/usr/include" -Itests/tools $< \
+		"$(L6_STAGE)/usr/lib/$(LIB_STATIC_NAME)" \
+		-L"$(NOIO_ROOT)" -lxfoil_noio_shim \
+		-Wl,-rpath,$(abspath $(NOIO_ROOT)) -o $@
+
+$(NOIO_SHARED): tests/tools/LibraryNoIoProof.cpp tests/tools/LibraryNoIoShim.h $(L6_STAGE_MARKER) $(NOIO_SHIM)
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXSTD) $(WARNINGS) $(RELEASE_FLAGS) -DXFOIL_NEXT_USE_SHARED \
+		-I"$(L6_STAGE)/usr/include" -Itests/tools $< \
+		-L"$(L6_STAGE)/usr/lib" -lxfoil_next \
+		-L"$(NOIO_ROOT)" -lxfoil_noio_shim \
+		-Wl,-rpath,$(abspath $(L6_STAGE))/usr/lib \
+		-Wl,-rpath,$(abspath $(NOIO_ROOT)) -o $@
+
+test-library-noio-static: $(NOIO_STATIC)
+	$(NOIO_RUNNER) "$(NOIO_STATIC)" "$(NOIO_SHIM)" static
+
+test-library-noio-shared: $(NOIO_SHARED)
+	@ldd "$(NOIO_SHARED)" | grep -F \
+		"$(abspath $(L6_STAGE))/usr/lib/libxfoil_next.so" >/dev/null
+	$(NOIO_RUNNER) "$(NOIO_SHARED)" "$(NOIO_SHIM)" shared
+
+test-library-noio: test-library-noio-static test-library-noio-shared
+else
+test-library-noio-static test-library-noio-shared test-library-noio:
+	@echo "test-library-noio: armed libc interposition is Linux-only."
+	@exit 1
+endif
 
 # ---------------------------------------------------------------------------
 # Permanent guard gates.
@@ -1003,6 +1094,11 @@ help:
 	@echo "  make library-shared  - shared library/DLL only"
 	@echo "  make install         - staged install via DESTDIR/PREFIX"
 	@echo "  make test-consumers  - static/shared consumer smoke"
+	@echo "  make check-library-dependencies - LIB_SRCS/header dependency gate"
+	@echo "  make library-symbol-check       - static/shared symbol audit"
+	@echo "  make test-library-isolation     - L7 session isolation tests"
+	@echo "  make test-library-noio          - armed static/shared no-I/O proof"
+	@echo "  make test-tsan-library          - TSan concurrency diagnostic"
 	@echo ""
 	@echo "Test:"
 	@echo "  make test                - full C++ test suite (debug)"

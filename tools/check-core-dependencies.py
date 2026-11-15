@@ -70,8 +70,10 @@ Uses only the Python standard library, runnable from Python 3.8.
 """
 
 import argparse
+import glob
 import os
 import re
+import subprocess
 import sys
 
 
@@ -638,6 +640,171 @@ L2_FORBIDDEN_INCLUDE_PREFIXES = (
 )
 L2_FORBIDDEN_INCLUDE_HEADERS = ("filesystem", "fstream", "iostream")
 
+# Library scope (L7): the explicit LIB_SRCS closure and the installed
+# public API headers. The Makefile target is the single source of truth
+# for the source list; this keeps the gate synchronized without a second
+# hand-maintained manifest.
+LIBRARY_SOURCE_TARGET = "print-library-sources"
+LIBRARY_FORBIDDEN_SOURCE_MARKERS = (
+    "src/main.cpp",
+    "src/app/",
+    "DumpFileAdapter",
+    "AirfoilWriter",
+    "DatFileReader",
+    "CommandInterpreter",
+)
+LIBRARY_FORBIDDEN_INCLUDE_HEADERS = (
+    "filesystem",
+    "fstream",
+    "iostream",
+    "unistd.h",
+    "process.h",
+    "windows.h",
+    "crtdbg.h",
+    "spawn.h",
+)
+LIBRARY_INTERNAL_PREFIXES = ("xfoil/session/", "xfoil/core/", "xfoil/io/")
+LIBRARY_FORBIDDEN_CALL_RE = re.compile(
+    r'\b(?:std::)?(?:open|open64|openat|creat|fopen|freopen|rename|unlink|'
+    r'remove|chdir|getcwd|getenv|setenv|putenv|unsetenv|tmpfile|mkstemp|'
+    r'mkstemps|system|popen|fork|vfork|execl|execle|execlp|execv|execve|'
+    r'execvp|execvpe|abort|exit|_exit|quick_exit|terminate|stat|lstat|'
+    r'access|opendir|readdir|mkdir|rmdir|write|read|setlocale)\s*\(')
+LIBRARY_CONSOLE_RE = re.compile(
+    r'\bstd::(?:cout|cerr|cin)\b|'
+    r'\b(?:printf|fprintf|fputs|puts|fwrite|fputc|putchar|fflush|perror)\s*\(')
+
+
+def read_library_sources(root):
+    """Return (sources, error). The Makefile owns the closure."""
+    try:
+        completed = subprocess.run(
+            ["make", "-s", "--no-print-directory",
+             LIBRARY_SOURCE_TARGET],
+            cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            text=True, check=False)
+    except OSError as exc:
+        return [], "library source target unavailable: %s" % exc
+    if completed.returncode != 0:
+        return [], "library source target failed: %s" % (
+            completed.stderr.strip() or "exit %d" % completed.returncode)
+    sources = [line.strip() for line in completed.stdout.splitlines()
+               if line.strip()]
+    if not sources:
+        return [], "library source target returned no sources"
+    return sources, None
+
+
+def check_library_inputs(root, sources):
+    """Check an explicit source list (also used by the self-test)."""
+    messages = []
+    seen = set()
+    for rel_path in sources:
+        normalized = rel_path.replace("\\", "/")
+        if normalized in seen:
+            messages.append((rel_path, 0, "duplicate library source"))
+            continue
+        seen.add(normalized)
+        if not normalized.endswith(".cpp"):
+            messages.append((rel_path, 0,
+                             "library source is not a .cpp file"))
+            continue
+        for marker in LIBRARY_FORBIDDEN_SOURCE_MARKERS:
+            if marker in normalized:
+                messages.append((rel_path, 0,
+                                 "forbidden library source marker: %s"
+                                 % marker))
+                break
+        full = os.path.join(root, normalized)
+        if not os.path.isfile(full):
+            messages.append((rel_path, 0, "library source file missing"))
+            continue
+        with open(full, "rb") as handle:
+            text = handle.read().decode("utf-8")
+        for index, line in enumerate(text.splitlines(), start=1):
+            match = INCLUDE_RE.match(line)
+            if match:
+                target = normalize_include_target(match.group(1))
+                if target.startswith("app/") or target.startswith("tests/"):
+                    messages.append((rel_path, index,
+                                     "library source includes app/test header: %s"
+                                     % target))
+                elif "CommandInterpreter" in target:
+                    messages.append((rel_path, index,
+                                     "library source includes CLI header: %s"
+                                     % target))
+                elif target in LIBRARY_FORBIDDEN_INCLUDE_HEADERS:
+                    messages.append((rel_path, index,
+                                     "library source includes forbidden "
+                                     "I/O/process header: %s" % target))
+        cleaned = strip_comments_and_strings(text)
+        for index, line in enumerate(cleaned.splitlines(), start=1):
+            if LIBRARY_FORBIDDEN_CALL_RE.search(line):
+                messages.append((rel_path, index,
+                                 "library source contains forbidden "
+                                 "I/O/environment/process call"))
+            if LIBRARY_CONSOLE_RE.search(line):
+                messages.append((rel_path, index,
+                                 "library source contains global console "
+                                 "output"))
+    return messages
+
+
+def check_library_layer(root):
+    """LIB_SRCS closure plus public API header dependency rules."""
+    sources, error = read_library_sources(root)
+    if error is not None:
+        return [("library sources", 0, error)]
+    messages = check_library_inputs(root, sources)
+
+    public_headers = []
+    public_headers.extend(glob.glob(os.path.join(
+        root, "include", "xfoil", "*.h")))
+    public_headers.extend(glob.glob(os.path.join(
+        root, "include", "xfoil", "geometry", "*.h")))
+    for full in sorted(public_headers):
+        rel_path = os.path.relpath(full, root).replace(os.sep, "/")
+        with open(full, "rb") as handle:
+            text = handle.read().decode("utf-8")
+        for index, line in enumerate(text.splitlines(), start=1):
+            match = INCLUDE_RE.match(line)
+            if not match:
+                continue
+            target = normalize_include_target(match.group(1))
+            if target.startswith("app/") or target.startswith("tests/"):
+                messages.append((rel_path, index,
+                                 "public header includes app/test header: %s"
+                                 % target))
+            elif target.startswith(LIBRARY_INTERNAL_PREFIXES):
+                messages.append((rel_path, index,
+                                 "public header includes internal layer "
+                                 "header: %s" % target))
+            elif target in LIBRARY_FORBIDDEN_INCLUDE_HEADERS:
+                messages.append((rel_path, index,
+                                 "public header includes forbidden I/O "
+                                 "header: %s" % target))
+
+    # Installed internal headers still may not grow app/test dependencies.
+    for full in sorted(glob.glob(os.path.join(
+            root, "include", "xfoil", "**", "*.h"), recursive=True)):
+        rel_path = os.path.relpath(full, root).replace(os.sep, "/")
+        with open(full, "rb") as handle:
+            text = handle.read().decode("utf-8")
+        for index, line in enumerate(text.splitlines(), start=1):
+            match = INCLUDE_RE.match(line)
+            if not match:
+                continue
+            target = normalize_include_target(match.group(1))
+            if target.startswith("app/") or target.startswith("tests/"):
+                messages.append((rel_path, index,
+                                 "installed header includes app/test header: %s"
+                                 % target))
+            elif target in LIBRARY_FORBIDDEN_INCLUDE_HEADERS:
+                messages.append((rel_path, index,
+                                 "installed header includes forbidden I/O "
+                                 "header: %s" % target))
+    return messages
+
 
 def check_public_l2_headers(root):
     """Check the public L2 headers for forbidden internal/IO includes."""
@@ -977,7 +1144,10 @@ def run_self_test():
                 '#include "xfoil/session/Probe.h"\nint f() { return 1; }\n',
             "Makefile":
                 "IO_SRCS := src/io/Probe.cpp\n"
-                "SESSION_SRCS := src/session/Probe.cpp\n",
+                "SESSION_SRCS := src/session/Probe.cpp\n"
+                "print-library-sources:\n"
+                "\t@printf '%s\\n' src/io/Probe.cpp "
+                "src/session/Probe.cpp\n",
             MANIFEST_RELATIVE_PATH: "include/xfoil/core/probe.h\n",
             IO_MANIFEST_RELATIVE_PATH:
                 "include/xfoil/io/Probe.h\nsrc/io/Probe.cpp\n",
@@ -1133,6 +1303,7 @@ def run_self_test():
         scope_cases = (
             ("session scope green", ["--scope=session"], 0),
             ("cli scope green", ["--scope=cli"], 0),
+            ("library scope green", ["--scope=library"], 0),
             ("full scope green", ["--scope=full"], 0),
         )
         for name, extra, expected in scope_cases:
@@ -1164,6 +1335,44 @@ def run_self_test():
         else:
             sys.stdout.write("Self-Test OK: forbidden session include "
                              "reported\n")
+
+        # Library fixtures: allowed closure and forbidden I/O.
+        root = fresh_scope_root()
+        allowed = check_library_inputs(
+            root, ["src/io/Probe.cpp", "src/session/Probe.cpp"])
+        if allowed:
+            scope_failures += 1
+            sys.stdout.write("Self-Test ERROR: allowed library sources "
+                             "reported\n")
+        else:
+            sys.stdout.write("Self-Test OK: allowed library sources\n")
+
+        bad_source = os.path.join(root, "src", "session", "LibBad.cpp")
+        with open(bad_source, "w", encoding="utf-8") as handle:
+            handle.write('#include <fstream>\nint f() { return 1; }\n')
+        forbidden = check_library_inputs(
+            root, ["src/session/LibBad.cpp"])
+        if not any("forbidden I/O/process header" in message
+                   for _r, _l, message in forbidden):
+            scope_failures += 1
+            sys.stdout.write("Self-Test ERROR: forbidden library include "
+                             "not reported\n")
+        else:
+            sys.stdout.write("Self-Test OK: forbidden library include "
+                             "reported\n")
+
+        bad_public = os.path.join(root, "include", "xfoil", "BadPublic.h")
+        with open(bad_public, "w", encoding="utf-8") as handle:
+            handle.write('#include "xfoil/session/Probe.h"\n')
+        public_forbidden = check_library_layer(root)
+        if not any("public header includes internal layer header" in message
+                   for _r, _l, message in public_forbidden):
+            scope_failures += 1
+            sys.stdout.write("Self-Test ERROR: forbidden public header "
+                             "include not reported\n")
+        else:
+            sys.stdout.write("Self-Test OK: forbidden public header "
+                             "include reported\n")
     finally:
         shutil.rmtree(scope_tmpdir, ignore_errors=True)
 
@@ -1193,13 +1402,14 @@ def main(argv):
               "temporary directory.")
     parser.add_argument(
         "--scope", default="full",
-        choices=("full", "session", "cli"),
+        choices=("full", "session", "cli", "library"),
         help="check scope: 'full' = all layer gates (core manifest and "
-              "dependencies, io layer, session layer; default), "
-              "'session' = the same layer gates reported with the session "
-              "layer as the deepest checked layer, 'cli' = the same layer "
-              "gates reported from the CLI-facing perspective. All scopes "
-              "run the current layer gates.")
+              "dependencies, io layer, session layer, library scope; "
+              "default), 'session' = the same layer gates reported with "
+              "the session layer as the deepest checked layer, 'cli' = the "
+              "same layer gates reported from the CLI-facing perspective, "
+              "'library' = LIB_SRCS closure and public header gates. All "
+              "scopes run the current layer gates.")
     args = parser.parse_args(argv)
 
     if args.self_test:
@@ -1235,9 +1445,16 @@ def main(argv):
         sys.stdout.write("public:%s:%d: %s\n"
                          % (rel_path, line_no, message))
 
+    library_messages = check_library_layer(root)
+    for rel_path, line_no, message in library_messages:
+        sys.stdout.write("library:%s:%d: %s\n"
+                         % (rel_path, line_no, message))
+
     total_violations = (len(messages) + len(io_messages)
-                        + len(session_messages) + len(public_messages))
-    if exit_code == 1 or io_messages or session_messages or public_messages:
+                        + len(session_messages) + len(public_messages)
+                        + len(library_messages))
+    if (exit_code == 1 or io_messages or session_messages
+            or public_messages or library_messages):
         sys.stdout.write(
             "Dependency check: %d %s.\n"
             % (total_violations,
@@ -1246,6 +1463,12 @@ def main(argv):
         return 1
     if exit_code == 2:
         return 2
+
+    if scope == "library":
+        sys.stdout.write(
+            "library dependency check: OK (LIB_SRCS closure and public "
+            "header gates green).\n")
+        return 0
 
     if scope == "session":
         # Session gate: the session-layer include and manifest rules.

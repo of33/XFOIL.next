@@ -74,6 +74,9 @@ See [NOTICE](NOTICE) for full attribution and provenance details.
 - a modern, session-based C++ API (`xfoil::XFoil`, `xfoil::XFoilSession`);
 - installable static and shared C++ libraries with public headers and
   pkg-config metadata;
+- a memory-only library contract with isolated sessions, no application
+  file/console/environment/process operations during API calls, and an
+  armed no-I/O proof; concurrent use of one session is not supported;
 - the native interactive XFOIL command-line interface;
 - a native non-interactive batch mode that reuses the same command
   interpreter, session layer, and numerical core;
@@ -118,6 +121,9 @@ Run the test suites:
 ```sh
 make test         # full C++ test suite
 make test-batch   # native batch-mode suite
+make test-library-isolation
+make test-library-noio        # Linux armed no-I/O proof
+make test-library-concurrency
 ```
 
 See [building and testing](docs/building-and-testing.md) for the complete

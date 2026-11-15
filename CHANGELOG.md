@@ -20,6 +20,11 @@ Cumulative XFOIL 6.996 integration, based on the accepted 1.0.0 product.
 - Installable static/shared C++ library artifacts, staged install,
   pkg-config metadata, public export annotations, and external consumer
   smoke tests.
+- A verified memory-only library contract: isolated sessions, an armed
+  static/shared no-I/O proof, library dependency/symbol gates, and a
+  diagnostic concurrency/TSan test. Concurrent use of one session is not
+  supported; parallel sessions remain classified as
+  `CONCURRENCY-NOT-GUARANTEED`.
 - Cumulative Linux and Windows acceptance of the integrated 6.996 scope.
 
 Explicit non-goals remain SVG (`NIMP-02`), NTS/LPPORT/NSPL (`NIMP-01`) and

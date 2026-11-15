@@ -322,3 +322,34 @@ C++ standard library and compiler/ABI. The pkg-config file is
 `xfoil-next.pc`; `make test-consumers` builds static and shared consumers
 against a staged install only and prints one `LibraryConsumer PASS` per
 consumer.
+
+## No-I/O, isolation and concurrency contract
+
+During library API calls the implementation performs no application file,
+console, environment, working-directory or process operation. Construction,
+analysis, projection, reset and destruction operate on memory and owned
+values only. The loader and runtime initialization are outside this
+contract; memory allocation is allowed. `xfoil::analyze` creates only a
+call-local session and returns an owning result.
+
+Different `Session` instances have isolated logical state. Resetting,
+cancelling, failing or destroying one instance does not change another.
+A single `Session` is move-only and is not thread-safe; do not call into
+the same instance concurrently.
+
+Concurrency classification for this API generation:
+
+```text
+CONCURRENCY-NOT-GUARANTEED
+```
+
+Independent sessions have passed diagnostic parallel execution and
+ThreadSanitizer checks, but concurrent use of separate sessions is not yet
+part of the supported public contract. Use one session per thread and
+synchronize host access.
+
+The Linux test targets `make test-library-isolation`,
+`make test-library-noio` and `make test-library-concurrency` exercise these
+contracts. The no-I/O proof is Linux-only; the focused Windows check uses
+source/dependency, import-table, directory, cwd and stdout/stderr evidence
+rather than libc interposition.
