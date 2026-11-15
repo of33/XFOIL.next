@@ -72,6 +72,8 @@ See [NOTICE](NOTICE) for full attribution and provenance details.
   VPAR boundary-layer parameters, flap state and hinge moments, and the
   remaining TOP and OPER commands;
 - a modern, session-based C++ API (`xfoil::XFoil`, `xfoil::XFoilSession`);
+- installable static and shared C++ libraries with public headers and
+  pkg-config metadata;
 - the native interactive XFOIL command-line interface;
 - a native non-interactive batch mode that reuses the same command
   interpreter, session layer, and numerical core;
@@ -99,6 +101,8 @@ Build (default target is a release build):
 ```sh
 make            # release build, binary at build/release/xfoil.next
 make debug      # debug build,  binary at build/debug/xfoil.next
+make library    # release static + shared library under build/release/lib
+make install DESTDIR=/tmp/stage PREFIX=/usr
 ```
 
 Run the interactive CLI:
@@ -331,10 +335,10 @@ commitments. Order and scope may change as technical evaluation proceeds.
 - **Detailed documentation.** Documenting the code structure and program
   flow in detail including theoretical background explanations
 
-- **Directly embeddable library distribution.** Provide a dedicated
-  library package for direct integration into third-party C++ applications
-  without invoking an external executable, reusing the existing core and
-  session architecture behind a stable, documented interface.
+- **Stable library ABI and binary packages.** Extend the current static/
+  shared library build and staged install with a documented ABI policy and
+  prebuilt packages. The current library artifacts are source-compatible
+  but do not promise a stable C++ ABI.
 
 - **Graphical user interface.** Develop a graphical user interface aligned
   with the existing command, session, and CLI architecture. Plotting and

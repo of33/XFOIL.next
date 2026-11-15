@@ -17,6 +17,9 @@ Cumulative XFOIL 6.996 integration, based on the accepted 1.0.0 product.
 - State invalidation and sequence behaviour, text/input capacity alignment,
   and the SMOO target correction.
 - DXF R12 export and the hidden top-level `DXF` command.
+- Installable static/shared C++ library artifacts, staged install,
+  pkg-config metadata, public export annotations, and external consumer
+  smoke tests.
 - Cumulative Linux and Windows acceptance of the integrated 6.996 scope.
 
 Explicit non-goals remain SVG (`NIMP-02`), NTS/LPPORT/NSPL (`NIMP-01`) and

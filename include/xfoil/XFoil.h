@@ -36,12 +36,13 @@
 #include "xfoil/AnalysisConfig.h"
 #include "xfoil/AnalysisResult.h"
 #include "xfoil/CancellationToken.h"
+#include "xfoil/Export.h"
 #include "xfoil/XFoilSession.h"
 #include "xfoil/geometry/AirfoilGeometry.h"
 
 namespace xfoil {
 
-class XFoil {
+class XFOIL_API XFoil {
  public:
   XFoil();
   ~XFoil();

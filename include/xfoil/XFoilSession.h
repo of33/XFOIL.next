@@ -45,13 +45,14 @@
 #include "xfoil/AnalysisConfig.h"
 #include "xfoil/AnalysisResult.h"
 #include "xfoil/CancellationToken.h"
+#include "xfoil/Export.h"
 #include "xfoil/SessionTypes.h"
 #include "xfoil/geometry/AirfoilGeometry.h"
 #include "xfoil/session/SessionState.h"
 
 namespace xfoil {
 
-class XFoilSession {
+class XFOIL_API XFoilSession {
  public:
   XFoilSession();
   ~XFoilSession();

@@ -30,6 +30,7 @@
 #include "xfoil/AnalysisData.h"
 #include "xfoil/AnalysisRequest.h"
 #include "xfoil/CancellationToken.h"
+#include "xfoil/Export.h"
 #include "xfoil/Result.h"
 
 namespace xfoil {
@@ -39,7 +40,7 @@ namespace xfoil {
 // successful value with ConvergenceStatus::unconverged; errors before a
 // valid point are returned as structured Error values.
 [[nodiscard]]
-Result<OperatingPointData> analyze(
+XFOIL_API Result<OperatingPointData> analyze(
     const AnalysisRequest& request,
     const CancellationToken* cancellation = nullptr);
 

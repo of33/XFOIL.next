@@ -258,6 +258,58 @@ SRCS := \
 	src/main.cpp \
 	$(CORE_SRCS)
 
+# ---------------------------------------------------------------------------
+# Library artifacts. The closure is explicit: core, session and pure IO
+# codecs, but never src/main.cpp or the app/CLI adapters.
+# ---------------------------------------------------------------------------
+LIB_SRCS := \
+	$(MATH_SRCS) \
+	$(GEOMETRY_SRCS) \
+	$(INVISCID_SRCS) \
+	$(BOUNDARY_LAYER_SRCS) \
+	$(INVERSE_SRCS) \
+	$(SESSION_SRCS) \
+	$(FOUNDATION_SRCS) \
+	$(NUMERICS_SRCS) \
+	$(GEOMETRY_CORE_SRCS) \
+	$(PANELING_CORE_SRCS) \
+	$(INVISCID_CORE_SRCS) \
+	$(BOUNDARY_LAYER_CORE_SRCS) \
+	$(BOUNDARY_LAYER_SOLVER_SRCS) \
+	$(GEOMETRY_DESIGN_SRCS) \
+	$(INVERSE_DESIGN_SRCS) \
+	$(POLAR_CORE_SRCS) \
+	$(EXPORT_DATA_SRCS) \
+	$(IO_SRCS)
+
+AR ?= ar
+
+# GNU/MinGW convention: the import library and the static library have
+# distinct names. Linux uses the conventional unversioned names.
+ifeq ($(EXEEXT),.exe)
+LIB_STATIC_NAME := libxfoil_next_static.a
+LIB_SHARED_NAME := xfoil_next.dll
+LIB_IMPORT_NAME := libxfoil_next.dll.a
+else
+LIB_STATIC_NAME := libxfoil_next.a
+LIB_SHARED_NAME := libxfoil_next.so
+LIB_IMPORT_NAME :=
+endif
+
+PRODUCT_VERSION := $(shell sed -n 's/.*inline constexpr std::string_view version = "\([^"]*\)".*/\1/p' src/app/ProductInfo.h)
+
+PREFIX ?= /usr/local
+DESTDIR ?=
+includedir ?= $(PREFIX)/include
+libdir ?= $(PREFIX)/lib
+bindir ?= $(PREFIX)/bin
+datadir ?= $(PREFIX)/share
+
+INSTALL_MODE ?= release
+LIB_MODE ?= release
+L6_STAGE ?= $(BUILDROOT)/l6-stage
+L6_CONSUMER ?= $(BUILDROOT)/l6-consumer
+
 # Core test suite: framework plus tests/core/*. It forms both the
 # standalone core suite (test-core) and a part of the full
 # Suite (TEST_SRCS).
@@ -422,6 +474,17 @@ debug_FLAGS    := $(DEBUG_FLAGS)
 release_FLAGS  := $(RELEASE_FLAGS)
 sanitize_FLAGS := $(SANITIZE_FLAGS)
 
+# Shared-library objects use hidden visibility on ELF and explicit
+# XFOIL_API exports for the public API. MinGW gets the same public
+# declarations through __declspec(dllexport).
+ifeq ($(EXEEXT),.exe)
+LIB_SHARED_VISIBILITY :=
+else
+LIB_SHARED_VISIBILITY := -fvisibility=hidden
+endif
+
+LIB_SHARED_IMPORT_FLAG := -Wl,--out-implib
+
 # Toolchain contract: each compiler uses its own BUILDROOT root
 # (e.g. BUILDROOT=build/clang for clang++); switching CXX in the
 # same buildroot without clean is not intended. The core tree is
@@ -433,7 +496,10 @@ sanitize_FLAGS := $(SANITIZE_FLAGS)
 	check-fortran-sha check-dependencies \
 	check-release-inventory check-license-headers \
 	check-public-docs \
-	core-link-check session-link-check \
+	core-link-check session-link-check library-link-check \
+	library library-static library-shared install \
+	install-headers install-libraries install-cli install-metadata \
+	l6-stage-install test-consumer-static test-consumer-shared test-consumers \
 	update-golden clean help
 
 all: release
@@ -447,8 +513,18 @@ define MODE_RULES
 OBJS_$(1) := $$(patsubst src/%.cpp,$(BUILDROOT)/$(1)/obj/%.o,$(SRCS))
 DEPS_$(1) := $$(OBJS_$(1):.o=.d)
 CORE_OBJS_$(1) := $$(patsubst src/%.cpp,$(BUILDROOT)/$(1)/obj/%.o,$(CORE_SRCS))
+APP_OBJS_$(1) := $$(patsubst src/%.cpp,$(BUILDROOT)/$(1)/obj/%.o,$$(APP_SRCS))
+CLI_OBJS_$(1) := $(BUILDROOT)/$(1)/obj/main.o $$(APP_OBJS_$(1))
 TEST_OBJS_$(1) := $$(patsubst tests/%.cpp,$(BUILDROOT)/$(1)/obj-tests/%.o,$(TEST_SRCS))
 TEST_DEPS_$(1) := $$(TEST_OBJS_$(1):.o=.d)
+LIB_STATIC_$(1) := $(BUILDROOT)/$(1)/lib/$(LIB_STATIC_NAME)
+LIB_SHARED_$(1) := $(BUILDROOT)/$(1)/lib/$(LIB_SHARED_NAME)
+LIB_IMPORT_$(1) := $(BUILDROOT)/$(1)/lib/$(LIB_IMPORT_NAME)
+LIB_STATIC_OBJS_$(1) := $$(patsubst src/%.cpp,$(BUILDROOT)/$(1)/libobj-static/%.o,$$(LIB_SRCS))
+LIB_SHARED_OBJS_$(1) := $$(patsubst src/%.cpp,$(BUILDROOT)/$(1)/libobj-shared/%.o,$$(LIB_SRCS))
+LIB_STATIC_DEPS_$(1) := $$(LIB_STATIC_OBJS_$(1):.o=.d)
+LIB_SHARED_DEPS_$(1) := $$(LIB_SHARED_OBJS_$(1):.o=.d)
+LIB_SHARED_LINK_$(1) := -shared $(if $(filter .exe,$(EXEEXT)),$(LIB_SHARED_IMPORT_FLAG) $(BUILDROOT)/$(1)/lib/$(LIB_IMPORT_NAME))
 
 $(1): $(BUILDROOT)/$(1)/$(XFOIL_CLI)
 
@@ -456,9 +532,26 @@ $(BUILDROOT)/$(1)/obj/%.o: src/%.cpp
 	@mkdir -p $$(dir $$@)
 	$$(CXX) $$(CXXSTD) $$(CPPFLAGS) $$(DEPFLAGS) $$(WARNINGS) $$($(1)_FLAGS) -c $$< -o $$@
 
-$(BUILDROOT)/$(1)/$(XFOIL_CLI): $$(OBJS_$(1))
+$(BUILDROOT)/$(1)/libobj-static/%.o: src/%.cpp
 	@mkdir -p $$(dir $$@)
-	$$(CXX) $$(CXXSTD) $$($(1)_FLAGS) $$^ -o $$@
+	$$(CXX) $$(CXXSTD) $$(CPPFLAGS) $$(DEPFLAGS) $$(WARNINGS) $$($(1)_FLAGS) -fPIC -c $$< -o $$@
+
+$(BUILDROOT)/$(1)/libobj-shared/%.o: src/%.cpp
+	@mkdir -p $$(dir $$@)
+	$$(CXX) $$(CXXSTD) $$(CPPFLAGS) $$(DEPFLAGS) $$(WARNINGS) $$($(1)_FLAGS) -fPIC $(LIB_SHARED_VISIBILITY) -DXFOIL_NEXT_BUILD_SHARED -c $$< -o $$@
+
+$(BUILDROOT)/$(1)/lib/$(LIB_STATIC_NAME): $(patsubst src/%.cpp,$(BUILDROOT)/$(1)/libobj-static/%.o,$(LIB_SRCS))
+	@mkdir -p $$(dir $$@)
+	rm -f $$@
+	$$(AR) rcs $$@ $$^
+
+$(BUILDROOT)/$(1)/lib/$(LIB_SHARED_NAME): $(patsubst src/%.cpp,$(BUILDROOT)/$(1)/libobj-shared/%.o,$(LIB_SRCS))
+	@mkdir -p $$(dir $$@)
+	$$(CXX) $$(CXXSTD) $$($(1)_FLAGS) $$(LIB_SHARED_LINK_$(1)) $$^ -o $$@
+
+$(BUILDROOT)/$(1)/$(XFOIL_CLI): $$(CLI_OBJS_$(1)) $(BUILDROOT)/$(1)/lib/$(LIB_STATIC_NAME)
+	@mkdir -p $$(dir $$@)
+	$$(CXX) $$(CXXSTD) $$($(1)_FLAGS) $$(CLI_OBJS_$(1)) $(BUILDROOT)/$(1)/lib/$(LIB_STATIC_NAME) -o $$@
 
 $(BUILDROOT)/$(1)/obj-tests/%.o: tests/%.cpp
 	@mkdir -p $$(dir $$@)
@@ -468,7 +561,7 @@ $(BUILDROOT)/$(1)/xfoil_tests: $$(TEST_OBJS_$(1)) $$(CORE_OBJS_$(1))
 	@mkdir -p $$(dir $$@)
 	$$(CXX) $$(CXXSTD) $$($(1)_FLAGS) $$^ -o $$@
 
--include $$(DEPS_$(1)) $$(TEST_DEPS_$(1))
+-include $$(DEPS_$(1)) $$(TEST_DEPS_$(1)) $$(LIB_STATIC_DEPS_$(1)) $$(LIB_SHARED_DEPS_$(1))
 endef
 
 $(foreach mode,debug release sanitize,$(eval $(call MODE_RULES,$(mode))))
@@ -596,6 +689,103 @@ core-link-check: $(CORE_ROOT)/core-link-check
 
 session-link-check: $(CORE_ROOT)/session-link-check
 	$(CORE_ROOT)/session-link-check
+
+# ---------------------------------------------------------------------------
+# Library build and install (L6). The library closure is LIB_SRCS; it
+# excludes src/main.cpp and APP_SRCS. Static and shared objects live in
+# separate roots so PIC/shared visibility never changes the CLI test
+# objects.
+# ---------------------------------------------------------------------------
+LIB_LINK_FLAGS := $(if $(filter debug,$(LIB_MODE)),$(DEBUG_FLAGS),$(if $(filter sanitize,$(LIB_MODE)),$(SANITIZE_FLAGS),$(RELEASE_FLAGS)))
+LIBRARY_LINKCHECK := $(BUILDROOT)/$(LIB_MODE)/library-link-check$(EXEEXT)
+
+.PHONY: library library-static library-shared library-link-check \
+	install install-headers install-libraries install-cli install-metadata \
+	l6-stage-install test-consumer-static test-consumer-shared test-consumers
+
+library-static: $(LIB_STATIC_$(LIB_MODE))
+library-shared: $(LIB_SHARED_$(LIB_MODE))
+library: library-static library-shared
+
+$(LIBRARY_LINKCHECK): tests/consumer/LibraryConsumer.cpp $(LIB_STATIC_$(LIB_MODE))
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXSTD) -Iinclude $(LIB_LINK_FLAGS) $< $(LIB_STATIC_$(LIB_MODE)) -o $@
+
+library-link-check: $(LIBRARY_LINKCHECK)
+	$(LIBRARY_LINKCHECK)
+
+install-headers:
+	@mkdir -p "$(DESTDIR)$(includedir)"
+	cp -R include/xfoil "$(DESTDIR)$(includedir)/"
+
+install-libraries: $(LIB_STATIC_$(INSTALL_MODE)) $(LIB_SHARED_$(INSTALL_MODE))
+	@mkdir -p "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)"
+	cp "$(LIB_STATIC_$(INSTALL_MODE))" "$(DESTDIR)$(libdir)/"
+	@if [ -n "$(LIB_IMPORT_NAME)" ]; then \
+		cp "$(LIB_SHARED_$(INSTALL_MODE))" "$(DESTDIR)$(bindir)/$(LIB_SHARED_NAME)"; \
+		cp "$(LIB_IMPORT_$(INSTALL_MODE))" "$(DESTDIR)$(libdir)/$(LIB_IMPORT_NAME)"; \
+	else \
+		cp "$(LIB_SHARED_$(INSTALL_MODE))" "$(DESTDIR)$(libdir)/$(LIB_SHARED_NAME)"; \
+	fi
+
+install-cli: $(BUILDROOT)/$(INSTALL_MODE)/$(XFOIL_CLI)
+	@mkdir -p "$(DESTDIR)$(bindir)"
+	cp "$(BUILDROOT)/$(INSTALL_MODE)/$(XFOIL_CLI)" "$(DESTDIR)$(bindir)/"
+
+install-metadata:
+	@mkdir -p "$(DESTDIR)$(libdir)/pkgconfig" \
+		"$(DESTDIR)$(datadir)/licenses/xfoil-next"
+	cp LICENSE NOTICE "$(DESTDIR)$(datadir)/licenses/xfoil-next/"
+	@printf '%s\n' \
+		'prefix=$(PREFIX)' \
+		'exec_prefix=$${prefix}' \
+		'libdir=$${exec_prefix}/lib' \
+		'includedir=$${prefix}/include' \
+		'' \
+		'Name: xfoil-next' \
+		'Description: XFOIL.next embedded aerodynamic analysis library' \
+		'Version: $(PRODUCT_VERSION)' \
+		'Libs: -L$${libdir} -lxfoil_next' \
+		'Libs.private: -lm' \
+		'Cflags: -I$${includedir}' \
+		> "$(DESTDIR)$(libdir)/pkgconfig/xfoil-next.pc"
+
+install: install-headers install-libraries install-cli install-metadata
+
+# Staged install used by the consumer smoke tests. The real system is
+# never touched.
+L6_STAGE_MARKER := $(L6_STAGE)/.installed
+$(L6_STAGE_MARKER): library $(BUILDROOT)/release/$(XFOIL_CLI)
+	rm -rf "$(L6_STAGE)"
+	@mkdir -p "$(L6_STAGE)"
+	$(MAKE) install DESTDIR=$(abspath $(L6_STAGE)) PREFIX=/usr INSTALL_MODE=release
+	@touch "$(L6_STAGE_MARKER)"
+
+l6-stage-install: $(L6_STAGE_MARKER)
+
+test-consumer-static: $(L6_STAGE_MARKER)
+	@mkdir -p "$(L6_CONSUMER)"
+	$(CXX) $(CXXSTD) -I"$(L6_STAGE)/usr/include" $(LIB_LINK_FLAGS) \
+		tests/consumer/LibraryConsumer.cpp \
+		"$(L6_STAGE)/usr/lib/$(LIB_STATIC_NAME)" \
+		-o "$(L6_CONSUMER)/consumer-static$(EXEEXT)"
+	"$(L6_CONSUMER)/consumer-static$(EXEEXT)"
+
+test-consumer-shared: $(L6_STAGE_MARKER)
+	@mkdir -p "$(L6_CONSUMER)"
+	$(CXX) $(CXXSTD) -I"$(L6_STAGE)/usr/include" -DXFOIL_NEXT_USE_SHARED $(LIB_LINK_FLAGS) \
+		tests/consumer/LibraryConsumer.cpp \
+		-L"$(L6_STAGE)/usr/lib" -lxfoil_next \
+		-Wl,-rpath,$(abspath $(L6_STAGE))/usr/lib \
+		-o "$(L6_CONSUMER)/consumer-shared$(EXEEXT)"
+	@if [ -n "$(EXEEXT)" ]; then \
+		PATH="$(abspath $(L6_STAGE))/usr/bin:$$PATH" \
+			"$(L6_CONSUMER)/consumer-shared$(EXEEXT)"; \
+	else \
+		"$(L6_CONSUMER)/consumer-shared$(EXEEXT)"; \
+	fi
+
+test-consumers: test-consumer-static test-consumer-shared
 
 # ---------------------------------------------------------------------------
 # Permanent guard gates.
@@ -799,7 +989,8 @@ clean:
 		$(BUILDROOT)/core-*-harness \
 		$(BUILDROOT)/c11a-state-harness-dbl \
 		$(BUILDROOT)/core-xycm-harness-dbl \
-		$(BUILDROOT)/fortran-reference-*
+		$(BUILDROOT)/fortran-reference-* \
+		$(L6_STAGE) $(L6_CONSUMER)
 
 help:
 	@echo "Build:"
@@ -807,6 +998,11 @@ help:
 	@echo "  make debug           - debug build (-O0 -g3)"
 	@echo "  make release         - release build (-O3 -DNDEBUG)"
 	@echo "  make sanitize        - ASan+UBSan build (-O1 -g3)"
+	@echo "  make library         - static + shared library (LIB_MODE=release)"
+	@echo "  make library-static  - static library only"
+	@echo "  make library-shared  - shared library/DLL only"
+	@echo "  make install         - staged install via DESTDIR/PREFIX"
+	@echo "  make test-consumers  - static/shared consumer smoke"
 	@echo ""
 	@echo "Test:"
 	@echo "  make test                - full C++ test suite (debug)"

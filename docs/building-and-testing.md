@@ -23,9 +23,19 @@ make            release build (default; same as make all)
 make debug      debug build   (-O0 -g3)
 make release    release build (-O3 -DNDEBUG)
 make sanitize   ASan + UBSan build (-O1 -g3)
+make library    release static and shared library
+make library-static
+make library-shared
+make library-link-check     external consumer against the static library
+make test-consumers         static/shared staged-install consumer smoke
+make install    staged install (DESTDIR/PREFIX)
 ```
 
-Binaries land under `build/<mode>/`.
+Binaries land under `build/<mode>/`; libraries land under
+`build/<mode>/lib/`. The library archive contains the core, session and
+pure IO objects, but not `src/main.cpp` or the application/CLI adapters.
+Static and shared objects use separate `libobj-static/` and
+`libobj-shared/` roots.
 
 ## Test targets
 
@@ -39,6 +49,27 @@ make test-batch             native batch suite (batch. prefix)
 make test-sanitize          full suite against the sanitizer binary
 make test-valgrind          representative paths under Valgrind
 ```
+
+## Library build and installation
+
+```text
+Linux static        build/<mode>/lib/libxfoil_next.a
+Linux shared        build/<mode>/lib/libxfoil_next.so
+Windows static      build/<mode>/lib/libxfoil_next_static.a
+Windows DLL         build/<mode>/lib/xfoil_next.dll
+Windows import lib  build/<mode>/lib/libxfoil_next.dll.a
+```
+
+`make install` installs the complete `include/xfoil/**` tree, the
+selected library, the CLI, `LICENSE`, `NOTICE`, and
+`lib/pkgconfig/xfoil-next.pc` below `DESTDIR`. The package version in the
+pkg-config file is derived from `src/app/ProductInfo.h`.
+
+`make test-consumers` performs a staged install under `build/l6-stage`,
+builds `tests/consumer/LibraryConsumer.cpp` once against the static
+archive and once against the shared library, and runs both. The shared
+consumer is compiled with `XFOIL_NEXT_USE_SHARED`; on Windows the staged
+DLL directory is added to `PATH`. No system install is required.
 
 ## Fortran reference and integrity targets
 
@@ -112,11 +143,11 @@ time measurement and may change with new tests.
 
 ```text
 core suite:        465
-unit:             1769
-integration:       297
+unit:             1811
+integration:       313
 regression:          5
 batch:               47
-full C++ suite:   2121
+full C++ suite:   2179
 
 Fortran source integrity (SHA256SUMS): 48
 Fortran reference cases:              236

@@ -596,6 +596,7 @@ SESSION_ROOTS = (
 # The XCP diagnostics quantity is derived from the confirmed 0-based core
 # kernel clCalc (LoadResult.centerOfPressureX, additive loop term).
 SESSION_ALLOWED_PUBLIC_HEADERS = (
+    "xfoil/Export.h",
     "xfoil/SessionTypes.h",
     "xfoil/AnalysisConfig.h",
     "xfoil/AnalysisResult.h",
@@ -619,6 +620,7 @@ SESSION_INCLUDE_RE = re.compile(r'^\s*#\s*include\s*[<"]([^>"]+)[>"]')
 # Public L2 data-model headers. They must stay free of internal
 # session/core/io/app includes and of direct filesystem/stream headers.
 L2_PUBLIC_HEADERS = (
+    "include/xfoil/Export.h",
     "include/xfoil/Result.h",
     "include/xfoil/Diagnostic.h",
     "include/xfoil/AnalysisData.h",

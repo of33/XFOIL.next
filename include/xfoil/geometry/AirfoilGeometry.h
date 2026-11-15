@@ -37,6 +37,7 @@
 #include <string_view>
 #include <vector>
 
+#include "xfoil/Export.h"
 #include "xfoil/Types.h"
 
 namespace xfoil::geometry {
@@ -58,7 +59,7 @@ struct GeometryAssignmentResult {
   }
 };
 
-class AirfoilGeometry {
+class XFOIL_API AirfoilGeometry {
  public:
   AirfoilGeometry() = default;
 

@@ -31,6 +31,8 @@
 
 #include <string>
 
+#include "xfoil/Export.h"
+
 namespace xfoil {
 
 enum class ReynoldsDependency {
@@ -90,7 +92,7 @@ struct ConfigValidationResult {
 };
 
 [[nodiscard]]
-ConfigValidationResult validate(
+XFOIL_API ConfigValidationResult validate(
     const AnalysisConfig& config) noexcept;
 
 }  // namespace xfoil

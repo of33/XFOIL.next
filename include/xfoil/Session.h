@@ -36,6 +36,7 @@
 #include "xfoil/AnalysisConfig.h"
 #include "xfoil/AnalysisData.h"
 #include "xfoil/CancellationToken.h"
+#include "xfoil/Export.h"
 #include "xfoil/Result.h"
 #include "xfoil/SequenceResult.h"
 #include "xfoil/SessionOptions.h"
@@ -53,7 +54,7 @@ struct AlphaSequence {
   Degrees step{};
 };
 
-class Session {
+class XFOIL_API Session {
  public:
   Session();
   ~Session();

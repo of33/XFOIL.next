@@ -9,6 +9,7 @@ internal flags, and no global mutable solver state.
 ```text
 xfoil/XFoil.h                     facade class xfoil::XFoil
 xfoil/XFoilSession.h              xfoil::XFoilSession
+xfoil/Export.h                    XFOIL_API visibility/import-export macro
 xfoil/AnalysisConfig.h            configuration and validation
 xfoil/AnalysisResult.h            per-point result and status
 xfoil/AnalysisData.h              owning operating-point and surface data
@@ -270,16 +271,54 @@ int main() {
 }
 ```
 
-The product version remains 1.1.0. There is no install step, no prebuilt
-shared library, no pkg-config/CMake package and no stable C++ ABI promise in
-this API generation. Compile against the headers under `include/` and link
-the core, session, and IO objects that the build produces under
-`build/<mode>/obj/` (the application/CLI objects and the `main` object are
-not needed by the API). For example, after `make release`:
+## Library artifacts and installation
+
+The library build uses the same Makefile as the CLI. The application and
+CLI objects are not part of the library archive.
 
 ```sh
-g++ -std=c++20 -Iinclude example.cpp \
-    $(find build/release/obj -name '*.o' \
-        -not -path '*/app/*' -not -name 'main.o') \
-    -o example
+make library                 # release static and shared library
+make library-static          # static only
+make library-shared          # shared/DLL only
+make install DESTDIR=/tmp/stage PREFIX=/usr
 ```
+
+Artifacts:
+
+```text
+Linux static          build/<mode>/lib/libxfoil_next.a
+Linux shared          build/<mode>/lib/libxfoil_next.so
+Windows static        build/<mode>/lib/libxfoil_next_static.a
+Windows DLL           build/<mode>/lib/xfoil_next.dll
+Windows import lib    build/<mode>/lib/libxfoil_next.dll.a
+```
+
+`make install` installs the complete `include/xfoil/**` tree (the public
+and internal include roots), the selected static/shared library, the CLI,
+`LICENSE`, `NOTICE`, and `lib/pkgconfig/xfoil-next.pc` below `DESTDIR`.
+The installed include tree is physically complete because the public
+headers reference session value types; the internal `xfoil/session`,
+`xfoil/core` and `xfoil/io` headers are not additional public API.
+
+A static consumer links the archive directly:
+
+```sh
+g++ -std=c++20 -I"$PREFIX/include" example.cpp \
+    "$PREFIX/lib/libxfoil_next.a" -o example
+```
+
+A shared consumer links `-lxfoil_next`. On Windows, define
+`XFOIL_NEXT_USE_SHARED` when compiling a DLL consumer; a static consumer
+defines neither `XFOIL_NEXT_USE_SHARED` nor `XFOIL_NEXT_BUILD_SHARED`.
+
+```sh
+g++ -std=c++20 -DXFOIL_NEXT_USE_SHARED -I"$PREFIX/include" \
+    example.cpp -L"$PREFIX/lib" -lxfoil_next -o example
+```
+
+The product version remains 1.1.0. There is no CMake package and no stable
+C++ ABI promise in this API generation. Consumers must use a compatible
+C++ standard library and compiler/ABI. The pkg-config file is
+`xfoil-next.pc`; `make test-consumers` builds static and shared consumers
+against a staged install only and prints one `LibraryConsumer PASS` per
+consumer.
