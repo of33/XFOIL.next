@@ -749,7 +749,11 @@ test-library-concurrency: $(BUILDROOT)/debug/xfoil_tests
 	$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) unit.LibraryConcurrencyL7
 
 test-tsan-library: $(BUILDROOT)/tsan/xfoil_tests
-	$(BUILDROOT)/tsan/xfoil_tests unit.LibraryConcurrencyL7
+	@if command -v setarch >/dev/null 2>&1; then \
+		setarch "$$(uname -m)" -R $(BUILDROOT)/tsan/xfoil_tests unit.LibraryConcurrencyL7; \
+	else \
+		$(BUILDROOT)/tsan/xfoil_tests unit.LibraryConcurrencyL7; \
+	fi
 
 $(LIBRARY_LINKCHECK): tests/consumer/LibraryConsumer.cpp $(LIB_STATIC_$(LIB_MODE))
 	@mkdir -p $(dir $@)
