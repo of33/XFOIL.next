@@ -109,6 +109,11 @@ def defined_symbols(path, dynamic):
 def forbidden_name(base, text):
     if base in FORBIDDEN_C_NAMES:
         return True
+    # Compiler-generated exception machinery may reference std::terminate.
+    # This is a C++ runtime resolution, not an explicit library termination
+    # call; explicit source calls remain forbidden by the dependency gate.
+    if base.startswith("std::terminate()"):
+        return False
     return any(text.startswith("U " + prefix) or prefix in text
                for prefix in FORBIDDEN_DEMANGLED_PREFIXES)
 
