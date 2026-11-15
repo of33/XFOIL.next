@@ -1,5 +1,9 @@
 # Public C++ API
 
+A complete user manual is available as
+[XFOIL.next Library User Manual](../XFOIL.next-Library-Manual.pdf). It
+describes the implemented API and build state in detail.
+
 The public API is a small, value-typed, session-based interface under the
 `xfoil` namespace. It exposes no raw pointers, no public solver arrays, no
 internal flags, and no global mutable solver state.

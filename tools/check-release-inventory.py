@@ -68,6 +68,7 @@ EXPECTED_OSMAP_SHA = {
 REQUIRED_FILES = [
     "LICENSE",
     "NOTICE",
+    "XFOIL.next-Library-Manual.pdf",
     "fortran-src/xfoil-6.99/SHA256SUMS",
     "fortran-bin/xfoil",
     "sample/CLARK_Y.dat",

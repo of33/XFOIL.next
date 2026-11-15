@@ -131,6 +131,13 @@ make test-demo-lib            # demo integration tests
 See [building and testing](docs/building-and-testing.md) for the complete
 target list, compiler requirements, and validation gates.
 
+## Library user manual
+
+The complete guide to the embedded C++20 library is available as
+[Library User Manual (PDF)](XFOIL.next-Library-Manual.pdf). It covers the
+in-memory API, build and installation, static and shared linking, the
+no-I/O contract, session isolation, and the standalone demo.
+
 The standalone consumer in [demo-lib](demo-lib/README.md) builds only
 against an installed package. It reads an airfoil profile itself, passes
 the coordinates through public in-memory values, runs an alpha sequence

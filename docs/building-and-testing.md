@@ -80,6 +80,10 @@ archive and once against the shared library, and runs both. The shared
 consumer is compiled with `XFOIL_NEXT_USE_SHARED`; on Windows the staged
 DLL directory is added to `PATH`. No system install is required.
 
+The [XFOIL.next Library User Manual](../XFOIL.next-Library-Manual.pdf)
+documents the public API, static/shared linking, installation and the
+demo in one place.
+
 `make demo-lib` builds the standalone `demo-lib/` consumer once shared
 and once static against the staged installation through pkg-config. It
 does not include repository sources. `make test-demo-lib` runs the

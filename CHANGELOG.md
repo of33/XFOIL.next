@@ -4,6 +4,13 @@ All notable changes to XFOIL.next are documented here. The format follows
 a plain release log; this project does not advertise a strict
 keep-a-changelog layout.
 
+## Unreleased
+
+- Published the XFOIL.next Library User Manual as a PDF. The LaTeX source
+  remains local and is not part of the public repository. The manual
+  documents product version 1.1.0 and is prepared for the planned 1.2.0
+  library release, which is not yet published.
+
 ## 1.1.0
 
 Cumulative XFOIL 6.996 integration, based on the accepted 1.0.0 product.
