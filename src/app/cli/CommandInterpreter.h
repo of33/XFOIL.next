@@ -184,6 +184,12 @@ struct RunSummary {
   std::vector<RunGeometryRecord> geometryRecords;
 };
 
+namespace testing {
+// Read-only test access to the interpreter session state. Defined only by
+// test translation units; no product API and no state mutation.
+struct CommandInterpreterAccess;
+}  // namespace testing
+
 class CommandInterpreter {
  public:
   CommandInterpreter(
@@ -236,6 +242,8 @@ class CommandInterpreter {
   }
 
  private:
+  friend struct testing::CommandInterpreterAccess;
+
   void printBanner();
   void printMainMenu();
   void showPrompt();

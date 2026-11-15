@@ -404,6 +404,7 @@ TEST_SRCS := \
 	tests/integration/InputCapacityS20Tests.cpp \
 	tests/integration/LibrarySessionL3Tests.cpp \
 	tests/integration/LibraryOneShotL4Tests.cpp \
+	tests/integration/LibraryCliParityL5Tests.cpp \
 	tests/regression/ClarkYGoldenTests.cpp \
 	tests/regression/PaccDumpByteParityTests.cpp \
 	tests/regression/PaccInviscidDumpParityTests.cpp \
@@ -685,6 +686,7 @@ VALGRIND_TEST_FILTERS := \
 	integration.LibrarySessionL3 \
 	unit.LibraryOneShotL4 \
 	integration.LibraryOneShotL4 \
+	integration.LibraryCliParityL5 \
 	unit.ApiRunSpecAlphaColdStartUnchanged \
 	unit.SessionOperClSequenceIndependentSessions \
 	unit.SessionNaca0012SymmetricInviscidRegression \

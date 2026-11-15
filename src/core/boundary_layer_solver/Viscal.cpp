@@ -34,7 +34,6 @@
 // control-flow order are formula-faithful; internal computations use
 // double. No raw pointers and no global state.
 
-#include <iostream>
 #include "xfoil/core/boundary_layer/Viscal.h"
 
 #include <algorithm>
