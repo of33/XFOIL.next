@@ -426,7 +426,7 @@ g++ -std=c++20 -DXFOIL_NEXT_USE_SHARED -I"$PREFIX/include" \
 ```
 
 The product version remains 1.1.0. There is no CMake package and no stable
-C++ ABI promise in this API generation. Consumers must use a compatible
+C++ ABI promise in the current public API. Consumers must use a compatible
 C++ standard library and compiler/ABI. The pkg-config file is
 `xfoil-next.pc`; `make test-consumers` builds static and shared consumers
 against a staged install only and prints one `LibraryConsumer PASS` per
@@ -434,16 +434,16 @@ consumer.
 
 ## Standalone consumer demo
 
-`demo-lib/` is a complete external consumer. It uses only installed
+`library-demo/` is a complete external consumer. It uses only installed
 public headers and pkg-config metadata, reads a two-column profile file
 in the application, and passes the coordinates to `xfoil::Session`
 through `xfoil::geometry::AirfoilGeometry`. The analysis workflow is an
 alpha sequence followed by a specified-CL point in the same session.
 
 ```sh
-PKG_CONFIG_PATH=/usr/local/lib/pkgconfig make -C demo-lib
+PKG_CONFIG_PATH=/usr/local/lib/pkgconfig make -C library-demo
 xfoil-next-lib-demo \
-  --airfoil demo-lib/profiles/naca0012.dat \
+  --airfoil library-demo/profiles/naca0012.dat \
   --re 1000000 \
   --alpha-start -2 \
   --alpha-end 8 \
@@ -457,7 +457,7 @@ The required arguments are `--airfoil`, `--re`, `--alpha-start`,
 `xfoil::PanelingOptions{}` defaults. `--re 0` selects inviscid analysis;
 positive `--re` selects viscous analysis. `--alpha-end` is exclusive.
 The demo application owns profile file I/O; the library performs no file
-or console I/O. `make test-demo-lib` builds and runs the static and shared
+or console I/O. `make test-library-demo` builds and runs the static and shared
 demo against a staged install.
 
 ## No-I/O, isolation and concurrency contract
@@ -474,19 +474,13 @@ cancelling, failing or destroying one instance does not change another.
 A single `Session` is move-only and is not thread-safe; do not call into
 the same instance concurrently.
 
-Concurrency classification for this API generation:
-
-```text
-CONCURRENCY-NOT-GUARANTEED
-```
-
 Independent sessions have passed diagnostic parallel execution and
-ThreadSanitizer checks, but concurrent use of separate sessions is not yet
-part of the supported public contract. Use one session per thread and
-synchronize host access.
+ThreadSanitizer checks, but concurrent use of separate sessions is not part
+of the supported public contract. Use one session per thread and synchronize
+host access.
 
 The Linux test targets `make test-library-isolation`,
 `make test-library-progress`, `make test-library-noio` and
-`make test-library-concurrency` exercise these contracts. The no-I/O proof is Linux-only; the focused Windows check uses
+`make test-library-concurrency` exercise these contracts. The no-I/O proof is Linux-only; the Windows check uses
 source/dependency, import-table, directory, cwd and stdout/stderr evidence
 rather than libc interposition.

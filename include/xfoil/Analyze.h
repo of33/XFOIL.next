@@ -37,7 +37,7 @@
 namespace xfoil {
 
 // Runs exactly one alpha or CL point on a temporary session. Returns an
-// owning L2 operating point. A non-converged but executed point is a
+// owning operating point. A non-converged but executed point is a
 // successful value with ConvergenceStatus::unconverged; errors before a
 // valid point are returned as structured Error values.
 [[nodiscard]]

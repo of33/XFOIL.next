@@ -519,7 +519,7 @@ LIB_SHARED_IMPORT_FLAG := -Wl,--out-implib
 	library library-static library-shared install \
 	install-headers install-libraries install-cli install-metadata \
 	l6-stage-install test-consumer-static test-consumer-shared test-consumers \
-	demo-lib test-demo-lib update-golden clean help
+	library-demo test-library-demo update-golden clean help
 
 all: release
 
@@ -573,13 +573,13 @@ $(BUILDROOT)/$(1)/$(XFOIL_CLI): $$(CLI_OBJS_$(1)) $(BUILDROOT)/$(1)/lib/$(LIB_ST
 	@mkdir -p $$(dir $$@)
 	$$(CXX) $$(CXXSTD) $$($(1)_FLAGS) $$(CLI_OBJS_$(1)) $(BUILDROOT)/$(1)/lib/$(LIB_STATIC_NAME) -o $$@
 
-$(BUILDROOT)/$(1)/obj-demo-support/%.o: demo-lib/%.cpp
+$(BUILDROOT)/$(1)/obj-demo-support/%.o: library-demo/%.cpp
 	@mkdir -p $$(dir $$@)
-	$$(CXX) $$(CXXSTD) $$(CPPFLAGS) -Idemo-lib $$(DEPFLAGS) $$(WARNINGS) $$($(1)_FLAGS) -c $$< -o $$@
+	$$(CXX) $$(CXXSTD) $$(CPPFLAGS) -Ilibrary-demo $$(DEPFLAGS) $$(WARNINGS) $$($(1)_FLAGS) -c $$< -o $$@
 
 $(BUILDROOT)/$(1)/obj-tests/%.o: tests/%.cpp
 	@mkdir -p $$(dir $$@)
-	$$(CXX) $$(CXXSTD) $$(CPPFLAGS) -Itests -Idemo-lib $$(DEPFLAGS) $$(WARNINGS) $$($(1)_FLAGS) -c $$< -o $$@
+	$$(CXX) $$(CXXSTD) $$(CPPFLAGS) -Itests -Ilibrary-demo $$(DEPFLAGS) $$(WARNINGS) $$($(1)_FLAGS) -c $$< -o $$@
 
 $(BUILDROOT)/$(1)/xfoil_tests: $$(TEST_OBJS_$(1)) $$(DEMO_SUPPORT_OBJ_$(1)) $$(CORE_OBJS_$(1))
 	@mkdir -p $$(dir $$@)
@@ -861,18 +861,18 @@ test-consumer-shared: $(L6_STAGE_MARKER)
 test-consumers: test-consumer-static test-consumer-shared
 
 # ---------------------------------------------------------------------------
-# L9 standalone library demo. The demo is built only against the staged
+# Standalone library demo. The demo is built only against the staged
 # installed package and is not part of the default product build.
 # ---------------------------------------------------------------------------
-DEMO_LIB_DIR := demo-lib
+DEMO_LIB_DIR := library-demo
 DEMO_BUILD_ROOT := $(DEMO_LIB_DIR)/build
 DEMO_SHARED := $(DEMO_BUILD_ROOT)/shared/xfoil-next-lib-demo$(EXEEXT)
 DEMO_STATIC := $(DEMO_BUILD_ROOT)/static/xfoil-next-lib-demo$(EXEEXT)
-DEMO_PROFILE := $(CURDIR)/demo-lib/profiles/naca0012.dat
+DEMO_PROFILE := $(CURDIR)/library-demo/profiles/naca0012.dat
 DEMO_PKG_CONFIG_PATH := $(abspath $(L6_STAGE))/usr/lib/pkgconfig
 DEMO_PKG_CONFIG_SYSROOT := $(abspath $(L6_STAGE))
 
-demo-lib: $(L6_STAGE_MARKER)
+library-demo: $(L6_STAGE_MARKER)
 	$(MAKE) -C $(DEMO_LIB_DIR) clean
 	PKG_CONFIG_PATH="$(DEMO_PKG_CONFIG_PATH)" \
 	PKG_CONFIG_SYSROOT_DIR="$(DEMO_PKG_CONFIG_SYSROOT)" \
@@ -883,7 +883,7 @@ demo-lib: $(L6_STAGE_MARKER)
 	XFOIL_NEXT_PREFIX="$(abspath $(L6_STAGE))/usr" \
 	$(MAKE) -C $(DEMO_LIB_DIR) LINK_MODE=static
 
-test-demo-lib: demo-lib $(BUILDROOT)/debug/xfoil_tests
+test-library-demo: library-demo $(BUILDROOT)/debug/xfoil_tests
 	XFOIL_DEMO_SHARED_PATH="$(abspath $(DEMO_SHARED))" \
 	XFOIL_DEMO_STATIC_PATH="$(abspath $(DEMO_STATIC))" \
 	XFOIL_DEMO_PROFILE="$(DEMO_PROFILE)" \
@@ -891,7 +891,7 @@ test-demo-lib: demo-lib $(BUILDROOT)/debug/xfoil_tests
 	$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) integration.LibraryDemoL9
 
 # ---------------------------------------------------------------------------
-# L7 armed no-I/O proof (Linux). The interposition shim is disarmed for
+# Armed no-I/O proof (Linux). The interposition shim is disarmed for
 # loader/harness work and is armed only around the public API workflow.
 # ---------------------------------------------------------------------------
 NOIO_ROOT := $(BUILDROOT)/library-noio
@@ -1157,12 +1157,12 @@ help:
 	@echo "  make library-shared  - shared library/DLL only"
 	@echo "  make install         - staged install via DESTDIR/PREFIX"
 	@echo "  make test-consumers  - static/shared consumer smoke"
-	@echo "  make demo-lib        - standalone staged-library demo (static/shared)"
-	@echo "  make test-demo-lib   - standalone demo integration tests"
-	@echo "  make check-library-dependencies - LIB_SRCS/header dependency gate"
+	@echo "  make library-demo       - standalone staged-library demo (static/shared)"
+	@echo "  make test-library-demo  - standalone demo integration tests"
+	@echo "  make check-library-dependencies - LIB_SRCS/header dependency check"
 	@echo "  make library-symbol-check       - static/shared symbol audit"
-	@echo "  make test-library-isolation     - L7 session isolation tests"
-	@echo "  make test-library-skin-friction - L13 owning Cf projection tests"
+	@echo "  make test-library-isolation     - session isolation tests"
+	@echo "  make test-library-skin-friction - owning Cf projection tests"
 	@echo "  make test-library-noio          - armed static/shared no-I/O proof"
 	@echo "  make test-tsan-library          - TSan concurrency diagnostic"
 	@echo ""

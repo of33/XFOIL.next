@@ -66,6 +66,7 @@ EXPECTED_OSMAP_SHA = {
 }
 
 REQUIRED_FILES = [
+    "CITATION.cff",
     "LICENSE",
     "NOTICE",
     "XFOIL.next-Library-Manual.pdf",

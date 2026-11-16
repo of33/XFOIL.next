@@ -1,5 +1,8 @@
 # XFOIL.next standalone library demo
 
+The directory is named `library-demo`; the executable remains
+`xfoil-next-lib-demo`.
+
 `xfoil-next-lib-demo` is an external C++20 consumer of the installed
 XFOIL.next library. The application reads an airfoil coordinate file and
 passes the coordinates only through public in-memory API values. The
@@ -10,7 +13,7 @@ library performs no file or console I/O.
 Use the installed package through `pkg-config`:
 
 ```sh
-PKG_CONFIG_PATH=/usr/local/lib/pkgconfig make -C demo-lib
+PKG_CONFIG_PATH=/usr/local/lib/pkgconfig make -C library-demo
 ```
 
 For a staged installation, point both variables at the stage:
@@ -18,7 +21,7 @@ For a staged installation, point both variables at the stage:
 ```sh
 PKG_CONFIG_PATH="$PWD/build/l6-stage/usr/lib/pkgconfig" \
 PKG_CONFIG_SYSROOT_DIR="$PWD/build/l6-stage" \
-make -C demo-lib
+make -C library-demo
 ```
 
 The default build is shared. A static build uses the installed static
@@ -26,17 +29,17 @@ archive:
 
 ```sh
 PKG_CONFIG_PATH=/usr/local/lib/pkgconfig \
-make -C demo-lib LINK_MODE=static
+make -C library-demo LINK_MODE=static
 ```
 
-The executable is written to `demo-lib/build/<mode>/`. The demo does not
+The executable is written to `library-demo/build/<mode>/`. The demo does not
 include repository sources or build against the source tree.
 
 If `pkg-config` is unavailable, point the Makefile at the installed
 prefix instead:
 
 ```sh
-make -C demo-lib \
+make -C library-demo \
   XFOIL_NEXT_PREFIX=/usr/local \
   LINK_MODE=shared
 ```
@@ -74,7 +77,7 @@ Example:
 
 ```sh
 xfoil-next-lib-demo \
-  --airfoil demo-lib/profiles/naca0012.dat \
+  --airfoil library-demo/profiles/naca0012.dat \
   --re 1000000 \
   --alpha-start -2 \
   --alpha-end 8 \

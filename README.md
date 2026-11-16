@@ -126,12 +126,12 @@ make test-library-progress
 make test-library-skin-friction
 make test-library-noio        # Linux armed no-I/O proof
 make test-library-concurrency
-make demo-lib                 # standalone staged-library demo
-make test-demo-lib            # demo integration tests
+make library-demo                 # standalone staged-library demo
+make test-library-demo            # demo integration tests
 ```
 
 See [building and testing](docs/building-and-testing.md) for the complete
-target list, compiler requirements, and validation gates.
+target list, compiler requirements, and validation checks.
 
 ## Library user manual
 
@@ -140,7 +140,7 @@ The complete guide to the embedded C++20 library is available as
 in-memory API, build and installation, static and shared linking, the
 no-I/O contract, session isolation, and the standalone demo.
 
-The standalone consumer in [demo-lib](demo-lib/README.md) builds only
+The standalone consumer in [library-demo](library-demo/README.md) builds only
 against an installed package. It reads an airfoil profile itself, passes
 the coordinates through public in-memory values, runs an alpha sequence
 and a specified-CL point in the same session, and writes structured
@@ -174,7 +174,7 @@ described in [Windows](#windows).
 ### Supported environment
 
 Validated on **Windows 11 + MSYS2 UCRT64 + GCC/MinGW 16.1.0 Rev5**
-(the accepted Windows baseline).
+(the validated Windows baseline).
 
 - MSVC is not supported and not promised;
 - Cygwin is not supported and not promised;
@@ -275,7 +275,7 @@ builds Debug and Release with `-Werror`, runs the full debug suites
 regression (5) three times each from the same untouched debug build,
 executes the full release suite (2121), checks the binary contract
 (`xfoil.next.exe` present, `xfoil.exe` absent, `--version` output),
-and performs one focused `XFOIL_DUMP_DIAG=1` PACC dump diagnostic.
+and performs one `XFOIL_DUMP_DIAG=1` PACC dump diagnostic.
 It writes separate logs (`00-environment.txt` … `50-summary.txt`), a
 machine-readable summary, and `SHA256SUMS.txt`.
 
@@ -283,9 +283,9 @@ In addition, a manual-only workflow (`windows-diagnostic.yml`,
 `workflow_dispatch`) runs the same complete suite on the
 GitHub-hosted `windows-2022` runner with the current MSYS2 UCRT64
 toolchain (currently GCC/MinGW 16.2.0 Rev4). That runner is Windows
-Server, not Windows 11, and its toolchain is not the accepted baseline;
-the workflow is a diagnostic evaluation, not a release gate, and it may
-fail while unresolved toolchain deviations remain. The accepted
+Server, not Windows 11, and its toolchain is not the validated baseline;
+the workflow is a diagnostic evaluation, not a release check, and it may
+fail while unresolved toolchain deviations remain. The validated
 Windows validation remains the fully documented manual Windows 11 +
 MSYS2 UCRT64 + GCC/MinGW 16.1.0 Rev5 run described above; see
 `VALIDATION.md` for the hosted toolchain's measured deviations. This
@@ -304,7 +304,7 @@ The port is checked against them with:
 make check-fortran-sha              # Fortran source integrity (SHA256SUMS)
 make test-reference                 # 236 canonical reference cases
 make test-reference-determinism     # byte-deterministic reference reruns
-make test-harnesses                 # 16 focused Fortran harness families
+make test-harnesses                 # 16 Fortran harness families
 ```
 
 See [numerical validation](docs/numerical-validation.md) and
@@ -322,7 +322,7 @@ Linux is the canonical platform for the bit-exact and byte-exact reference
 contracts. The 1.0.0 release tree was validated with GCC 13.3, the
 GCC 16.2.0 point release (side-by-side installation), and Clang 18.1.3. The
 1.1.0 release preparation changes only the product version metadata and its
-banner goldens; the accepted cumulative numerical matrix is unchanged. The
+banner goldens; the validated cumulative numerical matrix is unchanged. The
 Fortran reference and harness checks use the documented system GNU Fortran
 baseline.
 
@@ -372,6 +372,13 @@ commitments. Order and scope may change as technical evaluation proceeds.
   possible improvements to boundary-layer prediction, subject to numerical
   validation, technical suitability, and license compatibility. No QFoil
   code is currently part of this project.
+
+## Citation
+
+Citation metadata is provided in [CITATION.cff](CITATION.cff). The project
+uses the Zenodo concept DOI `10.5281/zenodo.24046163`. For exact
+reproducibility, cite the version-specific DOI of the release used when one
+is available.
 
 ## License and provenance
 

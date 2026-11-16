@@ -23,7 +23,7 @@
 
 // File: include/xfoil/Session.h
 // Public in-memory session API. The session owns an isolated logical
-// state, accepts only memory-based inputs and returns owning L2 result
+// state, accepts only memory-based inputs and returns owning result
 // values. It performs no file or console I/O and never terminates the
 // host process. A single session is not thread-safe; separate sessions
 // have isolated logical state.
@@ -162,9 +162,9 @@ class XFOIL_API Session {
   [[nodiscard]]
   Result<OperatingPointData> lastOperatingPoint() const;
 
-  // Projects the active stored polar. L3 exposes no public polar
-  // accumulation operation, so this normally reports polar.noActiveSlot
-  // until a later polar API stores a slot.
+  // Projects the active stored polar. The public API currently exposes
+  // no polar accumulation operation, so this normally reports
+  // polar.noActiveSlot until a polar is stored by another operation.
   [[nodiscard]]
   Result<SequenceResult> activePolar() const;
 

@@ -21,7 +21,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# File: demo-lib/Makefile
+# File: library-demo/Makefile
 # Standalone demo build against an installed xfoil-next package.
 
 CXX ?= c++
@@ -93,4 +93,4 @@ $(TARGET): $(SOURCES) DemoSupport.h
 clean:
 	rm -rf build
 
-# End: demo-lib/Makefile
+# End: library-demo/Makefile

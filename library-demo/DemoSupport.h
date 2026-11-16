@@ -21,7 +21,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// File: demo-lib/DemoSupport.h
+// File: library-demo/DemoSupport.h
 // Demo-local command-line, profile and output support. This header uses
 // only installed public XFOIL.next headers and the C++ standard library.
 
@@ -136,4 +136,4 @@ std::string cpPointCount(std::size_t count);
 
 }  // namespace xfoil_demo
 
-// End: demo-lib/DemoSupport.h
+// End: library-demo/DemoSupport.h

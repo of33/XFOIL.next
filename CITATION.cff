@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use XFOIL.next, please cite the software using the Zenodo Concept DOI. For exact reproducibility, cite the version-specific DOI of the release you used."
+
+title: "XFOIL.next: A modern C++ implementation of XFOIL for aerodynamic analysis and design"
+
+authors:
+  - family-names: "Frommann"
+    given-names: "Olaf"
+    orcid: "https://orcid.org/0009-0004-2614-4392"
+
+version: "1.1.0"
+date-released: "2026-11-14"
+
+license: "GPL-3.0-or-later"
+
+repository-code: "https://github.com/of33/XFOIL.next"
+url: "https://github.com/of33/XFOIL.next"
+doi: "10.5281/zenodo.24046163"

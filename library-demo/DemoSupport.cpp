@@ -21,7 +21,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// File: demo-lib/DemoSupport.cpp
+// File: library-demo/DemoSupport.cpp
 // Demo-local argument parsing, profile parsing and stable output.
 
 #include "DemoSupport.h"
@@ -670,4 +670,4 @@ std::string cpPointCount(std::size_t count) {
 
 }  // namespace xfoil_demo
 
-// End: demo-lib/DemoSupport.cpp
+// End: library-demo/DemoSupport.cpp

@@ -17,16 +17,17 @@ keep-a-changelog layout.
   the existing `tau/(0.5*qinf^2)` sign and performs no solver work or I/O.
 - Published the XFOIL.next Library User Manual as a PDF. The LaTeX source
   remains local and is not part of the public repository. The manual
-  documents product version 1.1.0 and is prepared for the planned 1.2.0
-  library release, which is not yet published.
+  documents product version 1.1.0, the current public API, progress and
+  cancellation, the skin-friction projection, and the standalone
+  `library-demo` consumer.
 
 ## 1.1.0
 
-Cumulative XFOIL 6.996 integration, based on the accepted 1.0.0 product.
+Cumulative XFOIL 6.996 integration, based on the validated 1.0.0 product.
 
 - XFOIL 6.996 capacity and workspace limits, geometry primitives and the
   NACA/NACS 399-point contract.
-- GDES and geometry commands, updated paneling defaults, and the accepted
+- GDES and geometry commands, updated paneling defaults, and the validated
   geometry normalization behaviour.
 - Polar text metadata, dump/element metadata and the BLDUMP2/BLDUMP3 plus
   BLOU file contracts.
@@ -37,11 +38,11 @@ Cumulative XFOIL 6.996 integration, based on the accepted 1.0.0 product.
   pkg-config metadata, public export annotations, and external consumer
   smoke tests.
 - A verified memory-only library contract: isolated sessions, an armed
-  static/shared no-I/O proof, library dependency/symbol gates, and a
+  static/shared no-I/O proof, library dependency/symbol checks, and a
   diagnostic concurrency/TSan test. Concurrent use of one session is not
-  supported; parallel sessions remain classified as
-  `CONCURRENCY-NOT-GUARANTEED`.
-- Cumulative Linux and Windows acceptance of the integrated 6.996 scope.
+  supported, and parallel use of separate sessions is not part of the
+  supported public contract.
+- Cumulative Linux and Windows validation of the integrated 6.996 scope.
 
 Explicit non-goals remain SVG (`NIMP-02`), NTS/LPPORT/NSPL (`NIMP-01`) and
 the deferred headless plot backend (`G-PLOT-HEADLESS`).
@@ -64,8 +65,8 @@ First public release.
   format, CLI options, exit codes, prefix policy, and machine-readable
   `results.dat`.
 - Fortran validation infrastructure: SHA-pinned reference sources, 236
-  canonical reference cases with verification and determinism gates, and 16
-  focused Fortran harness families.
+  canonical reference cases with verification and determinism checks, and 16
+  Fortran harness families.
 - The graphical plot and cursor backend is deliberately not included. Plot
   and cursor commands are recognised and report that plotting is not
   available in this build.

@@ -21,7 +21,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// File: demo-lib/main.cpp
+// File: library-demo/main.cpp
 // Standalone embedded-library demo. The host application owns profile
 // file I/O; the library receives only in-memory public values.
 
@@ -196,4 +196,4 @@ int main(int argc, char** argv) {
   return static_cast<int>(xfoil_demo::ExitCode::success);
 }
 
-// End: demo-lib/main.cpp
+// End: library-demo/main.cpp

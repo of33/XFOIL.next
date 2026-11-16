@@ -9,10 +9,10 @@ relative to the root.
 - Linux x86-64 (validated platform).
 - GNU Make.
 - A C++20 compiler: GCC or Clang. Validated with GCC 13.3 and Clang 18.1.
-- Python 3 (used by the gate and harness scripts).
+- Python 3 (used by the check and harness scripts).
 - `gfortran` only when rebuilding the Fortran harnesses
   (`make test-harnesses`). The Fortran reference verification and
-  determinism gates use the precompiled `fortran-bin/xfoil` and do not need
+  determinism checks use the precompiled `fortran-bin/xfoil` and do not need
   a Fortran compiler.
 - `valgrind` only for `make test-valgrind`.
 
@@ -28,8 +28,8 @@ make library-static
 make library-shared
 make library-link-check     external consumer against the static library
 make test-consumers         static/shared staged-install consumer smoke
-make demo-lib               standalone staged-library demo (static/shared)
-make test-demo-lib          demo integration tests
+make library-demo               standalone staged-library demo (static/shared)
+make test-library-demo          demo integration tests
 make install    staged install (DESTDIR/PREFIX)
 ```
 
@@ -56,8 +56,8 @@ make test-library-skin-friction skin-friction projection tests
 make test-library-concurrency parallel diagnostic test
 make test-library-noio      armed static/shared no-I/O proof (Linux)
 make test-tsan-library      ThreadSanitizer concurrency diagnostic
-make test-demo-lib          standalone demo static/shared integration runs
-make check-library-dependencies LIB_SRCS/public-header dependency gate
+make test-library-demo          standalone demo static/shared integration runs
+make check-library-dependencies LIB_SRCS/public-header dependency check
 make library-symbol-check   static/shared forbidden-symbol audit
 ```
 
@@ -86,16 +86,16 @@ The [XFOIL.next Library User Manual](../XFOIL.next-Library-Manual.pdf)
 documents the public API, static/shared linking, installation and the
 demo in one place.
 
-`make demo-lib` builds the standalone `demo-lib/` consumer once shared
+`make library-demo` builds the standalone `library-demo/` consumer once shared
 and once static against the staged installation through pkg-config. It
-does not include repository sources. `make test-demo-lib` runs the
+does not include repository sources. `make test-library-demo` runs the
 inviscid, viscous, optional-parameter, negative-sequence, CRLF-profile
 and exit-code checks against the staged package. A direct build can use:
 
 ```sh
 PKG_CONFIG_PATH="$PWD/build/l6-stage/usr/lib/pkgconfig" \
 PKG_CONFIG_SYSROOT_DIR="$PWD/build/l6-stage" \
-make -C demo-lib LINK_MODE=shared
+make -C library-demo LINK_MODE=shared
 ```
 
 The demo application reads the supplied profile file. The library
@@ -112,17 +112,17 @@ tests. `make test-library-progress` runs the unit and integration progress,
 callback-failure and cancellation tests. `make test-library-skin-friction`
 runs the owning Cf projection, state-validity and BLDUMP-parity tests. `make test-library-concurrency`
 runs the independent-session parallel diagnostic; `make test-tsan-library`
-builds the focused test with ThreadSanitizer. Concurrent use of one session is not supported.
+builds the selected test with ThreadSanitizer. Concurrent use of one session is not supported.
 
 `make test-library-noio` builds an interposition shim and static/shared
 proof consumers against the staged installation. The shim is armed only
 around the public API window, records forbidden calls in memory, and the
 consumer runs in an empty read-only directory with cwd/environment checks.
-This target is Linux-only. The focused Windows check uses the import table,
-source/dependency gate, empty-directory inventory, cwd and stdout/stderr
+This target is Linux-only. The Windows check uses the import table,
+source/dependency check, empty-directory inventory, cwd and stdout/stderr
 evidence instead.
 
-The library dependency gate (`make check-library-dependencies`) verifies
+The library dependency check (`make check-library-dependencies`) verifies
 the expanded `LIB_SRCS` closure and public-header boundary.
 `make library-symbol-check` checks debug and release static/shared artifacts
 for forbidden unresolved symbols and app/CLI exports.
@@ -138,15 +138,15 @@ make test-harnesses                 Fortran harness rebuild/check (needs gfortra
 
 `make test-reference` and `make test-reference-determinism` run the
 precompiled `fortran-bin/xfoil`; they do not invoke `gfortran`.
-`make test-harnesses` rebuilds the focused Fortran harnesses and compares
+`make test-harnesses` rebuilds the Fortran harnesses and compares
 their output byte-for-byte against stored references; it requires `gfortran`.
 
-## Gate targets
+## Validation targets
 
 ```text
-make check-dependencies        dependency direction and forbidden-state gates
-make check-license-headers     GPL-3.0-or-later source header gate
-make check-release-inventory   release inventory / hygiene gate
+make check-dependencies        dependency direction and forbidden-state checks
+make check-license-headers     GPL-3.0-or-later source header check
+make check-release-inventory   release inventory / hygiene check
 ```
 
 ## Compiler and build-root contract
@@ -199,11 +199,11 @@ time measurement and may change with new tests.
 
 ```text
 core suite:        465
-unit:             1815
-integration:       315
+unit:             1856
+integration:       329
 regression:          5
 batch:               47
-full C++ suite:   2185
+full C++ suite:   2240
 
 Fortran source integrity (SHA256SUMS): 48
 Fortran reference cases:              236
