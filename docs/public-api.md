@@ -26,6 +26,7 @@ xfoil/AnalysisRequest.h           one-shot request and Alpha/CL targets
 xfoil/Analyze.h                   xfoil::analyze one-shot entry point
 xfoil/CancellationToken.h         instance-scoped cancellation
 xfoil/Progress.h                  optional synchronous progress event/callback
+xfoil/SkinFriction.h              owning upper/lower skin-friction distribution
 xfoil/SessionTypes.h              GeometrySetResult / GeometrySetError
 xfoil/Types.h                     Point2D, Vector2D, Degrees, Radians
 xfoil/geometry/AirfoilGeometry.h  owning unpanelled coordinate value type
@@ -141,6 +142,7 @@ Additional read-only projections:
 ```cpp
 session.currentPanel();
 session.currentSurfaceDistribution();
+session.currentSkinFriction();
 session.lastOperatingPoint();
 session.activePolar();
 ```
@@ -148,6 +150,53 @@ session.activePolar();
 `Session` is move-only and not thread-safe. Separate sessions have
 isolated state. Sequences remain available through
 `Session::solveAlphaSequence`.
+
+## Skin-friction distribution
+
+`xfoil/SkinFriction.h` provides owning upper/lower boundary-layer station
+data for the current valid viscous point:
+
+```cpp
+#include "xfoil/SkinFriction.h"
+
+auto cf = session.currentSkinFriction();
+if (cf.isErr()) {
+  // cf.error().code
+} else {
+  const xfoil::SkinFrictionDistribution& distribution = cf.value();
+  // distribution.upper and distribution.lower are independent
+  // SkinFrictionSide values with x, y, s and cf arrays.
+}
+```
+
+`SkinFrictionSide` contains `side`, `x`, `y`, `s` and `cf`. All four
+arrays on a side have the same length; upper and lower lengths may
+differ. The station order runs from the leading-edge region toward the
+trailing edge, with increasing `s`. `x` is not required to be monotonic.
+Wake stations are excluded.
+
+`cf` is dimensionless and uses the existing BLDUMP definition:
+
+```text
+cf = tau / (0.5 * qinf^2)
+```
+
+`tau` comes from the final existing VISCAL state and `qinf` from the
+operating point. The sign is preserved; there is no absolute value,
+clamping, interpolation or rounding. The Cf stations are boundary-layer
+stations, not the Cp/panel-node discretization. The result owns all
+vectors and remains valid after later session changes.
+
+A successful but unconverged viscous point may return the last complete
+VISCAL state. Check the operating point's convergence status separately.
+An inviscid last point returns `skinFriction.notViscous`. A missing
+analysis returns `skinFriction.noAnalyzedPoint`. A cancelled or
+callback-failed point never exposes the previous point's Cf as the
+current result; it returns `skinFriction.noValidViscousState`. Malformed
+internal station data returns `skinFriction.inconsistentState`.
+`currentSkinFriction()` is a const, non-mutating projection: it runs no
+solver, initializes no boundary layer and performs no file or console
+I/O. There is no one-shot Cf result and no Cf sequence API.
 
 ## One-shot analysis API
 

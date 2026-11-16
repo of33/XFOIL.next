@@ -30,8 +30,11 @@
 
 #include "xfoil/session/SessionErrorMapping.h"
 
+#include <cmath>
 #include <utility>
 #include <vector>
+
+#include "xfoil/core/export_data/ExportData.h"
 
 namespace xfoil::session {
 namespace {
@@ -163,6 +166,143 @@ Result<SurfaceDistribution> projectSurfaceDistribution(
                                static_cast<std::ptrdiff_t>(surfaceCount));
   }
   return Result<SurfaceDistribution>::ok(std::move(distribution));
+}
+
+Result<SkinFrictionDistribution> projectSkinFriction(
+    const SessionComposition& session) {
+  const AnalysisResult& result = session.result.lastResult;
+  if (!result.successful) {
+    if (result.status == AnalysisStatus::cancelled ||
+        result.status == AnalysisStatus::progressCallbackFailure) {
+      return Result<SkinFrictionDistribution>::fail(
+          makeError(ErrorCategory::invalidState,
+                    "skinFriction.noValidViscousState",
+                    "No valid viscous state belongs to the last point",
+                    "skinFriction"));
+    }
+    if (result.status == AnalysisStatus::notAnalyzed ||
+        result.status == AnalysisStatus::missingGeometry ||
+        result.status == AnalysisStatus::missingConfiguration) {
+      return Result<SkinFrictionDistribution>::fail(
+          makeError(ErrorCategory::invalidState,
+                    "skinFriction.noAnalyzedPoint",
+                    "No analyzed point is available for skin friction",
+                    "skinFriction"));
+    }
+    return Result<SkinFrictionDistribution>::fail(
+        makeError(ErrorCategory::invalidState,
+                  "skinFriction.noValidViscousState",
+                  "No valid viscous state belongs to the last point",
+                  "skinFriction"));
+  }
+
+  if (!session.result.lastDiagnostics.viscalRan) {
+    return Result<SkinFrictionDistribution>::fail(
+        makeError(ErrorCategory::invalidState, "skinFriction.notViscous",
+                  "The last analyzed point is inviscid", "skinFriction"));
+  }
+
+  const auto& viscals = session.viscous.viscals;
+  const auto& panel = session.paneling.panel;
+  if (!session.paneling.panelingValid || !viscals.mapping.valid ||
+      panel.x.empty() || panel.x.size() != panel.y.size()) {
+    return Result<SkinFrictionDistribution>::fail(
+        makeError(ErrorCategory::internal, "skinFriction.inconsistentState",
+                  "The viscous mapping or panel geometry is inconsistent",
+                  "skinFriction"));
+  }
+
+  const double qinf = session.operating.qinf;
+  if (!std::isfinite(qinf) || qinf <= 0.0) {
+    return Result<SkinFrictionDistribution>::fail(
+        makeError(ErrorCategory::internal, "skinFriction.inconsistentState",
+                  "The operating point has an invalid freestream velocity",
+                  "skinFriction"));
+  }
+
+  auto projectSide = [&](const auto& mapping, const auto& arcs,
+                         const auto& tau,
+                         SurfaceSide side) -> Result<SkinFrictionSide> {
+    if (mapping.iblte < 1 || mapping.nbl < mapping.iblte) {
+      return Result<SkinFrictionSide>::fail(
+          makeError(ErrorCategory::internal, "skinFriction.inconsistentState",
+                    "The viscous station mapping is inconsistent",
+                    "skinFriction"));
+    }
+    const std::size_t count = static_cast<std::size_t>(mapping.iblte);
+    if (mapping.ipan.size() <= count || arcs.size() <= count ||
+        tau.size() <= count) {
+      return Result<SkinFrictionSide>::fail(
+          makeError(ErrorCategory::internal, "skinFriction.inconsistentState",
+                    "The viscous station arrays are incomplete",
+                    "skinFriction"));
+    }
+
+    SkinFrictionSide projected;
+    projected.side = side;
+    projected.x.reserve(count);
+    projected.y.reserve(count);
+    projected.s.reserve(count);
+    projected.cf.reserve(count);
+    double previousS = 0.0;
+    for (std::size_t station = 1; station <= count; ++station) {
+      const int panelIndex = mapping.ipan[station];
+      if (panelIndex < 0 ||
+          static_cast<std::size_t>(panelIndex) >= panel.x.size()) {
+        return Result<SkinFrictionSide>::fail(
+            makeError(ErrorCategory::internal,
+                      "skinFriction.inconsistentState",
+                      "A boundary-layer station maps outside the panel",
+                      "skinFriction"));
+      }
+      const std::size_t panelNode = static_cast<std::size_t>(panelIndex);
+      const double s = arcs[station];
+      const double cf = core::export_data::skinFrictionCoefficient(
+          tau[station], qinf);
+      if (!std::isfinite(arcs[station]) || !std::isfinite(tau[station]) ||
+          !std::isfinite(panel.x[panelNode]) ||
+          !std::isfinite(panel.y[panelNode]) || !std::isfinite(cf)) {
+        return Result<SkinFrictionSide>::fail(
+            makeError(ErrorCategory::internal,
+                      "skinFriction.inconsistentState",
+                      "The viscous station contains a non-finite value",
+                      "skinFriction"));
+      }
+      if (station > 1 && !(s > previousS)) {
+        return Result<SkinFrictionSide>::fail(
+            makeError(ErrorCategory::internal,
+                      "skinFriction.inconsistentState",
+                      "The boundary-layer station coordinate is not increasing",
+                      "skinFriction"));
+      }
+      previousS = s;
+      projected.x.push_back(panel.x[panelNode]);
+      projected.y.push_back(panel.y[panelNode]);
+      projected.s.push_back(s);
+      projected.cf.push_back(cf);
+    }
+    return Result<SkinFrictionSide>::ok(std::move(projected));
+  };
+
+  Result<SkinFrictionSide> upper = projectSide(
+      viscals.mapping.top, viscals.arcs.top, viscals.tau.top,
+      SurfaceSide::upper);
+  if (upper.isErr()) {
+    return Result<SkinFrictionDistribution>::fail(upper.error());
+  }
+  Result<SkinFrictionSide> lower = projectSide(
+      viscals.mapping.bottom, viscals.arcs.bottom, viscals.tau.bottom,
+      SurfaceSide::lower);
+  if (lower.isErr()) {
+    return Result<SkinFrictionDistribution>::fail(lower.error());
+  }
+
+  SkinFrictionDistribution distribution;
+  distribution.upper = std::move(upper.value());
+  distribution.lower = std::move(lower.value());
+  distribution.upper.side = SurfaceSide::upper;
+  distribution.lower.side = SurfaceSide::lower;
+  return Result<SkinFrictionDistribution>::ok(std::move(distribution));
 }
 
 Result<OperatingPointData> projectLastOperatingPoint(

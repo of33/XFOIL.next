@@ -40,6 +40,7 @@
 #include "xfoil/Progress.h"
 #include "xfoil/Result.h"
 #include "xfoil/SequenceResult.h"
+#include "xfoil/SkinFriction.h"
 #include "xfoil/SessionOptions.h"
 #include "xfoil/Types.h"
 #include "xfoil/geometry/AirfoilGeometry.h"
@@ -153,6 +154,11 @@ class XFOIL_API Session {
   Result<SurfaceGeometry> currentPanel() const;
   [[nodiscard]]
   Result<SurfaceDistribution> currentSurfaceDistribution() const;
+  // Owning skin-friction distribution of the current valid viscous
+  // point. Upper and lower airfoil stations are separate; wake stations
+  // are excluded. This is a pure const projection and runs no solver.
+  [[nodiscard]]
+  Result<SkinFrictionDistribution> currentSkinFriction() const;
   [[nodiscard]]
   Result<OperatingPointData> lastOperatingPoint() const;
 

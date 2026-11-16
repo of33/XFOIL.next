@@ -11,6 +11,10 @@ keep-a-changelog layout.
   cancellation token is now observed at safe viscous-iteration boundaries;
   callback failures return `progress.callbackFailure` without terminating
   the host process.
+- Added `Session::currentSkinFriction()` and the owning
+  `SkinFrictionDistribution` value type. The projection exposes separate
+  upper/lower boundary-layer stations, excludes wake stations, preserves
+  the existing `tau/(0.5*qinf^2)` sign and performs no solver work or I/O.
 - Published the XFOIL.next Library User Manual as a PDF. The LaTeX source
   remains local and is not part of the public repository. The manual
   documents product version 1.1.0 and is prepared for the planned 1.2.0

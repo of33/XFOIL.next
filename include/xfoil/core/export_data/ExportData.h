@@ -79,6 +79,11 @@ struct BoundaryLayerDumpInput {
   double tau{0.0};        // TAU(IBL,IS)
 };
 
+// Canonical skin-friction coefficient used by BLDUMP and by the
+// public owning Cf projection: cf = tau / (0.5*qinf^2). The sign is
+// preserved; no absolute value, clamping or rounding is applied.
+[[nodiscard]] double skinFrictionCoefficient(double tau, double qinf) noexcept;
+
 // Freestream quantities for the UE transformation (COMSET derivation).
 struct DumpFlowState {
   double qinf{0.0};

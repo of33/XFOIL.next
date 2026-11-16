@@ -609,6 +609,7 @@ SESSION_ALLOWED_PUBLIC_HEADERS = (
     "xfoil/AnalysisRequest.h",
     "xfoil/Analyze.h",
     "xfoil/Progress.h",
+    "xfoil/SkinFriction.h",
     "xfoil/Diagnostic.h",
     "xfoil/Result.h",
     "xfoil/SequenceResult.h",
@@ -633,6 +634,7 @@ L2_PUBLIC_HEADERS = (
     "include/xfoil/AnalysisRequest.h",
     "include/xfoil/Analyze.h",
     "include/xfoil/Progress.h",
+    "include/xfoil/SkinFriction.h",
 )
 L2_FORBIDDEN_INCLUDE_PREFIXES = (
     "xfoil/session/",

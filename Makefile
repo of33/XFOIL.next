@@ -393,6 +393,7 @@ TEST_SRCS := \
 	tests/unit/LibraryOneShotL4HeaderSmoke.cpp \
 	tests/unit/LibraryOneShotL4Tests.cpp \
 	tests/unit/LibraryProgressL12Tests.cpp \
+	tests/unit/LibrarySkinFrictionL13Tests.cpp \
 	tests/unit/LibraryIsolationL7Tests.cpp \
 	tests/unit/LibraryConcurrencyL7Tests.cpp \
 	tests/unit/LibraryDemoL9Tests.cpp \
@@ -469,6 +470,7 @@ TEST_SRCS := \
 	tests/integration/LibraryIsolationL7Tests.cpp \
 	tests/integration/LibraryDemoL9Tests.cpp \
 	tests/integration/LibraryProgressL12Tests.cpp \
+	tests/integration/LibrarySkinFrictionL13Tests.cpp \
 	tests/regression/ClarkYGoldenTests.cpp \
 	tests/regression/PaccDumpByteParityTests.cpp \
 	tests/regression/PaccInviscidDumpParityTests.cpp \
@@ -511,7 +513,8 @@ LIB_SHARED_IMPORT_FLAG := -Wl,--out-implib
 	check-public-docs \
 	core-link-check session-link-check library-link-check \
 	check-library-dependencies library-symbol-check print-library-sources \
-	test-library-isolation test-library-progress test-library-concurrency test-tsan-library \
+	test-library-isolation test-library-progress test-library-skin-friction \
+	test-library-concurrency test-tsan-library \
 	test-library-noio test-library-noio-static test-library-noio-shared \
 	library library-static library-shared install \
 	install-headers install-libraries install-cli install-metadata \
@@ -722,7 +725,8 @@ LIBRARY_LINKCHECK := $(BUILDROOT)/$(LIB_MODE)/library-link-check$(EXEEXT)
 
 .PHONY: library library-static library-shared library-link-check \
 	print-library-sources check-library-dependencies library-symbol-check \
-	test-library-isolation test-library-progress test-library-concurrency test-tsan-library \
+	test-library-isolation test-library-progress test-library-skin-friction \
+	test-library-concurrency test-tsan-library \
 	test-library-noio test-library-noio-static test-library-noio-shared \
 	install install-headers install-libraries install-cli install-metadata \
 	l6-stage-install test-consumer-static test-consumer-shared test-consumers
@@ -759,6 +763,12 @@ test-library-progress: $(BUILDROOT)/debug/xfoil_tests $(BUILDROOT)/debug/$(XFOIL
 		$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) unit.LibraryProgressL12
 	XFOIL_CLI_PATH=$(BUILDROOT)/debug/$(XFOIL_CLI) \
 		$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) integration.LibraryProgressL12
+
+test-library-skin-friction: $(BUILDROOT)/debug/xfoil_tests $(BUILDROOT)/debug/$(XFOIL_CLI)
+	XFOIL_CLI_PATH=$(BUILDROOT)/debug/$(XFOIL_CLI) \
+		$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) unit.LibrarySkinFrictionL13
+	XFOIL_CLI_PATH=$(BUILDROOT)/debug/$(XFOIL_CLI) \
+		$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) integration.LibrarySkinFrictionL13
 
 test-library-concurrency: $(BUILDROOT)/debug/xfoil_tests
 	$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) unit.LibraryConcurrencyL7
@@ -1018,6 +1028,8 @@ VALGRIND_TEST_FILTERS := \
 	integration.LibraryOneShotL4 \
 	unit.LibraryProgressL12 \
 	integration.LibraryProgressL12 \
+	unit.LibrarySkinFrictionL13 \
+	integration.LibrarySkinFrictionL13 \
 	integration.LibraryCliParityL5 \
 	unit.ApiRunSpecAlphaColdStartUnchanged \
 	unit.SessionOperClSequenceIndependentSessions \
@@ -1150,6 +1162,7 @@ help:
 	@echo "  make check-library-dependencies - LIB_SRCS/header dependency gate"
 	@echo "  make library-symbol-check       - static/shared symbol audit"
 	@echo "  make test-library-isolation     - L7 session isolation tests"
+	@echo "  make test-library-skin-friction - L13 owning Cf projection tests"
 	@echo "  make test-library-noio          - armed static/shared no-I/O proof"
 	@echo "  make test-tsan-library          - TSan concurrency diagnostic"
 	@echo ""

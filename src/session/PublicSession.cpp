@@ -609,6 +609,10 @@ Result<SurfaceDistribution> Session::currentSurfaceDistribution() const {
   return projectSurfaceDistribution(impl_->session);
 }
 
+Result<SkinFrictionDistribution> Session::currentSkinFriction() const {
+  return projectSkinFriction(impl_->session);
+}
+
 Result<OperatingPointData> Session::lastOperatingPoint() const {
   return projectLastOperatingPoint(impl_->session);
 }

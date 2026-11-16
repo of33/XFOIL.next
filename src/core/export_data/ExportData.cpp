@@ -42,6 +42,11 @@
 #include "xfoil/core/math/Spline.h"
 
 namespace xfoil::core::export_data {
+
+double skinFrictionCoefficient(double tau, double qinf) noexcept {
+  return tau / (0.5 * qinf * qinf);
+}
+
 namespace {
 
 double at(const std::vector<double>& v, std::size_t i) {
@@ -82,7 +87,7 @@ BoundaryLayerDumpRecord boundaryLayerDumpRow(
     ds = in.dstar;
     th = in.theta;
     ts = in.tstar;
-    cf = in.tau / (0.5 * flow.qinf * flow.qinf);
+    cf = skinFrictionCoefficient(in.tau, flow.qinf);
     if (th == 0.0) {
       h = 1.0;
       hs = 1.0;
@@ -199,7 +204,7 @@ Result<BlExtendedDumpRows> boundaryLayerExtendedDumpRows(
         ds = side.dstr[ibl];
         th = side.thet[ibl];
         ts = side.tstr[ibl];
-        cf = side.tau[ibl] / (0.5 * in.flow.qinf * in.flow.qinf);
+        cf = skinFrictionCoefficient(side.tau[ibl], in.flow.qinf);
         cdis = side.dis[ibl] / std::pow(in.flow.qinf, 3);
         ptaiVal = ptai[ibl];
         ppei = th * ue * ue - ptaiVal;

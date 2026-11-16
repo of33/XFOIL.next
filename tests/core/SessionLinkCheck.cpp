@@ -42,6 +42,7 @@
 #include "xfoil/Result.h"
 #include "xfoil/SequenceResult.h"
 #include "xfoil/Session.h"
+#include "xfoil/SkinFriction.h"
 #include "xfoil/XFoil.h"
 #include "xfoil/XFoilSession.h"
 #include "xfoil/geometry/AirfoilGeometry.h"
@@ -116,6 +117,17 @@ int main() {
   const Result<OperatingPointData> noPoint =
       librarySession.lastOperatingPoint();
   if (noPoint.isOk()) {
+    return 1;
+  }
+  const Result<SkinFrictionDistribution> noCf =
+      librarySession.currentSkinFriction();
+  if (noCf.isOk() ||
+      noCf.error().code != "skinFriction.noAnalyzedPoint") {
+    return 1;
+  }
+  SkinFrictionDistribution emptyCf;
+  emptyCf.upper.cf.push_back(0.0);
+  if (emptyCf.upper.cf.size() != 1) {
     return 1;
   }
   Session movedSession = std::move(librarySession);

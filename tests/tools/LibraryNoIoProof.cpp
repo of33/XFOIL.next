@@ -38,6 +38,7 @@
 #include "xfoil/Analyze.h"
 #include "xfoil/Progress.h"
 #include "xfoil/Session.h"
+#include "xfoil/SkinFriction.h"
 #include "xfoil/SessionOptions.h"
 #include "xfoil/geometry/AirfoilGeometry.h"
 
@@ -61,6 +62,14 @@ xfoil::AnalysisConfig inviscidConfig() {
   config.viscous = false;
   config.reynoldsNumber = 1.0e6;
   config.maximumIterations = 60;
+  return config;
+}
+
+xfoil::AnalysisConfig viscousConfig() {
+  xfoil::AnalysisConfig config;
+  config.viscous = true;
+  config.reynoldsNumber = 1.0e6;
+  config.maximumIterations = 50;
   return config;
 }
 
@@ -195,6 +204,30 @@ bool runApiWorkflow(const xfoil::geometry::AirfoilGeometry& memoryGeometry) {
   zeroStep.endExclusive = Degrees{2.0};
   zeroStep.step = Degrees{0.0};
   if (!errors.solveAlphaSequence(zeroStep).isErr()) {
+    return false;
+  }
+
+  Session cfSession;
+  if (cfSession.setNaca("0012", progress).isErr()) {
+    return false;
+  }
+  PanelingOptions cfPanels;
+  cfPanels.panelCount = 140;
+  if (cfSession.generatePanel(cfPanels, progress).isErr() ||
+      cfSession.configure(viscousConfig()).isErr() ||
+      !cfSession.solveAlpha(Degrees{4.0}, nullptr, progress).isOk()) {
+    return false;
+  }
+  const auto skinFriction = cfSession.currentSkinFriction();
+  if (skinFriction.isErr() ||
+      skinFriction.value().upper.cf.empty() ||
+      skinFriction.value().lower.cf.empty() ||
+      skinFriction.value().upper.cf.size() !=
+          skinFriction.value().upper.s.size() ||
+      skinFriction.value().lower.cf.size() !=
+          skinFriction.value().lower.s.size() ||
+      skinFriction.value().upper.side != xfoil::SurfaceSide::upper ||
+      skinFriction.value().lower.side != xfoil::SurfaceSide::lower) {
     return false;
   }
 

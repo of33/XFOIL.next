@@ -33,6 +33,7 @@
 #include "xfoil/Analyze.h"
 #include "xfoil/Progress.h"
 #include "xfoil/Session.h"
+#include "xfoil/SkinFriction.h"
 #include "xfoil/geometry/AirfoilGeometry.h"
 
 int main() {
@@ -92,6 +93,38 @@ int main() {
   if (progressEvents <= 0) {
     return 1;
   }
+
+  xfoil::Session cfSession;
+  xfoil::AnalysisConfig cfConfig;
+  cfConfig.viscous = true;
+  cfConfig.reynoldsNumber = 1.0e6;
+  cfConfig.maximumIterations = 50;
+  xfoil::PanelingOptions cfPanels;
+  cfPanels.panelCount = 140;
+  if (cfSession.setNaca("0012", progress).isErr() ||
+      cfSession.generatePanel(cfPanels, progress).isErr() ||
+      cfSession.configure(cfConfig).isErr() ||
+      cfSession.solveAlpha(xfoil::Degrees{4.0}, nullptr, progress).isErr()) {
+    return 1;
+  }
+  const xfoil::Result<xfoil::SkinFrictionDistribution> skinFriction =
+      cfSession.currentSkinFriction();
+  if (skinFriction.isErr()) {
+    return 1;
+  }
+  const xfoil::SkinFrictionDistribution& cf = skinFriction.value();
+  if (cf.upper.cf.empty() || cf.lower.cf.empty() ||
+      cf.upper.side != xfoil::SurfaceSide::upper ||
+      cf.lower.side != xfoil::SurfaceSide::lower ||
+      cf.upper.x.size() != cf.upper.cf.size() ||
+      cf.upper.y.size() != cf.upper.cf.size() ||
+      cf.upper.s.size() != cf.upper.cf.size() ||
+      cf.lower.x.size() != cf.lower.cf.size() ||
+      cf.lower.y.size() != cf.lower.cf.size() ||
+      cf.lower.s.size() != cf.lower.cf.size()) {
+    return 1;
+  }
+
   std::cout << "LibraryConsumer PASS\n";
   return 0;
 }

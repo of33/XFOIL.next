@@ -52,6 +52,7 @@ make test-sanitize          full suite against the sanitizer binary
 make test-valgrind          representative paths under Valgrind
 make test-library-isolation session isolation tests
 make test-library-progress progress and cancellation tests
+make test-library-skin-friction skin-friction projection tests
 make test-library-concurrency parallel diagnostic test
 make test-library-noio      armed static/shared no-I/O proof (Linux)
 make test-tsan-library      ThreadSanitizer concurrency diagnostic
@@ -108,7 +109,8 @@ When `pkg-config` is unavailable, the demo Makefile accepts
 
 `make test-library-isolation` runs the unit and integration isolation
 tests. `make test-library-progress` runs the unit and integration progress,
-callback-failure and cancellation tests. `make test-library-concurrency`
+callback-failure and cancellation tests. `make test-library-skin-friction`
+runs the owning Cf projection, state-validity and BLDUMP-parity tests. `make test-library-concurrency`
 runs the independent-session parallel diagnostic; `make test-tsan-library`
 builds the focused test with ThreadSanitizer. Concurrent use of one session is not supported.
 

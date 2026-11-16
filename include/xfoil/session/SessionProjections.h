@@ -37,6 +37,7 @@
 #include "xfoil/AnalysisData.h"
 #include "xfoil/AnalysisResult.h"
 #include "xfoil/Result.h"
+#include "xfoil/SkinFriction.h"
 #include "xfoil/SequenceResult.h"
 #include "xfoil/session/SessionState.h"
 
@@ -50,6 +51,13 @@ Result<SurfaceGeometry> projectCurrentPanel(
 // Cp distribution of the last analyzed point on the airfoil surface.
 [[nodiscard]]
 Result<SurfaceDistribution> projectSurfaceDistribution(
+    const SessionComposition& session);
+
+// Owning skin-friction distribution of the current valid viscous point.
+// Uses the existing final VISCAL tau state and operating qinf only; wake
+// stations are excluded. Pure and non-mutating.
+[[nodiscard]]
+Result<SkinFrictionDistribution> projectSkinFriction(
     const SessionComposition& session);
 
 // Detailed result of the last analyzed point.
