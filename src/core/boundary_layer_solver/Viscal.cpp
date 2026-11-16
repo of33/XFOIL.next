@@ -641,6 +641,30 @@ ViscalResult viscal(const ViscalInput& in,
         cdc.cd,     cdc.cdf,    cdc.clf,   load.cdp});
     res.iterations = iter;
     res.rmsbl = ures.rmsbl;
+
+    // Safe iteration boundary: the complete UPDATE/CL/Cd record above is
+    // visible before the optional observer runs. A host callback may
+    // request cancellation; a callback failure is reported separately and
+    // no further iteration starts.
+    if (in.control.onIteration != nullptr) {
+      const ViscalProgressControl control = in.control.onIteration(
+          in.control.context,
+          ViscalProgressRecord{iter - 1, iter, in.niter});
+      if (control == ViscalProgressControl::callbackFailed) {
+        res.stopReason = ViscalStopReason::progressCallbackFailed;
+        break;
+      }
+      if (control == ViscalProgressControl::cancelRequested) {
+        res.stopReason = ViscalStopReason::cancellationRequested;
+        break;
+      }
+    }
+    if (in.control.isCancelled != nullptr &&
+        in.control.isCancelled(in.control.context)) {
+      res.stopReason = ViscalStopReason::cancellationRequested;
+      break;
+    }
+
     if (ures.rmsbl < kEps1) {
       res.converged = true;
       state.lvconv = true;
@@ -648,6 +672,13 @@ ViscalResult viscal(const ViscalInput& in,
       state.mvisc = state.minf;
       break;
     }
+  }
+
+  // A cancelled/failed point is not a completed operating point: do not
+  // run the completion block or present a successful Cp/force result.
+  // The last fully updated Newton record remains available in the result.
+  if (res.stopReason != ViscalStopReason::completed) {
+    return res;
   }
 
   // Fortran 90 (3026-3028): CALL CPCALC/CPCALC, IF(LFLAP) CALL MHINGE.

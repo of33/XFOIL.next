@@ -33,19 +33,32 @@
 #include "xfoil/Session.h"
 
 namespace xfoil {
+namespace {
 
-Result<OperatingPointData> analyze(
+Result<OperatingPointData> analyzeImpl(
     const AnalysisRequest& request,
-    const CancellationToken* cancellation) {
+    const CancellationToken* cancellation,
+    const ProgressCallback* progress) {
   Session session;
 
-  const Result<void> geometry = session.setGeometry(request.geometry);
+  const auto setGeometry = [&]() -> Result<void> {
+    if (progress == nullptr) {
+      return session.setGeometry(request.geometry);
+    }
+    return session.setGeometry(request.geometry, *progress);
+  };
+  const Result<void> geometry = setGeometry();
   if (geometry.isErr()) {
     return Result<OperatingPointData>::fail(geometry.error());
   }
 
-  const Result<SurfaceGeometry> panel =
-      session.generatePanel(request.paneling);
+  const auto generatePanel = [&]() -> Result<SurfaceGeometry> {
+    if (progress == nullptr) {
+      return session.generatePanel(request.paneling);
+    }
+    return session.generatePanel(request.paneling, *progress);
+  };
+  const Result<SurfaceGeometry> panel = generatePanel();
   if (panel.isErr()) {
     return Result<OperatingPointData>::fail(panel.error());
   }
@@ -60,12 +73,33 @@ Result<OperatingPointData> analyze(
       [&](const auto& target) -> Result<OperatingPointData> {
         using Target = std::decay_t<decltype(target)>;
         if constexpr (std::is_same_v<Target, AlphaTarget>) {
-          return session.solveAlpha(target.alpha, cancellation);
+          if (progress == nullptr) {
+            return session.solveAlpha(target.alpha, cancellation);
+          }
+          return session.solveAlpha(target.alpha, cancellation, *progress);
         } else {
-          return session.solveCl(target.cl, cancellation);
+          if (progress == nullptr) {
+            return session.solveCl(target.cl, cancellation);
+          }
+          return session.solveCl(target.cl, cancellation, *progress);
         }
       },
       request.target);
+}
+
+}  // namespace
+
+Result<OperatingPointData> analyze(
+    const AnalysisRequest& request,
+    const CancellationToken* cancellation) {
+  return analyzeImpl(request, cancellation, nullptr);
+}
+
+Result<OperatingPointData> analyze(
+    const AnalysisRequest& request,
+    const CancellationToken* cancellation,
+    const ProgressCallback& progress) {
+  return analyzeImpl(request, cancellation, &progress);
 }
 
 }  // namespace xfoil

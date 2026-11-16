@@ -36,6 +36,7 @@
 #include "xfoil/AnalysisConfig.h"
 #include "xfoil/AnalysisRequest.h"
 #include "xfoil/Analyze.h"
+#include "xfoil/Progress.h"
 #include "xfoil/Session.h"
 #include "xfoil/SessionOptions.h"
 #include "xfoil/geometry/AirfoilGeometry.h"
@@ -69,31 +70,39 @@ bool runApiWorkflow(const xfoil::geometry::AirfoilGeometry& memoryGeometry) {
   using xfoil::ConvergenceStatus;
   using xfoil::Degrees;
   using xfoil::PanelingOptions;
+  using xfoil::ProgressCallback;
+  using xfoil::ProgressEvent;
   using xfoil::Session;
 
+  int progressEvents = 0;
+  const ProgressCallback progress = [&progressEvents](
+                                        const ProgressEvent&) {
+    ++progressEvents;
+  };
+
   Session first;
-  if (first.setNaca("2412").isErr()) {
+  if (first.setNaca("2412", progress).isErr()) {
     return false;
   }
   PanelingOptions options;
   options.panelCount = 180;
-  if (first.generatePanel(options).isErr()) {
+  if (first.generatePanel(options, progress).isErr()) {
     return false;
   }
   if (first.configure(inviscidConfig()).isErr()) {
     return false;
   }
-  if (!first.solveAlpha(Degrees{2.0}).isOk()) {
+  if (!first.solveAlpha(Degrees{2.0}, nullptr, progress).isOk()) {
     return false;
   }
-  if (!first.solveCl(0.4).isOk()) {
+  if (!first.solveCl(0.4, nullptr, progress).isOk()) {
     return false;
   }
   AlphaSequence sequence;
   sequence.start = Degrees{-1.0};
   sequence.endExclusive = Degrees{2.0};
   sequence.step = Degrees{1.0};
-  if (first.solveAlphaSequence(sequence).isErr()) {
+  if (first.solveAlphaSequence(sequence, nullptr, progress).isErr()) {
     return false;
   }
   if (first.currentPanel().isErr() ||
@@ -108,7 +117,7 @@ bool runApiWorkflow(const xfoil::geometry::AirfoilGeometry& memoryGeometry) {
   request.paneling = options;
   request.configuration = inviscidConfig();
   request.target = xfoil::AlphaTarget{Degrees{1.0}};
-  const auto analyzed = xfoil::analyze(request);
+  const auto analyzed = xfoil::analyze(request, nullptr, progress);
   if (analyzed.isErr() ||
       analyzed.value().convergence != ConvergenceStatus::converged) {
     return false;
@@ -120,12 +129,28 @@ bool runApiWorkflow(const xfoil::geometry::AirfoilGeometry& memoryGeometry) {
   }
 
   Session second;
-  if (second.setNaca("0012").isErr() ||
-      second.generatePanel(PanelingOptions{}).isErr() ||
+  if (second.setNaca("0012", progress).isErr() ||
+      second.generatePanel(PanelingOptions{}, progress).isErr() ||
       second.configure(inviscidConfig()).isErr()) {
     return false;
   }
-  if (!second.solveAlpha(Degrees{1.0}).isOk()) {
+  if (!second.solveAlpha(Degrees{1.0}, nullptr, progress).isOk()) {
+    return false;
+  }
+  xfoil::CancellationToken callbackToken;
+  const ProgressCallback cancelFromCallback = [&callbackToken](
+                                                  const ProgressEvent& event) {
+    if (event.phase == xfoil::ProgressPhase::inviscidSolve &&
+        event.completed == 0) {
+      callbackToken.requestCancellation();
+    }
+  };
+  const auto callbackCancelled =
+      second.solveAlpha(Degrees{0.0}, &callbackToken, cancelFromCallback);
+  if (callbackCancelled.isErr() &&
+      callbackCancelled.error().code == "analysis.cancelled") {
+    callbackToken.reset();
+  } else {
     return false;
   }
 
@@ -149,6 +174,16 @@ bool runApiWorkflow(const xfoil::geometry::AirfoilGeometry& memoryGeometry) {
   if (errors.configure(inviscidConfig()).isErr()) {
     return false;
   }
+  const ProgressCallback throwing = [](const ProgressEvent& event) {
+    if (event.phase == xfoil::ProgressPhase::geometry) {
+      throw 1;
+    }
+  };
+  const auto callbackFailure = errors.setGeometry(memoryGeometry, throwing);
+  if (!callbackFailure.isErr() ||
+      callbackFailure.error().code != "progress.callbackFailure") {
+    return false;
+  }
   if (!errors.solveAlpha(Degrees{std::nan("")}).isErr()) {
     return false;
   }
@@ -169,6 +204,10 @@ bool runApiWorkflow(const xfoil::geometry::AirfoilGeometry& memoryGeometry) {
   if (cancelled.isErr() ||
       cancelled.value().stopReason !=
           xfoil::SequenceStopReason::cancelled) {
+    return false;
+  }
+
+  if (progressEvents <= 0) {
     return false;
   }
 

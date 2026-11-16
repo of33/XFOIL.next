@@ -31,6 +31,7 @@
 #include "xfoil/AnalysisRequest.h"
 #include "xfoil/CancellationToken.h"
 #include "xfoil/Export.h"
+#include "xfoil/Progress.h"
 #include "xfoil/Result.h"
 
 namespace xfoil {
@@ -43,6 +44,15 @@ namespace xfoil {
 XFOIL_API Result<OperatingPointData> analyze(
     const AnalysisRequest& request,
     const CancellationToken* cancellation = nullptr);
+
+// Additive progress overload. The callback receives geometry, paneling,
+// initialization and the selected solver phases from the same temporary
+// session. configure has no progress event.
+[[nodiscard]]
+XFOIL_API Result<OperatingPointData> analyze(
+    const AnalysisRequest& request,
+    const CancellationToken* cancellation,
+    const ProgressCallback& progress);
 
 }  // namespace xfoil
 

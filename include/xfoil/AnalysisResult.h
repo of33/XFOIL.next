@@ -42,6 +42,7 @@ enum class AnalysisStatus {
   converged,
   unconverged,
   cancelled,
+  progressCallbackFailure,
   missingGeometry,
   missingConfiguration,
   invalidConfiguration,

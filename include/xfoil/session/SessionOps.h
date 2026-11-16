@@ -77,6 +77,7 @@
 #include "xfoil/geometry/AirfoilGeometry.h"
 #include "xfoil/core/export_data/ExportData.h"
 #include "xfoil/io/ExportFormats.h"
+#include "xfoil/session/ProgressObserver.h"
 #include "xfoil/session/SessionState.h"
 
 namespace xfoil::session {
@@ -135,14 +136,18 @@ bool initializeAnalysis(SessionComposition& session);
 // Newton loop itself is a confirmed atomic core path.
 [[nodiscard]]
 AnalysisResult runSpecAlpha(SessionComposition& session, Degrees alpha,
-                            const CancellationToken* cancellation);
+                            const CancellationToken* cancellation,
+                            ProgressObserver* progress = nullptr,
+                            std::optional<std::size_t> sequenceIndex = {});
 
 // Fortran SPECCL + VISCAL (LALFA=false branch): single point with prescribed
 // inviscid Cl. Otherwise the same state and error semantics as runSpecAlpha.
 [[nodiscard]]
 AnalysisResult runSpecCl(SessionComposition& session, double clSpec,
                          Degrees startAlpha,
-                         const CancellationToken* cancellation);
+                         const CancellationToken* cancellation,
+                         ProgressObserver* progress = nullptr,
+                         std::optional<std::size_t> sequenceIndex = {});
 
 // ---: OPER single-point contracts (ALFA/CLI/CL) ---------------------------
 // Only the expressed canonical contract. All
@@ -198,7 +203,9 @@ std::vector<AnalysisResult> runAlphaSequence(SessionComposition& session,
                                              Degrees start,
                                              Degrees endExclusive, Degrees step,
                                              const CancellationToken*
-                                                 cancellation);
+                                                 cancellation,
+                                             ProgressObserver* progress =
+                                                 nullptr);
 
 // Fortran INIT (xoper.f): invalidates BL state and mapping (LBLINI=false,
 // LIPAN=false), resets convergence. No partial mutation of the geometry,

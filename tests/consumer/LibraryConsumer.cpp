@@ -31,6 +31,7 @@
 #include "xfoil/AnalysisConfig.h"
 #include "xfoil/AnalysisRequest.h"
 #include "xfoil/Analyze.h"
+#include "xfoil/Progress.h"
 #include "xfoil/Session.h"
 #include "xfoil/geometry/AirfoilGeometry.h"
 
@@ -55,8 +56,12 @@ int main() {
   request.configuration = configuration;
   request.target = xfoil::AlphaTarget{xfoil::Degrees{4.0}};
 
+  int progressEvents = 0;
+  const xfoil::ProgressCallback progress =
+      [&progressEvents](const xfoil::ProgressEvent&) { ++progressEvents; };
+
   const xfoil::Result<xfoil::OperatingPointData> oneShot =
-      xfoil::analyze(request);
+      xfoil::analyze(request, nullptr, progress);
   if (oneShot.isErr()) {
     return 1;
   }
@@ -72,18 +77,21 @@ int main() {
   }
 
   xfoil::Session session;
-  if (session.setGeometry(geometry).isErr() ||
-      session.generatePanel(xfoil::PanelingOptions{}).isErr() ||
+  if (session.setGeometry(geometry, progress).isErr() ||
+      session.generatePanel(xfoil::PanelingOptions{}, progress).isErr() ||
       session.configure(configuration).isErr()) {
     return 1;
   }
   const xfoil::Result<xfoil::OperatingPointData> sessionPoint =
-      session.solveAlpha(xfoil::Degrees{4.0});
+      session.solveAlpha(xfoil::Degrees{4.0}, nullptr, progress);
   if (sessionPoint.isErr() ||
       sessionPoint.value().liftCoefficient != point.liftCoefficient) {
     return 1;
   }
 
+  if (progressEvents <= 0) {
+    return 1;
+  }
   std::cout << "LibraryConsumer PASS\n";
   return 0;
 }

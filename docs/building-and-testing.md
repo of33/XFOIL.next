@@ -50,8 +50,9 @@ make test-regression        regression. prefix filter
 make test-batch             native batch suite (batch. prefix)
 make test-sanitize          full suite against the sanitizer binary
 make test-valgrind          representative paths under Valgrind
-make test-library-isolation L7 session isolation tests
-make test-library-concurrency L7 parallel diagnostic test
+make test-library-isolation session isolation tests
+make test-library-progress progress and cancellation tests
+make test-library-concurrency parallel diagnostic test
 make test-library-noio      armed static/shared no-I/O proof (Linux)
 make test-tsan-library      ThreadSanitizer concurrency diagnostic
 make test-demo-lib          standalone demo static/shared integration runs
@@ -105,10 +106,11 @@ When `pkg-config` is unavailable, the demo Makefile accepts
 
 ## Library no-I/O and isolation proof
 
-`make test-library-isolation` runs the L7 unit and integration isolation
-tests. `make test-library-concurrency` runs the independent-session
-parallel diagnostic; `make test-tsan-library` builds the focused test with
-ThreadSanitizer. Concurrent use of one session is not supported.
+`make test-library-isolation` runs the unit and integration isolation
+tests. `make test-library-progress` runs the unit and integration progress,
+callback-failure and cancellation tests. `make test-library-concurrency`
+runs the independent-session parallel diagnostic; `make test-tsan-library`
+builds the focused test with ThreadSanitizer. Concurrent use of one session is not supported.
 
 `make test-library-noio` builds an interposition shim and static/shared
 proof consumers against the staged installation. The shim is armed only

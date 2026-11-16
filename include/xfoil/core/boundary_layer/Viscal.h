@@ -66,6 +66,32 @@
 
 namespace xfoil::core::boundary_layer {
 
+// Internal observer boundary for safe VISCAL iteration boundaries. The
+// session layer adapts its public callback to this allocation-free
+// function-pointer form; the core does not depend on std::function or on
+// the public progress header.
+enum class ViscalProgressControl {
+  continueOperation,
+  cancelRequested,
+  callbackFailed
+};
+
+struct ViscalProgressRecord {
+  std::size_t iteration{0};  // 0-based completed Newton iteration
+  std::size_t completed{0};  // iteration + 1
+  std::size_t total{0};      // effective iteration limit
+};
+
+using ViscalProgressFunction = ViscalProgressControl (*)(
+    void* context, const ViscalProgressRecord& record) noexcept;
+using ViscalCancellationFunction = bool (*)(void* context) noexcept;
+
+struct ViscalControl {
+  void* context{nullptr};
+  ViscalProgressFunction onIteration{nullptr};
+  ViscalCancellationFunction isCancelled{nullptr};
+};
+
 // Fortran: VISCAL session parameters (xoper.f:2892-3116) — fixed per call.
 // DTOR is the Fortran session constant PI/180 (xfoil.f:395); VACCEL the
 // xfoil.f INIT value 0.01 (xfoil.f:701); ACRIT/XIFORC are session
@@ -99,6 +125,9 @@ struct ViscalInput {
   // BLPAR constants (COMMON/BLPAR) passed explicitly by the caller;
  // no default fallback in the kernel (single source).
   BoundaryLayerParameters blpar;
+  // Optional safe iteration-boundary observation/cancellation. The default
+  // has no functions and preserves the existing path exactly.
+  ViscalControl control;
 };
 
 // Fortran QVIS/QINV_A are COMMON fields (XFOIL.INC CR04/CR05, fixed
@@ -279,8 +308,15 @@ struct ViscalCompletionRecord {
   double xoctr{0.0};  // Fortran XOCTR(1) of the last SETBL
 };
 
+enum class ViscalStopReason {
+  completed,
+  cancellationRequested,
+  progressCallbackFailed
+};
+
 struct ViscalResult {
   bool converged{false};       // Fortran LVCONV after RMSBL < EPS1
+  ViscalStopReason stopReason{ViscalStopReason::completed};
   std::size_t iterations{0};   // executed Newton iterations
   double alfa{0.0};            // Fortran ALFA
   double minf{0.0};            // Fortran MINF

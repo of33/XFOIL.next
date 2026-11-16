@@ -392,6 +392,7 @@ TEST_SRCS := \
 	tests/unit/LibrarySessionL3Tests.cpp \
 	tests/unit/LibraryOneShotL4HeaderSmoke.cpp \
 	tests/unit/LibraryOneShotL4Tests.cpp \
+	tests/unit/LibraryProgressL12Tests.cpp \
 	tests/unit/LibraryIsolationL7Tests.cpp \
 	tests/unit/LibraryConcurrencyL7Tests.cpp \
 	tests/unit/LibraryDemoL9Tests.cpp \
@@ -467,6 +468,7 @@ TEST_SRCS := \
 	tests/integration/LibraryCliParityL5Tests.cpp \
 	tests/integration/LibraryIsolationL7Tests.cpp \
 	tests/integration/LibraryDemoL9Tests.cpp \
+	tests/integration/LibraryProgressL12Tests.cpp \
 	tests/regression/ClarkYGoldenTests.cpp \
 	tests/regression/PaccDumpByteParityTests.cpp \
 	tests/regression/PaccInviscidDumpParityTests.cpp \
@@ -509,7 +511,7 @@ LIB_SHARED_IMPORT_FLAG := -Wl,--out-implib
 	check-public-docs \
 	core-link-check session-link-check library-link-check \
 	check-library-dependencies library-symbol-check print-library-sources \
-	test-library-isolation test-library-concurrency test-tsan-library \
+	test-library-isolation test-library-progress test-library-concurrency test-tsan-library \
 	test-library-noio test-library-noio-static test-library-noio-shared \
 	library library-static library-shared install \
 	install-headers install-libraries install-cli install-metadata \
@@ -720,7 +722,7 @@ LIBRARY_LINKCHECK := $(BUILDROOT)/$(LIB_MODE)/library-link-check$(EXEEXT)
 
 .PHONY: library library-static library-shared library-link-check \
 	print-library-sources check-library-dependencies library-symbol-check \
-	test-library-isolation test-library-concurrency test-tsan-library \
+	test-library-isolation test-library-progress test-library-concurrency test-tsan-library \
 	test-library-noio test-library-noio-static test-library-noio-shared \
 	install install-headers install-libraries install-cli install-metadata \
 	l6-stage-install test-consumer-static test-consumer-shared test-consumers
@@ -751,6 +753,12 @@ test-library-isolation: $(BUILDROOT)/debug/xfoil_tests $(BUILDROOT)/debug/$(XFOI
 		$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) unit.LibraryIsolationL7
 	XFOIL_CLI_PATH=$(BUILDROOT)/debug/$(XFOIL_CLI) \
 		$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) integration.LibraryIsolationL7
+
+test-library-progress: $(BUILDROOT)/debug/xfoil_tests $(BUILDROOT)/debug/$(XFOIL_CLI)
+	XFOIL_CLI_PATH=$(BUILDROOT)/debug/$(XFOIL_CLI) \
+		$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) unit.LibraryProgressL12
+	XFOIL_CLI_PATH=$(BUILDROOT)/debug/$(XFOIL_CLI) \
+		$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) integration.LibraryProgressL12
 
 test-library-concurrency: $(BUILDROOT)/debug/xfoil_tests
 	$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) unit.LibraryConcurrencyL7
@@ -1008,6 +1016,8 @@ VALGRIND_TEST_FILTERS := \
 	integration.LibrarySessionL3 \
 	unit.LibraryOneShotL4 \
 	integration.LibraryOneShotL4 \
+	unit.LibraryProgressL12 \
+	integration.LibraryProgressL12 \
 	integration.LibraryCliParityL5 \
 	unit.ApiRunSpecAlphaColdStartUnchanged \
 	unit.SessionOperClSequenceIndependentSessions \

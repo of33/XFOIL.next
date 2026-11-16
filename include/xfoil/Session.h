@@ -37,6 +37,7 @@
 #include "xfoil/AnalysisData.h"
 #include "xfoil/CancellationToken.h"
 #include "xfoil/Export.h"
+#include "xfoil/Progress.h"
 #include "xfoil/Result.h"
 #include "xfoil/SequenceResult.h"
 #include "xfoil/SessionOptions.h"
@@ -71,6 +72,13 @@ class XFOIL_API Session {
   [[nodiscard]]
   Result<void> setGeometry(const geometry::AirfoilGeometry& geometry);
 
+  // Additive progress overloads. The callback runs synchronously on the
+  // calling thread. Existing overloads perform the same work without an
+  // observer.
+  [[nodiscard]]
+  Result<void> setGeometry(const geometry::AirfoilGeometry& geometry,
+                           const ProgressCallback& progress);
+
   // Generates a NACA 4/5-digit geometry in memory using the existing
   // 399-point contract and adopts it like setGeometry. NACS uses the sharp
   // trailing-edge variant.
@@ -78,8 +86,16 @@ class XFOIL_API Session {
   Result<geometry::AirfoilGeometry> setNaca(
       std::string_view designation);
   [[nodiscard]]
+  Result<geometry::AirfoilGeometry> setNaca(
+      std::string_view designation,
+      const ProgressCallback& progress);
+  [[nodiscard]]
   Result<geometry::AirfoilGeometry> setNacs(
       std::string_view designation);
+  [[nodiscard]]
+  Result<geometry::AirfoilGeometry> setNacs(
+      std::string_view designation,
+      const ProgressCallback& progress);
 
   // Stores the paneling options and regenerates the current panel through
   // the existing PANGEN path. On error the previous parameters and panel
@@ -87,6 +103,10 @@ class XFOIL_API Session {
   [[nodiscard]]
   Result<SurfaceGeometry> generatePanel(
       const PanelingOptions& options);
+  [[nodiscard]]
+  Result<SurfaceGeometry> generatePanel(
+      const PanelingOptions& options,
+      const ProgressCallback& progress);
 
   // Validates and stores the analysis configuration. On error the previous
   // configuration remains unchanged.
@@ -105,6 +125,16 @@ class XFOIL_API Session {
   Result<OperatingPointData> solveCl(
       double cl,
       const CancellationToken* cancellation = nullptr);
+  [[nodiscard]]
+  Result<OperatingPointData> solveAlpha(
+      Degrees alpha,
+      const CancellationToken* cancellation,
+      const ProgressCallback& progress);
+  [[nodiscard]]
+  Result<OperatingPointData> solveCl(
+      double cl,
+      const CancellationToken* cancellation,
+      const ProgressCallback& progress);
 
   // Runs an alpha sequence through the existing sequence path. The result
   // owns all points and diagnostics; partial results are returned when a
@@ -113,6 +143,11 @@ class XFOIL_API Session {
   Result<SequenceResult> solveAlphaSequence(
       const AlphaSequence& sequence,
       const CancellationToken* cancellation = nullptr);
+  [[nodiscard]]
+  Result<SequenceResult> solveAlphaSequence(
+      const AlphaSequence& sequence,
+      const CancellationToken* cancellation,
+      const ProgressCallback& progress);
 
   [[nodiscard]]
   Result<SurfaceGeometry> currentPanel() const;

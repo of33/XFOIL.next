@@ -29,13 +29,19 @@
 
 #include "xfoil/AnalysisRequest.h"
 #include "xfoil/Analyze.h"
+#include "xfoil/Progress.h"
 #include "xfoil/SessionOptions.h"
 
 static_assert(std::is_aggregate_v<xfoil::AnalysisRequest>);
 static_assert(std::is_aggregate_v<xfoil::PanelingOptions>);
 static_assert(std::variant_size_v<xfoil::AnalysisTarget> == 2);
 static_assert(std::is_same_v<
-              decltype(&xfoil::analyze),
+              decltype(static_cast<xfoil::Result<xfoil::OperatingPointData> (*)(
+                  const xfoil::AnalysisRequest&,
+                  const xfoil::CancellationToken*)>(&xfoil::analyze)),
               xfoil::Result<xfoil::OperatingPointData> (*)(
                   const xfoil::AnalysisRequest&,
                   const xfoil::CancellationToken*)>);
+static_assert(std::is_copy_constructible_v<xfoil::ProgressEvent>);
+static_assert(std::is_copy_assignable_v<xfoil::ProgressEvent>);
+static_assert(std::is_move_constructible_v<xfoil::ProgressEvent>);

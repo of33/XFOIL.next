@@ -25,6 +25,7 @@ xfoil/Session.h                   stateful in-memory xfoil::Session
 xfoil/AnalysisRequest.h           one-shot request and Alpha/CL targets
 xfoil/Analyze.h                   xfoil::analyze one-shot entry point
 xfoil/CancellationToken.h         instance-scoped cancellation
+xfoil/Progress.h                  optional synchronous progress event/callback
 xfoil/SessionTypes.h              GeometrySetResult / GeometrySetError
 xfoil/Types.h                     Point2D, Vector2D, Degrees, Radians
 xfoil/geometry/AirfoilGeometry.h  owning unpanelled coordinate value type
@@ -113,7 +114,7 @@ per point.
 
 ## In-memory session API
 
-`xfoil::Session` is the stateful, in-memory interface introduced in L3.
+`xfoil::Session` is the stateful, in-memory interface.
 It owns one isolated session state and accepts only memory objects. It
 performs no file or console I/O and never terminates the host process.
 
@@ -150,8 +151,7 @@ isolated state. Sequences remain available through
 
 ## One-shot analysis API
 
-`xfoil::analyze(request)` is the stateless convenience layer introduced in
-L4. Every call creates a fresh call-local `xfoil::Session`, sets the
+`xfoil::analyze(request)` is the stateless convenience layer. Every call creates a fresh call-local `xfoil::Session`, sets the
 geometry, generates the panel, applies the configuration, runs exactly one
 alpha or CL point, and returns an owning `Result<OperatingPointData>`.
 
@@ -185,7 +185,7 @@ target value, solver.
 
 A non-converged but executed point is a successful value with
 `ConvergenceStatus::unconverged`; diagnostics and available values are
-preserved. A cancellation returns the same structured error as the L3
+preserved. A cancellation returns the same structured error as the
 session API. `analyze` performs no file or console I/O, uses no global or
 hidden session cache, and does not mutate the request.
 
@@ -204,11 +204,61 @@ if (r.successful && r.converged) {
   // r.centerOfPressureX, r.iterations, r.rmsResidual, r.maximumResidual
 }
 // r.status is one of: notAnalyzed, converged, unconverged, cancelled,
-// missingGeometry, missingConfiguration, invalidConfiguration,
-// geometryTooLarge, geometryInitializationFailed,
+// progressCallbackFailure, missingGeometry, missingConfiguration,
+// invalidConfiguration, geometryTooLarge, geometryInitializationFailed,
 // analysisInitializationFailed, invalidAnalysisSettings,
 // compressibilityFailure, finalizationFailed
 ```
+
+## Optional progress reporting
+
+`xfoil/Progress.h` defines an optional, synchronous observer. It is
+separate from cancellation and is not a global sink.
+
+```cpp
+#include "xfoil/Progress.h"
+#include "xfoil/Session.h"
+
+void onProgress(const xfoil::ProgressEvent& event) {
+  // event.phase, event.completed, event.total, event.fraction,
+  // event.sequenceIndex, event.iteration
+}
+
+xfoil::ProgressCallback progress = onProgress;
+
+xfoil::Session session;
+session.setGeometry(geometry, progress);
+session.generatePanel(paneling, progress);
+session.solveAlpha(xfoil::Degrees{4.0}, nullptr, progress);
+```
+
+`ProgressPhase` distinguishes geometry, paneling, initialization,
+inviscid solve, viscous iteration and sequence phases. Geometry and
+paneling report a coarse 0/1 and 1/1 pair. A successful inviscid solve
+reports initialization and inviscid phase boundaries. Viscous iterations
+are reported after each fully completed iteration with a zero-based
+`iteration`, `completed == iteration + 1`, and the effective iteration
+limit as `total`. Sequence points additionally carry a zero-based
+`sequenceIndex`. `fraction` is present only when `total` is positive.
+Nested phase fractions are local to their phase; there is no global
+fraction promise.
+
+The callback runs synchronously on the calling thread. The library starts
+no worker thread. The number of callback invocations is not guaranteed.
+`configure` has no progress event. A one-shot `analyze(request,
+cancellation, progress)` passes the same callback through geometry,
+paneling and the selected solver; it does not introduce a second event
+source.
+
+A callback may copy the event, update host state or request the separate
+`CancellationToken`. Do not call the same session recursively from its
+callback. If a callback throws, the exception is caught inside the
+library, the operation stops at the last completed safe checkpoint and
+returns `ErrorCategory::invalidArgument` with code
+`progress.callbackFailure`. No transactional rollback is promised, but
+the session remains reusable. Callback failure is not reported as
+cancellation. Progress reporting performs no library file, console,
+environment, working-directory or process operation.
 
 ## Cancellation
 
@@ -221,6 +271,12 @@ xfoil::CancellationToken token;
 // token.requestCancellation();   // from another thread
 xfoil::AnalysisResult r = xfoil.analyzeAtAlpha(xfoil::Degrees{4.0}, token);
 ```
+
+The cancellation flag is observed before a point, between sequence points
+and at safe boundaries between completed viscous iterations. A token set
+during an in-flight viscous iteration takes effect after that iteration
+finishes; no further iteration starts and the point is reported as
+cancelled, not as a converged partial point.
 
 ## Sessions are independent
 
@@ -381,7 +437,7 @@ part of the supported public contract. Use one session per thread and
 synchronize host access.
 
 The Linux test targets `make test-library-isolation`,
-`make test-library-noio` and `make test-library-concurrency` exercise these
-contracts. The no-I/O proof is Linux-only; the focused Windows check uses
+`make test-library-progress`, `make test-library-noio` and
+`make test-library-concurrency` exercise these contracts. The no-I/O proof is Linux-only; the focused Windows check uses
 source/dependency, import-table, directory, cwd and stdout/stderr evidence
 rather than libc interposition.

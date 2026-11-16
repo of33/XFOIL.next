@@ -122,6 +122,7 @@ Run the test suites:
 make test         # full C++ test suite
 make test-batch   # native batch-mode suite
 make test-library-isolation
+make test-library-progress
 make test-library-noio        # Linux armed no-I/O proof
 make test-library-concurrency
 make demo-lib                 # standalone staged-library demo

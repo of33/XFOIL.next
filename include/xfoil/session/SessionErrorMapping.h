@@ -85,6 +85,10 @@ inline Error analysisStatusError(AnalysisStatus status) {
     case AnalysisStatus::cancelled:
       return Error::make(ErrorCategory::cancelled, "analysis.cancelled",
                          "The analysis was cancelled", "analysis");
+    case AnalysisStatus::progressCallbackFailure:
+      return Error::make(ErrorCategory::invalidArgument,
+                         "progress.callbackFailure",
+                         "The progress callback failed", "progress");
     case AnalysisStatus::converged:
     case AnalysisStatus::unconverged:
       break;

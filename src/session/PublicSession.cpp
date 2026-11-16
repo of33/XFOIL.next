@@ -43,13 +43,62 @@
 #include <vector>
 
 #include "xfoil/core/geometry/Naca.h"
+#include "xfoil/session/ProgressObserver.h"
 #include "xfoil/session/SessionErrorMapping.h"
 #include "xfoil/session/SessionOps.h"
 #include "xfoil/session/SessionProjections.h"
 #include "xfoil/session/SessionState.h"
 
 namespace xfoil {
+
+static Result<void> setGeometryImpl(
+    session::SessionComposition& composition,
+    const geometry::AirfoilGeometry& geometry,
+    const ProgressCallback* progress);
+static Result<geometry::AirfoilGeometry> setNacaImpl(
+    session::SessionComposition& composition, std::string_view designation,
+    bool sharpTrailingEdge, const ProgressCallback* progress);
+static Result<SurfaceGeometry> generatePanelImpl(
+    session::SessionComposition& composition, const PanelingOptions& options,
+    const ProgressCallback* progress);
+static Result<OperatingPointData> solveAlphaImpl(
+    session::SessionComposition& composition, Degrees alpha,
+    const CancellationToken* cancellation, const ProgressCallback* progress);
+static Result<OperatingPointData> solveClImpl(
+    session::SessionComposition& composition, double cl,
+    const CancellationToken* cancellation, const ProgressCallback* progress);
+static Result<SequenceResult> solveAlphaSequenceImpl(
+    session::SessionComposition& composition, const AlphaSequence& sequence,
+    const CancellationToken* cancellation, const ProgressCallback* progress);
+
 namespace {
+
+class CallbackProgressObserver final : public session::ProgressObserver {
+ public:
+  explicit CallbackProgressObserver(const ProgressCallback* callback)
+      : callback_(callback) {}
+
+  [[nodiscard]]
+  session::ProgressControl report(const ProgressEvent& event) noexcept override {
+    if (callback_ == nullptr) {
+      return session::ProgressControl::continueOperation;
+    }
+    try {
+      (*callback_)(event);
+    } catch (...) {
+      return session::ProgressControl::callbackFailed;
+    }
+    return session::ProgressControl::continueOperation;
+  }
+
+ private:
+  const ProgressCallback* callback_{nullptr};
+};
+
+session::ProgressObserver* observerFor(
+    const ProgressCallback* callback, CallbackProgressObserver& observer) {
+  return callback == nullptr ? nullptr : &observer;
+}
 
 constexpr std::size_t kMaximumSequencePoints = 100000;
 constexpr std::size_t kMaximumPanelCount = 595;
@@ -187,36 +236,76 @@ Session& Session::operator=(Session&&) noexcept = default;
 
 Result<void> Session::setGeometry(
     const geometry::AirfoilGeometry& geometry) {
+  return setGeometryImpl(impl_->session, geometry, nullptr);
+}
+
+Result<void> Session::setGeometry(
+    const geometry::AirfoilGeometry& geometry,
+    const ProgressCallback& progress) {
+  return setGeometryImpl(impl_->session, geometry, &progress);
+}
+
+static Result<void> setGeometryImpl(
+    session::SessionComposition& composition,
+    const geometry::AirfoilGeometry& geometry,
+    const ProgressCallback* progress) {
+  CallbackProgressObserver observer(progress);
+  session::ProgressObserver* const progressObserver =
+      observerFor(progress, observer);
+  if (progressObserver != nullptr) {
+    const session::ProgressControl control = progressObserver->report(
+        session::makeProgressEvent(ProgressPhase::geometry, 0, 1));
+    if (control == session::ProgressControl::callbackFailed) {
+      return Result<void>::fail(session::progressCallbackFailureError());
+    }
+  }
+
   const GeometrySetResult set =
-      session::setGeometry(impl_->session, geometry);
+      session::setGeometry(composition, geometry);
   if (set.error != GeometrySetError::none) {
     return Result<void>::fail(session::geometrySetError(set));
+  }
+
+  if (progressObserver != nullptr) {
+    const session::ProgressControl control = progressObserver->report(
+        session::makeProgressEvent(ProgressPhase::geometry, 1, 1));
+    if (control == session::ProgressControl::callbackFailed) {
+      return Result<void>::fail(session::progressCallbackFailureError());
+    }
   }
   return Result<void>::ok();
 }
 
 Result<geometry::AirfoilGeometry> Session::setNaca(
     std::string_view designation) {
-  Result<geometry::AirfoilGeometry> geometry =
-      makeNacaGeometry(designation, false);
-  if (geometry.isErr()) {
-    return geometry;
-  }
-  const Result<void> set = setGeometry(geometry.value());
-  if (set.isErr()) {
-    return Result<geometry::AirfoilGeometry>::fail(set.error());
-  }
-  return geometry;
+  return setNacaImpl(impl_->session, designation, false, nullptr);
+}
+
+Result<geometry::AirfoilGeometry> Session::setNaca(
+    std::string_view designation, const ProgressCallback& progress) {
+  return setNacaImpl(impl_->session, designation, false, &progress);
 }
 
 Result<geometry::AirfoilGeometry> Session::setNacs(
     std::string_view designation) {
+  return setNacaImpl(impl_->session, designation, true, nullptr);
+}
+
+Result<geometry::AirfoilGeometry> Session::setNacs(
+    std::string_view designation, const ProgressCallback& progress) {
+  return setNacaImpl(impl_->session, designation, true, &progress);
+}
+
+static Result<geometry::AirfoilGeometry> setNacaImpl(
+    session::SessionComposition& composition, std::string_view designation,
+    bool sharpTrailingEdge, const ProgressCallback* progress) {
   Result<geometry::AirfoilGeometry> geometry =
-      makeNacaGeometry(designation, true);
+      makeNacaGeometry(designation, sharpTrailingEdge);
   if (geometry.isErr()) {
     return geometry;
   }
-  const Result<void> set = setGeometry(geometry.value());
+  const Result<void> set =
+      setGeometryImpl(composition, geometry.value(), progress);
   if (set.isErr()) {
     return Result<geometry::AirfoilGeometry>::fail(set.error());
   }
@@ -225,6 +314,29 @@ Result<geometry::AirfoilGeometry> Session::setNacs(
 
 Result<SurfaceGeometry> Session::generatePanel(
     const PanelingOptions& options) {
+  return generatePanelImpl(impl_->session, options, nullptr);
+}
+
+Result<SurfaceGeometry> Session::generatePanel(
+    const PanelingOptions& options, const ProgressCallback& progress) {
+  return generatePanelImpl(impl_->session, options, &progress);
+}
+
+static Result<SurfaceGeometry> generatePanelImpl(
+    session::SessionComposition& composition, const PanelingOptions& options,
+    const ProgressCallback* progress) {
+  CallbackProgressObserver observer(progress);
+  session::ProgressObserver* const progressObserver =
+      observerFor(progress, observer);
+  if (progressObserver != nullptr) {
+    const session::ProgressControl control = progressObserver->report(
+        session::makeProgressEvent(ProgressPhase::paneling, 0, 1));
+    if (control == session::ProgressControl::callbackFailed) {
+      return Result<SurfaceGeometry>::fail(
+          session::progressCallbackFailureError());
+    }
+  }
+
   if (!std::isfinite(options.bunchingParameter) ||
       !std::isfinite(options.teToLeDensityRatio) ||
       !std::isfinite(options.refinementDensityRatio) ||
@@ -249,7 +361,7 @@ Result<SurfaceGeometry> Session::generatePanel(
                     "paneling.panelCount",
                     "Panel count exceeds the supported maximum", "paneling"));
   }
-  if (!impl_->session.geometry.valid) {
+  if (!composition.geometry.valid) {
     return Result<SurfaceGeometry>::fail(
         Error::make(ErrorCategory::invalidState,
                     "paneling.bufferUnavailable",
@@ -257,7 +369,7 @@ Result<SurfaceGeometry> Session::generatePanel(
   }
 
   const core::paneling::PanelingParameters previous =
-      impl_->session.paneling.parameters;
+      composition.paneling.parameters;
   core::paneling::PanelingParameters parameters = previous;
   parameters.panelCount = static_cast<int>(options.panelCount);
   parameters.bunchingParam = options.bunchingParameter;
@@ -269,7 +381,7 @@ Result<SurfaceGeometry> Session::generatePanel(
                                      options.lowerRefinementEnd};
 
   const session::SessionOperationStatus stored =
-      session::setPanelingParameters(impl_->session, parameters);
+      session::setPanelingParameters(composition, parameters);
   if (!stored.ok) {
     return Result<SurfaceGeometry>::fail(
         Error::make(ErrorCategory::invalidArgument,
@@ -278,15 +390,28 @@ Result<SurfaceGeometry> Session::generatePanel(
   }
 
   const session::PanelingApplyResult applied =
-      session::applyPaneling(impl_->session);
+      session::applyPaneling(composition);
   if (!applied.ok) {
-    impl_->session.paneling.parameters = previous;
+    composition.paneling.parameters = previous;
     return Result<SurfaceGeometry>::fail(
         Error::make(ErrorCategory::invalidState, "paneling.failed",
                     applied.message, "paneling"));
   }
 
-  return projectCurrentPanel(impl_->session);
+  const Result<SurfaceGeometry> current =
+      projectCurrentPanel(composition);
+  if (current.isErr()) {
+    return current;
+  }
+  if (progressObserver != nullptr) {
+    const session::ProgressControl control = progressObserver->report(
+        session::makeProgressEvent(ProgressPhase::paneling, 1, 1));
+    if (control == session::ProgressControl::callbackFailed) {
+      return Result<SurfaceGeometry>::fail(
+          session::progressCallbackFailureError());
+    }
+  }
+  return current;
 }
 
 Result<void> Session::configure(const AnalysisConfig& config) {
@@ -300,39 +425,78 @@ Result<void> Session::configure(const AnalysisConfig& config) {
 
 Result<OperatingPointData> Session::solveAlpha(
     Degrees alpha, const CancellationToken* cancellation) {
+  return solveAlphaImpl(impl_->session, alpha, cancellation, nullptr);
+}
+
+Result<OperatingPointData> Session::solveAlpha(
+    Degrees alpha, const CancellationToken* cancellation,
+    const ProgressCallback& progress) {
+  return solveAlphaImpl(impl_->session, alpha, cancellation, &progress);
+}
+
+static Result<OperatingPointData> solveAlphaImpl(
+    session::SessionComposition& composition, Degrees alpha,
+    const CancellationToken* cancellation, const ProgressCallback* progress) {
   if (!std::isfinite(alpha.value)) {
     return Result<OperatingPointData>::fail(
         Error::make(ErrorCategory::invalidArgument, "analysis.invalidAlpha",
                     "Alpha must be finite", "analysis"));
   }
-  const AnalysisResult result =
-      session::runSpecAlpha(impl_->session, alpha, cancellation);
+  CallbackProgressObserver observer(progress);
+  const AnalysisResult result = session::runSpecAlpha(
+      composition, alpha, cancellation, observerFor(progress, observer));
   if (!result.successful) {
     return Result<OperatingPointData>::fail(
         session::analysisStatusError(result.status));
   }
-  return projectLastOperatingPoint(impl_->session);
+  return projectLastOperatingPoint(composition);
 }
 
 Result<OperatingPointData> Session::solveCl(
     double cl, const CancellationToken* cancellation) {
+  return solveClImpl(impl_->session, cl, cancellation, nullptr);
+}
+
+Result<OperatingPointData> Session::solveCl(
+    double cl, const CancellationToken* cancellation,
+    const ProgressCallback& progress) {
+  return solveClImpl(impl_->session, cl, cancellation, &progress);
+}
+
+static Result<OperatingPointData> solveClImpl(
+    session::SessionComposition& composition, double cl,
+    const CancellationToken* cancellation, const ProgressCallback* progress) {
   if (!std::isfinite(cl)) {
     return Result<OperatingPointData>::fail(
         Error::make(ErrorCategory::invalidArgument,
                     "analysis.invalidLiftCoefficient",
                     "Lift coefficient must be finite", "analysis"));
   }
+  CallbackProgressObserver observer(progress);
   const AnalysisResult result =
-      session::runSpecCl(impl_->session, cl, Degrees{0.0}, cancellation);
+      session::runSpecCl(composition, cl, Degrees{0.0}, cancellation,
+                         observerFor(progress, observer));
   if (!result.successful) {
     return Result<OperatingPointData>::fail(
         session::analysisStatusError(result.status));
   }
-  return projectLastOperatingPoint(impl_->session);
+  return projectLastOperatingPoint(composition);
 }
 
 Result<SequenceResult> Session::solveAlphaSequence(
     const AlphaSequence& sequence, const CancellationToken* cancellation) {
+  return solveAlphaSequenceImpl(impl_->session, sequence, cancellation, nullptr);
+}
+
+Result<SequenceResult> Session::solveAlphaSequence(
+    const AlphaSequence& sequence, const CancellationToken* cancellation,
+    const ProgressCallback& progress) {
+  return solveAlphaSequenceImpl(impl_->session, sequence, cancellation, &progress);
+}
+
+static Result<SequenceResult> solveAlphaSequenceImpl(
+    session::SessionComposition& composition, const AlphaSequence& sequence,
+    const CancellationToken* cancellation, const ProgressCallback* progress) {
   const double start = sequence.start.value;
   const double end = sequence.endExclusive.value;
   const double step = sequence.step.value;
@@ -369,13 +533,13 @@ Result<SequenceResult> Session::solveAlphaSequence(
                       "sequence.pointLimit",
                       "Sequence exceeds the point limit"));
   }
-  if (!impl_->session.geometry.valid ||
-      !impl_->session.paneling.panelingValid) {
+  if (!composition.geometry.valid ||
+      !composition.paneling.panelingValid) {
     return Result<SequenceResult>::fail(
         Error::make(ErrorCategory::invalidState, "analysis.missingGeometry",
                     "No valid panel geometry is available", "analysis"));
   }
-  if (!impl_->session.operating.configured) {
+  if (!composition.operating.configured) {
     return Result<SequenceResult>::fail(
         Error::make(ErrorCategory::invalidState,
                     "analysis.missingConfiguration",
@@ -383,9 +547,10 @@ Result<SequenceResult> Session::solveAlphaSequence(
                     "analysis"));
   }
 
+  CallbackProgressObserver observer(progress);
   const std::vector<AnalysisResult> results = session::runAlphaSequence(
-      impl_->session, sequence.start, sequence.endExclusive, sequence.step,
-      cancellation);
+      composition, sequence.start, sequence.endExclusive, sequence.step,
+      cancellation, observerFor(progress, observer));
   if (results.empty()) {
     return Result<SequenceResult>::fail(
         sequenceError(ErrorCategory::internal, "sequence.empty",
@@ -396,6 +561,10 @@ Result<SequenceResult> Session::solveAlphaSequence(
   std::optional<std::size_t> stoppedAtIndex;
   std::size_t includedCount = results.size();
   for (std::size_t index = 0; index < results.size(); ++index) {
+    if (results[index].status == AnalysisStatus::progressCallbackFailure) {
+      return Result<SequenceResult>::fail(
+          session::progressCallbackFailureError());
+    }
     if (results[index].status == AnalysisStatus::cancelled) {
       stopReason = SequenceStopReason::cancelled;
       stoppedAtIndex = index;

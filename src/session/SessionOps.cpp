@@ -227,6 +227,57 @@ core::boundary_layer::ViscalInput buildViscalInput(
 }
 
 
+// Adapts the session observer and the separate cancellation token to the
+// allocation-free core callback. The host callback stays above this layer.
+class CoreProgressAdapter {
+ public:
+  CoreProgressAdapter(ProgressObserver* observer,
+                      const CancellationToken* cancellation,
+                      std::optional<std::size_t> sequenceIndex)
+      : observer_(observer),
+        cancellation_(cancellation),
+        sequenceIndex_(sequenceIndex) {}
+
+  [[nodiscard]] core::boundary_layer::ViscalControl control() const noexcept {
+    core::boundary_layer::ViscalControl result;
+    result.context = const_cast<CoreProgressAdapter*>(this);
+    result.onIteration = &CoreProgressAdapter::onIteration;
+    result.isCancelled = &CoreProgressAdapter::isCancelled;
+    return result;
+  }
+
+ private:
+  static core::boundary_layer::ViscalProgressControl onIteration(
+      void* context,
+      const core::boundary_layer::ViscalProgressRecord& record) noexcept {
+    auto* self = static_cast<CoreProgressAdapter*>(context);
+    if (self == nullptr || self->observer_ == nullptr) {
+      return core::boundary_layer::ViscalProgressControl::continueOperation;
+    }
+    const ProgressControl control = self->observer_->report(
+        makeProgressEvent(ProgressPhase::viscousIteration, record.completed,
+                          record.total, self->sequenceIndex_,
+                          record.iteration));
+    if (control == ProgressControl::callbackFailed) {
+      return core::boundary_layer::ViscalProgressControl::callbackFailed;
+    }
+    if (control == ProgressControl::cancelRequested) {
+      return core::boundary_layer::ViscalProgressControl::cancelRequested;
+    }
+    return core::boundary_layer::ViscalProgressControl::continueOperation;
+  }
+
+  static bool isCancelled(void* context) noexcept {
+    auto* self = static_cast<CoreProgressAdapter*>(context);
+    return self != nullptr && self->cancellation_ != nullptr &&
+           self->cancellation_->isCancellationRequested();
+  }
+
+  ProgressObserver* observer_{nullptr};
+  const CancellationToken* cancellation_{nullptr};
+  std::optional<std::size_t> sequenceIndex_;
+};
+
 // Shared VISCAL execution plus FCPMIN and result update.
 // reused by SPECAL-/SPECCL points and LRECALC continuations without
 // duplicating the orchestration. Return value false for a controlled core error
@@ -236,6 +287,9 @@ bool applyViscousStage(SessionComposition& session,
                        const core::inviscid::WakeState& wakeState,
                        const core::inviscid::TrailingEdgeState& te,
                        const core::boundary_layer::ViscalInput& input,
+                       const CancellationToken* cancellation,
+                       ProgressObserver* progress,
+                       std::optional<std::size_t> sequenceIndex,
                        AnalysisResult& result) {
   core::paneling::PanelGeometry& panel = session.paneling.panel;
   const core::inviscid::InfluenceSystem& system = session.viscous.system;
@@ -246,9 +300,38 @@ bool applyViscousStage(SessionComposition& session,
     result.diagnostic = message;
   };
   try {
+    CoreProgressAdapter progressAdapter(progress, cancellation, sequenceIndex);
+    core::boundary_layer::ViscalInput controlledInput = input;
+    controlledInput.control = progressAdapter.control();
     const core::boundary_layer::ViscalResult viscal =
-        core::boundary_layer::viscal(input, panel, system, wakeState, te,
-                                     viscals);
+        core::boundary_layer::viscal(controlledInput, panel, system, wakeState,
+                                     te, viscals);
+
+    if (viscal.stopReason ==
+        core::boundary_layer::ViscalStopReason::cancellationRequested) {
+      result.status = AnalysisStatus::cancelled;
+      result.successful = false;
+      result.iterations = static_cast<int>(viscal.iterations);
+      result.diagnostic =
+          "VISCAL cancelled at a safe iteration boundary";
+      session.viscous.converged = false;
+      session.viscous.lastPointContinuable = false;
+      session.result.lastDiagnostics.iterations = viscal.iterationRecords;
+      session.result.lastDiagnostics.viscalRan = true;
+      return false;
+    }
+    if (viscal.stopReason ==
+        core::boundary_layer::ViscalStopReason::progressCallbackFailed) {
+      result.status = AnalysisStatus::progressCallbackFailure;
+      result.successful = false;
+      result.iterations = static_cast<int>(viscal.iterations);
+      result.diagnostic = "Progress callback failed";
+      session.viscous.converged = false;
+      session.viscous.lastPointContinuable = false;
+      session.result.lastDiagnostics.iterations = viscal.iterationRecords;
+      session.result.lastDiagnostics.viscalRan = true;
+      return false;
+    }
 
     // Fortran 682: ADEG = Alfa/DTOR after VISCAL.
     result.alpha = toDegrees(Radians{viscals.alfa});
@@ -386,12 +469,29 @@ void updateCpMinimumSnapshot(SessionComposition& session) {
   }
 }
 
+ProgressControl reportProgress(ProgressObserver* observer,
+                              ProgressEvent event,
+                              const CancellationToken* cancellation) noexcept {
+  if (observer != nullptr) {
+    const ProgressControl control = observer->report(event);
+    if (control != ProgressControl::continueOperation) {
+      return control;
+    }
+  }
+  if (cancellation != nullptr && cancellation->isCancellationRequested()) {
+    return ProgressControl::cancelRequested;
+  }
+  return ProgressControl::continueOperation;
+}
+
 AnalysisResult runSpecifiedPoint(SessionComposition& session, Degrees alpha,
                                  double clSpec,
                                  PointSpecificationPolicy specPolicy,
                                  const CancellationToken* cancellation,
                                  PointExecutionPolicy policy,
-                                 std::optional<double> alfaStartRadians = {}) {
+                                 std::optional<double> alfaStartRadians = {},
+                                 ProgressObserver* progress = nullptr,
+                                 std::optional<std::size_t> sequenceIndex = {}) {
   AnalysisResult result;
   result.alpha = alpha;
   // The numerical single-point diagnostics belong to the point; each point start
@@ -431,6 +531,33 @@ AnalysisResult runSpecifiedPoint(SessionComposition& session, Degrees alpha,
     return result;
   }
 
+  auto stopForProgress = [&](ProgressControl control) {
+    if (control == ProgressControl::continueOperation) {
+      return false;
+    }
+    if (control == ProgressControl::callbackFailed) {
+      result.status = AnalysisStatus::progressCallbackFailure;
+      result.diagnostic = "Progress callback failed";
+    } else {
+      result.status = AnalysisStatus::cancelled;
+    }
+    result.successful = false;
+    session.result.lastResult = result;
+    return true;
+  };
+  auto emit = [&](ProgressPhase phase, std::size_t completed,
+                  std::size_t total,
+                  std::optional<std::size_t> iteration = std::nullopt) {
+    return stopForProgress(reportProgress(
+        progress,
+        makeProgressEvent(phase, completed, total, sequenceIndex, iteration),
+        cancellation));
+  };
+
+  if (emit(ProgressPhase::initialization, 0, 1)) {
+    return result;
+  }
+
   const core::paneling::PanelGeometry& panel = session.paneling.panel;
   const OperatingConditionState& operating = session.operating;
 
@@ -463,6 +590,13 @@ AnalysisResult runSpecifiedPoint(SessionComposition& session, Degrees alpha,
   const core::inviscid::MachReynoldsSettings settings{
       operating.machReynolds.machType, operating.machReynolds.reType,
       operating.machReynolds.minf1, operating.machReynolds.reinf1};
+
+  if (emit(ProgressPhase::initialization, 1, 1)) {
+    return result;
+  }
+  if (emit(ProgressPhase::inviscidSolve, 0, 1)) {
+    return result;
+  }
 
   // Fortran SPECCL/SPECAL start from the raw COMMON alfa
   // (CR09, radians). A degrees roundtrip (Alfa/DTOR, ADEG*DTOR) changes
@@ -570,6 +704,10 @@ AnalysisResult runSpecifiedPoint(SessionComposition& session, Degrees alpha,
     // GGCALC and XYWAKE. The values remain in the snapshot.
     session.result.lastDiagnostics.events.push_back(OperPointEventRecord{
         OperPointEventKind::specifiedPointOutput, spec.value().alfa, {}});
+  }
+
+  if (emit(ProgressPhase::inviscidSolve, 1, 1)) {
+    return result;
   }
 
   // OPER warm start: conditional invalidation. The OPER single point (xoper.f
@@ -686,7 +824,7 @@ AnalysisResult runSpecifiedPoint(SessionComposition& session, Degrees alpha,
           operating, session.viscous.blpar, session.viscous.idamp,
           iterationAllowance, lalfa, viscalClspec);
       if (!applyViscousStage(session, wakeState, spec.value().te, input,
-                             result)) {
+                             cancellation, progress, sequenceIndex, result)) {
         session.result.lastResult = result;
         return result;
       }
@@ -839,7 +977,8 @@ AnalysisResult continueViscousPoint(SessionComposition& session,
   }
 
   if (!applyViscousStage(session, wake,
-                         session.viscous.lastTe, input, result)) {
+                         session.viscous.lastTe, input, cancellation, nullptr,
+                         std::nullopt, result)) {
     session.result.lastResult = result;
     return result;
   }
@@ -1358,18 +1497,24 @@ bool initializeAnalysis(SessionComposition& session) {
 }
 
  AnalysisResult runSpecAlpha(SessionComposition& session, Degrees alpha,
-                             const CancellationToken* cancellation) {
+                             const CancellationToken* cancellation,
+                             ProgressObserver* progress,
+                             std::optional<std::size_t> sequenceIndex) {
    return runSpecifiedPoint(session, alpha, 0.0,
                             PointSpecificationPolicy::specifiedAlpha,
-                            cancellation, PointExecutionPolicy::coldStart);
+                            cancellation, PointExecutionPolicy::coldStart,
+                            std::nullopt, progress, sequenceIndex);
  }
 
  AnalysisResult runSpecCl(SessionComposition& session, double clSpec,
                           Degrees startAlpha,
-                          const CancellationToken* cancellation) {
+                          const CancellationToken* cancellation,
+                          ProgressObserver* progress,
+                          std::optional<std::size_t> sequenceIndex) {
    return runSpecifiedPoint(session, startAlpha, clSpec,
                             PointSpecificationPolicy::operSequenceSpecifiedCl,
-                            cancellation, PointExecutionPolicy::coldStart);
+                            cancellation, PointExecutionPolicy::coldStart,
+                            std::nullopt, progress, sequenceIndex);
  }
 
 // ---: OPER single-point contracts (ALFA/CLI/CL) ----------------------------
@@ -1414,7 +1559,8 @@ std::vector<AnalysisResult> runAlphaSequence(SessionComposition& session,
                                              Degrees start,
                                              Degrees endExclusive, Degrees step,
                                              const CancellationToken*
-                                                 cancellation) {
+                                                 cancellation,
+                                             ProgressObserver* progress) {
   std::vector<AnalysisResult> results;
 
   const auto makeRangeError = [](const char* message) {
@@ -1438,6 +1584,35 @@ std::vector<AnalysisResult> runAlphaSequence(SessionComposition& session,
   }
 
   const bool ascending = step.value > 0.0;
+  const long double span =
+      (static_cast<long double>(endExclusive.value) -
+       static_cast<long double>(start.value)) /
+      static_cast<long double>(step.value);
+  const std::size_t total = static_cast<std::size_t>(std::ceil(span));
+
+  auto reportSequence = [&](std::size_t completed,
+                            std::size_t sequenceIndex) {
+    if (progress == nullptr) {
+      return false;
+    }
+    const ProgressControl control = progress->report(
+        makeProgressEvent(ProgressPhase::sequence, completed, total,
+                          sequenceIndex));
+    if (control == ProgressControl::callbackFailed) {
+      AnalysisResult failed;
+      failed.status = AnalysisStatus::progressCallbackFailure;
+      failed.successful = false;
+      failed.diagnostic = "Progress callback failed";
+      session.result.lastResult = failed;
+      results.push_back(std::move(failed));
+      return true;
+    }
+    return false;
+  };
+
+  if (reportSequence(0, 0)) {
+    return results;
+  }
 
   for (double alpha = start.value;
        ascending ? (alpha < endExclusive.value) : (alpha > endExclusive.value);) {
@@ -1455,14 +1630,23 @@ std::vector<AnalysisResult> runAlphaSequence(SessionComposition& session,
       cancelled.successful = false;
       session.result.lastResult = cancelled;
       results.push_back(session.result.lastResult);
+      reportSequence(results.size(), results.size() - 1);
       break;
     }
 
+    const std::size_t sequenceIndex = results.size();
     results.push_back(
         runSpecifiedPoint(session, Degrees{alpha}, 0.0,
                           PointSpecificationPolicy::specifiedAlpha, cancellation,
-                          PointExecutionPolicy::coldStart));
+                          PointExecutionPolicy::coldStart, std::nullopt,
+                          progress, sequenceIndex));
 
+    if (results.back().status == AnalysisStatus::progressCallbackFailure) {
+      break;
+    }
+    if (reportSequence(results.size(), sequenceIndex)) {
+      break;
+    }
     if (results.back().status == AnalysisStatus::cancelled) {
       break;
     }
