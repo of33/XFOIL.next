@@ -99,7 +99,8 @@ struct ViscalControl {
 struct ViscalInput {
   std::size_t niter{0};   // Fortran NITER1 (0 -> Fortran ASKI; here
                           // controlled rejected)
-  double qinf{1.0};       // Fortran QINF
+  double qinf{1.0};       // Fortran QINF: dimensionless freestream speed
+                          // scale (normally 1; not dynamic pressure)
   double xref{0.0};       // Fortran XCMREF (moment reference point)
   double yref{0.0};       // Fortran YCMREF
   double vaccel{0.01};    // Fortran VACCEL (COMMON/CR17/, xfoil.f INIT)

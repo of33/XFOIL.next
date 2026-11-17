@@ -92,6 +92,22 @@ void setSuccessfulPoint(xfoil::session::SessionComposition& session,
   session.viscous.cpv = {1.1, 1.0, 0.9, 0.8};
   if (viscous) {
     session.viscous.viscals.cdp = 0.004;
+    session.viscous.viscals.cdf = 0.006;
+    session.viscous.viscals.mapping.valid = true;
+    auto& top = session.viscous.viscals.mapping.top;
+    top.iblte = 2;
+    top.nbl = 2;
+    top.ipan = {0, 1, 2};
+    top.vti = {1, 1, 1};
+    auto& bottom = session.viscous.viscals.mapping.bottom;
+    bottom.iblte = 2;
+    bottom.nbl = 2;
+    bottom.ipan = {0, 2, 3};
+    bottom.vti = {-1, -1, -1};
+    session.viscous.viscals.arcs.top = {0.0, 0.1, 0.2};
+    session.viscous.viscals.arcs.bottom = {0.0, 0.1, 0.2};
+    session.viscous.viscals.tau.top = {0.0, 0.006, 0.007};
+    session.viscous.viscals.tau.bottom = {0.0, 0.008, 0.009};
   }
 }
 
@@ -243,6 +259,8 @@ TEST(unit, LibraryDataModelL2ProjectOperatingPointInviscid) {
   CHECK_NEAR(projected.value().liftCoefficient, 0.7, 0.0, 0.0);
   CHECK_NEAR(projected.value().dragCoefficient, 0.01, 0.0, 0.0);
   CHECK(!projected.value().dragCoefficientPressure.has_value());
+  CHECK(!projected.value().dragCoefficientFriction.has_value());
+  CHECK(!projected.value().skinFriction.has_value());
   CHECK(!projected.value().viscous);
   CHECK(projected.value().convergence == ConvergenceStatus::converged);
   CHECK_EQ(projected.value().iterations, 7);
@@ -265,6 +283,12 @@ TEST(unit, LibraryDataModelL2ProjectOperatingPointViscous) {
   CHECK(projected.value().dragCoefficientPressure.has_value());
   CHECK_NEAR(projected.value().dragCoefficientPressure.value(), 0.004,
              0.0, 0.0);
+  CHECK(projected.value().dragCoefficientFriction.has_value());
+  CHECK_NEAR(projected.value().dragCoefficientFriction.value(), 0.006,
+             0.0, 0.0);
+  CHECK(projected.value().skinFriction.has_value());
+  CHECK_EQ(projected.value().skinFriction->upper.cf.size(), std::size_t{2});
+  CHECK_EQ(projected.value().skinFriction->lower.cf.size(), std::size_t{2});
   CHECK(projected.value().surface.has_value());
   CHECK(projected.value().surface->kind ==
         SurfaceDistributionKind::viscous);

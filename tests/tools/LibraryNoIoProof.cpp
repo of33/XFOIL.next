@@ -214,8 +214,13 @@ bool runApiWorkflow(const xfoil::geometry::AirfoilGeometry& memoryGeometry) {
   PanelingOptions cfPanels;
   cfPanels.panelCount = 140;
   if (cfSession.generatePanel(cfPanels, progress).isErr() ||
-      cfSession.configure(viscousConfig()).isErr() ||
-      !cfSession.solveAlpha(Degrees{4.0}, nullptr, progress).isOk()) {
+      cfSession.configure(viscousConfig()).isErr()) {
+    return false;
+  }
+  const auto cfPoint = cfSession.solveAlpha(Degrees{4.0}, nullptr, progress);
+  if (cfPoint.isErr() ||
+      !cfPoint.value().dragCoefficientFriction.has_value() ||
+      !cfPoint.value().skinFriction.has_value()) {
     return false;
   }
   const auto skinFriction = cfSession.currentSkinFriction();
@@ -227,7 +232,11 @@ bool runApiWorkflow(const xfoil::geometry::AirfoilGeometry& memoryGeometry) {
       skinFriction.value().lower.cf.size() !=
           skinFriction.value().lower.s.size() ||
       skinFriction.value().upper.side != xfoil::SurfaceSide::upper ||
-      skinFriction.value().lower.side != xfoil::SurfaceSide::lower) {
+      skinFriction.value().lower.side != xfoil::SurfaceSide::lower ||
+      cfPoint.value().skinFriction->upper.cf.size() !=
+          skinFriction.value().upper.cf.size() ||
+      cfPoint.value().skinFriction->lower.cf.size() !=
+          skinFriction.value().lower.cf.size()) {
     return false;
   }
 

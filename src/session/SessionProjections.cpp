@@ -324,7 +324,21 @@ Result<OperatingPointData> projectLastOperatingPoint(
   point.convergence = convergenceFromStatus(result.status);
 
   if (point.viscous) {
+    const double cdf = session.viscous.viscals.cdf;
+    if (!std::isfinite(cdf)) {
+      return Result<OperatingPointData>::fail(makeError(
+          ErrorCategory::internal, "analysis.inconsistentState",
+          "The viscous operating point has an invalid friction-drag "
+          "coefficient",
+          "analysis"));
+    }
+    Result<SkinFrictionDistribution> cf = projectSkinFriction(session);
+    if (cf.isErr()) {
+      return Result<OperatingPointData>::fail(cf.error());
+    }
     point.dragCoefficientPressure = session.viscous.viscals.cdp;
+    point.dragCoefficientFriction = cdf;
+    point.skinFriction = std::move(cf.value());
   }
 
   const Result<SurfaceDistribution> surface =

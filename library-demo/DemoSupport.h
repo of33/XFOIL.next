@@ -134,6 +134,10 @@ std::string statusText(xfoil::ConvergenceStatus status);
 [[nodiscard]]
 std::string cpPointCount(std::size_t count);
 
+[[nodiscard]]
+std::string cfStationCounts(
+    const xfoil::SkinFrictionDistribution& distribution);
+
 }  // namespace xfoil_demo
 
 // End: library-demo/DemoSupport.h

@@ -187,6 +187,9 @@ int main(int argc, char** argv) {
       ? clValue.surface->cp.size()
       : std::size_t{0};
   std::cout << xfoil_demo::cpPointCount(cpCount) << '\n';
+  if (clValue.skinFriction.has_value()) {
+    std::cout << xfoil_demo::cfStationCounts(*clValue.skinFriction) << '\n';
+  }
 
   const bool clConverged =
       clValue.convergence == xfoil::ConvergenceStatus::converged;

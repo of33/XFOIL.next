@@ -144,6 +144,8 @@ struct CdCalcResult {
   double clf{0.0};  // Fortran CLF
 };
 
+// qinf is the dimensionless freestream speed scale (Fortran QINF),
+// not dynamic pressure.
 CdCalcResult cdcalc(double alfa, double qinf, double tklam, bool lvisc,
                     bool lblini, const BoundaryLayerMapping& map,
                     const BoundaryLayerStationField& thet,

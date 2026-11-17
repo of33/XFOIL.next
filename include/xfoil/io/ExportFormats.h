@@ -47,7 +47,7 @@ struct BoundaryLayerDumpInput {
   bool lvisc = false;
   bool lwake = false;
   double minf = 0.0;
-  double qinf = 0.0;
+  double qinf = 0.0;  // dimensionless freestream speed scale (Fortran QINF)
   double gamm1 = 0.4;
   double reinf = 0.0;
   std::vector<double> s, x, y, gam;  // count n (+ nw in the wake)
@@ -92,7 +92,7 @@ struct PressureDumpInput {
   int n = 0;
   DumpDelimiter delimiter = DumpDelimiter::kBlank;
   double minf = 0.0;
-  double qinf = 0.0;
+  double qinf = 0.0;  // dimensionless freestream speed scale (Fortran QINF)
   std::vector<double> x, gam;
 };
 std::string pressureDumpText(const PressureDumpInput& input);

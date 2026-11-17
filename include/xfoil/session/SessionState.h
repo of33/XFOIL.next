@@ -133,7 +133,8 @@ struct PanelingSessionState {
 };
 
 // Operating state (Fortran MINF1/REINF1/MATYP/RETYP, QINF, ALFA, LVISC,
-// ITER limit, INIT/LBLINI choice, VACCEL, XTR/NCRIT, WAKLEN). VACCEL is
+// ITER limit, INIT/LBLINI choice, VACCEL, XTR/NCRIT, WAKLEN). QINF is the
+// dimensionless freestream speed scale, not the dynamic pressure. VACCEL is
 // instance-specific (no static VACCEL). The CM reference fields and
 // the hinge location are INIT defaults; XYCM/FNEW set them later.
 // Fortran COMMON CPMNI/XCPMNI/CPMNV/XCPMNV (XFOIL.INC:92, written only in
@@ -154,7 +155,9 @@ struct CpMinimumSnapshot {
 struct OperatingConditionState {
   core::inviscid::MachReynoldsSettings machReynolds;  // MATYP/RETYP/MINF1/REINF1
   bool configured{false};              // configuration validated and set
-  double qinf{1.0};                    // Fortran QINF (INIT 1.0)
+  double qinf{1.0};                    // Fortran QINF: dimensionless
+                                       // freestream speed scale (INIT 1.0;
+                                       // not dynamic pressure)
   bool alphaSpecified{true};           // Fortran LALFA (last request type)
   bool viscous{true};                  // Fortran LVISC
   int maximumIterations{100};          // Fortran ITER
@@ -198,7 +201,8 @@ struct ViscousSessionState {
   core::inviscid::InfluenceSystem system;  // Fortran AIJ/BIJ/GAMU/QINVU basis
   bool systemValid{false};                 // GGCALC result current
   double systemMach{0.0};                  // MINF of the system calculation
-  double systemQinf{0.0};                  // QINF of the system calculation
+  double systemQinf{0.0};                  // QINF of the system calculation:
+                                           // dimensionless freestream speed scale
   core::boundary_layer::ViscalState viscals;  // Fortran BL session state
   // Authoritative, session-bound BLPAR state
   // (Fortran COMMON/BLPAR, BLPAR.INC; initialization BLPINI, xbl.f

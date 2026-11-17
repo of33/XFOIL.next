@@ -151,6 +151,42 @@ session.activePolar();
 isolated state. Sequences remain available through
 `Session::solveAlphaSequence`.
 
+## Operating-point drag results
+
+`OperatingPointData` carries the scalar drag results of the current
+successful point:
+
+- `dragCoefficient`: total drag coefficient `CD` from the existing
+  solver result.
+- `dragCoefficientPressure`: optional pressure/form-drag coefficient
+  `CDp` when the viscous VISCAL completion provides it.
+- `dragCoefficientFriction`: optional friction-drag coefficient `CDF`
+  from the canonical viscous state. It is copied from the solver value,
+  never reconstructed as `CD - CDp`.
+- `skinFriction`: optional owning `SkinFrictionDistribution` for the same
+  valid viscous point.
+
+The two optional drag fields and `skinFriction` are present together for
+a successful viscous point with a valid final VISCAL state, including a
+successful but unconverged point. They are absent for an inviscid point.
+A cancelled or failed point returns an error instead of exposing stale
+values from a previous point.
+
+The Cf distribution uses boundary-layer stations and is separate from the
+panel-node `SurfaceDistribution` Cp data. Cp and Cf are never mixed in one
+vector type. Wake stations are excluded.
+
+`xfoil::analyze(request)` returns these owning values directly, so Cf is
+available after the temporary one-shot session has been destroyed.
+`Session::currentSkinFriction()` remains available for stateful callers
+and uses the same projection as `OperatingPointData::skinFriction`.
+
+Sequence/polar points do not carry a CDF scalar or a Cf distribution.
+`PolarPoint::dragCoefficientViscous` is the XFOIL `CDv` column (total
+viscous drag), not the friction-only `CDF`. The legacy `AnalysisResult`
+compatibility type remains unchanged and does not gain the optional
+detail fields.
+
 ## Skin-friction distribution
 
 `xfoil/SkinFriction.h` provides owning upper/lower boundary-layer station
@@ -182,10 +218,14 @@ cf = tau / (0.5 * qinf^2)
 ```
 
 `tau` comes from the final existing VISCAL state and `qinf` from the
-operating point. The sign is preserved; there is no absolute value,
-clamping, interpolation or rounding. The Cf stations are boundary-layer
-stations, not the Cp/panel-node discretization. The result owns all
-vectors and remains valid after later session changes.
+operating point. `qinf` is the dimensionless freestream speed scale
+(Fortran `QINF`, normally unity), not the dynamic pressure; the reference
+dynamic-pressure scale is `QUE = 0.5*qinf^2`. In dimensional variables
+the definition is `cf = tau_w/(0.5*rho_inf*U_inf^2)`. The sign is
+preserved; there is no absolute value, clamping, interpolation or
+rounding. The Cf stations are boundary-layer stations, not the
+Cp/panel-node discretization. The result owns all vectors and remains
+valid after later session changes.
 
 A successful but unconverged viscous point may return the last complete
 VISCAL state. Check the operating point's convergence status separately.
@@ -196,7 +236,9 @@ current result; it returns `skinFriction.noValidViscousState`. Malformed
 internal station data returns `skinFriction.inconsistentState`.
 `currentSkinFriction()` is a const, non-mutating projection: it runs no
 solver, initializes no boundary layer and performs no file or console
-I/O. There is no one-shot Cf result and no Cf sequence API.
+I/O. One-shot callers receive the same owning Cf distribution through
+`OperatingPointData::skinFriction`. There is no Cf distribution in
+`PolarPoint` or `SequenceResult`.
 
 ## One-shot analysis API
 
@@ -220,7 +262,9 @@ if (result.isErr()) {
   // result.error().category, result.error().code, result.error().message
 } else {
   const xfoil::OperatingPointData& point = result.value();
-  // point.liftCoefficient, point.dragCoefficient, point.surface, ...
+  // point.liftCoefficient, point.dragCoefficient,
+  // point.dragCoefficientPressure, point.dragCoefficientFriction,
+  // point.surface, point.skinFriction, ...
 }
 ```
 

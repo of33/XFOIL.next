@@ -70,6 +70,7 @@ struct MixedInverseState {
   bool sharp{false};
   double dste{0.0}, ante{0.0}, aste{0.0};
   double xte{0.0}, yte{0.0}, chord{0.0};
+  // qinf is the dimensionless freestream speed scale, not dynamic pressure.
   double alfa{0.0}, minf{0.0}, qinf{1.0};
   double psio{0.0};
   double qdof0{0.0}, qdof1{0.0}, qdof2{0.0}, qdof3{0.0};

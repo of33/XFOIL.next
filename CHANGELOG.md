@@ -15,6 +15,12 @@ keep-a-changelog layout.
   `SkinFrictionDistribution` value type. The projection exposes separate
   upper/lower boundary-layer stations, excludes wake stations, preserves
   the existing `tau/(0.5*qinf^2)` sign and performs no solver work or I/O.
+- Completed `OperatingPointData` with optional `dragCoefficientFriction`
+  (`CDF`) and an optional owning `skinFriction` distribution. One-shot
+  `analyze()` results now retain Cf after the temporary session is gone.
+  `currentSkinFriction()` remains and uses the same projection. Inviscid
+  points leave both optionals empty; sequence/polar points remain
+  unchanged and do not carry Cf data.
 - Published the XFOIL.next Library User Manual as a PDF. The LaTeX source
   remains local and is not part of the public repository. The manual
   documents product version 1.1.0, the current public API, progress and

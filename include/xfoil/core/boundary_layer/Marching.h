@@ -223,7 +223,9 @@ struct SetblInput {
   double reinf1{3.0e6};                  // Fortran REINF1 (MRCL input)
   double minf{0.0};                      // Fortran MINF (in/out, MRCL output)
   double reinf{1.0e6};                   // Fortran REINF (in/out, MRCL output)
-  double qinf{1.0};                      // Fortran QINF
+  double qinf{1.0};                      // Fortran QINF: dimensionless
+                                         // freestream speed scale (normally 1;
+                                         // not dynamic pressure)
   double gamma{1.4};                     // Fortran GAMMA
   double gamm1{0.4};                     // Fortran GAMM1
   double hvrat{0.0};                     // Fortran HVRAT

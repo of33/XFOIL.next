@@ -79,14 +79,17 @@ struct BoundaryLayerDumpInput {
   double tau{0.0};        // TAU(IBL,IS)
 };
 
-// Canonical skin-friction coefficient used by BLDUMP and by the
-// public owning Cf projection: cf = tau / (0.5*qinf^2). The sign is
-// preserved; no absolute value, clamping or rounding is applied.
+// Canonical BLDUMP skin-friction coefficient used by the public Cf
+// projection. qinf is the dimensionless freestream speed scale
+// (Fortran QINF, normally 1; not dynamic pressure), QUE = 0.5*qinf^2.
+// tau is the XFOIL-normalized wall-shear value, not a stress in Pa.
+// cf = tau/(0.5*qinf^2), physically cf = tau_w/(0.5*rho_inf*U_inf^2).
+// The sign is preserved; no absolute value, clamping or rounding is applied.
 [[nodiscard]] double skinFrictionCoefficient(double tau, double qinf) noexcept;
 
 // Freestream quantities for the UE transformation (COMSET derivation).
 struct DumpFlowState {
-  double qinf{0.0};
+  double qinf{0.0};  // dimensionless freestream speed scale (Fortran QINF)
   double minf{0.0};
   double tklam{0.0};
 };
@@ -247,7 +250,8 @@ struct PlxaddSideInputs {
 struct PlxaddInputs {
   bool viscous{false};            // LVISC (pure data decision)
   double minf{0.0};               // MINF
-  double qinf{0.0};               // QINF (QUE = 0.5*QINF^2)
+  double qinf{0.0};  // QINF: dimensionless freestream speed scale
+                     // (QUE = 0.5*QINF^2; not dynamic pressure)
   double alfaRad{0.0};            // PLXADD writes Alfa/DTOR (degrees; conversion is a session concern)
   double cl{0.0};
   double cd{0.0};

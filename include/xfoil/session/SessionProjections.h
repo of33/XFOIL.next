@@ -54,8 +54,9 @@ Result<SurfaceDistribution> projectSurfaceDistribution(
     const SessionComposition& session);
 
 // Owning skin-friction distribution of the current valid viscous point.
-// Uses the existing final VISCAL tau state and operating qinf only; wake
-// stations are excluded. Pure and non-mutating.
+// Uses the existing final VISCAL tau state and the operating qinf
+// (dimensionless freestream speed scale) only; wake stations are excluded.
+// Pure and non-mutating.
 [[nodiscard]]
 Result<SkinFrictionDistribution> projectSkinFriction(
     const SessionComposition& session);

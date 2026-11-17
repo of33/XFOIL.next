@@ -55,11 +55,15 @@ enum class SequenceStopReason {
 struct PolarPoint {
   Degrees alpha{};
   double liftCoefficient{};
+  // Total drag coefficient CD (XFOIL ICD column).
   double dragCoefficient{};
+  // Optional pressure/form-drag coefficient CDP (XFOIL ICP column).
   std::optional<double> dragCoefficientPressure;
   double momentCoefficient{};
 
   std::optional<double> dragCoefficientWave;
+  // XFOIL CDv column: total viscous drag coefficient, not the
+  // friction-only dragCoefficientFriction value of OperatingPointData.
   std::optional<double> dragCoefficientViscous;
   std::optional<double> machNumber;
   std::optional<double> reynoldsNumber;

@@ -99,7 +99,7 @@ struct PsiLinContext {
   double dste{0.0};
   double ante{0.0};
   double aste{0.0};
-  double qinf{0.0};
+  double qinf{0.0};  // dimensionless freestream speed scale (Fortran QINF)
   bool image{false};   // Fortran LIMAGE (INIT: .FALSE.)
   double yimage{0.0};
 };
@@ -131,7 +131,8 @@ PswLinResult pswLin(const PswLinInputs& in, const PswLinContext& ctx);
 // Fortran: SUBROUTINE GGCALC (no arguments, COMMON-based)
 // Computes the alpha=0/90 vortex distributions and the influence system
 // (AIJ, BIJ, Pivot). panel is the panel geometry; sig is the
-// source distribution (inviscid: 0). minf/qinf are operating quantities.
+// source distribution (inviscid: 0). minf is the freestream Mach number;
+// qinf is the dimensionless freestream speed scale.
 Result<InfluenceSystem> ggCalc(const paneling::PanelGeometry& panel,
                                std::span<const double> sig, double minf,
                                double qinf);

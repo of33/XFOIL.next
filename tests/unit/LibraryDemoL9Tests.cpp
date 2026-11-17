@@ -251,6 +251,8 @@ TEST(unit, LibraryDemoL9OutputAndStatus) {
   CHECK(hasText(header, "Panels: 200"));
   CHECK(hasText(header, "Alpha interval: [-2, 8), step 1"));
 
+  CHECK(hasText(xfoil_demo::sequenceTableHeader(), "CDF"));
+  CHECK(hasText(xfoil_demo::clTableHeader(), "CDF"));
   xfoil::PolarPoint point;
   point.alpha = xfoil::Degrees{1.25};
   point.liftCoefficient = 0.5;
@@ -269,6 +271,7 @@ TEST(unit, LibraryDemoL9OutputAndStatus) {
   clPoint.alpha = xfoil::Degrees{3.3114};
   clPoint.liftCoefficient = 0.4;
   clPoint.dragCoefficient = 0.007;
+  clPoint.dragCoefficientFriction = 0.004;
   clPoint.momentCoefficient = -0.01;
   clPoint.iterations = 7;
   clPoint.convergence = xfoil::ConvergenceStatus::converged;
@@ -276,6 +279,7 @@ TEST(unit, LibraryDemoL9OutputAndStatus) {
   CHECK(hasText(clRow, "0.4000"));
   CHECK(hasText(clRow, "3.3114"));
   CHECK(hasText(clRow, "0.400000"));
+  CHECK(hasText(clRow, "0.004000"));
   CHECK(hasText(clRow, "7"));
   CHECK(hasText(clRow, "converged"));
 
@@ -288,6 +292,11 @@ TEST(unit, LibraryDemoL9OutputAndStatus) {
   CHECK_EQ(xfoil_demo::statusText(xfoil::ConvergenceStatus::failed),
            std::string{"failed"});
   CHECK_EQ(xfoil_demo::cpPointCount(240), std::string{"Cp points: 240"});
+  xfoil::SkinFrictionDistribution cf;
+  cf.upper.cf.resize(3);
+  cf.lower.cf.resize(2);
+  CHECK_EQ(xfoil_demo::cfStationCounts(cf),
+           std::string{"Cf upper stations: 3\nCf lower stations: 2"});
 }
 
 TEST(unit, LibraryDemoL9ExitCodes) {

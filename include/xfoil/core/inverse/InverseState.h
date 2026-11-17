@@ -69,7 +69,7 @@ struct FullInverseState {
   CircleMappingState circle;
   PanelGeometry panel;
   double minf{0.0};   // MINF
-  double qinf{1.0};   // QINF
+  double qinf{1.0};   // Fortran QINF: dimensionless freestream speed scale
 
   std::vector<double> qgamm;  // QGAMM(1..NSP)
   std::vector<double> sspec;  // SSPEC(1..NSP)

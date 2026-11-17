@@ -63,7 +63,9 @@ struct UpdateInput {
   std::span<const double> y;         // Fortran Y
   double alfa{0.0};                  // Fortran ALFA (in/out)
   double minf{0.0};                  // Fortran MINF
-  double qinf{1.0};                  // Fortran QINF
+  double qinf{1.0};                  // Fortran QINF: dimensionless
+                                     // freestream speed scale (normally 1;
+                                     // not dynamic pressure)
   double gamm1{0.4};                 // Fortran GAMM1
   double dtor{0.0};                  // Fortran DTOR
   double minfCl{0.0};                // Fortran MINF_CL

@@ -1146,6 +1146,7 @@ MdesNumericsInitResult initializeMdesNumerics(SessionComposition& session,
   fs.panel.xte = panel.xte;
   fs.panel.yte = panel.yte;
   // MINF/QINF/Alfa: current session operating quantities (COMMON CR09).
+  // QINF is the dimensionless freestream speed scale, not dynamic pressure.
   fs.minf = session.viscous.viscals.minf;
   fs.qinf = session.operating.qinf;
   fs.qgamm = inv.shared.qgamm;
@@ -1451,7 +1452,8 @@ ConfigValidationResult configure(SessionComposition& session,
   session.operating.topTripX = config.transition.topTripX;
   session.operating.bottomTripX = config.transition.bottomTripX;
   session.config = config;  // existing API contract: xfoil::XFoil::config
-  // Fortran QINF stays at the INIT value;
+  // Fortran QINF stays at the INIT value 1.0; it is the dimensionless
+  // freestream speed scale, not the dynamic pressure.
   // Mach/Re/variation type do not invalidate the influence system
   // (GGCALC uses no MINF), but do invalidate BL state and convergence per
   // the Fortran INIT/SETBL LBLINI semantics (reset per point).

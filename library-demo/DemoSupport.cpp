@@ -186,6 +186,7 @@ std::string formatAlpha(double value) {
 std::string formatRow(
     std::string_view first,
     std::optional<std::string_view> second,
+    std::optional<double> dragCoefficientFriction,
     std::string_view iterations,
     const xfoil::PolarPoint& point) {
   std::ostringstream stream;
@@ -199,6 +200,8 @@ std::string formatRow(
          << std::setw(12) << formatCoefficient(point.dragCoefficient) << ' '
          << std::setw(12)
          << formatCoefficient(point.dragCoefficientPressure) << ' '
+         << std::setw(12)
+         << formatCoefficient(dragCoefficientFriction) << ' '
          << std::setw(12) << formatCoefficient(point.momentCoefficient) << ' '
          << std::setw(10) << iterations << "  "
          << statusText(point.convergence) << '\n';
@@ -616,19 +619,19 @@ std::string formatHeader(
 std::string sequenceTableHeader() {
   return
       "Alpha sequence\n"
-      "     alpha          CL          CD         CDp          CM  "
+      "     alpha          CL          CD         CDp         CDF          CM  "
       "iterations  status\n";
 }
 
 std::string formatSequenceRow(const xfoil::PolarPoint& point) {
-  return formatRow(
-      formatAlpha(point.alpha.value), std::nullopt, "n/a", point);
+  return formatRow(formatAlpha(point.alpha.value), std::nullopt, std::nullopt,
+                   "n/a", point);
 }
 
 std::string clTableHeader() {
   return
       "Specified CL\n"
-      "target_CL      alpha          CL          CD         CDp          "
+      "target_CL      alpha          CL          CD         CDp         CDF          "
       "CM  iterations  status\n";
 }
 
@@ -642,10 +645,10 @@ std::string formatClRow(
   polarPoint.dragCoefficientPressure = point.dragCoefficientPressure;
   polarPoint.momentCoefficient = point.momentCoefficient;
   polarPoint.convergence = point.convergence;
-  return formatRow(
-      formatAlpha(targetLiftCoefficient),
-      formatAlpha(point.alpha.value),
-      std::to_string(point.iterations), polarPoint);
+  return formatRow(formatAlpha(targetLiftCoefficient),
+                   formatAlpha(point.alpha.value),
+                   point.dragCoefficientFriction,
+                   std::to_string(point.iterations), polarPoint);
 }
 
 std::string statusText(xfoil::ConvergenceStatus status) {
@@ -666,6 +669,14 @@ std::string statusText(xfoil::ConvergenceStatus status) {
 
 std::string cpPointCount(std::size_t count) {
   return "Cp points: " + std::to_string(count);
+}
+
+std::string cfStationCounts(
+    const xfoil::SkinFrictionDistribution& distribution) {
+  return "Cf upper stations: " +
+         std::to_string(distribution.upper.cf.size()) +
+         "\nCf lower stations: " +
+         std::to_string(distribution.lower.cf.size());
 }
 
 }  // namespace xfoil_demo

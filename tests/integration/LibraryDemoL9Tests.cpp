@@ -170,6 +170,9 @@ TEST(integration, LibraryDemoL9ViscousAndOptionalValues) {
   CHECK(hasText(defaults.standardOutput, "Mode: viscous"));
   CHECK(hasText(defaults.standardOutput, "Reynolds: 1000000"));
   CHECK(hasText(defaults.standardOutput, "Specified CL"));
+  CHECK(hasText(defaults.standardOutput, "CDF"));
+  CHECK(hasText(defaults.standardOutput, "Cf upper stations:"));
+  CHECK(hasText(defaults.standardOutput, "Cf lower stations:"));
   CHECK(defaults.filesInWorkingDirectory.empty());
 
   std::vector<std::string> optional = baseArguments(

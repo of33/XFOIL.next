@@ -33,6 +33,7 @@
 #include <vector>
 
 #include "xfoil/Diagnostic.h"
+#include "xfoil/SkinFriction.h"
 #include "xfoil/Types.h"
 
 namespace xfoil {
@@ -78,9 +79,10 @@ struct SurfaceDistribution {
 struct OperatingPointData {
   Degrees alpha{};
   double liftCoefficient{};
+  // Total drag coefficient CD from the existing solver result.
   double dragCoefficient{};
-  // Present only when the session state carries the pressure-drag
-  // coefficient for the last point (viscous VISCAL completion).
+  // Present only when the session state carries the pressure/form-drag
+  // coefficient CDP for the last point (viscous VISCAL completion).
   std::optional<double> dragCoefficientPressure;
   double momentCoefficient{};
   double centerOfPressureX{};
@@ -91,6 +93,14 @@ struct OperatingPointData {
   std::optional<SurfaceDistribution> surface;
   // Solver diagnostics in emission order. Optional and may be empty.
   std::vector<Diagnostic> diagnostics;
+  // Scalar friction-drag coefficient CDF from the canonical viscous state.
+  // Present only for a successful viscous point with a valid final
+  // VISCAL state; absent for inviscid points and failed/cancelled points.
+  std::optional<double> dragCoefficientFriction;
+  // Owning Cf distribution for the same valid viscous point. This is a
+  // separate BL-station data set from the panel-node Cp distribution.
+  // Present iff dragCoefficientFriction is present.
+  std::optional<SkinFrictionDistribution> skinFriction;
 };
 
 }  // namespace xfoil

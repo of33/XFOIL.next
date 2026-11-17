@@ -70,7 +70,9 @@ int main() {
   if (point.convergence != xfoil::ConvergenceStatus::converged) {
     return 1;
   }
-  if (!point.surface.has_value() ||
+  if (point.dragCoefficientFriction.has_value() ||
+      point.skinFriction.has_value() ||
+      !point.surface.has_value() ||
       point.surface->cp.size() == 0 ||
       point.surface->cp.size() != point.surface->x.size() ||
       point.surface->cp.size() != point.surface->y.size()) {

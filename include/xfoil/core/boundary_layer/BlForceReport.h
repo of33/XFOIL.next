@@ -68,6 +68,7 @@ struct BlForceReportInputs {
   // XSSITR(IS) (Fortran COMMON/XBL.INC).
   std::array<double, 2> xssitr;
   // Operating-point quantities (Fortran REINF, MINF, QINF, TKLAM, GAMM1).
+  // QINF is the dimensionless freestream speed scale, not dynamic pressure.
   double reinf{0.0};
   double minf{0.0};
   double qinf{1.0};

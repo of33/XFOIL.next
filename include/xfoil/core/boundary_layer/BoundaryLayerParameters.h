@@ -45,7 +45,8 @@ namespace xfoil::core::boundary_layer {
 // Fortran: SETBL data part (xbl.f:46-85).
 // Sets the boundary-layer operating quantities from freestream and
 // compressibility inputs. Inputs: minf (Fortran MINF), reinf
-// (Fortran REINF), qinf (Fortran QINF), gamma/gamm1 (session constants),
+// (Fortran REINF), qinf (Fortran QINF: dimensionless freestream speed
+// scale, normally 1; not dynamic pressure), gamma/gamm1 (session constants),
 // tklam/tkMsq (COMSET exit), hvrat (Fortran HVRAT,
 // Sutherland ratio; never set canonically -> passed as 0.0),
 // wgap (Fortran WGAP(1), TE gap), idamp (Fortran IDAMP, 0/1).

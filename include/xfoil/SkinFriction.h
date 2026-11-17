@@ -41,8 +41,10 @@ enum class SurfaceSide {
 
 // One side of the boundary-layer station distribution. x/y are the
 // panel-node coordinates at the mapped station, s is the existing
-// boundary-layer arc coordinate, and cf is tau/(0.5*qinf^2). All
-// vectors have the same length. s increases from the leading-edge region
+// boundary-layer arc coordinate. cf is the existing BLDUMP coefficient
+// tau/(0.5*qinf^2), where qinf is the dimensionless freestream speed
+// scale (not dynamic pressure) and tau is the normalized wall-shear value.
+// All vectors have the same length. s increases from the leading-edge region
 // toward the trailing edge; x is not required to be monotonic.
 struct SkinFrictionSide {
   SkinFrictionSide() = default;

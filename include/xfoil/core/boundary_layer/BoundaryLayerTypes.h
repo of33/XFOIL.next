@@ -88,12 +88,14 @@ struct BoundaryLayerParameters {
 
 // Fortran: SETBL data part (xbl.f:46-85) — operating quantities for the
 // boundary layer. Inputs are MINF/REINF/QINF/GAMMA/GAMM1 (from MRCL/
-// COMSET), tklam/tkMsq (COMSET exit), hvrat (Sutherland ratio,
+// COMSET); QINF is the dimensionless freestream speed scale.
+// tklam/tkMsq (COMSET exit), hvrat (Sutherland ratio,
 // never set canonically -> 0.0), wgap (TE gap, Fortran WGAP(1)).
 struct BoundaryLayerProperties {
   double gambl{0.0};     // Fortran GAMBL = GAMMA
   double gm1bl{0.0};     // Fortran GM1BL = GAMM1
-  double qinfbl{0.0};    // Fortran QINFBL = QINF
+  double qinfbl{0.0};    // Fortran QINFBL = QINF: dimensionless freestream
+                         // speed scale (normally 1; not dynamic pressure)
   double tkbl{0.0};      // Fortran TKBL = TKLAM
   double tkblMs{0.0};    // Fortran TKBL_MS = TK_MSQ
   double rstbl{0.0};     // Fortran RSTBL (Stagnation point density)
