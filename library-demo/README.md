@@ -87,14 +87,16 @@ xfoil-next-lib-demo \
 
 The demo prints the effective configuration, the alpha sequence table, and
 one specified-CL table row. The tables distinguish total drag (`CD`),
-pressure/form drag (`CDp`), and the scalar friction-drag coefficient
-(`CDF`). `CDF` is read directly from
-`xfoil::OperatingPointData::dragCoefficientFriction`; it is friction drag,
-not total viscous drag, and is never reconstructed as `CD - CDp`. Sequence
-rows print `n/a` in the CDF column because the stored polar model does not
-carry a canonical CDF value. If sequence data ever displays
-`xfoil::PolarPoint::dragCoefficientViscous`, that column is `CDv` (total
-viscous drag), not `CDF`.
+pressure/form drag (`CDp`), friction drag (`CDF`), and XFOIL total viscous
+drag (`CDv`). Sequence rows read `CDp`, `CDF`, `CDv`, the iteration count
+and the status from the corresponding `xfoil::PolarPoint` scalar fields.
+`CDF` comes from `xfoil::PolarPoint::dragCoefficientFriction`; it is
+friction drag, not total viscous drag, and is never reconstructed as
+`CD - CDp`. `CDv` comes from `xfoil::PolarPoint::dragCoefficientViscous`
+and is not `CDF`. Inviscid sequence rows show `n/a` for `CDF`, zero for
+`CDv` following the existing polar contract, and iteration count `0`.
+Failed or cancelled sequence points leave the optional scalar fields
+empty, so the demo prints `n/a`.
 
 The specified-CL row reports the optional
 `xfoil::OperatingPointData::dragCoefficientFriction`; inviscid runs print
@@ -107,9 +109,7 @@ that each Cf side has equal-length `x`, `y`, `s`, and `cf` vectors and
 reports a controlled analysis error (exit code 5) for inconsistent
 friction data. It prints only station counts, not the full Cf table.
 Non-converged points are printed, and the process returns exit code 6 when
-any executed point did not converge. `xfoil::PolarPoint` does not expose a
-per-point iteration count, so the iteration column is `n/a` for sequence
-rows; the specified-CL row reports
+any executed point did not converge. The specified-CL row reports
 `xfoil::OperatingPointData::iterations`.
 
 ## Exit codes

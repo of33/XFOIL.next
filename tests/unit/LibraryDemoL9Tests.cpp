@@ -268,22 +268,26 @@ TEST(unit, LibraryDemoL9OutputAndStatus) {
   CHECK(hasText(header, "Alpha interval: [-2, 8), step 1"));
 
   CHECK(hasText(xfoil_demo::sequenceTableHeader(), "CDF"));
+  CHECK(hasText(xfoil_demo::sequenceTableHeader(), "CDv"));
   CHECK(hasText(xfoil_demo::clTableHeader(), "CDF"));
   xfoil::PolarPoint point;
   point.alpha = xfoil::Degrees{1.25};
   point.liftCoefficient = 0.5;
   point.dragCoefficient = 0.01;
   point.dragCoefficientPressure = 0.002;
+  point.dragCoefficientFriction = 0.004;
   point.dragCoefficientViscous = 0.123456;
   point.momentCoefficient = -0.03;
+  point.iterations = std::size_t{6};
   point.convergence = xfoil::ConvergenceStatus::converged;
   const std::string sequenceRow = xfoil_demo::formatSequenceRow(point);
   CHECK(hasText(sequenceRow, "1.2500"));
   CHECK(hasText(sequenceRow, "0.500000"));
   CHECK(hasText(sequenceRow, "0.002000"));
-  CHECK(hasText(sequenceRow, "n/a"));
+  CHECK(hasText(sequenceRow, "0.004000"));
+  CHECK(hasText(sequenceRow, "0.123456"));
+  CHECK(hasText(sequenceRow, "6"));
   CHECK(hasText(sequenceRow, "converged"));
-  CHECK_FALSE(hasText(sequenceRow, "0.123456"));
 
   xfoil::OperatingPointData clPoint;
   clPoint.alpha = xfoil::Degrees{3.3114};
@@ -304,6 +308,7 @@ TEST(unit, LibraryDemoL9OutputAndStatus) {
   CHECK(hasText(clRow, "0.005000"));
   CHECK(hasText(clRow, "0.004000"));
   CHECK_FALSE(hasText(clRow, "0.015000"));
+  CHECK_FALSE(hasText(clRow, "0.123456"));
   CHECK(hasText(clRow, "7"));
   CHECK(hasText(clRow, "converged"));
 

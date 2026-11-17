@@ -29,6 +29,7 @@
 #include <filesystem>
 #include <fstream>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -120,6 +121,38 @@ RunResult runDemo(
   return result;
 }
 
+std::vector<std::string> firstSequenceDataRow(const std::string& text) {
+  std::istringstream stream(text);
+  std::string line;
+  bool inSequence = false;
+  bool sawHeader = false;
+  while (std::getline(stream, line)) {
+    if (line.find("Alpha sequence") != std::string::npos) {
+      inSequence = true;
+      continue;
+    }
+    if (!inSequence) {
+      continue;
+    }
+    if (!sawHeader) {
+      if (line.find("alpha") != std::string::npos) {
+        sawHeader = true;
+      }
+      continue;
+    }
+    std::istringstream row(line);
+    std::vector<std::string> tokens;
+    std::string token;
+    while (row >> token) {
+      tokens.push_back(token);
+    }
+    if (!tokens.empty()) {
+      return tokens;
+    }
+  }
+  return {};
+}
+
 std::vector<std::string> baseArguments(
     const std::string& profile,
     std::string reynolds,
@@ -162,9 +195,18 @@ TEST(integration, LibraryDemoL9InviscidStaticAndShared) {
   CHECK_FALSE(hasText(sharedRun.standardOutput, "3.0000"));
   CHECK(hasText(sharedRun.standardOutput, "Specified CL"));
   CHECK(hasText(sharedRun.standardOutput, "target_CL"));
+  CHECK(hasText(sharedRun.standardOutput, "CDv"));
   CHECK(hasText(sharedRun.standardOutput, "Cf upper stations: n/a"));
   CHECK(hasText(sharedRun.standardOutput, "Cf lower stations: n/a"));
   CHECK(hasText(sharedRun.standardOutput, "Cp points:"));
+  const std::vector<std::string> inviscidRow =
+      firstSequenceDataRow(sharedRun.standardOutput);
+  CHECK_EQ(inviscidRow.size(), std::size_t{9});
+  if (inviscidRow.size() == 9) {
+    CHECK_EQ(inviscidRow[4], std::string{"n/a"});
+    CHECK_EQ(inviscidRow[5], std::string{"0.000000"});
+    CHECK_EQ(inviscidRow[7], std::string{"0"});
+  }
   CHECK(sharedRun.filesInWorkingDirectory.empty());
   CHECK(sharedRun.standardError.empty());
 
@@ -197,6 +239,17 @@ TEST(integration, LibraryDemoL9ViscousAndOptionalValues) {
   CHECK(hasText(defaults.standardOutput, "Reynolds: 1000000"));
   CHECK(hasText(defaults.standardOutput, "Specified CL"));
   CHECK(hasText(defaults.standardOutput, "CDF"));
+  CHECK(hasText(defaults.standardOutput, "CDv"));
+  CHECK(hasText(defaults.standardOutput, "iterations"));
+  const std::vector<std::string> sequenceRow =
+      firstSequenceDataRow(defaults.standardOutput);
+  CHECK_EQ(sequenceRow.size(), std::size_t{9});
+  if (sequenceRow.size() == 9) {
+    CHECK(sequenceRow[3] != std::string{"n/a"});
+    CHECK(sequenceRow[4] != std::string{"n/a"});
+    CHECK_EQ(sequenceRow[5], sequenceRow[2]);
+    CHECK(sequenceRow[7] != std::string{"n/a"});
+  }
   const std::optional<std::size_t> upper =
       stationCount(defaults.standardOutput, "Cf upper stations: ");
   const std::optional<std::size_t> lower =

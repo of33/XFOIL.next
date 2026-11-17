@@ -30,6 +30,10 @@ keep-a-changelog layout.
 - Extended the standalone `library-demo` to show the CL target's friction
   drag `CDF` and compact upper/lower Cf station counts from
   `OperatingPointData`; inviscid runs show `n/a`.
+- Extended the standalone `library-demo` alpha-sequence table with the
+  per-point `CDp`, friction-only `CDF`, XFOIL `CDv` and canonical iteration
+  count from `PolarPoint`. The CL target table keeps its `CDF` and Cf
+  station-count output.
 - Published the XFOIL.next Library User Manual as a PDF. The LaTeX source
   remains local and is not part of the public repository. The manual
   documents product version 1.1.0, the current public API, progress and
