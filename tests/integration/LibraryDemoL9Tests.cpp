@@ -24,9 +24,11 @@
 // File: tests/integration/LibraryDemoL9Tests.cpp
 // L9 end-to-end demo runs against the staged installation.
 
+#include <charconv>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -49,6 +51,26 @@ std::string environmentValue(const char* name) {
 
 bool hasText(const std::string& text, std::string_view needle) {
   return text.find(needle) != std::string::npos;
+}
+
+std::optional<std::size_t> stationCount(
+    const std::string& text, std::string_view label) {
+  const std::size_t position = text.find(label);
+  if (position == std::string::npos) {
+    return std::nullopt;
+  }
+  std::size_t begin = position + label.size();
+  while (begin < text.size() && text[begin] == ' ') {
+    ++begin;
+  }
+  std::size_t value = 0;
+  const char* first = text.data() + begin;
+  const char* last = text.data() + text.size();
+  const auto parsed = std::from_chars(first, last, value);
+  if (parsed.ec != std::errc{} || parsed.ptr == first) {
+    return std::nullopt;
+  }
+  return value;
 }
 
 RunResult runDemo(
@@ -140,6 +162,8 @@ TEST(integration, LibraryDemoL9InviscidStaticAndShared) {
   CHECK_FALSE(hasText(sharedRun.standardOutput, "3.0000"));
   CHECK(hasText(sharedRun.standardOutput, "Specified CL"));
   CHECK(hasText(sharedRun.standardOutput, "target_CL"));
+  CHECK(hasText(sharedRun.standardOutput, "Cf upper stations: n/a"));
+  CHECK(hasText(sharedRun.standardOutput, "Cf lower stations: n/a"));
   CHECK(hasText(sharedRun.standardOutput, "Cp points:"));
   CHECK(sharedRun.filesInWorkingDirectory.empty());
   CHECK(sharedRun.standardError.empty());
@@ -149,6 +173,8 @@ TEST(integration, LibraryDemoL9InviscidStaticAndShared) {
   CHECK_EQ(staticRun.exitCode, 0);
   CHECK(hasText(staticRun.standardOutput, "Mode: inviscid"));
   CHECK(hasText(staticRun.standardOutput, "Specified CL"));
+  CHECK(hasText(staticRun.standardOutput, "Cf upper stations: n/a"));
+  CHECK(hasText(staticRun.standardOutput, "Cf lower stations: n/a"));
   CHECK(staticRun.filesInWorkingDirectory.empty());
   CHECK(staticRun.standardError.empty());
 }
@@ -171,8 +197,17 @@ TEST(integration, LibraryDemoL9ViscousAndOptionalValues) {
   CHECK(hasText(defaults.standardOutput, "Reynolds: 1000000"));
   CHECK(hasText(defaults.standardOutput, "Specified CL"));
   CHECK(hasText(defaults.standardOutput, "CDF"));
-  CHECK(hasText(defaults.standardOutput, "Cf upper stations:"));
-  CHECK(hasText(defaults.standardOutput, "Cf lower stations:"));
+  const std::optional<std::size_t> upper =
+      stationCount(defaults.standardOutput, "Cf upper stations: ");
+  const std::optional<std::size_t> lower =
+      stationCount(defaults.standardOutput, "Cf lower stations: ");
+  CHECK(upper.has_value());
+  CHECK(lower.has_value());
+  if (upper.has_value() && lower.has_value()) {
+    CHECK(*upper > 0);
+    CHECK(*lower > 0);
+  }
+  CHECK(hasText(defaults.standardOutput, "Cp points:"));
   CHECK(defaults.filesInWorkingDirectory.empty());
 
   std::vector<std::string> optional = baseArguments(

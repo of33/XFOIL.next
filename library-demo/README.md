@@ -88,16 +88,28 @@ xfoil-next-lib-demo \
 The demo prints the effective configuration, the alpha sequence table, and
 one specified-CL table row. The tables distinguish total drag (`CD`),
 pressure/form drag (`CDp`), and the scalar friction-drag coefficient
-(`CDF`). Sequence rows print `n/a` in the CDF column because the stored
-polar model does not carry a canonical CDF value. The specified-CL row
-reports the optional `xfoil::OperatingPointData::dragCoefficientFriction`;
-inviscid runs print
-`n/a`. When the optional owning Cf distribution is present, the demo also
-prints `Cf upper stations: N` and `Cf lower stations: M` without dumping
-station values. Non-converged points are printed, and the process returns
-exit code 6 when any executed point did not converge. `xfoil::PolarPoint`
-does not expose a per-point iteration count, so the iteration column is
-`n/a` for sequence rows; the specified-CL row reports
+(`CDF`). `CDF` is read directly from
+`xfoil::OperatingPointData::dragCoefficientFriction`; it is friction drag,
+not total viscous drag, and is never reconstructed as `CD - CDp`. Sequence
+rows print `n/a` in the CDF column because the stored polar model does not
+carry a canonical CDF value. If sequence data ever displays
+`xfoil::PolarPoint::dragCoefficientViscous`, that column is `CDv` (total
+viscous drag), not `CDF`.
+
+The specified-CL row reports the optional
+`xfoil::OperatingPointData::dragCoefficientFriction`; inviscid runs print
+`n/a`. The demo also always prints `Cf upper stations: N` and
+`Cf lower stations: M`, using the owning
+`xfoil::OperatingPointData::skinFriction` value returned by the solve call.
+It does not call `Session::currentSkinFriction()`. Viscous results show the
+upper/lower station counts; inviscid results show `n/a`. The demo checks
+that each Cf side has equal-length `x`, `y`, `s`, and `cf` vectors and
+reports a controlled analysis error (exit code 5) for inconsistent
+friction data. It prints only station counts, not the full Cf table.
+Non-converged points are printed, and the process returns exit code 6 when
+any executed point did not converge. `xfoil::PolarPoint` does not expose a
+per-point iteration count, so the iteration column is `n/a` for sequence
+rows; the specified-CL row reports
 `xfoil::OperatingPointData::iterations`.
 
 ## Exit codes

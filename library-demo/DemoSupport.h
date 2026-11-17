@@ -134,9 +134,20 @@ std::string statusText(xfoil::ConvergenceStatus status);
 [[nodiscard]]
 std::string cpPointCount(std::size_t count);
 
+enum class FrictionOutputStatus {
+  ok,
+  inconsistent
+};
+
+struct FrictionOutputResult {
+  FrictionOutputStatus status{FrictionOutputStatus::inconsistent};
+  std::string text;
+  std::string message;
+};
+
 [[nodiscard]]
-std::string cfStationCounts(
-    const xfoil::SkinFrictionDistribution& distribution);
+FrictionOutputResult formatClFriction(
+    const xfoil::OperatingPointData& point);
 
 }  // namespace xfoil_demo
 

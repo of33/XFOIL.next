@@ -21,6 +21,9 @@ keep-a-changelog layout.
   `currentSkinFriction()` remains and uses the same projection. Inviscid
   points leave both optionals empty; sequence/polar points remain
   unchanged and do not carry Cf data.
+- Extended the standalone `library-demo` to show the CL target's friction
+  drag `CDF` and compact upper/lower Cf station counts from
+  `OperatingPointData`; inviscid runs show `n/a`.
 - Published the XFOIL.next Library User Manual as a PDF. The LaTeX source
   remains local and is not part of the public repository. The manual
   documents product version 1.1.0, the current public API, progress and

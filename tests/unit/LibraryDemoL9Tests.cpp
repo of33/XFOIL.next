@@ -63,6 +63,22 @@ bool hasText(const std::string& text, std::string_view needle) {
   return text.find(needle) != std::string::npos;
 }
 
+xfoil::SkinFrictionDistribution validFriction(
+    std::size_t upperCount, std::size_t lowerCount) {
+  xfoil::SkinFrictionDistribution distribution;
+  distribution.upper.side = xfoil::SurfaceSide::upper;
+  distribution.lower.side = xfoil::SurfaceSide::lower;
+  distribution.upper.x.resize(upperCount);
+  distribution.upper.y.resize(upperCount);
+  distribution.upper.s.resize(upperCount);
+  distribution.upper.cf.resize(upperCount);
+  distribution.lower.x.resize(lowerCount);
+  distribution.lower.y.resize(lowerCount);
+  distribution.lower.s.resize(lowerCount);
+  distribution.lower.cf.resize(lowerCount);
+  return distribution;
+}
+
 }  // namespace
 
 TEST(unit, LibraryDemoL9ArgumentContract) {
@@ -258,6 +274,7 @@ TEST(unit, LibraryDemoL9OutputAndStatus) {
   point.liftCoefficient = 0.5;
   point.dragCoefficient = 0.01;
   point.dragCoefficientPressure = 0.002;
+  point.dragCoefficientViscous = 0.123456;
   point.momentCoefficient = -0.03;
   point.convergence = xfoil::ConvergenceStatus::converged;
   const std::string sequenceRow = xfoil_demo::formatSequenceRow(point);
@@ -266,20 +283,27 @@ TEST(unit, LibraryDemoL9OutputAndStatus) {
   CHECK(hasText(sequenceRow, "0.002000"));
   CHECK(hasText(sequenceRow, "n/a"));
   CHECK(hasText(sequenceRow, "converged"));
+  CHECK_FALSE(hasText(sequenceRow, "0.123456"));
 
   xfoil::OperatingPointData clPoint;
   clPoint.alpha = xfoil::Degrees{3.3114};
   clPoint.liftCoefficient = 0.4;
-  clPoint.dragCoefficient = 0.007;
+  clPoint.viscous = true;
+  clPoint.dragCoefficient = 0.020;
+  clPoint.dragCoefficientPressure = 0.005;
   clPoint.dragCoefficientFriction = 0.004;
   clPoint.momentCoefficient = -0.01;
   clPoint.iterations = 7;
   clPoint.convergence = xfoil::ConvergenceStatus::converged;
+  clPoint.skinFriction = validFriction(3, 2);
   const std::string clRow = xfoil_demo::formatClRow(0.4, clPoint);
   CHECK(hasText(clRow, "0.4000"));
   CHECK(hasText(clRow, "3.3114"));
   CHECK(hasText(clRow, "0.400000"));
+  CHECK(hasText(clRow, "0.020000"));
+  CHECK(hasText(clRow, "0.005000"));
   CHECK(hasText(clRow, "0.004000"));
+  CHECK_FALSE(hasText(clRow, "0.015000"));
   CHECK(hasText(clRow, "7"));
   CHECK(hasText(clRow, "converged"));
 
@@ -292,11 +316,47 @@ TEST(unit, LibraryDemoL9OutputAndStatus) {
   CHECK_EQ(xfoil_demo::statusText(xfoil::ConvergenceStatus::failed),
            std::string{"failed"});
   CHECK_EQ(xfoil_demo::cpPointCount(240), std::string{"Cp points: 240"});
-  xfoil::SkinFrictionDistribution cf;
-  cf.upper.cf.resize(3);
-  cf.lower.cf.resize(2);
-  CHECK_EQ(xfoil_demo::cfStationCounts(cf),
-           std::string{"Cf upper stations: 3\nCf lower stations: 2"});
+}
+
+TEST(unit, LibraryDemoL9FrictionOutputContract) {
+  xfoil::OperatingPointData inviscid;
+  const xfoil_demo::FrictionOutputResult noFriction =
+      xfoil_demo::formatClFriction(inviscid);
+  CHECK(noFriction.status == xfoil_demo::FrictionOutputStatus::ok);
+  CHECK_EQ(noFriction.text,
+           std::string{"Cf upper stations: n/a\nCf lower stations: n/a"});
+
+  xfoil::OperatingPointData viscous;
+  viscous.viscous = true;
+  viscous.dragCoefficientFriction = 0.004;
+  viscous.skinFriction = validFriction(124, 116);
+  const xfoil_demo::FrictionOutputResult complete =
+      xfoil_demo::formatClFriction(viscous);
+  CHECK(complete.status == xfoil_demo::FrictionOutputStatus::ok);
+  CHECK_EQ(complete.text,
+           std::string{"Cf upper stations: 124\nCf lower stations: 116"});
+
+  xfoil::OperatingPointData cdfOnly;
+  cdfOnly.viscous = true;
+  cdfOnly.dragCoefficientFriction = 0.004;
+  CHECK(xfoil_demo::formatClFriction(cdfOnly).status ==
+        xfoil_demo::FrictionOutputStatus::inconsistent);
+
+  xfoil::OperatingPointData cfOnly;
+  cfOnly.viscous = true;
+  cfOnly.skinFriction = validFriction(3, 2);
+  CHECK(xfoil_demo::formatClFriction(cfOnly).status ==
+        xfoil_demo::FrictionOutputStatus::inconsistent);
+
+  xfoil::OperatingPointData malformed = viscous;
+  malformed.skinFriction->upper.x.resize(2);
+  CHECK(xfoil_demo::formatClFriction(malformed).status ==
+        xfoil_demo::FrictionOutputStatus::inconsistent);
+
+  xfoil::OperatingPointData lowerMalformed = viscous;
+  lowerMalformed.skinFriction->lower.s.resize(1);
+  CHECK(xfoil_demo::formatClFriction(lowerMalformed).status ==
+        xfoil_demo::FrictionOutputStatus::inconsistent);
 }
 
 TEST(unit, LibraryDemoL9ExitCodes) {

@@ -183,13 +183,17 @@ int main(int argc, char** argv) {
   std::cout << xfoil_demo::formatClRow(
       options.targetLiftCoefficient, clValue);
   std::cout << '\n';
+  const xfoil_demo::FrictionOutputResult friction =
+      xfoil_demo::formatClFriction(clValue);
+  if (friction.status == xfoil_demo::FrictionOutputStatus::inconsistent) {
+    return fail("analysis", friction.message,
+                static_cast<int>(xfoil_demo::ExitCode::analysis));
+  }
   const std::size_t cpCount = clValue.surface.has_value()
       ? clValue.surface->cp.size()
       : std::size_t{0};
+  std::cout << friction.text << '\n';
   std::cout << xfoil_demo::cpPointCount(cpCount) << '\n';
-  if (clValue.skinFriction.has_value()) {
-    std::cout << xfoil_demo::cfStationCounts(*clValue.skinFriction) << '\n';
-  }
 
   const bool clConverged =
       clValue.convergence == xfoil::ConvergenceStatus::converged;

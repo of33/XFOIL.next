@@ -671,12 +671,44 @@ std::string cpPointCount(std::size_t count) {
   return "Cp points: " + std::to_string(count);
 }
 
-std::string cfStationCounts(
-    const xfoil::SkinFrictionDistribution& distribution) {
-  return "Cf upper stations: " +
-         std::to_string(distribution.upper.cf.size()) +
-         "\nCf lower stations: " +
-         std::to_string(distribution.lower.cf.size());
+FrictionOutputResult formatClFriction(
+    const xfoil::OperatingPointData& point) {
+  const bool hasCdf = point.dragCoefficientFriction.has_value();
+  const bool hasCf = point.skinFriction.has_value();
+  if (hasCdf != hasCf) {
+    return {FrictionOutputStatus::inconsistent, {},
+            "inconsistent friction data: CDF and Cf presence differ"};
+  }
+  if (point.viscous != hasCf) {
+    return {FrictionOutputStatus::inconsistent, {},
+            "inconsistent friction data: viscous flag and Cf presence differ"};
+  }
+  if (!hasCf) {
+    return {FrictionOutputStatus::ok,
+            "Cf upper stations: n/a\nCf lower stations: n/a", {}};
+  }
+
+  const xfoil::SkinFrictionDistribution& distribution = *point.skinFriction;
+  const xfoil::SkinFrictionSide& upper = distribution.upper;
+  const xfoil::SkinFrictionSide& lower = distribution.lower;
+  const bool upperConsistent =
+      upper.x.size() == upper.y.size() &&
+      upper.y.size() == upper.s.size() &&
+      upper.s.size() == upper.cf.size();
+  const bool lowerConsistent =
+      lower.x.size() == lower.y.size() &&
+      lower.y.size() == lower.s.size() &&
+      lower.s.size() == lower.cf.size();
+  if (!upperConsistent || !lowerConsistent) {
+    return {FrictionOutputStatus::inconsistent, {},
+            "inconsistent Cf station data: x/y/s/cf lengths differ"};
+  }
+
+  return {FrictionOutputStatus::ok,
+          "Cf upper stations: " + std::to_string(upper.cf.size()) +
+              "\nCf lower stations: " +
+              std::to_string(lower.cf.size()),
+          {}};
 }
 
 }  // namespace xfoil_demo
