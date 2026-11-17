@@ -39,6 +39,7 @@
 #include "xfoil/Result.h"
 #include "xfoil/SkinFriction.h"
 #include "xfoil/SequenceResult.h"
+#include "xfoil/session/SequencePointRecord.h"
 #include "xfoil/session/SessionState.h"
 
 namespace xfoil::session {
@@ -68,13 +69,25 @@ Result<OperatingPointData> projectLastOperatingPoint(
 
 // Points of the active stored polar slot as a sequence result. The
 // stored polar is a completed accumulation; its points are reported as
-// converged because only accepted accumulation points are stored.
+// converged because only accepted accumulation points are stored. The
+// stored dataset provides CDp and CDv but has no canonical CDF or
+// iteration count, so those PolarPoint optionals remain empty.
 [[nodiscard]]
 Result<SequenceResult> projectActivePolar(
     const SessionComposition& session);
 
-// Pure mapping of an existing analysis-result sequence. No session state
-// is read and no solver is called.
+// Pure mapping of an internal detailed sequence. No session state is read
+// and no solver is called. The optional scalar fields are copied as
+// captured at point completion.
+[[nodiscard]]
+SequenceResult projectSequence(
+    std::span<const SequencePointRecord> records,
+    SequenceStopReason stopReason = SequenceStopReason::completed,
+    std::optional<std::size_t> stoppedAtIndex = std::nullopt);
+
+// Compatibility mapping of a plain analysis-result sequence. No session
+// state is read and no solver is called. The extended scalar optionals are
+// left empty.
 [[nodiscard]]
 SequenceResult projectSequence(
     std::span<const AnalysisResult> results,

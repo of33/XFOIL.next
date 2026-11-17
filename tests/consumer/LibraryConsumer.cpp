@@ -32,6 +32,7 @@
 #include "xfoil/AnalysisRequest.h"
 #include "xfoil/Analyze.h"
 #include "xfoil/Progress.h"
+#include "xfoil/SequenceResult.h"
 #include "xfoil/Session.h"
 #include "xfoil/SkinFriction.h"
 #include "xfoil/geometry/AirfoilGeometry.h"
@@ -125,6 +126,26 @@ int main() {
       cf.lower.y.size() != cf.lower.cf.size() ||
       cf.lower.s.size() != cf.lower.cf.size()) {
     return 1;
+  }
+
+  xfoil::AlphaSequence cfSequence;
+  cfSequence.start = xfoil::Degrees{0.0};
+  cfSequence.endExclusive = xfoil::Degrees{2.0};
+  cfSequence.step = xfoil::Degrees{1.0};
+  const xfoil::Result<xfoil::SequenceResult> sequence =
+      cfSession.solveAlphaSequence(cfSequence, nullptr, progress);
+  if (sequence.isErr() || sequence.value().points.empty()) {
+    return 1;
+  }
+  for (const xfoil::PolarPoint& sequencePoint : sequence.value().points) {
+    if (!sequencePoint.dragCoefficientPressure.has_value() ||
+        !sequencePoint.dragCoefficientFriction.has_value() ||
+        !sequencePoint.dragCoefficientViscous.has_value() ||
+        !sequencePoint.iterations.has_value() ||
+        *sequencePoint.dragCoefficientFriction < 0.0 ||
+        *sequencePoint.dragCoefficientViscous != sequencePoint.dragCoefficient) {
+      return 1;
+    }
   }
 
   std::cout << "LibraryConsumer PASS\n";

@@ -548,9 +548,10 @@ static Result<SequenceResult> solveAlphaSequenceImpl(
   }
 
   CallbackProgressObserver observer(progress);
-  const std::vector<AnalysisResult> results = session::runAlphaSequence(
-      composition, sequence.start, sequence.endExclusive, sequence.step,
-      cancellation, observerFor(progress, observer));
+  const std::vector<session::SequencePointRecord> results =
+      session::runAlphaSequenceDetailed(
+          composition, sequence.start, sequence.endExclusive, sequence.step,
+          cancellation, observerFor(progress, observer));
   if (results.empty()) {
     return Result<SequenceResult>::fail(
         sequenceError(ErrorCategory::internal, "sequence.empty",
@@ -561,22 +562,24 @@ static Result<SequenceResult> solveAlphaSequenceImpl(
   std::optional<std::size_t> stoppedAtIndex;
   std::size_t includedCount = results.size();
   for (std::size_t index = 0; index < results.size(); ++index) {
-    if (results[index].status == AnalysisStatus::progressCallbackFailure) {
+    if (results[index].result.status ==
+        AnalysisStatus::progressCallbackFailure) {
       return Result<SequenceResult>::fail(
           session::progressCallbackFailureError());
     }
-    if (results[index].status == AnalysisStatus::cancelled) {
+    if (results[index].result.status == AnalysisStatus::cancelled) {
       stopReason = SequenceStopReason::cancelled;
       stoppedAtIndex = index;
       includedCount = index + 1;
       break;
     }
-    if (!results[index].successful) {
+    if (!results[index].result.successful) {
       if (index == 0) {
         return Result<SequenceResult>::fail(
-            session::analysisStatusError(results[index].status));
+            session::analysisStatusError(results[index].result.status));
       }
-      if (results[index].status == AnalysisStatus::invalidConfiguration) {
+      if (results[index].result.status ==
+          AnalysisStatus::invalidConfiguration) {
         if (results.size() >= kMaximumSequencePoints) {
           return Result<SequenceResult>::fail(
               sequenceError(ErrorCategory::capacityExceeded,
@@ -595,8 +598,8 @@ static Result<SequenceResult> solveAlphaSequenceImpl(
     }
   }
 
-  const std::span<const AnalysisResult> included(results.data(),
-                                                 includedCount);
+  const std::span<const session::SequencePointRecord> included(
+      results.data(), includedCount);
   return Result<SequenceResult>::ok(
       session::projectSequence(included, stopReason, stoppedAtIndex));
 }

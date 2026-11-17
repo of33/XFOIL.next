@@ -78,6 +78,7 @@
 #include "xfoil/core/export_data/ExportData.h"
 #include "xfoil/io/ExportFormats.h"
 #include "xfoil/session/ProgressObserver.h"
+#include "xfoil/session/SequencePointRecord.h"
 #include "xfoil/session/SessionState.h"
 
 namespace xfoil::session {
@@ -198,6 +199,14 @@ AnalysisResult continueViscousPoint(SessionComposition& session,
 // 100000): runs runSpecAlpha per point. A requested abort returns
 // a cancelled result and terminates; a cancelled result supplied by
 // runSpecAlpha is retained and also terminates.
+[[nodiscard]]
+std::vector<SequencePointRecord> runAlphaSequenceDetailed(
+    SessionComposition& session, Degrees start, Degrees endExclusive,
+    Degrees step, const CancellationToken* cancellation,
+    ProgressObserver* progress = nullptr);
+
+// Compatibility wrapper around runAlphaSequenceDetailed() for callers that
+// only need the existing AnalysisResult sequence contract.
 [[nodiscard]]
 std::vector<AnalysisResult> runAlphaSequence(SessionComposition& session,
                                              Degrees start,

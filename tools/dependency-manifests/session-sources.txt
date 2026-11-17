@@ -5,6 +5,7 @@
 # Forbidden: app/, cli/, tests, xfoil/XFoil.h,
 # globally mutable solver state.
 include/xfoil/session/ProgressObserver.h
+include/xfoil/session/SequencePointRecord.h
 include/xfoil/session/SessionErrorMapping.h
 include/xfoil/session/SessionState.h
 include/xfoil/session/SessionOps.h

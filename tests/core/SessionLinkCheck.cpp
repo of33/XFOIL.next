@@ -50,6 +50,7 @@
 #include "xfoil/session/SessionState.h"
 #include "xfoil/Types.h"
 
+#include <cstddef>
 #include <utility>
 #include <vector>
 
@@ -105,8 +106,16 @@ int main() {
   OperatingPointData operatingPoint;
   operatingPoint.convergence = ConvergenceStatus::converged;
   PolarPoint polarPoint;
+  polarPoint.dragCoefficientPressure = 0.003;
+  polarPoint.dragCoefficientFriction = 0.004;
+  polarPoint.dragCoefficientViscous = 0.02;
+  polarPoint.iterations = std::size_t{6};
   SequenceResult sequence;
   sequence.points.push_back(polarPoint);
+  if (!sequence.points[0].dragCoefficientFriction.has_value() ||
+      !sequence.points[0].iterations.has_value()) {
+    return 1;
+  }
   if (sequence.points.size() != 1) {
     return 1;
   }

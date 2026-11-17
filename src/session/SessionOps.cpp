@@ -1557,20 +1557,57 @@ bool initializeAnalysis(SessionComposition& session) {
                             PointExecutionPolicy::operSinglePointWarmStart);
  }
 
-std::vector<AnalysisResult> runAlphaSequence(SessionComposition& session,
-                                             Degrees start,
-                                             Degrees endExclusive, Degrees step,
-                                             const CancellationToken*
-                                                 cancellation,
-                                             ProgressObserver* progress) {
-  std::vector<AnalysisResult> results;
+namespace {
+
+SequencePointRecord makeSequencePointRecord(SessionComposition& session,
+                                            AnalysisResult result) {
+  SequencePointRecord record;
+  record.result = std::move(result);
+  if (!record.result.successful) {
+    return record;
+  }
+  const auto& viscals = session.viscous.viscals;
+  if (std::isfinite(viscals.cdp)) {
+    record.dragCoefficientPressure = viscals.cdp;
+  }
+  if (session.result.lastDiagnostics.viscalRan) {
+    if (std::isfinite(viscals.cdf)) {
+      record.dragCoefficientFriction = viscals.cdf;
+    }
+    if (std::isfinite(viscals.cd)) {
+      // The existing XFOIL polar contract stores CDv = CD for a viscous
+      // point and CDv = 0 for an inviscid point.
+      record.dragCoefficientViscous = viscals.cd;
+    }
+  } else {
+    record.dragCoefficientViscous = 0.0;
+  }
+  if (record.result.iterations >= 0) {
+    record.iterations =
+        static_cast<std::size_t>(record.result.iterations);
+  }
+  return record;
+}
+
+}  // namespace
+
+std::vector<SequencePointRecord> runAlphaSequenceDetailed(
+    SessionComposition& session, Degrees start, Degrees endExclusive,
+    Degrees step, const CancellationToken* cancellation,
+    ProgressObserver* progress) {
+  std::vector<SequencePointRecord> records;
 
   const auto makeRangeError = [](const char* message) {
-    AnalysisResult error;
-    error.status = AnalysisStatus::invalidConfiguration;
-    error.successful = false;
-    error.diagnostic = message;
-    return error;
+    SequencePointRecord record;
+    record.result.status = AnalysisStatus::invalidConfiguration;
+    record.result.successful = false;
+    record.result.diagnostic = message;
+    return record;
+  };
+  const auto makeRecord = [](AnalysisResult result) {
+    SequencePointRecord record;
+    record.result = std::move(result);
+    return record;
   };
 
   const bool validSequence =
@@ -1580,9 +1617,9 @@ std::vector<AnalysisResult> runAlphaSequence(SessionComposition& session,
        (step.value < 0.0 && start.value > endExclusive.value));
 
   if (!validSequence) {
-    session.result.lastResult = makeRangeError("Invalid polar range");
-    results.push_back(session.result.lastResult);
-    return results;
+    session.result.lastResult = makeRangeError("Invalid polar range").result;
+    records.push_back(makeRecord(session.result.lastResult));
+    return records;
   }
 
   const bool ascending = step.value > 0.0;
@@ -1606,22 +1643,23 @@ std::vector<AnalysisResult> runAlphaSequence(SessionComposition& session,
       failed.successful = false;
       failed.diagnostic = "Progress callback failed";
       session.result.lastResult = failed;
-      results.push_back(std::move(failed));
+      records.push_back(makeRecord(std::move(failed)));
       return true;
     }
     return false;
   };
 
   if (reportSequence(0, 0)) {
-    return results;
+    return records;
   }
 
   for (double alpha = start.value;
        ascending ? (alpha < endExclusive.value) : (alpha > endExclusive.value);) {
-    if (results.size() >= kMaximumPolarPoints) {
-      session.result.lastResult = makeRangeError("Polar point limit exceeded");
+    if (records.size() >= kMaximumPolarPoints) {
+      session.result.lastResult =
+          makeRangeError("Polar point limit exceeded").result;
       session.result.lastResult.alpha = Degrees{alpha};
-      results.push_back(session.result.lastResult);
+      records.push_back(makeRecord(session.result.lastResult));
       break;
     }
 
@@ -1631,38 +1669,58 @@ std::vector<AnalysisResult> runAlphaSequence(SessionComposition& session,
       cancelled.status = AnalysisStatus::cancelled;
       cancelled.successful = false;
       session.result.lastResult = cancelled;
-      results.push_back(session.result.lastResult);
-      reportSequence(results.size(), results.size() - 1);
+      records.push_back(makeRecord(std::move(cancelled)));
+      reportSequence(records.size(), records.size() - 1);
       break;
     }
 
-    const std::size_t sequenceIndex = results.size();
-    results.push_back(
+    const std::size_t sequenceIndex = records.size();
+    records.push_back(makeSequencePointRecord(
+        session,
         runSpecifiedPoint(session, Degrees{alpha}, 0.0,
-                          PointSpecificationPolicy::specifiedAlpha, cancellation,
-                          PointExecutionPolicy::coldStart, std::nullopt,
-                          progress, sequenceIndex));
+                          PointSpecificationPolicy::specifiedAlpha,
+                          cancellation, PointExecutionPolicy::coldStart,
+                          std::nullopt, progress, sequenceIndex)));
 
-    if (results.back().status == AnalysisStatus::progressCallbackFailure) {
+    if (records.back().result.status ==
+        AnalysisStatus::progressCallbackFailure) {
       break;
     }
-    if (reportSequence(results.size(), sequenceIndex)) {
+    if (reportSequence(records.size(), sequenceIndex)) {
       break;
     }
-    if (results.back().status == AnalysisStatus::cancelled) {
+    if (records.back().result.status == AnalysisStatus::cancelled) {
       break;
     }
 
     const double next = alpha + step.value;
     if (next == alpha) {
-      session.result.lastResult = makeRangeError("Polar sequence stalled");
+      session.result.lastResult =
+          makeRangeError("Polar sequence stalled").result;
       session.result.lastResult.alpha = Degrees{alpha};
-      results.push_back(session.result.lastResult);
+      records.push_back(makeRecord(session.result.lastResult));
       break;
     }
     alpha = next;
   }
 
+  return records;
+}
+
+std::vector<AnalysisResult> runAlphaSequence(SessionComposition& session,
+                                             Degrees start,
+                                             Degrees endExclusive, Degrees step,
+                                             const CancellationToken*
+                                                 cancellation,
+                                             ProgressObserver* progress) {
+  std::vector<SequencePointRecord> records =
+      runAlphaSequenceDetailed(session, start, endExclusive, step,
+                               cancellation, progress);
+  std::vector<AnalysisResult> results;
+  results.reserve(records.size());
+  for (SequencePointRecord& record : records) {
+    results.push_back(std::move(record.result));
+  }
   return results;
 }
 

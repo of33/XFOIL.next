@@ -19,8 +19,14 @@ keep-a-changelog layout.
   (`CDF`) and an optional owning `skinFriction` distribution. One-shot
   `analyze()` results now retain Cf after the temporary session is gone.
   `currentSkinFriction()` remains and uses the same projection. Inviscid
-  points leave both optionals empty; sequence/polar points remain
-  unchanged and do not carry Cf data.
+  points leave both optionals empty.
+- Completed live sequence `PolarPoint` rows with optional pressure/form
+  drag `CDp`, friction-only `CDF`, XFOIL `CDv`, and the executed iteration
+  count. `CDF` comes directly from the canonical final VISCAL state and is
+  never reconstructed as `CD - CDp` or integrated from Cf. Sequence points
+  remain compact scalar rows without Cp/Cf distributions; stored polar
+  points expose the stored CDp/CDv columns but no canonical CDF or
+  iteration count.
 - Extended the standalone `library-demo` to show the CL target's friction
   drag `CDF` and compact upper/lower Cf station counts from
   `OperatingPointData`; inviscid runs show `n/a`.

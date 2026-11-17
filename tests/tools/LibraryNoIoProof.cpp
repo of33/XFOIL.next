@@ -240,6 +240,24 @@ bool runApiWorkflow(const xfoil::geometry::AirfoilGeometry& memoryGeometry) {
     return false;
   }
 
+  AlphaSequence cfSequence;
+  cfSequence.start = Degrees{0.0};
+  cfSequence.endExclusive = Degrees{2.0};
+  cfSequence.step = Degrees{1.0};
+  const auto cfSequenceResult =
+      cfSession.solveAlphaSequence(cfSequence, nullptr, progress);
+  if (cfSequenceResult.isErr() || cfSequenceResult.value().points.empty()) {
+    return false;
+  }
+  for (const auto& sequencePoint : cfSequenceResult.value().points) {
+    if (!sequencePoint.dragCoefficientPressure.has_value() ||
+        !sequencePoint.dragCoefficientFriction.has_value() ||
+        !sequencePoint.dragCoefficientViscous.has_value() ||
+        !sequencePoint.iterations.has_value()) {
+      return false;
+    }
+  }
+
   xfoil::CancellationToken token;
   token.requestCancellation();
   const auto cancelled = first.solveAlphaSequence(sequence, &token);

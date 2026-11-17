@@ -49,9 +49,10 @@ enum class SequenceStopReason {
 
 // One polar or sequence point. alpha is in degrees, coefficients are
 // dimensionless, machNumber and reynoldsNumber are the canonical
-// point values. The optional polar-only columns are present when the
-// point comes from a stored polar dataset; they are absent for a point
-// built only from an xfoil::AnalysisResult.
+// point values. Optional scalar columns are present only when the
+// corresponding canonical value exists for the point. Live sequence
+// points fill the scalar drag and iteration fields from the point's
+// completed solver state; stored-polar points fill the stored columns.
 struct PolarPoint {
   Degrees alpha{};
   double liftCoefficient{};
@@ -74,6 +75,15 @@ struct PolarPoint {
 
   ConvergenceStatus convergence{ConvergenceStatus::notRun};
   std::vector<Diagnostic> diagnostics;
+  // Friction-only drag coefficient CDF from the canonical final VISCAL
+  // state. This is not CDv and is never CD - CDp. Present for a successful
+  // viscous live-sequence point; absent for inviscid, cancelled or failed
+  // points and for stored polar points that do not carry CDF.
+  std::optional<double> dragCoefficientFriction;
+  // Executed analysis iteration count. Present for a successful live
+  // sequence point (including inviscid point count 0); absent for failed or
+  // cancelled points and for stored polar points that do not carry it.
+  std::optional<std::size_t> iterations;
 };
 
 // A partial or complete sequence. points are in the requested order;

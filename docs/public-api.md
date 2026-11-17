@@ -181,11 +181,41 @@ available after the temporary one-shot session has been destroyed.
 `Session::currentSkinFriction()` remains available for stateful callers
 and uses the same projection as `OperatingPointData::skinFriction`.
 
-Sequence/polar points do not carry a CDF scalar or a Cf distribution.
-`PolarPoint::dragCoefficientViscous` is the XFOIL `CDv` column (total
-viscous drag), not the friction-only `CDF`. The legacy `AnalysisResult`
-compatibility type remains unchanged and does not gain the optional
-detail fields.
+Sequence and polar points remain compact scalar rows. They carry `CD`,
+optional `CDp`, optional friction-only `CDF`, optional XFOIL `CDv`, the
+canonical iteration count when available, and the convergence status.
+They do not carry Cp or Cf distributions, boundary-layer station arrays
+or wake data. The full Cp/Cf detail remains in `OperatingPointData` and in
+the session projections `currentSurfaceDistribution()` and
+`currentSkinFriction()`.
+
+For a live `Session::solveAlphaSequence` point, `PolarPoint` fills these
+scalars from the point's completed solver state:
+
+- `dragCoefficientPressure`: direct CDp value; present for a successful
+  inviscid or viscous point.
+- `dragCoefficientFriction`: direct canonical friction `CDF` from the final
+  VISCAL state; present only for a successful viscous point. It is never
+  reconstructed as `CD - CDp` and is never integrated from Cf.
+- `dragCoefficientViscous`: the existing XFOIL `CDv` total viscous drag
+  column, not the friction-only `CDF`.
+- `iterations`: the executed point iteration count; `0` for a successful
+  inviscid point and absent for failed or cancelled points.
+
+A successful but unconverged viscous point keeps its canonical scalar
+values. Cancelled and failed points leave the optional scalars empty; no
+value is carried over from a previous point. Stored-polar points exposed
+through `activePolar()` carry the stored CDp/CDv columns but do not carry
+CDF or an iteration count because the stored polar model has no canonical
+fields for them.
+
+`PolarPoint` is a scalar sequence row, not an owning surface-detail result.
+Do not expect a `surface` or `skinFriction` member on it.
+
+The legacy `AnalysisResult` compatibility type remains unchanged and does
+not gain the optional detail fields. The legacy `analyzePolar` path returns
+`AnalysisResult` values as before; callers that need the compact complete
+point should use `Session::solveAlphaSequence`.
 
 ## Skin-friction distribution
 
