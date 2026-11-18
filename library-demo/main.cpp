@@ -82,6 +82,8 @@ int main(int argc, char** argv) {
   std::cout.imbue(std::locale::classic());
   std::cerr.imbue(std::locale::classic());
 
+  // Command-line parsing belongs to the host application, not to the
+  // library. The demo owns option names, validation and help text.
   const xfoil_demo::ParseResult parsed =
       xfoil_demo::parseArguments(argc, argv);
   if (parsed.status == xfoil_demo::ParseStatus::help) {
@@ -94,6 +96,8 @@ int main(int argc, char** argv) {
     return static_cast<int>(xfoil_demo::ExitCode::usage);
   }
 
+  // The host reads the profile file. The library receives only the
+  // resulting name and coordinate values.
   const xfoil_demo::Options& options = parsed.options;
   const xfoil_demo::ProfileResult profileResult =
       xfoil_demo::readProfileFile(options.airfoilPath);
@@ -102,6 +106,8 @@ int main(int argc, char** argv) {
                 static_cast<int>(xfoil_demo::ExitCode::profile));
   }
 
+  // Pass an owning public geometry value to the session. The library copies
+  // the coordinates; the host keeps ownership of its profile buffers.
   const xfoil_demo::Profile& profile = profileResult.profile;
   xfoil::geometry::AirfoilGeometry geometry;
   const xfoil::geometry::GeometryAssignmentResult assignment =
@@ -119,6 +125,8 @@ int main(int argc, char** argv) {
         static_cast<int>(xfoil_demo::ExitCode::geometry));
   }
 
+  // Start from the public library defaults and override only values that the
+  // user supplied explicitly.
   xfoil::PanelingOptions paneling;
   if (options.panelCount.has_value()) {
     paneling.panelCount = *options.panelCount;
@@ -130,6 +138,9 @@ int main(int argc, char** argv) {
         static_cast<int>(xfoil_demo::ExitCode::geometry));
   }
 
+  // Re = 0 selects the inviscid path; Re > 0 selects viscous analysis.
+  // Mach and iteration overrides are optional and otherwise keep the
+  // AnalysisConfig{} defaults.
   xfoil::AnalysisConfig config;
   config.reynoldsNumber = options.reynoldsNumber == 0.0
       ? 0.0
@@ -150,6 +161,8 @@ int main(int argc, char** argv) {
 
   std::cout << xfoil_demo::formatHeader(profile, config, paneling, options);
 
+  // The same session and configuration are used for the alpha sequence and
+  // the following CL point. AlphaSequence::endExclusive is not executed.
   xfoil::AlphaSequence sequence;
   sequence.start = xfoil::Degrees{options.alphaStart};
   sequence.endExclusive = xfoil::Degrees{options.alphaEndExclusive};
@@ -161,6 +174,8 @@ int main(int argc, char** argv) {
         static_cast<int>(xfoil_demo::ExitCode::analysis));
   }
 
+  // Results are read from structured public fields. The demo never parses
+  // library console text; the library produces no such text.
   const xfoil::SequenceResult& sequenceValue = sequenceResult.value();
   std::cout << xfoil_demo::sequenceTableHeader();
   for (const xfoil::PolarPoint& point : sequenceValue.points) {
@@ -170,6 +185,8 @@ int main(int argc, char** argv) {
 
   const bool sequenceWasComplete = sequenceComplete(sequenceValue);
 
+  // Reuse the same session for the specified-CL point so the demo shows a
+  // continuous host workflow rather than two independent one-shot calls.
   const auto clResult = session.solveCl(options.targetLiftCoefficient);
   if (clResult.isErr()) {
     const int code = sequenceWasComplete

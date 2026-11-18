@@ -41,6 +41,8 @@
 
 namespace xfoil_demo {
 
+// Process exit status. The values are part of the demo contract and are
+// documented in library-demo/README.md.
 enum class ExitCode : int {
   success = 0,
   usage = 2,
@@ -50,6 +52,9 @@ enum class ExitCode : int {
   nonConverged = 6
 };
 
+// Command-line request owned by the demo. Required fields are always set;
+// optional analysis overrides are empty until explicitly supplied. Angles
+// are in degrees and the alpha interval has an exclusive end.
 struct Options {
   std::string airfoilPath;
   double reynoldsNumber{};
@@ -68,18 +73,24 @@ enum class ParseStatus {
   error
 };
 
+// Result of host-side argument parsing. On error, message is suitable for
+// the command-line diagnostic; it is not a library error.
 struct ParseResult {
   ParseStatus status{ParseStatus::error};
   Options options;
   std::string message;
 };
 
+// Parses argv without touching the library. The demo owns this policy.
 [[nodiscard]]
 ParseResult parseArguments(int argc, const char* const* argv);
 
+// Returns the command-line help text, including the public library defaults.
 [[nodiscard]]
 std::string helpText();
 
+// Airfoil coordinates owned by the demo before they are passed to the
+// public geometry value type.
 struct Profile {
   std::string name;
   std::vector<xfoil::Point2D> points;
@@ -91,22 +102,29 @@ enum class ProfileStatus {
   parseError
 };
 
+// Result of reading or parsing a profile. The profile is demo-owned; the
+// library never receives a filename or stream.
 struct ProfileResult {
   ProfileStatus status{ProfileStatus::parseError};
   Profile profile;
   std::string message;
 };
 
+// Parses the minimal two-column profile text. fallbackName is used when the
+// text has no name line.
 [[nodiscard]]
 ProfileResult parseProfileText(
     std::string_view text, std::string_view fallbackName);
 
+// Host-side file read. This is deliberately outside the library boundary.
 [[nodiscard]]
 ProfileResult readProfileFile(const std::string& path);
 
+// Re = 0 selects the inviscid path; Re > 0 selects the viscous path.
 [[nodiscard]]
 bool usesViscousPath(const Options& options) noexcept;
 
+// Formats the effective configuration before any solver result is printed.
 [[nodiscard]]
 std::string formatHeader(
     const Profile& profile,
@@ -117,12 +135,15 @@ std::string formatHeader(
 [[nodiscard]]
 std::string sequenceTableHeader();
 
+// Formats one compact sequence row from public PolarPoint scalars.
 [[nodiscard]]
 std::string formatSequenceRow(const xfoil::PolarPoint& point);
 
 [[nodiscard]]
 std::string clTableHeader();
 
+// Formats one specified-CL row. OperatingPointData is mapped into the same
+// compact row layout; the demo does not recompute coefficients.
 [[nodiscard]]
 std::string formatClRow(
     double targetLiftCoefficient,
@@ -139,12 +160,16 @@ enum class FrictionOutputStatus {
   inconsistent
 };
 
+// Result of formatting the optional CDF/Cf output. text is printed; message
+// describes a controlled inconsistency and is not a library diagnostic.
 struct FrictionOutputResult {
   FrictionOutputStatus status{FrictionOutputStatus::inconsistent};
   std::string text;
   std::string message;
 };
 
+// Checks CDF/Cf presence invariants and formats station counts. CDF is read
+// from the owning result field; it is never reconstructed from CD and CDp.
 [[nodiscard]]
 FrictionOutputResult formatClFriction(
     const xfoil::OperatingPointData& point);

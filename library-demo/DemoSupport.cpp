@@ -73,6 +73,8 @@ std::vector<std::string_view> tokens(std::string_view line) {
   return result;
 }
 
+// Strict full-token conversion. Partial parses and non-finite values are
+// rejected so that a malformed numeric line is not mistaken for a name line.
 bool parseFiniteDouble(std::string_view text, double& value) {
   text = trim(text);
   if (text.empty()) {
@@ -92,6 +94,8 @@ bool parseFiniteDouble(std::string_view text, double& value) {
          std::isfinite(value);
 }
 
+// Recognizes NaN/Inf spellings so they can be reported as invalid numeric
+// input instead of being accepted as a profile name.
 bool isNonFiniteLiteral(std::string_view text) {
   text = trim(text);
   if (!text.empty() && (text.front() == '+' || text.front() == '-')) {
@@ -111,6 +115,8 @@ bool isNumericLike(std::string_view text) {
   return parseFiniteDouble(text, ignored) || isNonFiniteLiteral(text);
 }
 
+// Counts and limits must be positive and fit the public type. Zero and
+// negative values are command-line errors, not library defaults.
 bool parsePositiveInteger(std::string_view text, int& value) {
   text = trim(text);
   if (text.empty()) {
@@ -191,6 +197,10 @@ std::string formatIterations(
   return std::to_string(*iterations);
 }
 
+// Shared table-row formatter for sequence and specified-CL output. Missing
+// optional scalars are printed as n/a. CD is total drag, CDp is
+// pressure/form drag, CDF is friction drag and CDv is XFOIL total viscous
+// drag; CDv is omitted from the CL table to match that result's fields.
 std::string formatRow(
     std::string_view first,
     std::optional<std::string_view> second,
@@ -230,6 +240,8 @@ std::string fallbackProfileName(std::string_view path) {
 
 }  // namespace
 
+// Host-side command-line policy. Required options are checked here so that
+// the library never sees an incomplete request.
 ParseResult parseArguments(int argc, const char* const* argv) {
   std::optional<std::string> airfoilPath;
   std::optional<double> reynoldsNumber;
@@ -481,6 +493,10 @@ std::string helpText() {
   return stream.str();
 }
 
+// Minimal two-column profile format: optional name line, then x/y pairs.
+// Blank and # comment lines are ignored. The first non-numeric line is the
+// name; otherwise the file stem is used. At least three finite points are
+// required before the geometry can be passed to the library.
 ProfileResult parseProfileText(
     std::string_view text, std::string_view fallbackName) {
   ProfileResult result;
@@ -576,6 +592,8 @@ ProfileResult parseProfileText(
   return result;
 }
 
+// Host-only file access. The demo reads the complete file and leaves all
+// file handling here; the library receives only the parsed profile values.
 ProfileResult readProfileFile(const std::string& path) {
   std::ifstream input(path, std::ios::binary);
   if (!input) {
@@ -645,6 +663,8 @@ std::string clTableHeader() {
       "CM  iterations  status\n";
 }
 
+// Adapt the owning operating-point result to the compact row formatter.
+// This copies public scalar fields only; no coefficient is recomputed.
 std::string formatClRow(
     double targetLiftCoefficient,
     const xfoil::OperatingPointData& point) {
@@ -661,6 +681,7 @@ std::string formatClRow(
                    formatAlpha(point.alpha.value), polarPoint, false);
 }
 
+// Stable text for the public convergence status used in both tables.
 std::string statusText(xfoil::ConvergenceStatus status) {
   switch (status) {
     case xfoil::ConvergenceStatus::notRun:
@@ -677,10 +698,16 @@ std::string statusText(xfoil::ConvergenceStatus status) {
   return "failed";
 }
 
+// Cp is stored on panel/surface nodes. Cf uses separate boundary-layer
+// stations, so these counts are intentionally not interchangeable.
 std::string cpPointCount(std::size_t count) {
   return "Cp points: " + std::to_string(count);
 }
 
+// Cf is a boundary-layer-station distribution, while CDF is one owning
+// scalar from the final VISCAL state. The demo checks the presence and
+// length invariants, prints only station counts, and never reconstructs CDF
+// as CD - CDp. Inviscid results have neither CDF nor Cf, so both are n/a.
 FrictionOutputResult formatClFriction(
     const xfoil::OperatingPointData& point) {
   const bool hasCdf = point.dragCoefficientFriction.has_value();

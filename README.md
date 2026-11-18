@@ -71,7 +71,15 @@ See [NOTICE](NOTICE) for full attribution and provenance details.
   settings via `xfoil.def` / `WDEF` / `RDEF`, GDES and CAMB, MDES and QDES,
   VPAR boundary-layer parameters, flap state and hinge moments, and the
   remaining TOP and OPER commands;
-- a modern, session-based C++ API (`xfoil::XFoil`, `xfoil::XFoilSession`);
+- a modern in-memory C++20 API: the stateful `xfoil::Session` and the
+  one-shot `xfoil::analyze()`, with owning result value types;
+- optional synchronous progress reporting and a separate cancellation
+  token;
+- public results for Cp and boundary-layer Cf, including the owning
+  skin-friction distribution, and drag results `CD`, `CDp`, `CDF` and
+  `CDv`;
+- complete scalar sequence-point results with `CD`, `CDp`, `CDF`, `CDv` and
+  the executed iteration count;
 - installable static and shared C++ libraries with public headers and
   pkg-config metadata;
 - a memory-only library contract with isolated sessions, no application
@@ -81,6 +89,34 @@ See [NOTICE](NOTICE) for full attribution and provenance details.
 - a native non-interactive batch mode that reuses the same command
   interpreter, session layer, and numerical core;
 - deterministic handling of unavailable plotting and cursor commands.
+
+## Library API
+
+`xfoil::Session` is the stateful in-memory API. The host loads or generates
+geometry, configures paneling and analysis, then runs alpha or CL points and
+alpha sequences in the same session. `xfoil::analyze()` runs one point on a
+temporary session for one-shot use. The compatibility facades
+`xfoil::XFoil` and `xfoil::XFoilSession` remain available.
+
+Results are owning value types. `OperatingPointData` carries the scalar
+coefficients, convergence data, an optional panel-node Cp distribution and
+an optional boundary-layer-station Cf distribution. A live
+`xfoil::PolarPoint` carries the compact sequence scalars and status without
+Cp or Cf containers.
+
+The drag fields are distinct:
+
+- `CD` is the total drag coefficient;
+- `CDp` is the pressure/form-drag coefficient;
+- `CDF` is the canonical friction-drag coefficient from the final VISCAL
+  state, never reconstructed as `CD - CDp`;
+- `CDv` is the XFOIL total viscous-drag column, not the friction-only
+  `CDF`.
+
+Progress is optional and synchronous. Cancellation uses a separate
+`xfoil::CancellationToken`; callback failure and cancellation are distinct.
+The library performs no file or console I/O. Separate sessions have isolated
+logical state; concurrent use of one session is not supported.
 
 ## What it deliberately does not provide
 
@@ -133,6 +169,27 @@ make test-library-demo            # demo integration tests
 See [building and testing](docs/building-and-testing.md) for the complete
 target list, compiler requirements, and validation checks.
 
+## Library artifacts and consumption
+
+`make library` writes the static and shared artifacts below `build/<mode>/lib`:
+
+| Platform | Static | Shared |
+| --- | --- | --- |
+| Linux | `libxfoil_next.a` | `libxfoil_next.so` |
+| Windows | `libxfoil_next_static.a` | `xfoil_next.dll` with import library `libxfoil_next.dll.a` |
+
+Supported consumption modes are:
+
+- direct linking against the build-tree artifacts;
+- installation into a local prefix;
+- staged installation through `DESTDIR` for testing and packaging;
+- optional pkg-config metadata (`xfoil-next.pc`);
+- explicit include and library paths without pkg-config.
+
+A global installation is not required. See
+[building and testing](docs/building-and-testing.md) and the
+[public API](docs/public-api.md) for the complete commands.
+
 ## Library user manual
 
 The complete guide to the embedded C++20 library is available as
@@ -140,11 +197,24 @@ The complete guide to the embedded C++20 library is available as
 in-memory API, build and installation, static and shared linking, the
 no-I/O contract, session isolation, and the standalone demo.
 
+## Standalone demo
+
 The standalone consumer in [library-demo](library-demo/README.md) builds only
 against an installed package. It reads an airfoil profile itself, passes
 the coordinates through public in-memory values, runs an alpha sequence
 and a specified-CL point in the same session, and writes structured
 results to stdout. The library still performs no file or console I/O.
+
+```sh
+PKG_CONFIG_PATH=/usr/local/lib/pkgconfig make -C library-demo
+library-demo/build/shared/xfoil-next-lib-demo \
+  --airfoil library-demo/profiles/naca0012.dat \
+  --re 1000000 \
+  --alpha-start -2 \
+  --alpha-end 8 \
+  --alpha-step 1 \
+  --cl 0.6
+```
 
 ## Platform support
 
@@ -350,10 +420,6 @@ compiler, platform, and reference-validation matrix.
 
 The following items describe intended directions rather than fixed release
 commitments. Order and scope may change as technical evaluation proceeds.
-
-- **XFOIL 6.996 integration.** Evaluate and integrate the changes
-  introduced in XFOIL 6.996, applying the same reference-based numerical
-  validation used for the current codebase before any merge.
 
 - **Detailed documentation.** Documenting the code structure and program
   flow in detail including theoretical background explanations
