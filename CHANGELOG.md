@@ -4,41 +4,41 @@ All notable changes to XFOIL.next are documented here. The format follows
 a plain release log; this project does not advertise a strict
 keep-a-changelog layout.
 
-## Unreleased
+## 1.2.0 — 2026-11-18
 
-- Added optional synchronous progress reporting for geometry, paneling,
-  analysis phases, viscous iterations and sequence points. The separate
-  cancellation token is now observed at safe viscous-iteration boundaries;
-  callback failures return `progress.callbackFailure` without terminating
-  the host process.
-- Added `Session::currentSkinFriction()` and the owning
-  `SkinFrictionDistribution` value type. The projection exposes separate
-  upper/lower boundary-layer stations, excludes wake stations, preserves
-  the existing `tau/(0.5*qinf^2)` sign and performs no solver work or I/O.
-- Completed `OperatingPointData` with optional `dragCoefficientFriction`
-  (`CDF`) and an optional owning `skinFriction` distribution. One-shot
-  `analyze()` results now retain Cf after the temporary session is gone.
-  `currentSkinFriction()` remains and uses the same projection. Inviscid
-  points leave both optionals empty.
-- Completed live sequence `PolarPoint` rows with optional pressure/form
-  drag `CDp`, friction-only `CDF`, XFOIL `CDv`, and the executed iteration
-  count. `CDF` comes directly from the canonical final VISCAL state and is
-  never reconstructed as `CD - CDp` or integrated from Cf. Sequence points
-  remain compact scalar rows without Cp/Cf distributions; stored polar
-  points expose the stored CDp/CDv columns but no canonical CDF or
-  iteration count.
-- Extended the standalone `library-demo` to show the CL target's friction
-  drag `CDF` and compact upper/lower Cf station counts from
-  `OperatingPointData`; inviscid runs show `n/a`.
-- Extended the standalone `library-demo` alpha-sequence table with the
-  per-point `CDp`, friction-only `CDF`, XFOIL `CDv` and canonical iteration
-  count from `PolarPoint`. The CL target table keeps its `CDF` and Cf
-  station-count output.
-- Published the XFOIL.next Library User Manual as a PDF. The LaTeX source
-  remains local and is not part of the public repository. The manual
-  documents product version 1.1.0, the current public API, progress and
-  cancellation, the skin-friction projection, and the standalone
-  `library-demo` consumer.
+The 1.2.0 release makes the validated XFOIL.next core available as an
+installable C++20 in-memory library while preserving the complete native CLI.
+
+- Added the public C++20 library API with the stateful `xfoil::Session`,
+  the one-shot `xfoil::analyze()`, owning result values and structured
+  diagnostics. The compatibility facades remain available.
+- Added optional synchronous progress reporting and a separate
+  `CancellationToken`. Callback failure and cancellation are distinct, and
+  the host process remains in control.
+- Added public Cp and Cf results, the owning `SkinFrictionDistribution`, and
+  complete operating-point drag results with canonical `CDF` and owning Cf
+  data that remain valid after a one-shot call returns.
+- Completed live alpha-sequence `PolarPoint` rows with `CD`, `CDp`, `CDF`,
+  XFOIL `CDv`, the executed iteration count and status. Stored polar points
+  remain compact and expose the stored CDp/CDv columns without a canonical
+  CDF or iteration count.
+- Added installable static and shared libraries, public headers, direct
+  build-tree linking, local-prefix and staged installation, optional
+  pkg-config metadata and static/shared consumer checks on Linux and Windows.
+- Added the standalone `library-demo` external consumer and the finished
+  XFOIL.next Library User Manual, version 1.2.0.
+- Added the public `CITATION.cff` metadata with the Zenodo concept DOI.
+- Verified the memory-only contract with isolated sessions, the armed
+  static/shared no-I/O proof, library dependency and symbol checks, and the
+  concurrency diagnostic. Concurrent use of one session is not supported.
+- Preserved full CLI command, batch, file-format and numerical parity with
+  the validated product.
+- Validated the cumulative Linux and Windows matrix with 2266/2266 tests in
+  the full Debug and Release suites.
+
+Limits remain explicit: no stable cross-compiler C++ ABI, no C ABI, no CMake
+package, no language bindings, no guaranteed parallel execution, and no
+graphical plot backend.
 
 ## 1.1.0
 

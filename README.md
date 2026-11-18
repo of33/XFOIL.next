@@ -27,7 +27,7 @@ alt="GPL-3.0-or-later">
 
 # XFOIL.next
 
-**Version 1.1.0**
+**Version 1.2.0**
 
 XFOIL.next implements the complete canonical non-graphical XFOIL
 functionality in modern C++.
@@ -341,9 +341,9 @@ creates a timestamped subdirectory instead, so existing logs are never
 overwritten. The run records environment metadata (Windows version,
 UCRT64 identity, compiler versions, commit, dirty-worktree note),
 builds Debug and Release with `-Werror`, runs the full debug suites
-(unit 1769, integration 297, batch 47), repeats core (465) and
+(unit 1868, integration 343, batch 47), repeats core (465) and
 regression (5) three times each from the same untouched debug build,
-executes the full release suite (2121), checks the binary contract
+executes the full release suite (2266), checks the binary contract
 (`xfoil.next.exe` present, `xfoil.exe` absent, `--version` output),
 and performs one `XFOIL_DUMP_DIAG=1` PACC dump diagnostic.
 It writes separate logs (`00-environment.txt` … `50-summary.txt`), a
@@ -389,9 +389,9 @@ archive.
 ## Validation baseline
 
 Linux is the canonical platform for the bit-exact and byte-exact reference
-contracts. The 1.0.0 release tree was validated with GCC 13.3, the
+contracts. The 1.2.0 release tree was validated with GCC 13.3, the
 GCC 16.2.0 point release (side-by-side installation), and Clang 18.1.3. The
-1.1.0 release preparation changes only the product version metadata and its
+1.2.0 release preparation changes only the product version metadata and its
 banner goldens; the validated cumulative numerical matrix is unchanged. The
 Fortran reference and harness checks use the documented system GNU Fortran
 baseline.
@@ -415,6 +415,7 @@ compiler, platform, and reference-validation matrix.
 - [Contributing](CONTRIBUTING.md)
 - [Security](SECURITY.md)
 - [Changelog](CHANGELOG.md)
+- [Release preparation](RELEASE.md)
 
 ## Planned Work
 

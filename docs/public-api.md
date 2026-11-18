@@ -499,7 +499,7 @@ g++ -std=c++20 -DXFOIL_NEXT_USE_SHARED -I"$PREFIX/include" \
     example.cpp -L"$PREFIX/lib" -lxfoil_next -o example
 ```
 
-The product version remains 1.1.0. There is no CMake package and no stable
+The product version remains 1.2.0. There is no CMake package and no stable
 C++ ABI promise in the current public API. Consumers must use a compatible
 C++ standard library and compiler/ABI. The pkg-config file is
 `xfoil-next.pc`; `make test-consumers` builds static and shared consumers
