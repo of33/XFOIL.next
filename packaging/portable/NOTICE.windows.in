@@ -1,0 +1,81 @@
+XFOIL.next @VERSION@ portable Windows distribution
+==================================================
+
+This archive contains the XFOIL.next command-line application for
+x86-64 Windows:
+
+  @ARCHIVE_NAME@
+
+XFOIL.next
+Copyright (C) 2026 Olaf Frommann
+https://github.com/of33/XFOIL.next
+
+XFOIL.next is based on XFOIL 6.99 by Mark Drela and Harold Youngren.
+
+License
+-------
+
+XFOIL.next is distributed as a whole under the GNU General Public
+License, version 3 or later (GPL-3.0-or-later). The full license text is
+provided in the file LICENSE. The original XFOIL sources retain their own
+copyright and license notices. The original XFOIL 6.99 distribution was
+made available under GPL-2.0-or-later.
+
+Exact source
+------------
+
+Source URL:        @SOURCE_URL@
+Source reference:  @SOURCE_REF@
+Source commit:     @SOURCE_COMMIT@
+Source tree:       @SOURCE_TREE@
+Source date epoch: @SOURCE_DATE_EPOCH@
+
+The corresponding source is the complete source tree at the commit and
+tree above. It can be obtained from the source URL and, where applicable,
+from the referenced tag. The archive itself is a binary distribution and
+does not contain the full source tree.
+
+Build identity
+--------------
+
+Target:            Windows x86_64
+Runtime contract:  single PE, statically linked MinGW-w64 runtime,
+                   system UCRT provided by Windows
+Builder baseline:  Windows 11, MSYS2 UCRT64
+Compiler:          GCC/MinGW 16.1.0 Rev5 (gcc 16.1.0-5)
+Runtime packages:  mingw-w64-ucrt-x86_64-gcc-libs 16.1.0-5,
+                   mingw-w64-ucrt-x86_64-winpthreads
+                   14.0.0.r59.g93753750c-1,
+                   mingw-w64-ucrt-x86_64-crt 14.0.0.r59.g93753750c-1
+Linker setting:    -Wl,--no-insert-timestamp
+Build command:     make release BUILDROOT=<portable-root>
+                   CXX='g++ -static -static-libgcc -static-libstdc++
+                   -Wl,--no-insert-timestamp'
+Minimum platform:  x86-64 Windows 10/11 with the Universal C Runtime
+Runtime DLLs:      KERNEL32.dll and api-ms-win-crt-*.dll from Windows
+
+The executable does not require libstdc++-6.dll, libgcc_s_seh-1.dll,
+libwinpthread-1.dll, msys-2.0.dll or xfoil_next.dll. Extract the archive
+contents into a directory of your choice and run `xfoil.next.exe`. No
+installation step is required.
+
+Original XFOIL provenance
+-------------------------
+
+The original XFOIL sources retain their own copyright and license notices.
+The original XFOIL 6.99 source distribution was made available under the
+GNU General Public License, version 2 or later. XFOIL.next is distributed
+as a whole under GPL-3.0-or-later.
+
+Third-party runtime notices
+---------------------------
+
+The executable includes GCC runtime support code, the MinGW-w64 runtime
+and winpthreads code. The applicable notices are included below:
+
+* GCC Runtime Library Exception, version 3.1;
+* MinGW-w64 runtime notices, including the overall copyright notice,
+  getopt/NetBSD, gdtoa, Sun math library, string/memory/time functions
+  and Wine-derived headers/IDLs notices;
+* winpthreads MIT notice;
+* BSD-3-Clause-Clear notice for designated winpthreads portions.

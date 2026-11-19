@@ -1,0 +1,68 @@
+XFOIL.next @VERSION@ portable Linux distribution
+================================================
+
+This archive contains the XFOIL.next command-line application for
+x86-64 Linux:
+
+  @ARCHIVE_NAME@
+
+XFOIL.next
+Copyright (C) 2026 Olaf Frommann
+https://github.com/of33/XFOIL.next
+
+XFOIL.next is based on XFOIL 6.99 by Mark Drela and Harold Youngren.
+
+License
+-------
+
+XFOIL.next is distributed as a whole under the GNU General Public
+License, version 3 or later (GPL-3.0-or-later). The full license text is
+provided in the file LICENSE. The original XFOIL sources retain their own
+copyright and license notices. The original XFOIL 6.99 distribution was
+made available under GPL-2.0-or-later.
+
+Exact source
+------------
+
+Source URL:        @SOURCE_URL@
+Source reference:  @SOURCE_REF@
+Source commit:     @SOURCE_COMMIT@
+Source tree:       @SOURCE_TREE@
+Source date epoch: @SOURCE_DATE_EPOCH@
+
+The corresponding source is the complete source tree at the commit and
+tree above. It can be obtained from the source URL and, where applicable,
+from the referenced tag. The archive itself is a binary distribution and
+does not contain the full source tree.
+
+Build identity
+--------------
+
+Target:            Linux x86_64
+Runtime contract:  single ELF, statically linked libstdc++/libgcc,
+                   dynamically linked to the system glibc
+Builder baseline:  Ubuntu 22.04.5 LTS, glibc 2.35
+Compiler:          GCC 13.4.0 (13.4.0-6ubuntu1~22~ppa2)
+Build command:     make release BUILDROOT=<portable-root>
+                   CXX='g++-13 -static-libstdc++ -static-libgcc'
+Minimum platform:  x86-64 Linux with glibc 2.35 or newer
+System libraries:  libc.so.6, libm.so.6, ld-linux-x86-64.so.2
+
+The executable does not require libstdc++.so.6, libgcc_s.so.1 or a
+project shared library at runtime. The system glibc remains dynamically
+linked. Install the archive contents in a directory of your choice and run
+`./xfoil.next`. No installation step is required.
+
+Original XFOIL provenance
+-------------------------
+
+The original XFOIL sources retain their own copyright and license notices.
+The original XFOIL 6.99 source distribution was made available under the
+GNU General Public License, version 2 or later. XFOIL.next is distributed
+as a whole under GPL-3.0-or-later.
+
+Third-party runtime notices
+---------------------------
+
+The executable includes GCC runtime support code under the GCC Runtime
+Library Exception, version 3.1. The exception text is included below.

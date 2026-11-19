@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+# XFOIL.next
+#
+# Copyright (C) 2026 Olaf Frommann
+# https://github.com/of33/XFOIL.next
+#
+# XFOIL.next is based on XFOIL 6.99 by Mark Drela and
+# Harold Youngren.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Build the portable Windows x86_64 runtime in MSYS2 UCRT64 with the
+# accepted GCC/MinGW 16.1.0 Rev5 baseline. The script does not package;
+# use `make portable-windows` for build and package.
+#
+# Builds from a clean source archive need:
+#   XFOIL_SOURCE_COMMIT, XFOIL_SOURCE_TREE, SOURCE_DATE_EPOCH
+# XFOIL_SOURCE_REF is optional ("not tagged" by default).
+
+set -euo pipefail
+
+ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+cd "$ROOT"
+
+BUILDROOT=${BUILDROOT:-build/portable/windows-x86_64}
+JOBS=${JOBS:-$(getconf _NPROCESSORS_ONLN 2>/dev/null || printf '1')}
+CXX_FLAGS='g++ -static -static-libgcc -static-libstdc++ -Wl,--no-insert-timestamp'
+
+fail() {
+    printf 'build-portable-windows.sh: error: %s\n' "$*" >&2
+    exit 1
+}
+
+command -v g++ >/dev/null 2>&1 || fail "g++ is required (UCRT64)"
+command -v make >/dev/null 2>&1 || fail "make is required"
+command -v python3 >/dev/null 2>&1 || fail "python3 is required"
+command -v objdump >/dev/null 2>&1 || fail "objdump is required"
+
+if [ "${MSYSTEM:-}" != "UCRT64" ]; then
+    printf 'build-portable-windows.sh: warning: MSYSTEM is not UCRT64 (%s)\n' \
+        "${MSYSTEM:-unset}" >&2
+fi
+
+git_value() {
+    if [ -d "$ROOT/.git_custom" ]; then
+        GIT_DIR="$ROOT/.git_custom" GIT_WORK_TREE="$ROOT" \
+            git -C "$ROOT" "$@"
+    elif [ -d "$ROOT/.git" ]; then
+        git -C "$ROOT" "$@"
+    else
+        return 1
+    fi
+}
+
+if [ -z "${XFOIL_SOURCE_COMMIT:-}" ]; then
+    XFOIL_SOURCE_COMMIT=$(git_value rev-parse HEAD 2>/dev/null || true)
+fi
+if [ -z "${XFOIL_SOURCE_TREE:-}" ]; then
+    XFOIL_SOURCE_TREE=$(git_value rev-parse 'HEAD^{tree}' 2>/dev/null || true)
+fi
+if [ -z "${XFOIL_SOURCE_REF:-}" ]; then
+    XFOIL_SOURCE_REF=$(git_value describe --tags --exact-match HEAD \
+        2>/dev/null || true)
+    XFOIL_SOURCE_REF=${XFOIL_SOURCE_REF:-not tagged}
+fi
+if [ -z "${SOURCE_DATE_EPOCH:-}" ]; then
+    SOURCE_DATE_EPOCH=$(git_value show -s --format=%ct HEAD 2>/dev/null \
+        || true)
+fi
+
+[ -n "$XFOIL_SOURCE_COMMIT" ] || \
+    fail "XFOIL_SOURCE_COMMIT is required outside a Git checkout"
+[ -n "$XFOIL_SOURCE_TREE" ] || \
+    fail "XFOIL_SOURCE_TREE is required outside a Git checkout"
+[ -n "$SOURCE_DATE_EPOCH" ] || \
+    fail "SOURCE_DATE_EPOCH is required outside a Git checkout"
+case "$SOURCE_DATE_EPOCH" in
+    ''|*[!0-9]*) fail "SOURCE_DATE_EPOCH must be an integer" ;;
+esac
+
+export XFOIL_SOURCE_COMMIT XFOIL_SOURCE_TREE XFOIL_SOURCE_REF
+export SOURCE_DATE_EPOCH
+
+if [ "${XFOIL_PORTABLE_CLEAN:-1}" = "1" ]; then
+    rm -rf "$BUILDROOT/release" "$BUILDROOT/source-metadata.json"
+fi
+
+mkdir -p "$BUILDROOT"
+python3 packaging/portable/package_portable.py metadata \
+    --output "$BUILDROOT/source-metadata.json"
+
+make -j"$JOBS" release BUILDROOT="$BUILDROOT" CXX="$CXX_FLAGS"
+
+VERSION=$(python3 -c \
+    'import json,sys; print(json.load(open(sys.argv[1]))["version"])' \
+    "$BUILDROOT/source-metadata.json")
+
+python3 packaging/portable/check_portable_binary.py \
+    --platform windows \
+    --binary "$BUILDROOT/release/xfoil.next.exe" \
+    --expected-version "$VERSION" \
+    --run-version
+
+printf 'source commit: %s\n' "$XFOIL_SOURCE_COMMIT"
+printf 'source tree:   %s\n' "$XFOIL_SOURCE_TREE"
+printf 'source ref:    %s\n' "$XFOIL_SOURCE_REF"
+printf 'SOURCE_DATE_EPOCH: %s\n' "$SOURCE_DATE_EPOCH"
+printf 'portable binary: %s\n' "$BUILDROOT/release/xfoil.next.exe"

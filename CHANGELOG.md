@@ -4,6 +4,16 @@ All notable changes to XFOIL.next are documented here. The format follows
 a plain release log; this project does not advertise a strict
 keep-a-changelog layout.
 
+## Unreleased
+
+- Added reproducible portable runtime packaging for Linux x86-64 and
+  Windows x86-64. The Linux asset is a single ELF with static
+  libstdc++/libgcc and a glibc 2.35 floor built in a pinned Ubuntu 22.04
+  builder. The Windows asset is a single PE with the static MinGW-w64
+  runtime and no MSYS2/MSYS DLL dependency. Archives contain `LICENSE`,
+  `NOTICE` and the executable; `SHA256SUMS` is separate. The product
+  version is unchanged.
+
 ## 1.2.0
 
 The 1.2.0 release makes the validated XFOIL.next core available as an

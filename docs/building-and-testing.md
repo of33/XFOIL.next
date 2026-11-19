@@ -39,6 +39,47 @@ pure IO objects, but not `src/main.cpp` or the application/CLI adapters.
 Static and shared objects use separate `libobj-static/` and
 `libobj-shared/` roots.
 
+## Portable runtime packaging
+
+The portable targets produce one self-contained runtime executable per
+platform:
+
+```text
+make portable-linux            Linux build + archive
+make portable-windows          Windows build + archive (MSYS2 UCRT64)
+make portable-package-linux    package an existing Linux build
+make portable-package-windows  package an existing Windows build
+make portable-check-linux      validate ELF, dependencies and archive
+make portable-check-windows    validate PE, imports and archive
+make portable-repro-linux      two clean Linux builds, compare bytes
+make portable-repro-windows    two clean Windows builds, compare bytes
+make portable-sha256sums       separate SHA256SUMS for both archives
+```
+
+The Linux build requires Docker for the digest-pinned Ubuntu 22.04 /
+GCC 13.4.0 / glibc 2.35 builder. The Windows build runs on the validated
+Windows 11 + MSYS2 UCRT64 + GCC/MinGW 16.1.0 Rev5 baseline. Outputs are
+written below `build/portable/`:
+
+```text
+linux-x86_64/release/xfoil.next
+windows-x86_64/release/xfoil.next.exe
+dist/XFOIL.next-<version>-linux-x86_64.tar.xz
+dist/XFOIL.next-<version>-windows-x86_64.zip
+dist/XFOIL.next-<version>-SHA256SUMS
+```
+
+Each archive contains exactly `LICENSE`, `NOTICE` and the executable. The
+Linux executable statically includes libstdc++/libgcc and dynamically uses
+system glibc 2.35 or newer. The Windows executable statically includes the
+MinGW-w64 runtime and uses the Windows UCRT. The archive version comes from
+`src/app/ProductInfo.h`; packaging does not bump the version or publish a
+release. Builds from a clean source archive need `XFOIL_SOURCE_COMMIT`,
+`XFOIL_SOURCE_TREE`, optional `XFOIL_SOURCE_REF` and
+`SOURCE_DATE_EPOCH`; the Make targets derive them from Git automatically.
+See [packaging/portable](../packaging/portable/README.md) for the complete
+contract and the pinned toolchain inventory.
+
 ## Test targets
 
 ```text

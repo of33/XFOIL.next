@@ -169,6 +169,33 @@ make test-library-demo            # demo integration tests
 See [building and testing](docs/building-and-testing.md) for the complete
 target list, compiler requirements, and validation checks.
 
+## Portable runtime executables
+
+The repository also provides a reproducible single-executable packaging
+path for Linux x86-64 and Windows x86-64:
+
+```sh
+make portable-linux            # pinned Ubuntu 22.04 / GCC 13.4.0 / glibc 2.35
+make portable-check-linux
+make portable-repro-linux
+
+# In an MSYS2 UCRT64 shell on the validated Windows 11 baseline:
+make portable-windows
+make portable-check-windows
+make portable-repro-windows
+
+make portable-sha256sums       # after both archives exist
+```
+
+Archives contain exactly `LICENSE`, `NOTICE` and the runtime executable.
+The Linux executable statically includes libstdc++/libgcc and requires
+system glibc 2.35 or newer. The Windows executable statically includes the
+MinGW-w64 runtime and requires the Windows UCRT, but no MSYS2/MSYS runtime
+DLLs. See [packaging/portable](packaging/portable/README.md) for the pinned
+toolchains, archive contract and source-identity requirements. These
+commands build local probe assets; they do not tag, upload or publish a
+release.
+
 ## Library artifacts and consumption
 
 `make library` writes the static and shared artifacts below `build/<mode>/lib`:
@@ -230,14 +257,15 @@ Makefile; the product binary is `build/debug/xfoil.next.exe` (or
 `build/release/xfoil.next.exe`). Confirmed on Windows 11 + MSYS2 UCRT64
 with GCC/MinGW 16.1.0 Rev5: the Debug and Release builds are clean under `-Werror`, and
 `xfoil.next.exe` starts directly in the UCRT64 console; from PowerShell
-or `cmd.exe` it also runs when `<MSYS2>\ucrt64\bin` is on `PATH` (MSYS2
-runtime DLLs). A standalone binary without the MSYS2 runtime is not part
-of the contract, and the Fortran reference harnesses are exercised on
-Linux only. Platform-dependent numeric test deviations are handled by
-documented per-test portable contracts in `tests/TestSupport.h` and
-`tests/DumpParitySupport.h`; the Linux bit-exact and byte-exact
-contracts are unchanged. The reproducible MSYS2 evidence run is
-described in [Windows](#windows).
+or `cmd.exe` a normal build also runs when `<MSYS2>\ucrt64\bin` is on
+`PATH` (MSYS2 runtime DLLs). The separate `make portable-windows` target
+produces a single static-runtime executable that needs only the Windows
+UCRT, not the MSYS2/MSYS runtime. The Fortran reference harnesses are
+exercised on Linux only. Platform-dependent numeric test deviations are
+handled by documented per-test portable contracts in
+`tests/TestSupport.h` and `tests/DumpParitySupport.h`; the Linux bit-exact
+and byte-exact contracts are unchanged. The reproducible MSYS2 evidence
+run is described in [Windows](#windows).
 
 ## Windows
 
@@ -248,10 +276,13 @@ Validated on **Windows 11 + MSYS2 UCRT64 + GCC/MinGW 16.1.0 Rev5**
 
 - MSVC is not supported and not promised;
 - Cygwin is not supported and not promised;
-- there is **no standalone binary without the MSYS2 runtime** and no
-  bundled runtime; the product binary links the UCRT64 runtime DLLs,
-  so `<MSYS2>\ucrt64\bin` must be on `PATH` when starting
-  `xfoil.next.exe` from `cmd.exe` or PowerShell.
+- a normal MSYS2 build links the UCRT64 runtime DLLs, so
+  `<MSYS2>\ucrt64\bin` must be on `PATH` when starting
+  `xfoil.next.exe` from `cmd.exe` or PowerShell;
+- the separate `make portable-windows` target produces a single
+  static-runtime executable for Windows x86-64. It requires the Windows
+  UCRT and no MSYS2/MSYS runtime DLL; see
+  [packaging/portable](packaging/portable/README.md).
 
 ### Variable MSYS2 installation path
 
@@ -359,8 +390,9 @@ fail while unresolved toolchain deviations remain. The validated
 Windows validation remains the fully documented manual Windows 11 +
 MSYS2 UCRT64 + GCC/MinGW 16.1.0 Rev5 run described above; see
 `VALIDATION.md` for the hosted toolchain's measured deviations. This
-statement is not a promise of MSVC, Cygwin, a standalone binary or a
-bundled runtime.
+statement is not a promise of MSVC, Cygwin, a normal-build standalone
+binary or a bundled runtime. The explicit `make portable-windows` package
+is the supported static-runtime path.
 
 ## Numerical validation
 

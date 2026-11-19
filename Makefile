@@ -487,6 +487,21 @@ BUILDROOT := build
 GOLDEN_DIR  := tests/golden
 CAPTURE_DIR := $(BUILDROOT)/regression-capture
 
+# Portable runtime packaging. The product version remains the canonical
+# value above. SOURCE_DATE_EPOCH is taken from the environment or the
+# current source commit and is exported to the deterministic packager.
+PORTABLE_ROOT ?= $(BUILDROOT)/portable
+PORTABLE_DIST ?= $(PORTABLE_ROOT)/dist
+PORTABLE_LINUX_BUILDROOT ?= $(PORTABLE_ROOT)/linux-x86_64
+PORTABLE_WINDOWS_BUILDROOT ?= $(PORTABLE_ROOT)/windows-x86_64
+PORTABLE_LINUX_BINARY := $(PORTABLE_LINUX_BUILDROOT)/release/xfoil.next
+PORTABLE_WINDOWS_BINARY := $(PORTABLE_WINDOWS_BUILDROOT)/release/xfoil.next.exe
+PORTABLE_LINUX_ARCHIVE := $(PORTABLE_DIST)/XFOIL.next-$(PRODUCT_VERSION)-linux-x86_64.tar.xz
+PORTABLE_WINDOWS_ARCHIVE := $(PORTABLE_DIST)/XFOIL.next-$(PRODUCT_VERSION)-windows-x86_64.zip
+PORTABLE_WINDOWS_RUN_VERSION := $(if $(filter .exe,$(EXEEXT)),--run-version,)
+SOURCE_DATE_EPOCH ?= $(shell git show -s --format=%ct HEAD 2>/dev/null)
+export SOURCE_DATE_EPOCH
+
 # Mode -> Flags. Object and output directories remain separate.
 debug_FLAGS    := $(DEBUG_FLAGS)
 release_FLAGS  := $(RELEASE_FLAGS)
@@ -524,7 +539,11 @@ LIB_SHARED_IMPORT_FLAG := -Wl,--out-implib
 	library library-static library-shared install \
 	install-headers install-libraries install-cli install-metadata \
 	l6-stage-install test-consumer-static test-consumer-shared test-consumers \
-	library-demo test-library-demo update-golden clean help
+	library-demo test-library-demo update-golden \
+	portable-linux portable-windows portable-package-linux portable-package-windows \
+	portable-check-linux portable-check-windows portable-repro-linux \
+	portable-repro-windows portable-sha256sums \
+	clean help
 
 all: release
 
@@ -909,6 +928,59 @@ test-library-demo: library-demo $(BUILDROOT)/debug/xfoil_tests
 	$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) integration.LibraryDemoL9
 
 # ---------------------------------------------------------------------------
+# Portable runtime packaging (Linux x86_64 and Windows x86_64). Builds
+# are reproducible from the pinned Linux builder image and the accepted
+# MSYS2 UCRT64 Windows baseline. Archives contain LICENSE, NOTICE and the
+# single runtime executable; SHA256SUMS is a separate file.
+# ---------------------------------------------------------------------------
+portable-linux:
+	BUILDROOT="$(PORTABLE_LINUX_BUILDROOT)" tools/build-portable-linux.sh
+	$(MAKE) portable-package-linux
+
+portable-windows:
+	BUILDROOT="$(PORTABLE_WINDOWS_BUILDROOT)" tools/build-portable-windows.sh
+	$(MAKE) portable-package-windows
+
+portable-package-linux:
+	python3 packaging/portable/package_portable.py package \
+		--platform linux \
+		--executable "$(PORTABLE_LINUX_BINARY)" \
+		--output-dir "$(PORTABLE_DIST)" \
+		--metadata "$(PORTABLE_LINUX_BUILDROOT)/source-metadata.json"
+
+portable-package-windows:
+	python3 packaging/portable/package_portable.py package \
+		--platform windows \
+		--executable "$(PORTABLE_WINDOWS_BINARY)" \
+		--output-dir "$(PORTABLE_DIST)" \
+		--metadata "$(PORTABLE_WINDOWS_BUILDROOT)/source-metadata.json"
+
+portable-check-linux:
+	python3 packaging/portable/check_portable_binary.py \
+		--platform linux \
+		--binary "$(PORTABLE_LINUX_BINARY)" \
+		--archive "$(PORTABLE_LINUX_ARCHIVE)" \
+		--expected-version "$(PRODUCT_VERSION)" \
+		--run-version
+
+portable-check-windows:
+	python3 packaging/portable/check_portable_binary.py \
+		--platform windows \
+		--binary "$(PORTABLE_WINDOWS_BINARY)" \
+		--archive "$(PORTABLE_WINDOWS_ARCHIVE)" \
+		--expected-version "$(PRODUCT_VERSION)" $(PORTABLE_WINDOWS_RUN_VERSION)
+
+portable-repro-linux:
+	tools/repro-portable-linux.sh
+
+portable-repro-windows:
+	tools/repro-portable-windows.sh
+
+portable-sha256sums:
+	python3 packaging/portable/package_portable.py sums \
+		--output-dir "$(PORTABLE_DIST)"
+
+# ---------------------------------------------------------------------------
 # Armed no-I/O proof (Linux). The interposition shim is disarmed for
 # loader/harness work and is armed only around the public API workflow.
 # ---------------------------------------------------------------------------
@@ -1166,6 +1238,7 @@ clean:
 		$(BUILDROOT)/c11a-state-harness-dbl \
 		$(BUILDROOT)/core-xycm-harness-dbl \
 		$(BUILDROOT)/fortran-reference-* \
+		$(PORTABLE_ROOT) \
 		$(L6_STAGE) $(L6_CONSUMER) $(DEMO_BUILD_ROOT)
 
 help:
@@ -1189,6 +1262,13 @@ help:
 	@echo "  make test-library-sequence-point - sequence-point scalar tests"
 	@echo "  make test-library-noio          - armed static/shared no-I/O proof"
 	@echo "  make test-tsan-library          - TSan concurrency diagnostic"
+	@echo "  make portable-linux             - build+package Linux portable runtime"
+	@echo "  make portable-windows           - build+package Windows portable runtime"
+	@echo "  make portable-check-linux       - validate Linux binary and archive"
+	@echo "  make portable-check-windows     - validate Windows binary and archive"
+	@echo "  make portable-sha256sums        - write separate SHA256SUMS"
+	@echo "  make portable-repro-linux       - two clean Linux builds and compare"
+	@echo "  make portable-repro-windows     - two clean Windows builds and compare"
 	@echo ""
 	@echo "Test:"
 	@echo "  make test                - full C++ test suite (debug)"
