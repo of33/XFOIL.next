@@ -39,7 +39,6 @@ PUBLIC_DOCS = [
     "CONTRIBUTING.md",
     "SECURITY.md",
     "CHANGELOG.md",
-    "RELEASE.md",
     "docs/architecture.md",
     "docs/building-and-testing.md",
     "docs/cli.md",

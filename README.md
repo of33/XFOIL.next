@@ -415,7 +415,6 @@ compiler, platform, and reference-validation matrix.
 - [Contributing](CONTRIBUTING.md)
 - [Security](SECURITY.md)
 - [Changelog](CHANGELOG.md)
-- [Release preparation](RELEASE.md)
 
 ## Planned Work
 

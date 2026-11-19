@@ -4,7 +4,7 @@ All notable changes to XFOIL.next are documented here. The format follows
 a plain release log; this project does not advertise a strict
 keep-a-changelog layout.
 
-## 1.2.0 — 2026-11-18
+## 1.2.0
 
 The 1.2.0 release makes the validated XFOIL.next core available as an
 installable C++20 in-memory library while preserving the complete native CLI.
