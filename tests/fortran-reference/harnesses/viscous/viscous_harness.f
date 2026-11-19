@@ -199,7 +199,6 @@ C ==== Test 3: VISCAL (NITER=10, let the point converge) ====
       WRITE(*,9200) 'DIAG4 W4_IDSMIN1 = ', W4(IDSMIN+1)
       WRITE(*,9200) 'DIAG4 SNEW_IDSMIN = ', SNEW(IDSMIN)
       WRITE(*,9200) 'DIAG4 SNEW_IDSMIN1 = ', SNEW(IDSMIN+1)
-      WRITE(*,9201) 'DIAG5 NN = ', NN
       WRITE(*,9201) 'DIAG5 IPFAC = ', IPFAC
       WRITE(*,9201) 'DIAG5 IBLE = ', IBLE
       WRITE(*,9200) 'DIAG5 SB1 = ', SB(1)
