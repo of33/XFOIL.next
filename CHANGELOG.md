@@ -4,15 +4,20 @@ All notable changes to XFOIL.next are documented here. The format follows
 a plain release log; this project does not advertise a strict
 keep-a-changelog layout.
 
-## Unreleased
+## 1.2.1 — 2026-11-20
 
-- Added reproducible portable runtime packaging for Linux x86-64 and
-  Windows x86-64. The Linux asset is a single ELF with static
-  libstdc++/libgcc and a glibc 2.35 floor built in a pinned Ubuntu 22.04
-  builder. The Windows asset is a single PE with the static MinGW-w64
-  runtime and no MSYS2/MSYS DLL dependency. Archives contain `LICENSE`,
-  `NOTICE` and the executable; `SHA256SUMS` is separate. The product
-  version is unchanged.
+- Added reproducible portable x86_64 command-line packages for Linux and
+  Windows.
+- The Linux executable statically links the GCC C++ runtime and requires
+  glibc 2.35 or newer.
+- The Windows executable statically links the MinGW/GCC runtime and runs
+  without MSYS2 or additional runtime DLLs.
+- Added deterministic package generation, SHA-256 checksums, binary
+  dependency audits and third-party runtime notices.
+- No aerodynamic, numerical, command-line, library API or file-format
+  behavior changed.
+
+No library SDK binary assets are included.
 
 ## 1.2.0
 

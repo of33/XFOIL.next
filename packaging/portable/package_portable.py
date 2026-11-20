@@ -74,6 +74,7 @@ PLATFORMS = {
             ("MinGW-w64 runtime notices", "MINGW-W64-RUNTIME-NOTICES.txt"),
             ("winpthreads MIT notice", "WINPTHREADS-MIT.txt"),
             ("BSD-3-Clause-Clear notice", "BSD-3-Clause-Clear.txt"),
+            ("MinGW-w64 CRT ZPL-2.1 notice", "MINGW-W64-ZPL-2.1.txt"),
         ],
     },
 }

@@ -88,7 +88,7 @@ same check from two clean source copies on the Windows baseline.
 ## Source identity
 
 The generated `NOTICE` records the product version, source URL, commit,
-tree, tag/reference and `SOURCE_DATE_EPOCH`. Builds from a clean source
+tree, source tag and `SOURCE_DATE_EPOCH`. Builds from a clean source
 archive have no `.git` directory and therefore need:
 
 ```text
@@ -113,5 +113,5 @@ licenses/                 verbatim third-party runtime notices
 
 The Linux note covers the statically linked GCC runtime (GCC Runtime
 Library Exception) and the dynamically linked system glibc. The Windows note
-covers the GCC runtime exception, MinGW-w64 runtime, winpthreads MIT and
-BSD-3-Clause-Clear notices.
+covers the GCC runtime exception, MinGW-w64 runtime, winpthreads MIT,
+BSD-3-Clause-Clear and MinGW-w64 CRT ZPL-2.1 notices.

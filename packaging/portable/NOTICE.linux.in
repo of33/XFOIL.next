@@ -25,7 +25,7 @@ Exact source
 ------------
 
 Source URL:        @SOURCE_URL@
-Source reference:  @SOURCE_REF@
+Source tag:        @SOURCE_REF@
 Source commit:     @SOURCE_COMMIT@
 Source tree:       @SOURCE_TREE@
 Source date epoch: @SOURCE_DATE_EPOCH@

@@ -154,4 +154,4 @@ jobs:
           test ! -e build/release/xfoil.exe
           out=$(./build/release/xfoil.next.exe --version)
           echo "version output: [$out]"
-          test "$out" = "XFOIL.next 1.2.0"
+          test "$out" = "XFOIL.next 1.2.1"

@@ -25,7 +25,7 @@ Exact source
 ------------
 
 Source URL:        @SOURCE_URL@
-Source reference:  @SOURCE_REF@
+Source tag:        @SOURCE_REF@
 Source commit:     @SOURCE_COMMIT@
 Source tree:       @SOURCE_TREE@
 Source date epoch: @SOURCE_DATE_EPOCH@
@@ -78,4 +78,5 @@ and winpthreads code. The applicable notices are included below:
   getopt/NetBSD, gdtoa, Sun math library, string/memory/time functions
   and Wine-derived headers/IDLs notices;
 * winpthreads MIT notice;
-* BSD-3-Clause-Clear notice for designated winpthreads portions.
+* BSD-3-Clause-Clear notice for designated winpthreads portions;
+* Zope Public License 2.1 notice for the MinGW-w64 CRT/runtime.

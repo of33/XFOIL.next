@@ -1,19 +1,19 @@
 # Validation baseline
 
 This document records the compiler and platform baseline used to validate
-the XFOIL.next 1.2.0 release. Compiler and runtime differences can affect
+the XFOIL.next 1.2.1 release. Compiler and runtime differences can affect
 floating-point evaluation and the byte representation of generated
 numerical reference artifacts.
 
 ## Release
 
 - Product: XFOIL.next
-- Version: 1.2.0
+- Version: 1.2.1
 
-## Tested release candidate
+## Tested release-candidate base
 
-- HEAD: `27fb0227400be5430368a4d1e87d390f9e5fd2af`
-- Tree: `9a2f01ea4c69a151b61cdedb807a1a7b79e6068d`
+- B2 parent HEAD: `baf860f121423f2d4080477c90ed946600a8413a`
+- B2 parent tree: `524cfb1f5c167504dfef1c2c8bdd202808b1fd49`
 - Manual edition: 1.2.0
 - Manual pages: 109
 - Manual PDF SHA-256: `e5c2aec673a71bf63110251f72f83f87107b9c0e17581fe53bab356ac88995f9`
@@ -79,9 +79,26 @@ documented floating-point differences. Linux retains the strict bit-exact
 and byte-exact reference contracts. No Windows-specific golden files are
 used.
 
-The 1.2.0 release preparation changes only the product version metadata and
-its banner goldens. It does not change the accepted cumulative numerical test
-basis or the reference artifacts.
+The 1.2.1 release preparation changes only the product version metadata,
+version-dependent goldens, portable runtime packaging and release
+documentation. It does not change the accepted cumulative numerical test basis
+or the reference artifacts.
+
+## Portable runtime packaging
+
+The 1.2.1 release preparation adds single-executable runtime packaging; it
+does not add library SDK binary assets.
+
+- Linux: Ubuntu 22.04.5, GCC 13.4.0 and glibc 2.35 builder. The normal and
+  static-runtime full suites pass 2266/2266. The archived executable requires
+  glibc 2.35 or newer and does not require libstdc++, libgcc_s or a project
+  shared library. Smoke tests pass on Ubuntu 22.04, Debian 12, Ubuntu 24.04
+  and a glibc 2.35 runtime host.
+- Windows: Windows 11, MSYS2 UCRT64, GCC/MinGW 16.1.0 Rev5. The normal and
+  static-runtime full suites pass 2266/2266. The clean-machine executable uses
+  Windows UCRT system interfaces and requires no MSYS2, MinGW or project DLL.
+- Both archives contain `LICENSE`, `NOTICE` and one executable;
+  `SHA256SUMS` is separate.
 
 ## Hosted Windows evaluation (not part of the accepted baseline)
 

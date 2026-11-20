@@ -27,7 +27,7 @@ alt="GPL-3.0-or-later">
 
 # XFOIL.next
 
-**Version 1.2.0**
+**Version 1.2.1**
 
 XFOIL.next implements the complete canonical non-graphical XFOIL
 functionality in modern C++.
@@ -195,6 +195,22 @@ DLLs. See [packaging/portable](packaging/portable/README.md) for the pinned
 toolchains, archive contract and source-identity requirements. These
 commands build local probe assets; they do not tag, upload or publish a
 release.
+
+The 1.2.1 release preparation targets these candidate assets:
+
+```text
+XFOIL.next-1.2.1-linux-x86_64.tar.xz
+XFOIL.next-1.2.1-windows-x86_64.zip
+XFOIL.next-1.2.1-SHA256SUMS
+```
+
+Linux requires x86-64 and glibc 2.35 or newer; libstdc++ and libgcc are
+statically linked, while libc, libm and the loader remain system libraries.
+The Windows asset is a single `xfoil.next.exe` for x86-64 that uses Windows
+UCRT system interfaces and needs no MSYS2, MinGW or project DLL. Each archive
+contains exactly `LICENSE`, `NOTICE` and the executable. No library SDK
+binary packages are part of this release. These are release candidates until
+the tagged release is published.
 
 ## Library artifacts and consumption
 
@@ -423,10 +439,10 @@ archive.
 Linux is the canonical platform for the bit-exact and byte-exact reference
 contracts. The 1.2.0 release tree was validated with GCC 13.3, the
 GCC 16.2.0 point release (side-by-side installation), and Clang 18.1.3. The
-1.2.0 release preparation changes only the product version metadata and its
-banner goldens; the validated cumulative numerical matrix is unchanged. The
-Fortran reference and harness checks use the documented system GNU Fortran
-baseline.
+1.2.1 release preparation is the validated 1.2.0 numerical tree plus product
+version metadata, portable runtime packaging and release documentation; the
+validated cumulative numerical matrix is unchanged. The Fortran reference and
+harness checks use the documented system GNU Fortran baseline.
 
 Compiler and runtime differences can affect floating-point evaluation and
 therefore the regeneration of numerical reference artifacts. Shipped
