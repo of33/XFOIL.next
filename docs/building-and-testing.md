@@ -15,6 +15,8 @@ relative to the root.
   determinism checks use the precompiled `fortran-bin/xfoil` and do not need
   a Fortran compiler.
 - `valgrind` only for `make test-valgrind`.
+- Qt 6.9.x only for the optional GUI skeleton targets. Set `QT_ROOT` to the
+  Qt kit prefix; the path is not built into the Makefile.
 
 ## Build targets
 
@@ -32,6 +34,37 @@ make library-demo               standalone staged-library demo (static/shared)
 make test-library-demo          demo integration tests
 make install    staged install (DESTDIR/PREFIX)
 ```
+
+Optional GUI skeleton targets:
+
+```text
+make gui                    GUI debug archive
+make gui-debug              GUI debug archive
+make gui-release            GUI release archive
+make test-gui               offscreen Qt tests
+make gui-qcustomplot-check  QCustomPlot vendor/hash and smoke check
+make gui-link-check         public-header GUI consumer link check
+make clean-gui              remove build/gui
+make check-gui-dependencies GUI boundary and vendoring gate
+```
+
+The GUI targets require Qt 6.9.x. Resolve it with `QT_ROOT`, for example:
+
+```sh
+QT_ROOT=/path/to/Qt/6.9.3/gcc_64 make gui
+QT_ROOT=/path/to/Qt/6.9.3/gcc_64 QT_QPA_PLATFORM=offscreen make test-gui
+```
+
+The adapter also accepts a kit found through `pkg-config` or `qmake`. The
+build emits generated MOC/UIC files only below `build/gui/`; debug and release
+objects, and objects from different compilers or Qt kits, use separate
+directories. The GUI archive is debug or release specific and contains only the
+widget shell, generated UI object, QCustomPlot object and its meta-object. It
+does not contain core, session or CLI objects.
+
+This is a G1 build skeleton and embeddable widget shell, not a finished GUI
+application. No GUI release package, installer or Windows GUI build is
+provided. The product version remains 1.2.1.
 
 Binaries land under `build/<mode>/`; libraries land under
 `build/<mode>/lib/`. The library archive contains the core, session and
@@ -188,6 +221,7 @@ their output byte-for-byte against stored references; it requires `gfortran`.
 make check-dependencies        dependency direction and forbidden-state checks
 make check-license-headers     GPL-3.0-or-later source header check
 make check-release-inventory   release inventory / hygiene check
+make check-gui-dependencies    GUI public-header and vendoring gate
 ```
 
 ## Compiler and build-root contract

@@ -120,15 +120,18 @@ logical state; concurrent use of one session is not supported.
 
 ## What it deliberately does not provide
 
-There is no graphical backend. X11 plotting, graphical curves, zoom,
-graphical cursor interaction, and PostScript / hardcopy output are not
-implemented. Pure plot and cursor commands are still recognised and report:
+The command-line product has no graphical backend. X11 plotting, graphical
+curves, zoom, graphical cursor interaction, and PostScript / hardcopy output
+are not implemented. Pure plot and cursor commands are still recognised and
+report:
 
 ```text
 Plotting is not available in this build.
 ```
 
-The numerical, textual, and file-related parts of mixed commands are kept.
+An optional Qt 6.9.x GUI build skeleton now exists, but it is not a finished
+application and does not change the CLI plotting contract. The numerical,
+textual, and file-related parts of mixed commands are kept.
 This is a port of XFOIL, not an independent re-derivation of the
 solver, and it is not a bit-identical reproduction of every Fortran build
 variant (see [known differences](docs/known-differences.md)).
@@ -166,8 +169,17 @@ make library-demo                 # standalone staged-library demo
 make test-library-demo            # demo integration tests
 ```
 
-See [building and testing](docs/building-and-testing.md) for the complete
-target list, compiler requirements, and validation checks.
+Optional GUI skeleton build (Qt 6.9.x, Linux):
+
+```sh
+QT_ROOT=/path/to/Qt/6.9.3/gcc_64 make gui
+QT_ROOT=/path/to/Qt/6.9.3/gcc_64 make test-gui
+```
+
+This is a build skeleton and embeddable widget shell, not a finished GUI
+application. It has no GUI release asset and no Windows GUI build yet. See
+[building and testing](docs/building-and-testing.md) for the complete target
+list, compiler requirements, and validation checks.
 
 ## Portable runtime executables
 
@@ -478,8 +490,9 @@ commitments. Order and scope may change as technical evaluation proceeds.
   but do not promise a stable C++ ABI.
 
 - **Graphical user interface.** Develop a graphical user interface aligned
-  with the existing command, session, and CLI architecture. Plotting and
-  cursor interaction are not yet available (see
+  with the existing command, session, and CLI architecture. The optional Qt
+  build skeleton and embeddable widget shell exist; the application workflow,
+  plotting and cursor interaction are not yet available (see
   [known differences](docs/known-differences.md)).
 
 - **QFoil approach evaluation.** Evaluate selected QFoil approaches for

@@ -56,5 +56,22 @@ sample/CLARK_Y.dat and sample/NACA2312.dat are example airfoil coordinate
 files provided by the project owner. They are not part of the XFOIL 6.99
 upstream distribution. See sample/README.md for their provenance and use.
 
-No third-party attribution beyond the original XFOIL authorship above is
-claimed or required for this distribution.
+QCustomPlot
+-----------
+The optional GUI build vendors QCustomPlot 2.1.1 source in
+`src/gui/3rdparty/qcustomplot-2.1.1/`.
+
+  Upstream:  https://www.qcustomplot.com/
+  Copyright: 2011-2022 Emanuel Eichhammer
+  License:   GPL-3.0-or-later; the full GPL text is in the vendored LICENSE file
+
+The vendored `qcustomplot.h` is the upstream 2.1.1 header. The vendored
+`qcustomplot.cpp` contains the local Qt 6.5/6.9 compatibility patch recorded
+in `PATCHES.md`; it is not upstream-byte-identical. SHA-256 inventories are
+kept in `SHA256SUMS`.
+
+No Qt binaries are distributed in G1. Qt distribution notices become part of
+the release package when a GUI binary is packaged in a later gate.
+
+No other third-party attribution beyond the components described above is
+claimed for this distribution.

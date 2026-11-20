@@ -543,9 +543,39 @@ LIB_SHARED_IMPORT_FLAG := -Wl,--out-implib
 	portable-linux portable-windows portable-package-linux portable-package-windows \
 	portable-check-linux portable-check-windows portable-repro-linux \
 	portable-repro-windows portable-sha256sums \
+	gui gui-debug gui-release test-gui gui-qcustomplot-check gui-link-check \
+	clean-gui check-gui-dependencies \
 	clean help
 
 all: release
+
+# ---------------------------------------------------------------------------
+# Optional GUI skeleton. The root Makefile delegates only; Qt is required
+# only when a gui target is actually invoked.
+# ---------------------------------------------------------------------------
+gui:
+	$(MAKE) -f Makefile.gui gui
+
+gui-debug:
+	$(MAKE) -f Makefile.gui gui-debug
+
+gui-release:
+	$(MAKE) -f Makefile.gui gui-release
+
+test-gui:
+	$(MAKE) -f Makefile.gui test-gui
+
+gui-qcustomplot-check:
+	$(MAKE) -f Makefile.gui gui-qcustomplot-check
+
+gui-link-check:
+	$(MAKE) -f Makefile.gui gui-link-check
+
+check-gui-dependencies:
+	$(MAKE) -f Makefile.gui check-gui-dependencies
+
+clean-gui:
+	$(MAKE) -f Makefile.gui clean
 
 # ---------------------------------------------------------------------------
 # Build: each variant gets build/<mode>/obj, build/<mode>/obj-tests,
@@ -1270,6 +1300,15 @@ help:
 	@echo "  make portable-repro-linux       - two clean Linux builds and compare"
 	@echo "  make portable-repro-windows     - two clean Windows builds and compare"
 	@echo ""
+	@echo "Optional GUI skeleton (requires Qt 6.9.x and QT_ROOT):"
+	@echo "  make gui                 - build libxfoil_next_gui.a (debug)"
+	@echo "  make gui-debug           - build the debug GUI archive"
+	@echo "  make gui-release         - build the release GUI archive"
+	@echo "  make test-gui            - offscreen GUI tests"
+	@echo "  make gui-qcustomplot-check - QCustomPlot vendor/hash and smoke check"
+	@echo "  make gui-link-check      - minimal public-header GUI consumer"
+	@echo "  make clean-gui           - remove build/gui"
+	@echo ""
 	@echo "Test:"
 	@echo "  make test                - full C++ test suite (debug)"
 	@echo "  make test-core           - core test suite (408 tests)"
@@ -1289,6 +1328,7 @@ help:
 	@echo "  make check-release-inventory - release inventory / hygiene gate"
 	@echo "  make check-license-headers   - GPL-3.0-or-later source header gate"
 	@echo "  make check-public-docs     - public documentation set gate"
+	@echo "  make check-gui-dependencies - GUI public-header/source/QCP gate"
 	@echo ""
 	@echo "Maintainer:"
 	@echo "  make update-golden       - recapture goldens (requires CONFIRM_GOLDEN_UPDATE=yes)"

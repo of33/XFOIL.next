@@ -4,6 +4,14 @@ All notable changes to XFOIL.next are documented here. The format follows
 a plain release log; this project does not advertise a strict
 keep-a-changelog layout.
 
+## Unreleased
+
+- Added an optional Qt 6.9.x GUI build skeleton with the embeddable
+  `xfoil::gui::XFoilWidget` shell, vendored QCustomPlot 2.1.1, offscreen Qt
+  tests, a public-header link check and GUI dependency/vendoring gates.
+- This is not a finished GUI application and does not change the product
+  version, CLI behavior, solver behavior or library API.
+
 ## 1.2.1 — 2026-11-20
 
 - Added reproducible portable x86_64 command-line packages for Linux and

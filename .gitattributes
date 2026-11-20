@@ -35,3 +35,7 @@ tests/fortran-reference/cases/oper-state/oper-alfa180-viscous-iter20/stdout.raw.
 tests/fortran-reference/cases/oper-state/oper-cpmn-nonconverged/stdout.raw.txt -text
 tests/fortran-reference/cases/oper-state/oper-init-inviscid-then-bang/stdout.raw.txt -text
 *.dump -text
+
+# QCustomPlot 2.1.1 is vendored with its upstream byte spelling preserved,
+# including trailing whitespace in the upstream header.
+src/gui/3rdparty/qcustomplot-2.1.1/* -whitespace

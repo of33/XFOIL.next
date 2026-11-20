@@ -1,0 +1,263 @@
+# XFOIL.next
+#
+# Copyright (C) 2026 Olaf Frommann
+# https://github.com/of33/XFOIL.next
+#
+# XFOIL.next is based on XFOIL 6.99 by Mark Drela and
+# Harold Youngren.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# File: Makefile.gui
+# Optional Qt GUI skeleton build. This file is deliberately separate from the
+# core Makefile: no default target in the root Makefile requires Qt.
+
+SHELL := /bin/sh
+CXX ?= g++
+AR ?= ar
+
+CXXSTD := -std=c++20 -pthread
+BUILDROOT ?= build
+GUI_BUILDROOT ?= $(BUILDROOT)/gui
+GUI_MODE ?= debug
+CORE_BUILDROOT ?= $(BUILDROOT)
+
+GUI_TOOLCHAIN := $(shell printf '%s' "$(CXX)" | md5sum | cut -c1-8)
+QT_ROOT ?=
+QT_PC_PREFIX := $(shell pkg-config --variable=prefix Qt6Core 2>/dev/null)
+ifeq ($(strip $(QT_ROOT)),)
+QT_ROOT := $(QT_PC_PREFIX)
+endif
+QT_QMAKE := $(firstword $(wildcard $(QT_ROOT)/bin/qmake6 $(QT_ROOT)/bin/qmake))
+ifeq ($(strip $(QT_QMAKE)),)
+QT_QMAKE := $(shell command -v qmake6 2>/dev/null || command -v qmake 2>/dev/null)
+endif
+ifeq ($(strip $(QT_ROOT)),)
+QT_ROOT := $(shell $(QT_QMAKE) -query QT_INSTALL_PREFIX 2>/dev/null)
+endif
+QT_VERSION := $(shell $(QT_QMAKE) -query QT_VERSION 2>/dev/null)
+ifeq ($(strip $(QT_VERSION)),)
+QT_VERSION := $(shell sed -n 's/^#define QTCORE_VERSION_STR "\([^"]*\)"/\1/p' \
+	$(QT_ROOT)/include/QtCore/qtcoreversion.h 2>/dev/null)
+endif
+QT_INCLUDE_DIR := $(QT_ROOT)/include
+QT_LIB_DIR := $(QT_ROOT)/lib
+QT_PLUGIN_DIR := $(QT_ROOT)/plugins
+QT_MOC := $(firstword $(wildcard $(QT_ROOT)/libexec/moc $(QT_ROOT)/bin/moc))
+QT_UIC := $(firstword $(wildcard $(QT_ROOT)/libexec/uic $(QT_ROOT)/bin/uic))
+QT_KIT_TAG := $(shell printf '%s' "$(QT_ROOT)" | md5sum | cut -c1-8)
+GUI_VARIANT := $(GUI_TOOLCHAIN)-$(QT_KIT_TAG)
+
+GUI_MODE_DIR := $(GUI_BUILDROOT)/$(GUI_MODE)
+GUI_GEN_DIR := $(GUI_MODE_DIR)/gen/$(GUI_VARIANT)
+GUI_OBJ_DIR := $(GUI_MODE_DIR)/obj/$(GUI_VARIANT)
+GUI_LIB_DIR := $(GUI_MODE_DIR)/lib
+GUI_TEST_DIR := $(GUI_MODE_DIR)/tests
+GUI_STAMP := $(GUI_MODE_DIR)/.qt-$(GUI_VARIANT).stamp
+
+ifeq ($(GUI_MODE),release)
+GUI_MODE_FLAGS := -O3 -DNDEBUG
+else
+GUI_MODE_FLAGS := -O0 -g3
+endif
+
+# Qt headers are not clean under -Wconversion/-Wsign-conversion and
+# QCustomPlot 2.1.1 uses old-style casts. Keep -Werror, but use the Qt-safe
+# subset for the optional GUI path only. Core and CLI builds retain the full
+# warning set.
+GUI_WARNINGS := \
+	-Wall \
+	-Wextra \
+	-Wpedantic \
+	-Wnon-virtual-dtor \
+	-Woverloaded-virtual \
+	-Wformat=2 \
+	-Werror
+
+QT_INCLUDES := \
+	-I$(QT_INCLUDE_DIR) \
+	-I$(QT_INCLUDE_DIR)/QtCore \
+	-I$(QT_INCLUDE_DIR)/QtGui \
+	-I$(QT_INCLUDE_DIR)/QtWidgets \
+	-I$(QT_INCLUDE_DIR)/QtPrintSupport \
+	-I$(QT_INCLUDE_DIR)/QtTest
+QT_DEFINES := \
+	-DQT_CORE_LIB \
+	-DQT_GUI_LIB \
+	-DQT_WIDGETS_LIB \
+	-DQT_PRINTSUPPORT_LIB \
+	-DQT_TESTLIB_LIB
+GUI_INCLUDES := -I. -Iinclude -Isrc -I$(GUI_GEN_DIR) $(QT_INCLUDES)
+GUI_FLAGS := $(CXXSTD) $(GUI_INCLUDES) $(QT_DEFINES) $(GUI_WARNINGS) \
+	$(GUI_MODE_FLAGS) -fPIC
+GUI_MOC_FLAGS := $(QT_DEFINES) -Iinclude $(QT_INCLUDES)
+GUI_QT_LIBS := -L$(QT_LIB_DIR) -lQt6Widgets -lQt6Gui -lQt6Core \
+	-lQt6PrintSupport
+GUI_TEST_LIBS := $(GUI_QT_LIBS) -lQt6Test
+GUI_RPATH := -Wl,-rpath,$(QT_LIB_DIR)
+
+QCP_DIR := src/gui/3rdparty/qcustomplot-2.1.1
+GUI_ARCHIVE := $(GUI_LIB_DIR)/$(GUI_VARIANT)/libxfoil_next_gui.a
+GUI_ARCHIVE_OBJS := \
+	$(GUI_OBJ_DIR)/XFoilWidget.o \
+	$(GUI_OBJ_DIR)/moc_XFoilWidget.o \
+	$(GUI_OBJ_DIR)/moc_qcustomplot.o \
+	$(GUI_OBJ_DIR)/qcustomplot.o
+GUI_TEST_BIN := $(GUI_TEST_DIR)/$(GUI_VARIANT)/xfoil_gui_tests
+GUI_TEST_OBJS := \
+	$(GUI_OBJ_DIR)/tests/GuiTestMain.o \
+	$(GUI_OBJ_DIR)/tests/QCustomPlotSmoke.o \
+	$(GUI_OBJ_DIR)/tests/XFoilWidgetShellTests.o
+GUI_LINKCHECK := $(GUI_TEST_DIR)/$(GUI_VARIANT)/gui-link-check
+CORE_LIBRARY := $(CORE_BUILDROOT)/$(GUI_MODE)/lib/libxfoil_next.a
+
+.PHONY: all gui gui-debug gui-release test-gui gui-qcustomplot-check \
+	gui-link-check clean check-gui-dependencies
+
+all: gui
+
+gui: $(GUI_ARCHIVE)
+
+gui-debug:
+	$(MAKE) -f Makefile.gui gui GUI_MODE=debug
+
+gui-release:
+	$(MAKE) -f Makefile.gui gui GUI_MODE=release
+
+test-gui: $(GUI_TEST_BIN)
+	QT_QPA_PLATFORM=offscreen \
+	QT_PLUGIN_PATH="$(QT_PLUGIN_DIR)" \
+	QT_QPA_PLATFORM_PLUGIN_PATH="$(QT_PLUGIN_DIR)/platforms" \
+	$(GUI_TEST_BIN)
+
+gui-qcustomplot-check: $(GUI_TEST_BIN)
+	@cd $(QCP_DIR) && sha256sum --check SHA256SUMS
+	QT_QPA_PLATFORM=offscreen \
+	QT_PLUGIN_PATH="$(QT_PLUGIN_DIR)" \
+	QT_QPA_PLATFORM_PLUGIN_PATH="$(QT_PLUGIN_DIR)/platforms" \
+	$(GUI_TEST_BIN)
+
+gui-link-check: $(GUI_LINKCHECK)
+	QT_QPA_PLATFORM=offscreen \
+	QT_PLUGIN_PATH="$(QT_PLUGIN_DIR)" \
+	QT_QPA_PLATFORM_PLUGIN_PATH="$(QT_PLUGIN_DIR)/platforms" \
+	$(GUI_LINKCHECK)
+
+check-gui-dependencies:
+	python3 tools/check-gui-dependencies.py
+
+clean:
+	rm -rf $(GUI_BUILDROOT)
+
+$(GUI_STAMP):
+	@mkdir -p $(dir $@)
+	@set -e; \
+		if [ -z "$(QT_ROOT)" ]; then \
+			echo "ERROR: Qt 6.9.x not found. Set QT_ROOT to the Qt kit prefix."; \
+			exit 1; \
+		fi; \
+		test -d "$(QT_INCLUDE_DIR)/QtCore"; \
+		test -x "$(QT_MOC)"; \
+		test -x "$(QT_UIC)"; \
+		case "$(QT_VERSION)" in \
+			6.9.*) ;; \
+			*) echo "ERROR: Qt 6.9.x required, found '$(QT_VERSION)'"; exit 1 ;; \
+		esac; \
+		for module in Core Gui Widgets PrintSupport Test; do \
+			test -d "$(QT_INCLUDE_DIR)/Qt$$module" || { \
+				echo "ERROR: missing Qt module: $$module"; exit 1; }; \
+		done; \
+		for lib in Qt6Core Qt6Gui Qt6Widgets Qt6PrintSupport Qt6Test; do \
+			ls "$(QT_LIB_DIR)"/lib$$lib.so* >/dev/null 2>&1 || { \
+				echo "ERROR: missing Qt library: $$lib"; exit 1; }; \
+		done; \
+		printf 'QT_ROOT=%s\nQT_VERSION=%s\n' \
+			"$(QT_ROOT)" "$(QT_VERSION)" > "$@"
+
+$(GUI_GEN_DIR) $(GUI_LIB_DIR) $(GUI_TEST_DIR):
+	@mkdir -p $@
+
+$(GUI_GEN_DIR)/ui_XFoilWidget.h: src/gui/XFoilWidget.ui | $(GUI_GEN_DIR) $(GUI_STAMP)
+	$(QT_UIC) $< -o $@
+
+$(GUI_GEN_DIR)/moc_XFoilWidget.cpp: include/xfoil/gui/XFoilWidget.h | $(GUI_GEN_DIR) $(GUI_STAMP)
+	$(QT_MOC) $(GUI_MOC_FLAGS) $< -o $@
+
+$(GUI_GEN_DIR)/moc_qcustomplot.cpp: $(QCP_DIR)/qcustomplot.h | $(GUI_GEN_DIR) $(GUI_STAMP)
+	$(QT_MOC) $(GUI_MOC_FLAGS) -I$(QCP_DIR) $< -o $@
+
+$(GUI_GEN_DIR)/%.moc: tests/gui/%.cpp | $(GUI_GEN_DIR) $(GUI_STAMP)
+	$(QT_MOC) $(GUI_MOC_FLAGS) $< -o $@
+
+$(GUI_OBJ_DIR)/XFoilWidget.o: src/gui/XFoilWidget.cpp \
+		include/xfoil/gui/XFoilWidget.h \
+		$(GUI_GEN_DIR)/ui_XFoilWidget.h | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/moc_XFoilWidget.o: $(GUI_GEN_DIR)/moc_XFoilWidget.cpp | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/moc_qcustomplot.o: $(GUI_GEN_DIR)/moc_qcustomplot.cpp | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/qcustomplot.o: $(QCP_DIR)/qcustomplot.cpp | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/tests/GuiTestMain.o: tests/gui/GuiTestMain.cpp | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/tests/QCustomPlotSmoke.o: tests/gui/QCustomPlotSmoke.cpp \
+		$(GUI_GEN_DIR)/QCustomPlotSmoke.moc | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/tests/XFoilWidgetShellTests.o: \
+		tests/gui/XFoilWidgetShellTests.cpp \
+		$(GUI_GEN_DIR)/XFoilWidgetShellTests.moc | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/tests/GuiLinkCheck.o: tests/gui/GuiLinkCheck.cpp | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_ARCHIVE): $(GUI_ARCHIVE_OBJS)
+	@mkdir -p $(dir $@)
+	rm -f $@
+	$(AR) rcs $@ $(GUI_ARCHIVE_OBJS)
+
+$(GUI_TEST_BIN): $(GUI_TEST_OBJS) $(GUI_ARCHIVE)
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXSTD) $(GUI_MODE_FLAGS) $^ $(GUI_TEST_LIBS) $(GUI_RPATH) -o $@
+
+$(CORE_LIBRARY):
+	$(MAKE) -f Makefile library-static LIB_MODE=$(GUI_MODE) \
+		BUILDROOT=$(CORE_BUILDROOT)
+
+$(GUI_LINKCHECK): $(GUI_OBJ_DIR)/tests/GuiLinkCheck.o $(GUI_ARCHIVE) \
+		$(CORE_LIBRARY)
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXSTD) $(GUI_MODE_FLAGS) $^ $(GUI_QT_LIBS) $(GUI_RPATH) -o $@
+
+-include $(GUI_ARCHIVE_OBJS:.o=.d) $(GUI_TEST_OBJS:.o=.d) \
+	$(GUI_OBJ_DIR)/tests/GuiLinkCheck.d
+
+# End: Makefile.gui

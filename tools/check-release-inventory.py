@@ -65,6 +65,15 @@ EXPECTED_OSMAP_SHA = {
         "2f6b3c63461d71da9b6cb9ca1340d77cff0cfbe767679d15b5b8556b45d948c4",
 }
 
+GUI_THIRD_PARTY_FILES = [
+    "src/gui/3rdparty/qcustomplot-2.1.1/LICENSE",
+    "src/gui/3rdparty/qcustomplot-2.1.1/PATCHES.md",
+    "src/gui/3rdparty/qcustomplot-2.1.1/README.md",
+    "src/gui/3rdparty/qcustomplot-2.1.1/SHA256SUMS",
+    "src/gui/3rdparty/qcustomplot-2.1.1/qcustomplot.cpp",
+    "src/gui/3rdparty/qcustomplot-2.1.1/qcustomplot.h",
+]
+
 REQUIRED_FILES = [
     "CITATION.cff",
     "LICENSE",
@@ -295,7 +304,7 @@ class Checker:
         return os.path.join(self.root, rel)
 
     def check_required_files(self):
-        for rel in REQUIRED_FILES:
+        for rel in REQUIRED_FILES + GUI_THIRD_PARTY_FILES:
             if not os.path.isfile(self.p(rel)):
                 self.fail("required file missing: %s" % rel)
 

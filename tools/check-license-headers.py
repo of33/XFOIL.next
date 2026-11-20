@@ -195,8 +195,10 @@ HARNESS_DERIVED = frozenset({
 })
 
 # Excluded from the header check (category D and original Fortran sources, category C).
+# Vendored QCustomPlot keeps its upstream GPL header and patch record.
 EXCLUDED_DIR_PREFIXES = (
     "build/",
+    "src/gui/3rdparty/",
     "fortran-src/",
     "fortran-bin/",
     "tests/golden/",
