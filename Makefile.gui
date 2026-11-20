@@ -87,7 +87,14 @@ GUI_WARNINGS := \
 	-Wformat=2 \
 	-Werror
 
-QT_INCLUDES := \
+QT_SYSTEM_INCLUDES := \
+	-isystem$(QT_INCLUDE_DIR) \
+	-isystem$(QT_INCLUDE_DIR)/QtCore \
+	-isystem$(QT_INCLUDE_DIR)/QtGui \
+	-isystem$(QT_INCLUDE_DIR)/QtWidgets \
+	-isystem$(QT_INCLUDE_DIR)/QtPrintSupport \
+	-isystem$(QT_INCLUDE_DIR)/QtTest
+QT_MOC_INCLUDES := \
 	-I$(QT_INCLUDE_DIR) \
 	-I$(QT_INCLUDE_DIR)/QtCore \
 	-I$(QT_INCLUDE_DIR)/QtGui \
@@ -100,16 +107,20 @@ QT_DEFINES := \
 	-DQT_WIDGETS_LIB \
 	-DQT_PRINTSUPPORT_LIB \
 	-DQT_TESTLIB_LIB
-GUI_INCLUDES := -I. -Iinclude -Isrc -I$(GUI_GEN_DIR) $(QT_INCLUDES)
+GUI_INCLUDES := -I. -Iinclude -Isrc -I$(GUI_GEN_DIR) $(QT_SYSTEM_INCLUDES)
 GUI_FLAGS := $(CXXSTD) $(GUI_INCLUDES) $(QT_DEFINES) $(GUI_WARNINGS) \
 	$(GUI_MODE_FLAGS) -fPIC
-GUI_MOC_FLAGS := $(QT_DEFINES) -Iinclude $(QT_INCLUDES)
+GUI_MOC_FLAGS := $(QT_DEFINES) -Iinclude $(QT_MOC_INCLUDES)
 GUI_QT_LIBS := -L$(QT_LIB_DIR) -lQt6Widgets -lQt6Gui -lQt6Core \
 	-lQt6PrintSupport
 GUI_TEST_LIBS := $(GUI_QT_LIBS) -lQt6Test
-GUI_RPATH := -Wl,-rpath,$(QT_LIB_DIR)
 
 QCP_DIR := src/gui/3rdparty/qcustomplot-2.1.1
+# QCustomPlot 2.1.1 still uses the Qt 5 Q_ENUMS/Q_FLAGS macros. Qt 6.12
+# marks those macros deprecated, and Clang also reports two legacy
+# indentation sites. Limit both suppressions to the vendored QCP
+# translation units; project code keeps the full warning set.
+QCP_WARNINGS := -Wno-deprecated-pragma -Wno-misleading-indentation
 GUI_ARCHIVE := $(GUI_LIB_DIR)/$(GUI_VARIANT)/libxfoil_next_gui.a
 GUI_ARCHIVE_OBJS := \
 	$(GUI_OBJ_DIR)/XFoilWidget.o \
@@ -138,6 +149,7 @@ gui-release:
 	$(MAKE) -f Makefile.gui gui GUI_MODE=release
 
 test-gui: $(GUI_TEST_BIN)
+	LD_LIBRARY_PATH="$(QT_LIB_DIR):$${LD_LIBRARY_PATH:-}" \
 	QT_QPA_PLATFORM=offscreen \
 	QT_PLUGIN_PATH="$(QT_PLUGIN_DIR)" \
 	QT_QPA_PLATFORM_PLUGIN_PATH="$(QT_PLUGIN_DIR)/platforms" \
@@ -145,12 +157,14 @@ test-gui: $(GUI_TEST_BIN)
 
 gui-qcustomplot-check: $(GUI_TEST_BIN)
 	@cd $(QCP_DIR) && sha256sum --check SHA256SUMS
+	LD_LIBRARY_PATH="$(QT_LIB_DIR):$${LD_LIBRARY_PATH:-}" \
 	QT_QPA_PLATFORM=offscreen \
 	QT_PLUGIN_PATH="$(QT_PLUGIN_DIR)" \
 	QT_QPA_PLATFORM_PLUGIN_PATH="$(QT_PLUGIN_DIR)/platforms" \
 	$(GUI_TEST_BIN)
 
 gui-link-check: $(GUI_LINKCHECK)
+	LD_LIBRARY_PATH="$(QT_LIB_DIR):$${LD_LIBRARY_PATH:-}" \
 	QT_QPA_PLATFORM=offscreen \
 	QT_PLUGIN_PATH="$(QT_PLUGIN_DIR)" \
 	QT_QPA_PLATFORM_PLUGIN_PATH="$(QT_PLUGIN_DIR)/platforms" \
@@ -166,15 +180,15 @@ $(GUI_STAMP):
 	@mkdir -p $(dir $@)
 	@set -e; \
 		if [ -z "$(QT_ROOT)" ]; then \
-			echo "ERROR: Qt 6.9.x not found. Set QT_ROOT to the Qt kit prefix."; \
+			echo "ERROR: Qt 6.12.x not found. Set QT_ROOT to the Qt kit prefix."; \
 			exit 1; \
 		fi; \
 		test -d "$(QT_INCLUDE_DIR)/QtCore"; \
 		test -x "$(QT_MOC)"; \
 		test -x "$(QT_UIC)"; \
 		case "$(QT_VERSION)" in \
-			6.9.*) ;; \
-			*) echo "ERROR: Qt 6.9.x required, found '$(QT_VERSION)'"; exit 1 ;; \
+			6.12.*) ;; \
+			*) echo "ERROR: Qt 6.12.x required, found '$(QT_VERSION)'"; exit 1 ;; \
 		esac; \
 		for module in Core Gui Widgets PrintSupport Test; do \
 			test -d "$(QT_INCLUDE_DIR)/Qt$$module" || { \
@@ -214,11 +228,11 @@ $(GUI_OBJ_DIR)/moc_XFoilWidget.o: $(GUI_GEN_DIR)/moc_XFoilWidget.cpp | $(GUI_STA
 
 $(GUI_OBJ_DIR)/moc_qcustomplot.o: $(GUI_GEN_DIR)/moc_qcustomplot.cpp | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
-	$(CXX) $(GUI_FLAGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
+	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
 
 $(GUI_OBJ_DIR)/qcustomplot.o: $(QCP_DIR)/qcustomplot.cpp | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
-	$(CXX) $(GUI_FLAGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
+	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
 
 $(GUI_OBJ_DIR)/tests/GuiTestMain.o: tests/gui/GuiTestMain.cpp | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
@@ -227,7 +241,7 @@ $(GUI_OBJ_DIR)/tests/GuiTestMain.o: tests/gui/GuiTestMain.cpp | $(GUI_STAMP)
 $(GUI_OBJ_DIR)/tests/QCustomPlotSmoke.o: tests/gui/QCustomPlotSmoke.cpp \
 		$(GUI_GEN_DIR)/QCustomPlotSmoke.moc | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
-	$(CXX) $(GUI_FLAGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
+	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
 
 $(GUI_OBJ_DIR)/tests/XFoilWidgetShellTests.o: \
 		tests/gui/XFoilWidgetShellTests.cpp \
@@ -246,7 +260,7 @@ $(GUI_ARCHIVE): $(GUI_ARCHIVE_OBJS)
 
 $(GUI_TEST_BIN): $(GUI_TEST_OBJS) $(GUI_ARCHIVE)
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXSTD) $(GUI_MODE_FLAGS) $^ $(GUI_TEST_LIBS) $(GUI_RPATH) -o $@
+	$(CXX) $(CXXSTD) $(GUI_MODE_FLAGS) $^ $(GUI_TEST_LIBS) -o $@
 
 $(CORE_LIBRARY):
 	$(MAKE) -f Makefile library-static LIB_MODE=$(GUI_MODE) \
@@ -255,7 +269,7 @@ $(CORE_LIBRARY):
 $(GUI_LINKCHECK): $(GUI_OBJ_DIR)/tests/GuiLinkCheck.o $(GUI_ARCHIVE) \
 		$(CORE_LIBRARY)
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXSTD) $(GUI_MODE_FLAGS) $^ $(GUI_QT_LIBS) $(GUI_RPATH) -o $@
+	$(CXX) $(CXXSTD) $(GUI_MODE_FLAGS) $^ $(GUI_QT_LIBS) -o $@
 
 -include $(GUI_ARCHIVE_OBJS:.o=.d) $(GUI_TEST_OBJS:.o=.d) \
 	$(GUI_OBJ_DIR)/tests/GuiLinkCheck.d

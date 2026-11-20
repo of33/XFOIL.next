@@ -23,8 +23,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # Build the portable Windows x86_64 runtime in MSYS2 UCRT64 with the
-# accepted GCC/MinGW 16.1.0 Rev5 baseline. The script does not package;
-# use `make portable-windows` for build and package.
+# current 2.0 development baseline GCC/MinGW 16.2.0 Rev7. The 1.2.1
+# release evidence remains on GCC/MinGW 16.1.0 Rev5. The script does not
+# package; use `make portable-windows` for build and package.
 #
 # Builds from a clean source archive need:
 #   XFOIL_SOURCE_COMMIT, XFOIL_SOURCE_TREE, SOURCE_DATE_EPOCH

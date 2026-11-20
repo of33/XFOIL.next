@@ -15,7 +15,7 @@ relative to the root.
   determinism checks use the precompiled `fortran-bin/xfoil` and do not need
   a Fortran compiler.
 - `valgrind` only for `make test-valgrind`.
-- Qt 6.9.x only for the optional GUI skeleton targets. Set `QT_ROOT` to the
+- Qt 6.12.x only for the optional GUI skeleton targets. Set `QT_ROOT` to the
   Qt kit prefix; the path is not built into the Makefile.
 
 ## Build targets
@@ -48,11 +48,11 @@ make clean-gui              remove build/gui
 make check-gui-dependencies GUI boundary and vendoring gate
 ```
 
-The GUI targets require Qt 6.9.x. Resolve it with `QT_ROOT`, for example:
+The GUI targets require Qt 6.12.x. Resolve it with `QT_ROOT`, for example:
 
 ```sh
-QT_ROOT=/path/to/Qt/6.9.3/gcc_64 make gui
-QT_ROOT=/path/to/Qt/6.9.3/gcc_64 QT_QPA_PLATFORM=offscreen make test-gui
+QT_ROOT=/path/to/Qt/6.12.0/gcc_64 make gui
+QT_ROOT=/path/to/Qt/6.12.0/gcc_64 QT_QPA_PLATFORM=offscreen make test-gui
 ```
 
 The adapter also accepts a kit found through `pkg-config` or `qmake`. The
@@ -63,8 +63,9 @@ widget shell, generated UI object, QCustomPlot object and its meta-object. It
 does not contain core, session or CLI objects.
 
 This is a G1 build skeleton and embeddable widget shell, not a finished GUI
-application. No GUI release package, installer or Windows GUI build is
-provided. The product version remains 1.2.1.
+application. No GUI release package or installer is provided. A Windows
+UCRT64 Qt 6.12.0 development build is qualified, but not packaged. The
+product version remains 1.2.1.
 
 Binaries land under `build/<mode>/`; libraries land under
 `build/<mode>/lib/`. The library archive contains the core, session and
@@ -90,9 +91,10 @@ make portable-sha256sums       separate SHA256SUMS for both archives
 ```
 
 The Linux build requires Docker for the digest-pinned Ubuntu 22.04 /
-GCC 13.4.0 / glibc 2.35 builder. The Windows build runs on the validated
-Windows 11 + MSYS2 UCRT64 + GCC/MinGW 16.1.0 Rev5 baseline. Outputs are
-written below `build/portable/`:
+GCC 13.4.0 / glibc 2.35 builder. The Windows build runs on the current
+Windows 11 + MSYS2 UCRT64 + GCC/MinGW 16.2.0 Rev7 development baseline; the
+1.2.1 release artifacts remain validated with GCC/MinGW 16.1.0 Rev5.
+Outputs are written below `build/portable/`:
 
 ```text
 linux-x86_64/release/xfoil.next

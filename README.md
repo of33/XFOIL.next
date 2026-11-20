@@ -129,7 +129,7 @@ report:
 Plotting is not available in this build.
 ```
 
-An optional Qt 6.9.x GUI build skeleton now exists, but it is not a finished
+An optional Qt 6.12.x GUI build skeleton now exists, but it is not a finished
 application and does not change the CLI plotting contract. The numerical,
 textual, and file-related parts of mixed commands are kept.
 This is a port of XFOIL, not an independent re-derivation of the
@@ -169,15 +169,16 @@ make library-demo                 # standalone staged-library demo
 make test-library-demo            # demo integration tests
 ```
 
-Optional GUI skeleton build (Qt 6.9.x, Linux):
+Optional GUI skeleton build (Qt 6.12.x, Linux):
 
 ```sh
-QT_ROOT=/path/to/Qt/6.9.3/gcc_64 make gui
-QT_ROOT=/path/to/Qt/6.9.3/gcc_64 make test-gui
+QT_ROOT=/path/to/Qt/6.12.0/gcc_64 make gui
+QT_ROOT=/path/to/Qt/6.12.0/gcc_64 make test-gui
 ```
 
 This is a build skeleton and embeddable widget shell, not a finished GUI
-application. It has no GUI release asset and no Windows GUI build yet. See
+application. It has no GUI release asset. The Windows UCRT64 Qt 6.12.0
+development build is qualified, but no Windows GUI package is provided. See
 [building and testing](docs/building-and-testing.md) for the complete target
 list, compiler requirements, and validation checks.
 
@@ -282,8 +283,9 @@ Supported Windows environment: **Windows 11 with MSYS2 UCRT64**. In an
 UCRT64 shell, install the toolchain (`pacman -S mingw-w64-ucrt-x86_64-gcc
 mingw-w64-ucrt-x86_64-gcc-fortran make python`) and build with the same
 Makefile; the product binary is `build/debug/xfoil.next.exe` (or
-`build/release/xfoil.next.exe`). Confirmed on Windows 11 + MSYS2 UCRT64
-with GCC/MinGW 16.1.0 Rev5: the Debug and Release builds are clean under `-Werror`, and
+`build/release/xfoil.next.exe`). Confirmed for the 1.2.1 release on Windows 11
++ MSYS2 UCRT64 with GCC/MinGW 16.1.0 Rev5: the Debug and Release builds are
+clean under `-Werror`, and
 `xfoil.next.exe` starts directly in the UCRT64 console; from PowerShell
 or `cmd.exe` a normal build also runs when `<MSYS2>\ucrt64\bin` is on
 `PATH` (MSYS2 runtime DLLs). The separate `make portable-windows` target
@@ -293,14 +295,18 @@ exercised on Linux only. Platform-dependent numeric test deviations are
 handled by documented per-test portable contracts in
 `tests/TestSupport.h` and `tests/DumpParitySupport.h`; the Linux bit-exact
 and byte-exact contracts are unchanged. The reproducible MSYS2 evidence
-run is described in [Windows](#windows).
+run is described in [Windows](#windows). The current 2.0 GUI development
+baseline is Windows 11 + MSYS2 UCRT64 + GCC/MinGW 16.2.0 Rev7 + Qt 6.12.0;
+this does not replace the 1.2.1 release evidence.
 
 ## Windows
 
 ### Supported environment
 
-Validated on **Windows 11 + MSYS2 UCRT64 + GCC/MinGW 16.1.0 Rev5**
-(the validated Windows baseline).
+Validated for the 1.2.1 release on **Windows 11 + MSYS2 UCRT64 + GCC/MinGW
+16.1.0 Rev5** (the release baseline). The current 2.0 GUI development
+baseline is **Windows 11 + MSYS2 UCRT64 + GCC/MinGW 16.2.0 Rev7 + Qt
+6.12.0**; it does not replace the 1.2.1 release evidence.
 
 - MSVC is not supported and not promised;
 - Cygwin is not supported and not promised;
@@ -415,8 +421,9 @@ toolchain (currently GCC/MinGW 16.2.0 Rev4). That runner is Windows
 Server, not Windows 11, and its toolchain is not the validated baseline;
 the workflow is a diagnostic evaluation, not a release check, and it may
 fail while unresolved toolchain deviations remain. The validated
-Windows validation remains the fully documented manual Windows 11 +
-MSYS2 UCRT64 + GCC/MinGW 16.1.0 Rev5 run described above; see
+1.2.1 Windows release evidence remains the fully documented manual Windows 11
++ MSYS2 UCRT64 + GCC/MinGW 16.1.0 Rev5 run described above. The current 2.0
+GUI development baseline is GCC/MinGW 16.2.0 Rev7 + Qt 6.12.0; see
 `VALIDATION.md` for the hosted toolchain's measured deviations. This
 statement is not a promise of MSVC, Cygwin, a normal-build standalone
 binary or a bundled runtime. The explicit `make portable-windows` package

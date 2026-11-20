@@ -6,9 +6,12 @@ keep-a-changelog layout.
 
 ## Unreleased
 
-- Added an optional Qt 6.9.x GUI build skeleton with the embeddable
+- Added an optional Qt 6.12.x GUI build skeleton with the embeddable
   `xfoil::gui::XFoilWidget` shell, vendored QCustomPlot 2.1.1, offscreen Qt
   tests, a public-header link check and GUI dependency/vendoring gates.
+- Adopted the current 2.0 GUI development baseline: GCC/MinGW 16.2.0 Rev7
+  on Windows and Qt 6.12.0 for Linux and Windows GUI qualification. The
+  1.2.1 release evidence remains on GCC/MinGW 16.1.0 Rev5.
 - This is not a finished GUI application and does not change the product
   version, CLI behavior, solver behavior or library API.
 

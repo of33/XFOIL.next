@@ -1300,7 +1300,7 @@ help:
 	@echo "  make portable-repro-linux       - two clean Linux builds and compare"
 	@echo "  make portable-repro-windows     - two clean Windows builds and compare"
 	@echo ""
-	@echo "Optional GUI skeleton (requires Qt 6.9.x and QT_ROOT):"
+	@echo "Optional GUI skeleton (requires Qt 6.12.x and QT_ROOT):"
 	@echo "  make gui                 - build libxfoil_next_gui.a (debug)"
 	@echo "  make gui-debug           - build the debug GUI archive"
 	@echo "  make gui-release         - build the release GUI archive"
