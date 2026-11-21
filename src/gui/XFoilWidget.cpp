@@ -59,6 +59,7 @@
 #include "plots/GeometryPlotView.h"
 #include "plots/GuiPointPresentation.h"
 #include "plots/ResultPlotView.h"
+#include "plots/ScalarPlotView.h"
 #include "ui_XFoilWidget.h"
 #include "worker/GuiAnalysisWorker.h"
 #include "worker/GuiJobTracker.h"
@@ -490,7 +491,7 @@ class XFoilWidget::Impl {
     currentOperatingPoint_.reset();
     currentSequence_.reset();
     progressFraction_.reset();
-    setPointConvergence(std::nullopt);
+    clearResultData();
     activeToken_ = std::make_shared<CancellationToken>();
 
     GuiAnalysisJob job{std::move(spec.value()), key->jobId,
@@ -701,7 +702,7 @@ class XFoilWidget::Impl {
     progressFraction_.reset();
     activeToken_.reset();
     analysisStatusText_ = QStringLiteral("Idle");
-    setPointConvergence(std::nullopt);
+    clearResultData();
   }
 
   void startWorker() {
@@ -791,51 +792,53 @@ class XFoilWidget::Impl {
     activeToken_.reset();
     progressFraction_.reset();
 
+    const bool havePoint = currentOperatingPoint_.has_value();
+    const bool haveSequence =
+        currentSequence_.has_value() &&
+        !currentSequence_->points.empty();
+    if (finish == GuiAnalysisFinish::completed && !havePoint &&
+        !haveSequence) {
+      finish = GuiAnalysisFinish::failed;
+      error = Error::make(ErrorCategory::internal,
+                          "gui.emptyAnalysisResult",
+                          "The analysis completed without a result",
+                          "analysis");
+    }
+
     if (finish == GuiAnalysisFinish::completed) {
       analysisOutcome_ = AnalysisOutcome::results;
       analysisDiagnostics_.clear();
       appendResultDiagnostics();
-      if (currentOperatingPoint_.has_value()) {
-        setPointConvergence(currentOperatingPoint_);
+      if (havePoint) {
         analysisStatusText_ =
             QStringLiteral("Analysis complete (alpha %1°)")
                 .arg(currentOperatingPoint_->alpha.value, 0, 'g', 8);
-      } else if (currentSequence_.has_value()) {
-        setPointConvergence(std::nullopt);
+      } else {
         analysisStatusText_ =
             QStringLiteral("Sequence complete (%1 points)")
                 .arg(static_cast<qulonglong>(
                     currentSequence_->points.size()));
-      } else {
-        finish = GuiAnalysisFinish::failed;
-        error = Error::make(ErrorCategory::internal,
-                            "gui.emptyAnalysisResult",
-                            "The analysis completed without a result",
-                            "analysis");
       }
+      populateResultsFromCurrent();
+      return;
     }
 
     if (finish == GuiAnalysisFinish::cancelled) {
       analysisOutcome_ = AnalysisOutcome::cancelled;
       analysisStatusText_ = QStringLiteral("Cancelled");
       appendResultDiagnostics();
-      setPointConvergence(std::nullopt);
-      refreshUi();
+      analysisDiagnostics_.push_back(QStringLiteral("Analysis cancelled."));
+      populateResultsFromCurrent();
       Q_EMIT owner_->analysisCancelled();
       return;
     }
-    if (finish == GuiAnalysisFinish::failed) {
-      analysisOutcome_ = AnalysisOutcome::error;
-      analysisStatusText_ = QStringLiteral("Analysis failed");
-      appendResultDiagnostics();
-      analysisDiagnostics_.push_back(formatError(error));
-      setPointConvergence(std::nullopt);
-      refreshUi();
-      Q_EMIT owner_->analysisFailed(error);
-      return;
-    }
 
-    refreshUi();
+    analysisOutcome_ = AnalysisOutcome::error;
+    analysisStatusText_ = QStringLiteral("Analysis failed");
+    appendResultDiagnostics();
+    analysisDiagnostics_.push_back(formatError(error));
+    populateResultsFromCurrent();
+    Q_EMIT owner_->analysisFailed(error);
   }
 
   void appendResultDiagnostics() {
@@ -885,21 +888,6 @@ class XFoilWidget::Impl {
     } else {
       ui.analysisProgressBar->setRange(0, 0);
     }
-  }
-
-  void setPointConvergence(
-      const std::optional<OperatingPointData>& point) {
-    GuiConvergenceState state = GuiConvergenceState::noPoint;
-    if (point.has_value() && analysisOutcome_ == AnalysisOutcome::results) {
-      state = point->convergence == ConvergenceStatus::converged
-                  ? GuiConvergenceState::converged
-                  : GuiConvergenceState::notConverged;
-    }
-    const GuiConvergenceText convergence = formatConvergence(state);
-    ui.currentPointConvergenceIcon->setText(
-        QString::fromStdString(convergence.icon));
-    ui.currentPointConvergenceLabel->setText(
-        QString::fromStdString(convergence.label));
   }
 
   void createActions() {
@@ -1069,6 +1057,16 @@ class XFoilWidget::Impl {
             [this]() { analyze(); });
     QObject::connect(ui.cancelButton, &QPushButton::clicked, owner_,
             [this]() { cancel(); });
+
+    QObject::connect(ui.operatingPointCombo,
+            &QComboBox::currentIndexChanged, owner_,
+            [this](int index) { operatingPointChanged(index); });
+    QObject::connect(ui.deactivatePointCombo,
+            &QComboBox::currentIndexChanged, owner_,
+            [this](int index) { deactivatePointChanged(index); });
+    QObject::connect(ui.activatePointCombo,
+            &QComboBox::currentIndexChanged, owner_,
+            [this](int index) { activatePointChanged(index); });
   }
 
   void applyGeometryFromControls() {
@@ -1206,18 +1204,26 @@ class XFoilWidget::Impl {
   }
 
   void configureResultViews() {
-    ui.cpPlot->setCpMode(true);
     ui.cpPlot->setAxisTitles(QStringLiteral("x/c"), QStringLiteral("-Cp"));
-    ui.clAlphaPlot->setAxisTitles(QStringLiteral("α [deg]"), QStringLiteral("CL"));
-    ui.clCdPlot->setAxisTitles(QStringLiteral("CD"), QStringLiteral("CL"));
-    ui.cmAlphaPlot->setAxisTitles(QStringLiteral("α [deg]"), QStringLiteral("CM"));
-    ui.cmClPlot->setAxisTitles(QStringLiteral("CL"), QStringLiteral("CM"));
-    ui.efficiencyClPlot->setAxisTitles(QStringLiteral("CL"),
-                                       QStringLiteral("CL/CD"));
     ui.cpAlphaPlot->setAxisTitles(QStringLiteral("x/c"),
                                   QStringLiteral("-Cp"));
-    ui.cfAlphaPlot->setAxisTitles(QStringLiteral("x/c or s"),
+    ui.cfAlphaPlot->setAxisTitles(QStringLiteral("s"),
                                   QStringLiteral("Cf"));
+
+    ui.clAlphaPlot->setKind(GuiScalarPlotKind::clAlpha);
+    ui.clCdPlot->setKind(GuiScalarPlotKind::clCd);
+    ui.cmAlphaPlot->setKind(GuiScalarPlotKind::cmAlpha);
+    ui.cmClPlot->setKind(GuiScalarPlotKind::cmCl);
+    ui.efficiencyClPlot->setKind(GuiScalarPlotKind::efficiencyCl);
+
+    for (ScalarPlotView* view :
+         {ui.clAlphaPlot, ui.clCdPlot, ui.cmAlphaPlot, ui.cmClPlot,
+          ui.efficiencyClPlot}) {
+      view->setSelectionCallback(
+          [this](std::size_t sourceIndex) {
+            selectPointFromPlot(sourceIndex);
+          });
+    }
   }
 
   void updateResultMatrix() {
@@ -1245,6 +1251,36 @@ class XFoilWidget::Impl {
         formatResultValue(summary_.clMaximum)));
     ui.efficiencyMaxValue->setText(QString::fromStdString(
         formatResultValue(summary_.efficiencyMaximum)));
+
+    const QString clHint =
+        summary_.clMaximumProvisional && summary_.clMaximum.has_value()
+            ? QString::fromStdString(std::string(kProvisionalClMaxHint))
+            : QString();
+    const QString efficiencyHint =
+        summary_.efficiencyMaximumProvisional &&
+                summary_.efficiencyMaximum.has_value()
+            ? QString::fromStdString(
+                  std::string(kProvisionalEfficiencyMaxHint))
+            : QString();
+    ui.cd0Value->setToolTip(QStringLiteral(
+        "Minimum finite CD over enabled converged points."));
+    ui.cl0Value->setToolTip(QStringLiteral(
+        "CL at alpha = 0 (exact or interpolated)."));
+    ui.cm0Value->setToolTip(QStringLiteral(
+        "CM at zero lift, using the same interpolation pair as alpha0."));
+    ui.alpha0Value->setToolTip(QStringLiteral(
+        "Alpha where CL = 0, using the same pair as CM0; smallest "
+        "absolute crossing when several exist."));
+    ui.clMaxValue->setToolTip(
+        clHint.isEmpty()
+            ? QStringLiteral("Quadratic CL maximum between bounded "
+                             "falling-flank samples.")
+            : clHint);
+    ui.efficiencyMaxValue->setToolTip(
+        efficiencyHint.isEmpty()
+            ? QStringLiteral("Quadratic (CL/CD) maximum between bounded "
+                             "falling-flank samples.")
+            : efficiencyHint);
   }
 
   void refreshPointSelection() {
@@ -1255,7 +1291,7 @@ class XFoilWidget::Impl {
     ui.deactivatePointCombo->clear();
     ui.activatePointCombo->clear();
 
-    for (const GuiPointEntry& point : selectionModel_.activePoints()) {
+    for (const GuiPointEntry& point : selectionModel_.enabledPoints()) {
       ui.operatingPointCombo->addItem(
           QString::fromStdString(formatOperatingPointLabel(point)),
           static_cast<qulonglong>(point.sourceIndex));
@@ -1263,34 +1299,224 @@ class XFoilWidget::Impl {
           QString::fromStdString(formatOperatingPointLabel(point)),
           static_cast<qulonglong>(point.sourceIndex));
     }
-    for (const GuiPointEntry& point : selectionModel_.inactivePoints()) {
+    for (const GuiPointEntry& point : selectionModel_.disabledPoints()) {
       ui.activatePointCombo->addItem(
           QString::fromStdString(formatOperatingPointLabel(point)),
           static_cast<qulonglong>(point.sourceIndex));
     }
 
-    ui.operatingPointCombo->setEnabled(ui.operatingPointCombo->count() > 0);
+    ui.operatingPointCombo->setEnabled(
+        ui.operatingPointCombo->count() > 0);
     ui.deactivatePointCombo->setEnabled(
         ui.deactivatePointCombo->count() > 0);
-    ui.activatePointCombo->setEnabled(ui.activatePointCombo->count() > 0);
+    ui.activatePointCombo->setEnabled(
+        ui.activatePointCombo->count() > 0);
 
-    if (const std::optional<GuiPointEntry> current =
-            selectionModel_.currentPoint();
-        current.has_value()) {
+    const std::optional<GuiPointEntry> current =
+        selectionModel_.currentPoint();
+    if (current.has_value()) {
       const int index = ui.operatingPointCombo->findData(
           static_cast<qulonglong>(current->sourceIndex));
       if (index >= 0) {
         ui.operatingPointCombo->setCurrentIndex(index);
       }
-      const GuiConvergenceText convergence = formatConvergence(
-          current->converged ? GuiConvergenceState::converged
-                             : GuiConvergenceState::notConverged);
-      ui.currentPointConvergenceIcon->setText(
-          QString::fromStdString(convergence.icon));
-      ui.currentPointConvergenceLabel->setText(
-          QString::fromStdString(convergence.label));
     } else {
-      setPointConvergence(std::nullopt);
+      ui.operatingPointCombo->setCurrentIndex(-1);
+    }
+    ui.deactivatePointCombo->setCurrentIndex(-1);
+    ui.activatePointCombo->setCurrentIndex(-1);
+    updatePointConvergence(current);
+  }
+
+  void updatePointConvergence(
+      const std::optional<GuiPointEntry>& point) {
+    GuiConvergenceState state = GuiConvergenceState::noPoint;
+    if (point.has_value()) {
+      switch (point->convergenceStatus) {
+        case ConvergenceStatus::converged:
+          state = GuiConvergenceState::converged;
+          break;
+        case ConvergenceStatus::cancelled:
+          state = GuiConvergenceState::cancelled;
+          break;
+        case ConvergenceStatus::failed:
+          state = GuiConvergenceState::failed;
+          break;
+        case ConvergenceStatus::notRun:
+        case ConvergenceStatus::unconverged:
+          state = point->converged
+                      ? GuiConvergenceState::converged
+                      : GuiConvergenceState::notConverged;
+          break;
+      }
+    }
+    const GuiConvergenceText convergence = formatConvergence(state);
+    ui.currentPointConvergenceIcon->setText(
+        QString::fromStdString(convergence.icon));
+    ui.currentPointConvergenceLabel->setText(
+        QString::fromStdString(convergence.label));
+  }
+
+  [[nodiscard]]
+  GuiPointEntry pointEntryFromOperatingPoint(
+      const OperatingPointData& point, std::size_t sourceIndex) const {
+    GuiPointEntry entry;
+    entry.sourceIndex = sourceIndex;
+    entry.alpha = point.alpha.value;
+    entry.converged = point.convergence == ConvergenceStatus::converged;
+    entry.enabled = true;
+    entry.convergenceStatus = point.convergence;
+    entry.operatingPoint = point;
+    entry.polar.alpha = point.alpha;
+    entry.polar.liftCoefficient = point.liftCoefficient;
+    entry.polar.dragCoefficient = point.dragCoefficient;
+    entry.polar.dragCoefficientPressure = point.dragCoefficientPressure;
+    entry.polar.momentCoefficient = point.momentCoefficient;
+    entry.polar.convergence = point.convergence;
+    entry.polar.diagnostics = point.diagnostics;
+    entry.polar.dragCoefficientFriction =
+        point.dragCoefficientFriction;
+    return entry;
+  }
+
+  [[nodiscard]]
+  GuiPointEntry pointEntryFromSequencePoint(
+      const DetailedSequencePoint& point, std::size_t sourceIndex) const {
+    GuiPointEntry entry;
+    entry.sourceIndex = sourceIndex;
+    entry.alpha = point.polar.alpha.value;
+    entry.converged =
+        point.polar.convergence == ConvergenceStatus::converged;
+    entry.enabled = true;
+    entry.convergenceStatus = point.polar.convergence;
+    if (point.operatingPoint.has_value() &&
+        point.operatingPoint->convergence != ConvergenceStatus::notRun) {
+      entry.convergenceStatus = point.operatingPoint->convergence;
+      entry.converged = entry.convergenceStatus ==
+                        ConvergenceStatus::converged;
+    }
+    entry.polar = point.polar;
+    entry.operatingPoint = point.operatingPoint;
+    return entry;
+  }
+
+  void populateResultsFromCurrent() {
+    std::vector<GuiPointEntry> points;
+    if (currentOperatingPoint_.has_value()) {
+      points.push_back(
+          pointEntryFromOperatingPoint(*currentOperatingPoint_, 0));
+    } else if (currentSequence_.has_value()) {
+      points.reserve(currentSequence_->points.size());
+      for (std::size_t index = 0;
+           index < currentSequence_->points.size(); ++index) {
+        points.push_back(pointEntryFromSequencePoint(
+            currentSequence_->points[index], index));
+      }
+    }
+    selectionModel_.setPoints(std::move(points));
+    refreshResultPresentation(true);
+  }
+
+  void clearResultData() {
+    selectionModel_.clear();
+    summary_ = GuiResultSummary{};
+    updateResultMatrix();
+    refreshPointSelection();
+    for (ScalarPlotView* view :
+         {ui.clAlphaPlot, ui.clCdPlot, ui.cmAlphaPlot, ui.cmClPlot,
+          ui.efficiencyClPlot}) {
+      view->setPoints({}, std::nullopt, false);
+    }
+    ui.cpPlot->clear();
+    ui.cpAlphaPlot->clear();
+    ui.cfAlphaPlot->clear();
+  }
+
+  void refreshResultPresentation(bool fitPlots) {
+    const std::optional<GuiPointEntry> selected =
+        selectionModel_.currentPoint();
+    summary_ =
+        computeGuiResultSummary(selectionModel_.points(), selected);
+    updateResultMatrix();
+    refreshPointSelection();
+
+    const std::optional<std::size_t> selectedIndex =
+        selectionModel_.currentSourceIndex();
+    for (ScalarPlotView* view :
+         {ui.clAlphaPlot, ui.clCdPlot, ui.cmAlphaPlot, ui.cmClPlot,
+          ui.efficiencyClPlot}) {
+      view->setPoints(selectionModel_.points(), selectedIndex, fitPlots);
+    }
+
+    if (selected.has_value() && selected->operatingPoint.has_value()) {
+      const OperatingPointData& point = *selected->operatingPoint;
+      if (point.surface.has_value()) {
+        ui.cpPlot->setCpDistribution(*point.surface);
+        ui.cpAlphaPlot->setCpDistribution(*point.surface);
+      } else {
+        ui.cpPlot->clear();
+        ui.cpAlphaPlot->clear();
+      }
+
+      if (point.viscous && point.skinFriction.has_value()) {
+        ui.cfAlphaPlot->setCfDistribution(*point.skinFriction);
+      } else {
+        ui.cfAlphaPlot->clear();
+        if (!point.viscous) {
+          ui.cfAlphaPlot->setMessage(
+              QStringLiteral(
+                  "No skin-friction distribution for inviscid point"));
+        }
+      }
+    } else {
+      ui.cpPlot->clear();
+      ui.cpAlphaPlot->clear();
+      ui.cfAlphaPlot->clear();
+    }
+    refreshUi();
+  }
+
+  void selectPointFromPlot(std::size_t sourceIndex) {
+    if (!selectionModel_.select(sourceIndex)) {
+      return;
+    }
+    refreshResultPresentation(false);
+  }
+
+  void operatingPointChanged(int index) {
+    if (index < 0) {
+      return;
+    }
+    const std::size_t sourceIndex = static_cast<std::size_t>(
+        ui.operatingPointCombo->itemData(index).toULongLong());
+    if (selectionModel_.select(sourceIndex)) {
+      refreshResultPresentation(false);
+    }
+  }
+
+  void deactivatePointChanged(int index) {
+    if (index < 0) {
+      return;
+    }
+    const std::size_t sourceIndex = static_cast<std::size_t>(
+        ui.deactivatePointCombo->itemData(index).toULongLong());
+    if (selectionModel_.deactivate(sourceIndex)) {
+      refreshResultPresentation(false);
+    } else {
+      refreshPointSelection();
+    }
+  }
+
+  void activatePointChanged(int index) {
+    if (index < 0) {
+      return;
+    }
+    const std::size_t sourceIndex = static_cast<std::size_t>(
+        ui.activatePointCombo->itemData(index).toULongLong());
+    if (selectionModel_.activate(sourceIndex)) {
+      refreshResultPresentation(false);
+    } else {
+      refreshPointSelection();
     }
   }
 
@@ -1310,11 +1536,35 @@ class XFoilWidget::Impl {
     if (model_.error().has_value()) {
       diagnostics = formatError(*model_.error());
     }
-    for (const QString& line : analysisDiagnostics_) {
+    const auto appendDiagnostic = [&diagnostics](const QString& line) {
+      if (line.isEmpty()) {
+        return;
+      }
       if (!diagnostics.isEmpty()) {
         diagnostics += QLatin1Char('\n');
       }
       diagnostics += line;
+    };
+    for (const QString& line : analysisDiagnostics_) {
+      appendDiagnostic(line);
+    }
+    const std::optional<GuiPointEntry> selectedPoint =
+        selectionModel_.currentPoint();
+    if (selectedPoint.has_value() &&
+        selectedPoint->convergenceStatus != ConvergenceStatus::converged) {
+      appendDiagnostic(QStringLiteral(
+          "Selected point is not converged. Direct values are shown; "
+          "derived summary values exclude it."));
+    }
+    if (summary_.clMaximumProvisional &&
+        summary_.clMaximum.has_value()) {
+      appendDiagnostic(
+          QString::fromStdString(std::string(kProvisionalClMaxHint)));
+    }
+    if (summary_.efficiencyMaximumProvisional &&
+        summary_.efficiencyMaximum.has_value()) {
+      appendDiagnostic(QString::fromStdString(
+          std::string(kProvisionalEfficiencyMaxHint)));
     }
     ui.setupDiagnosticsView->setPlainText(diagnostics);
 

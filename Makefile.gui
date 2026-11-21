@@ -168,7 +168,9 @@ GUI_ARCHIVE_OBJS := \
 	$(GUI_OBJ_DIR)/moc_GuiAnalysisWorker.o \
 	$(GUI_OBJ_DIR)/plots/GeometryPlotView.o \
 	$(GUI_OBJ_DIR)/plots/GuiPointPresentation.o \
+	$(GUI_OBJ_DIR)/plots/InteractivePlotController.o \
 	$(GUI_OBJ_DIR)/plots/ResultPlotView.o \
+	$(GUI_OBJ_DIR)/plots/ScalarPlotView.o \
 	$(GUI_OBJ_DIR)/moc_qcustomplot.o \
 	$(GUI_OBJ_DIR)/qcustomplot.o
 GUI_TEST_BIN := $(GUI_TEST_DIR)/$(GUI_VARIANT)/xfoil_gui_tests$(GUI_EXE_SUFFIX)
@@ -178,11 +180,16 @@ GUI_TEST_OBJS := \
 	$(GUI_OBJ_DIR)/tests/GeometryPlotViewTests.o \
 	$(GUI_OBJ_DIR)/tests/GuiDefinitionModelTests.o \
 	$(GUI_OBJ_DIR)/tests/GuiResultSelectionModelTests.o \
+	$(GUI_OBJ_DIR)/tests/GuiResultSummaryTests.o \
 	$(GUI_OBJ_DIR)/tests/GuiResultWorkspaceTests.o \
+	$(GUI_OBJ_DIR)/tests/GuiScalarPlotTests.o \
+	$(GUI_OBJ_DIR)/tests/GuiDistributionPlotTests.o \
+	$(GUI_OBJ_DIR)/tests/GuiPlotInteractionTests.o \
 	$(GUI_OBJ_DIR)/tests/GuiDetailedSequenceContractTests.o \
 	$(GUI_OBJ_DIR)/tests/GuiSessionBackendTests.o \
 	$(GUI_OBJ_DIR)/tests/XFoilWidgetG2Tests.o \
 	$(GUI_OBJ_DIR)/tests/XFoilWidgetG3Tests.o \
+	$(GUI_OBJ_DIR)/tests/XFoilWidgetG4Tests.o \
 	$(GUI_OBJ_DIR)/tests/GuiAnalysisWorkerTests.o \
 	$(GUI_OBJ_DIR)/tests/XFoilWidgetShellTests.o
 GUI_LINKCHECK := $(GUI_TEST_DIR)/$(GUI_VARIANT)/gui-link-check$(GUI_EXE_SUFFIX)
@@ -334,9 +341,21 @@ $(GUI_OBJ_DIR)/plots/GuiPointPresentation.o: \
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
 
+$(GUI_OBJ_DIR)/plots/InteractivePlotController.o: \
+		src/gui/plots/InteractivePlotController.cpp \
+		src/gui/plots/InteractivePlotController.h | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
+
 $(GUI_OBJ_DIR)/plots/ResultPlotView.o: \
 		src/gui/plots/ResultPlotView.cpp \
 		src/gui/plots/ResultPlotView.h | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/plots/ScalarPlotView.o: \
+		src/gui/plots/ScalarPlotView.cpp \
+		src/gui/plots/ScalarPlotView.h | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
 
@@ -379,9 +398,33 @@ $(GUI_OBJ_DIR)/tests/GuiResultSelectionModelTests.o: \
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
 
+$(GUI_OBJ_DIR)/tests/GuiResultSummaryTests.o: \
+		tests/gui/GuiResultSummaryTests.cpp \
+		$(GUI_GEN_DIR)/GuiResultSummaryTests.moc | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
 $(GUI_OBJ_DIR)/tests/GuiResultWorkspaceTests.o: \
 		tests/gui/GuiResultWorkspaceTests.cpp \
 		$(GUI_GEN_DIR)/GuiResultWorkspaceTests.moc | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/tests/GuiScalarPlotTests.o: \
+		tests/gui/GuiScalarPlotTests.cpp \
+		$(GUI_GEN_DIR)/GuiScalarPlotTests.moc | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/tests/GuiDistributionPlotTests.o: \
+		tests/gui/GuiDistributionPlotTests.cpp \
+		$(GUI_GEN_DIR)/GuiDistributionPlotTests.moc | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/tests/GuiPlotInteractionTests.o: \
+		tests/gui/GuiPlotInteractionTests.cpp \
+		$(GUI_GEN_DIR)/GuiPlotInteractionTests.moc | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
 
@@ -408,6 +451,12 @@ $(GUI_OBJ_DIR)/tests/XFoilWidgetG3Tests.o: \
 		$(GUI_GEN_DIR)/XFoilWidgetG3Tests.moc | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/tests/XFoilWidgetG4Tests.o: \
+		tests/gui/XFoilWidgetG4Tests.cpp \
+		$(GUI_GEN_DIR)/XFoilWidgetG4Tests.moc | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
 
 $(GUI_OBJ_DIR)/tests/GuiAnalysisWorkerTests.o: \
 		tests/gui/GuiAnalysisWorkerTests.cpp \

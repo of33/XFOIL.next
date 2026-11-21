@@ -22,7 +22,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // File: src/gui/model/GuiResultSelectionModel.cpp
-// Deterministic source-index selection and view-only activation state.
+// Deterministic source-index selection and enabled/disabled view state.
 
 #include "model/GuiResultSelectionModel.h"
 
@@ -41,11 +41,11 @@ void GuiResultSelectionModel::setPoints(
   if (currentSourceIndex_.has_value()) {
     const std::optional<std::size_t> index =
         indexOf(*currentSourceIndex_);
-    if (!index.has_value() || !points_[*index].active) {
+    if (!index.has_value() || !points_[*index].enabled) {
       currentSourceIndex_.reset();
     }
   }
-  selectFirstActiveIfNeeded();
+  selectFirstEnabledIfNeeded();
 }
 
 void GuiResultSelectionModel::clear() noexcept {
@@ -63,20 +63,20 @@ std::optional<std::size_t> GuiResultSelectionModel::indexOf(
   return std::nullopt;
 }
 
-std::vector<GuiPointEntry> GuiResultSelectionModel::activePoints() const {
+std::vector<GuiPointEntry> GuiResultSelectionModel::enabledPoints() const {
   std::vector<GuiPointEntry> result;
   for (const GuiPointEntry& point : points_) {
-    if (point.active) {
+    if (point.enabled) {
       result.push_back(point);
     }
   }
   return result;
 }
 
-std::vector<GuiPointEntry> GuiResultSelectionModel::inactivePoints() const {
+std::vector<GuiPointEntry> GuiResultSelectionModel::disabledPoints() const {
   std::vector<GuiPointEntry> result;
   for (const GuiPointEntry& point : points_) {
-    if (!point.active) {
+    if (!point.enabled) {
       result.push_back(point);
     }
   }
@@ -89,7 +89,7 @@ std::optional<GuiPointEntry> GuiResultSelectionModel::currentPoint() const {
   }
   const std::optional<std::size_t> index =
       indexOf(*currentSourceIndex_);
-  if (!index.has_value() || !points_[*index].active) {
+  if (!index.has_value() || !points_[*index].enabled) {
     return std::nullopt;
   }
   return points_[*index];
@@ -97,36 +97,38 @@ std::optional<GuiPointEntry> GuiResultSelectionModel::currentPoint() const {
 
 bool GuiResultSelectionModel::select(std::size_t sourceIndex) {
   const std::optional<std::size_t> index = indexOf(sourceIndex);
-  if (!index.has_value() || !points_[*index].active) {
+  if (!index.has_value() || !points_[*index].enabled) {
     return false;
   }
   currentSourceIndex_ = sourceIndex;
   return true;
 }
 
-void GuiResultSelectionModel::selectNextActiveAfter(
+void GuiResultSelectionModel::selectAfterDeactivate(
     std::size_t sourcePosition) {
-  if (points_.empty()) {
-    currentSourceIndex_.reset();
-    return;
-  }
-  for (std::size_t offset = 1; offset <= points_.size(); ++offset) {
-    const std::size_t index =
-        (sourcePosition + offset) % points_.size();
-    if (points_[index].active) {
+  for (std::size_t index = sourcePosition + 1; index < points_.size();
+       ++index) {
+    if (points_[index].enabled) {
       currentSourceIndex_ = points_[index].sourceIndex;
+      return;
+    }
+  }
+  for (std::size_t index = sourcePosition; index > 0; --index) {
+    const std::size_t candidate = index - 1;
+    if (points_[candidate].enabled) {
+      currentSourceIndex_ = points_[candidate].sourceIndex;
       return;
     }
   }
   currentSourceIndex_.reset();
 }
 
-void GuiResultSelectionModel::selectFirstActiveIfNeeded() {
+void GuiResultSelectionModel::selectFirstEnabledIfNeeded() {
   if (currentSourceIndex_.has_value()) {
     return;
   }
   for (const GuiPointEntry& point : points_) {
-    if (point.active) {
+    if (point.enabled) {
       currentSourceIndex_ = point.sourceIndex;
       return;
     }
@@ -136,26 +138,26 @@ void GuiResultSelectionModel::selectFirstActiveIfNeeded() {
 
 bool GuiResultSelectionModel::deactivate(std::size_t sourceIndex) {
   const std::optional<std::size_t> index = indexOf(sourceIndex);
-  if (!index.has_value() || !points_[*index].active) {
+  if (!index.has_value() || !points_[*index].enabled) {
     return false;
   }
 
   const bool wasCurrent = currentSourceIndex_.has_value() &&
                           *currentSourceIndex_ == sourceIndex;
-  points_[*index].active = false;
+  points_[*index].enabled = false;
   if (wasCurrent) {
-    selectNextActiveAfter(*index);
+    selectAfterDeactivate(*index);
   }
   return true;
 }
 
 bool GuiResultSelectionModel::activate(std::size_t sourceIndex) {
   const std::optional<std::size_t> index = indexOf(sourceIndex);
-  if (!index.has_value() || points_[*index].active) {
+  if (!index.has_value() || points_[*index].enabled) {
     return false;
   }
-  points_[*index].active = true;
-  selectFirstActiveIfNeeded();
+  points_[*index].enabled = true;
+  selectFirstEnabledIfNeeded();
   return true;
 }
 

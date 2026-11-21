@@ -74,20 +74,28 @@ alpha, CL or exclusive-end alpha-sequence target. It runs those analyses
 asynchronously in one persistent worker thread and one worker-owned
 `xfoil::Session`; programmatic setup calls are short blocking worker calls
 outside an active job. Results cross the boundary as owning values. The result
-workspace has a left Cp/Airfoil column, seven result-plot shells, a fixed
-right selection and 4x3 results column, setup/analysis diagnostics, an Analyze
-button, a Cancel button, progress and analysis status. The GUI tests cover the
-definition model, result selection model, worker contract, job/generation
-identity, host/UI bindings, alpha/CL/sequence execution, progress,
+workspace has a left Cp/Airfoil column, five scalar sequence plots, selected
+Cp/Cf detail plots, a fixed right selection and 4x3 results column,
+setup/analysis diagnostics, an Analyze button, a Cancel button, progress and
+analysis status. Point selection and activate/deactivate filtering use source
+indices and owning results; they never rerun the solver. The matrix shows
+direct selected-point values plus derived summary values for enabled converged
+points, with `n/a` where a value is unavailable. The plots support pan,
+cursor-centred zoom, fit and optional sample markers; the airfoil contour keeps
+equal aspect. A non-converged selected point remains directly inspectable but
+is excluded from derived summaries. Provisional maxima and their resolution
+hints are shown explicitly.
+
+The GUI tests cover the definition model, selection and filtering, exact and
+interpolated summaries, scalar curves including NC markers and source order,
+Cp/Cf detail replacement and the inviscid state, plot interactions and
+independence, worker/job identity, alpha/CL/sequence execution, progress,
 cancellation, busy no-ops, two independent widgets, shutdown and the
 public-header link check.
 
 The surface reads and writes no files, uses no `QSettings` and starts no
-standalone application. Result plots remain unbound shells; the matrix uses
-`n/a` and no values are fabricated. Cp/Cf/polar plot binding, matrix
-calculation and detailed point selection remain later work. The Windows UCRT64
-Qt 6.12.0/GCC 16.2.0 Rev7 development build is qualified, but no Windows GUI
-package is provided.
+standalone application. The Windows UCRT64 Qt 6.12.0/GCC 16.2.0 Rev7
+development build is qualified, but no Windows GUI package is provided.
 
 The adapter also accepts a kit found through `pkg-config` or `qmake`. The
 build emits generated MOC/UIC files only below `build/gui/`; debug and release
@@ -97,10 +105,10 @@ widget shell, definition model, session backend, geometry preview, generated
 UI/meta-objects and QCustomPlot. Core, session and CLI objects remain in the
 separate public library.
 
-This is a definition/input surface, not a finished GUI application. No GUI
-release package or installer is provided. A Windows UCRT64 Qt 6.12.0
-development build is qualified, but not packaged. The product version remains
-1.2.1.
+This is an analysis and result surface, not a finished GUI application. No
+standalone application shell, GUI release package or installer is provided. A
+Windows UCRT64 Qt 6.12.0 development build is qualified, but not packaged. The
+product version remains 1.2.1.
 
 Product programs land under `bin/<mode>/`; intermediate objects, tests,
 generated files and libraries remain under `build/<mode>/`. The default

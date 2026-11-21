@@ -52,6 +52,7 @@
 #include "model/GuiResultSummary.h"
 #include "plots/GeometryPlotView.h"
 #include "plots/ResultPlotView.h"
+#include "plots/ScalarPlotView.h"
 #include "qcustomplot.h"
 #include "xfoil/gui/XFoilWidget.h"
 
@@ -75,7 +76,16 @@ ResultPlotView* resultPlot(QWidget& widget, const QString& name) {
   return plot;
 }
 
-QCustomPlot* canvas(ResultPlotView& view) {
+xfoil::gui::ScalarPlotView* scalarPlot(QWidget& widget,
+                                       const QString& name) {
+  auto* base = widget.findChild<QWidget*>(name);
+  Q_ASSERT(base != nullptr);
+  auto* plot = dynamic_cast<xfoil::gui::ScalarPlotView*>(base);
+  Q_ASSERT(plot != nullptr);
+  return plot;
+}
+
+QCustomPlot* canvas(QWidget& view) {
   QCustomPlot* plot = view.findChild<QCustomPlot*>();
   Q_ASSERT(plot != nullptr);
   return plot;
@@ -222,8 +232,8 @@ class GuiResultWorkspaceTests : public QObject {
     const QStringList titles = {
         QStringLiteral("CL(α)"), QStringLiteral("CL(CD)"),
         QStringLiteral("CM(α)"), QStringLiteral("CM(CL)"),
-        QStringLiteral("CL/CD(CL)"), QStringLiteral("Cp(α)"),
-        QStringLiteral("Cf(α)")};
+        QStringLiteral("CL/CD(CL)"), QStringLiteral("Cp"),
+        QStringLiteral("Cf")};
     const QStringList pages = {
         QStringLiteral("clAlphaPage"), QStringLiteral("clCdPage"),
         QStringLiteral("cmAlphaPage"), QStringLiteral("cmClPage"),
@@ -237,11 +247,24 @@ class GuiResultWorkspaceTests : public QObject {
     for (int index = 0; index < 7; ++index) {
       QCOMPARE(tabs->tabText(index), titles.at(index));
       QCOMPARE(tabs->widget(index)->objectName(), pages.at(index));
-      auto* view = resultPlot(widget, plots.at(index));
+      QWidget* view = widget.findChild<QWidget*>(plots.at(index));
+      QVERIFY(view != nullptr);
       QCustomPlot* plot = canvas(*view);
-      QCOMPARE(plot->graphCount(), 0);
       QVERIFY(plot->xAxis->label().isEmpty() == false);
       QVERIFY(plot->yAxis->label().isEmpty() == false);
+      if (index < 5) {
+        auto* scalar = scalarPlot(widget, plots.at(index));
+        QCOMPARE(scalar->kind(),
+                 index == 0 ? xfoil::gui::GuiScalarPlotKind::clAlpha
+                 : index == 1 ? xfoil::gui::GuiScalarPlotKind::clCd
+                 : index == 2 ? xfoil::gui::GuiScalarPlotKind::cmAlpha
+                 : index == 3 ? xfoil::gui::GuiScalarPlotKind::cmCl
+                              : xfoil::gui::GuiScalarPlotKind::efficiencyCl);
+        QCOMPARE(plot->graphCount(), 2);
+        QCOMPARE(plot->plottableCount(), 5);
+      } else {
+        QCOMPARE(plot->graphCount(), 2);
+      }
     }
   }
 
@@ -275,7 +298,7 @@ class GuiResultWorkspaceTests : public QObject {
              QStringLiteral("n/a"));
     QCOMPARE(QString::fromStdString(
                  xfoil::gui::formatResultValue(std::optional<double>{1.5})),
-             QStringLiteral("1.5"));
+             QStringLiteral("1.500000"));
   }
 
   void pointSelectionAndConvergenceStartNeutral() {

@@ -22,15 +22,27 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // File: src/gui/model/GuiResultSummary.h
-// Empty G2a result-summary shell for the 4x3 matrix. No value is computed
-// in G2a; absent values are represented as n/a.
+// Solver-independent result matrix and derived sequence summary. No Qt,
+// session or solver dependency. Direct values may come from a selected
+// non-converged point; derived values use enabled converged points only.
 
 #pragma once
 
 #include <optional>
 #include <string>
+#include <string_view>
+#include <vector>
+
+#include "model/GuiResultSelectionModel.h"
 
 namespace xfoil::gui {
+
+enum class GuiResultProvenance {
+  unavailable,
+  exact,
+  interpolated,
+  sampledProvisional
+};
 
 struct GuiResultSummary {
   std::optional<double> cd;
@@ -45,10 +57,41 @@ struct GuiResultSummary {
   std::optional<double> alpha0;
   std::optional<double> clMaximum;
   std::optional<double> efficiencyMaximum;
+  bool clMaximumProvisional{false};
+  bool efficiencyMaximumProvisional{false};
+  GuiResultProvenance clMaximumProvenance{
+      GuiResultProvenance::unavailable};
+  GuiResultProvenance efficiencyMaximumProvenance{
+      GuiResultProvenance::unavailable};
 };
 
 [[nodiscard]]
+std::optional<double> guiPointCd(const GuiPointEntry& point);
+[[nodiscard]]
+std::optional<double> guiPointCdf(const GuiPointEntry& point);
+[[nodiscard]]
+std::optional<double> guiPointCdp(const GuiPointEntry& point);
+[[nodiscard]]
+std::optional<double> guiPointCl(const GuiPointEntry& point);
+[[nodiscard]]
+std::optional<double> guiPointCm(const GuiPointEntry& point);
+[[nodiscard]]
+std::optional<double> guiPointEfficiency(const GuiPointEntry& point);
+
+[[nodiscard]]
+GuiResultSummary computeGuiResultSummary(
+    const std::vector<GuiPointEntry>& points,
+    const std::optional<GuiPointEntry>& selected);
+
+[[nodiscard]]
 std::string formatResultValue(const std::optional<double>& value);
+
+inline constexpr std::string_view kProvisionalClMaxHint =
+    "Highest computed CL. Extend the alpha sequence beyond the peak for a "
+    "resolved CLmax.";
+inline constexpr std::string_view kProvisionalEfficiencyMaxHint =
+    "Highest computed CL/CD. Extend the alpha sequence beyond the peak for a "
+    "resolved maximum.";
 
 }  // namespace xfoil::gui
 

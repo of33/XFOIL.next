@@ -137,13 +137,18 @@ Plotting is not available in this build.
 
 An optional Qt 6.12.x GUI analysis surface now exists, but it is not a
 finished application and does not change the CLI plotting contract. It owns a
-geometry/paneling/operating/target definition, an offscreen-checked geometry
-and panel preview and a result workspace with seven plot shells, a 4x3 result
-matrix, point-selection placeholders, diagnostics, progress and cancellation.
+geometry/paneling/operating/target definition, an offscreen-checked interactive
+geometry and panel preview, five scalar sequence plots, selected-point Cp and
+Cf plots and a 4x3 result matrix with diagnostics, progress and cancellation.
 Alpha, CL and detailed alpha-sequence analyses run asynchronously in exactly
-one persistent worker thread and one worker-owned `xfoil::Session`. Cp, Cf and
-polar plot binding, matrix calculation and point selection are not implemented
-yet. The numerical, textual and file-related parts of mixed commands are kept.
+one persistent worker thread and one worker-owned `xfoil::Session`. Point
+selection and activate/deactivate filtering use owning results and never rerun
+the solver. The matrix shows direct values for the selected point and derived
+`CL0`, `alpha0`, `CD0`, `CM0`, `CLmax` and `(CL/CD)max` summaries for enabled
+converged points, using `n/a` and explicit provisional hints where a value is
+not defined. The plots support pan, cursor-centred wheel zoom, fit and sample
+markers. The numerical, textual and file-related parts of mixed commands are
+kept.
 This is a port of XFOIL, not an independent re-derivation of the
 solver, and it is not a bit-identical reproduction of every Fortran build
 variant (see [known differences](docs/known-differences.md)).
@@ -199,12 +204,14 @@ accepts memory, NACA and NACS geometry, paneling options, an `AnalysisConfig`
 and an alpha/CL/alpha-sequence target. It validates setup through the public
 `xfoil::Session` API and runs analysis in one persistent worker-owned session
 with owning result values, progress, cancellation and structured errors. It
-previews geometry and panel nodes with QCustomPlot. There is still no
-standalone main window, file dialog, QSettings or import/export adapter, and
-no Cp/Cf/polar plot or matrix binding. It has no GUI release asset. The
-Windows UCRT64 Qt 6.12.0 development build is qualified, but no Windows GUI
-package is provided. See [building and testing](docs/building-and-testing.md)
-for the complete target list, compiler requirements, and validation checks.
+previews geometry and panel nodes, binds full scalar curves and selected-point
+Cp/Cf distributions with QCustomPlot, and provides source-index point
+selection, activate/deactivate filtering, a result matrix and derived summaries.
+There is still no standalone main window, file dialog, QSettings or
+import/export adapter. It has no GUI release asset. The Windows UCRT64 Qt
+6.12.0 development build is qualified, but no Windows GUI package is provided.
+See [building and testing](docs/building-and-testing.md) for the complete target
+list, compiler requirements, and validation checks.
 
 ## Portable runtime executables
 

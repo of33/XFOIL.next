@@ -74,8 +74,8 @@ class GuiResultSelectionModelTests : public QObject {
     QCOMPARE(model.size(), std::size_t{0});
     QVERIFY(!model.currentSourceIndex().has_value());
     QVERIFY(!model.currentPoint().has_value());
-    QVERIFY(model.activePoints().empty());
-    QVERIFY(model.inactivePoints().empty());
+    QVERIFY(model.enabledPoints().empty());
+    QVERIFY(model.disabledPoints().empty());
     QVERIFY(!model.select(0));
     QVERIFY(!model.deactivate(0));
     QVERIFY(!model.activate(0));
@@ -88,7 +88,7 @@ class GuiResultSelectionModelTests : public QObject {
     QVERIFY(model.currentSourceIndex().has_value());
     QCOMPARE(*model.currentSourceIndex(), std::size_t{42});
     QCOMPARE(model.currentPoint()->alpha, 4.0);
-    QCOMPARE(model.activePoints().size(), std::size_t{1});
+    QCOMPARE(model.enabledPoints().size(), std::size_t{1});
   }
 
   void formatterMarksNotConvergedOnly() {
@@ -128,27 +128,29 @@ class GuiResultSelectionModelTests : public QObject {
 
     QVERIFY(!model.select(99));
     QCOMPARE(*model.currentSourceIndex(), std::size_t{2});
-    QVERIFY(sourceIndices(model.activePoints()) ==
+    QVERIFY(sourceIndices(model.enabledPoints()) ==
             (std::vector<std::size_t>{0, 1, 2, 3, 4}));
   }
 
-  void deactivatingCurrentSelectsNextActiveAndWraps() {
+  void deactivatingCurrentSelectsNextHigherThenPrevious() {
     GuiResultSelectionModel model(samplePoints());
     QVERIFY(model.select(3));
     QVERIFY(model.deactivate(3));
     QCOMPARE(*model.currentSourceIndex(), std::size_t{4});
-    QVERIFY(sourceIndices(model.activePoints()) ==
+    QVERIFY(sourceIndices(model.enabledPoints()) ==
             (std::vector<std::size_t>{0, 1, 2, 4}));
-    QVERIFY(sourceIndices(model.inactivePoints()) ==
+    QVERIFY(sourceIndices(model.disabledPoints()) ==
             (std::vector<std::size_t>{3}));
 
     QVERIFY(model.deactivate(4));
-    QCOMPARE(*model.currentSourceIndex(), std::size_t{0});
-    QVERIFY(sourceIndices(model.activePoints()) ==
+    QCOMPARE(*model.currentSourceIndex(), std::size_t{2});
+    QVERIFY(sourceIndices(model.enabledPoints()) ==
             (std::vector<std::size_t>{0, 1, 2}));
 
-    QVERIFY(model.deactivate(0));
+    QVERIFY(model.deactivate(2));
     QCOMPARE(*model.currentSourceIndex(), std::size_t{1});
+    QVERIFY(sourceIndices(model.enabledPoints()) ==
+            (std::vector<std::size_t>{0, 1}));
   }
 
   void deactivatingNonCurrentKeepsSelection() {
@@ -156,7 +158,7 @@ class GuiResultSelectionModelTests : public QObject {
     QVERIFY(model.select(4));
     QVERIFY(model.deactivate(1));
     QCOMPARE(*model.currentSourceIndex(), std::size_t{4});
-    QVERIFY(sourceIndices(model.activePoints()) ==
+    QVERIFY(sourceIndices(model.enabledPoints()) ==
             (std::vector<std::size_t>{0, 2, 3, 4}));
   }
 
@@ -166,8 +168,8 @@ class GuiResultSelectionModelTests : public QObject {
       QVERIFY(model.deactivate(index));
     }
     QVERIFY(!model.currentSourceIndex().has_value());
-    QVERIFY(model.activePoints().empty());
-    QVERIFY(sourceIndices(model.inactivePoints()) ==
+    QVERIFY(model.enabledPoints().empty());
+    QVERIFY(sourceIndices(model.disabledPoints()) ==
             (std::vector<std::size_t>{0, 1, 2, 3, 4}));
     QVERIFY(!model.select(2));
 
@@ -176,9 +178,9 @@ class GuiResultSelectionModelTests : public QObject {
     QCOMPARE(*model.currentSourceIndex(), std::size_t{3});
     QVERIFY(model.activate(1));
     QVERIFY(model.activate(4));
-    QVERIFY(sourceIndices(model.activePoints()) ==
+    QVERIFY(sourceIndices(model.enabledPoints()) ==
             (std::vector<std::size_t>{1, 3, 4}));
-    QVERIFY(sourceIndices(model.inactivePoints()) ==
+    QVERIFY(sourceIndices(model.disabledPoints()) ==
             (std::vector<std::size_t>{0, 2}));
   }
 
@@ -192,10 +194,10 @@ class GuiResultSelectionModelTests : public QObject {
     QCOMPARE(model.currentPoint()->sourceIndex, std::size_t{11});
     QVERIFY(model.deactivate(10));
     QCOMPARE(*model.currentSourceIndex(), std::size_t{11});
-    QVERIFY(sourceIndices(model.activePoints()) ==
+    QVERIFY(sourceIndices(model.enabledPoints()) ==
             (std::vector<std::size_t>{11, 12}));
     QVERIFY(model.activate(10));
-    QVERIFY(sourceIndices(model.activePoints()) ==
+    QVERIFY(sourceIndices(model.enabledPoints()) ==
             (std::vector<std::size_t>{10, 11, 12}));
   }
 

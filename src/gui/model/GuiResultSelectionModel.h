@@ -22,8 +22,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // File: src/gui/model/GuiResultSelectionModel.h
-// Solver-independent view/filter state for calculated points. Deactivation
-// only hides points; source order and source indices are never changed.
+// Solver-independent result set and view filter. enabled/disabled describe
+// visibility only; selected is the single current point. Source indices and
+// owning worker results are never changed by selection or filtering.
 
 #pragma once
 
@@ -31,13 +32,31 @@
 #include <optional>
 #include <vector>
 
+#include "xfoil/AnalysisData.h"
+#include "xfoil/SequenceResult.h"
+
 namespace xfoil::gui {
 
 struct GuiPointEntry {
+  GuiPointEntry() = default;
+  GuiPointEntry(std::size_t source, double pointAlpha, bool isConverged,
+                bool isEnabled)
+      : sourceIndex(source),
+        alpha(pointAlpha),
+        converged(isConverged),
+        enabled(isEnabled),
+        convergenceStatus(isConverged
+                              ? xfoil::ConvergenceStatus::converged
+                              : xfoil::ConvergenceStatus::unconverged) {}
+
   std::size_t sourceIndex{};
   double alpha{};
   bool converged{false};
-  bool active{true};
+  bool enabled{true};
+  xfoil::ConvergenceStatus convergenceStatus{
+      xfoil::ConvergenceStatus::notRun};
+  xfoil::PolarPoint polar{};
+  std::optional<xfoil::OperatingPointData> operatingPoint;
 };
 
 class GuiResultSelectionModel {
@@ -64,9 +83,9 @@ class GuiResultSelectionModel {
   }
 
   [[nodiscard]]
-  std::vector<GuiPointEntry> activePoints() const;
+  std::vector<GuiPointEntry> enabledPoints() const;
   [[nodiscard]]
-  std::vector<GuiPointEntry> inactivePoints() const;
+  std::vector<GuiPointEntry> disabledPoints() const;
 
   [[nodiscard]]
   std::optional<std::size_t> currentSourceIndex() const noexcept {
@@ -86,8 +105,8 @@ class GuiResultSelectionModel {
  private:
   [[nodiscard]]
   std::optional<std::size_t> indexOf(std::size_t sourceIndex) const;
-  void selectNextActiveAfter(std::size_t sourcePosition);
-  void selectFirstActiveIfNeeded();
+  void selectAfterDeactivate(std::size_t sourcePosition);
+  void selectFirstEnabledIfNeeded();
 
   std::vector<GuiPointEntry> points_;
   std::optional<std::size_t> currentSourceIndex_;

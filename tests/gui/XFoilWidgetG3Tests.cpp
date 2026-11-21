@@ -181,7 +181,7 @@ class XFoilWidgetG3Tests : public QObject {
     QCOMPARE(first.alpha.value, 2.0);
   }
 
-  void detailedSequenceOwnsPointsWithoutFakeSelection() {
+  void detailedSequenceOwnsPointsAndSelectsFirstVisiblePoint() {
     XFoilWidget widget;
     configureSequence(widget, 2.0, 1.0);
 
@@ -203,10 +203,11 @@ class XFoilWidgetG3Tests : public QObject {
     auto* operating =
         widget.findChild<QComboBox*>("operatingPointCombo");
     QVERIFY(operating != nullptr);
-    QCOMPARE(operating->count(), 0);
+    QCOMPARE(operating->count(), 2);
+    QCOMPARE(operating->currentIndex(), 0);
     QVERIFY(widget.findChild<QLabel*>("currentPointConvergenceLabel")
                 ->text()
-                .contains(QStringLiteral("No point")));
+                .contains(QStringLiteral("Converged")));
   }
 
   void progressIsDeliveredAndBarIsHiddenAtRest() {

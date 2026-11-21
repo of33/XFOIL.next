@@ -22,18 +22,27 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // File: src/gui/plots/ResultPlotView.h
-// Empty G2a result-plot shell. It owns QCustomPlot presentation only and
-// deliberately carries no result data or aerodynamic mapping.
+// Selected-point Cp/Cf distribution view. It accepts owning public
+// distributions only and performs no solve, interpolation or reconstruction.
 
 #pragma once
+
+#include <cstddef>
 
 #include <QString>
 #include <QWidget>
 
+#include "xfoil/AnalysisData.h"
+#include "xfoil/SkinFriction.h"
+
 class QCPGraph;
+class QCPItemStraightLine;
+class QCPItemText;
 class QCustomPlot;
 
 namespace xfoil::gui {
+
+class InteractivePlotController;
 
 class ResultPlotView : public QWidget {
  public:
@@ -44,18 +53,50 @@ class ResultPlotView : public QWidget {
   ResultPlotView& operator=(const ResultPlotView&) = delete;
 
   void setAxisTitles(const QString& xTitle, const QString& yTitle);
-  void setCpMode(bool upperLower);
+  void setCpDistribution(const xfoil::SurfaceDistribution& distribution);
+  void setCfDistribution(
+      const xfoil::SkinFrictionDistribution& distribution);
   void clear();
+  void setMessage(const QString& message);
+  void fitVisibleData();
+
+  [[nodiscard]]
+  QString messageText() const;
+  [[nodiscard]]
+  bool sampleMarkersEnabled() const noexcept {
+    return sampleMarkersEnabled_;
+  }
+  void setSampleMarkersEnabled(bool enabled);
+  [[nodiscard]]
+  bool zeroLineVisible() const noexcept {
+    return zeroLineVisible_;
+  }
+  [[nodiscard]]
+  std::size_t upperPointCount() const noexcept;
+  [[nodiscard]]
+  std::size_t lowerPointCount() const noexcept;
 
  private:
   void applyPresentation();
+  void applySampleMarkers();
+  void clearData();
+  void setDistributionData(const std::vector<double>& upperX,
+                           const std::vector<double>& upperY,
+                           const std::vector<double>& lowerX,
+                           const std::vector<double>& lowerY);
+  void updateZeroLine(double lower, double upper, bool visible);
 
   QCustomPlot* plot_{};
   QCPGraph* upperGraph_{};
   QCPGraph* lowerGraph_{};
+  QCPItemStraightLine* zeroLine_{};
+  QCPItemText* messageItem_{};
+  InteractivePlotController* interaction_{};
   QString xTitle_;
   QString yTitle_;
-  bool cpMode_{false};
+  QString message_;
+  bool sampleMarkersEnabled_{false};
+  bool zeroLineVisible_{false};
 };
 
 }  // namespace xfoil::gui

@@ -34,11 +34,14 @@
 #include "xfoil/AnalysisData.h"
 #include "xfoil/geometry/AirfoilGeometry.h"
 
+class QCPCurve;
 class QCPGraph;
 class QCustomPlot;
 class QResizeEvent;
 
 namespace xfoil::gui {
+
+class InteractivePlotController;
 
 class GeometryPlotView : public QWidget {
  public:
@@ -53,6 +56,13 @@ class GeometryPlotView : public QWidget {
   void showPanelNodes(bool visible);
   void clearPanel();
   void clear();
+  void fitVisibleData();
+
+  [[nodiscard]]
+  bool sampleMarkersEnabled() const noexcept {
+    return sampleMarkersEnabled_;
+  }
+  void setSampleMarkersEnabled(bool enabled);
 
   [[nodiscard]]
   std::size_t geometryPointCount() const noexcept {
@@ -74,14 +84,18 @@ class GeometryPlotView : public QWidget {
 
  private:
   void updateAxes();
+  void applySampleMarkers();
+  void applyEqualAspect();
 
   QCustomPlot* plot_{};
-  QCPGraph* geometryContour_{};
-  QCPGraph* panelContour_{};
+  QCPCurve* geometryContour_{};
+  QCPCurve* panelContour_{};
   QCPGraph* panelNodes_{};
+  InteractivePlotController* interaction_{};
   std::size_t geometryPointCount_{0};
   std::size_t panelPointCount_{0};
   bool panelNodesVisible_{true};
+  bool sampleMarkersEnabled_{false};
   bool hasGeometry_{false};
   bool hasPanel_{false};
   double xMinimum_{0.0};

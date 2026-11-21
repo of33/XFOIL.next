@@ -19,8 +19,15 @@ keep-a-changelog layout.
   worker-owned session run alpha, CL and detailed alpha-sequence analyses
   asynchronously. Owning results, progress, cancellation, structured errors,
   job/generation stale-result rejection, busy setup guards and safe worker
-  shutdown are covered by tests. Cp/Cf/polar plot binding and matrix
-  calculation remain later work.
+  shutdown are covered by tests. The G4 increment below adds the plot and
+  matrix binding.
+- Added the G4 GUI result surface: source-index point selection,
+  activate/deactivate filtering, five full scalar curves with NC and
+  provisional states, selected-point Cp/Cf plots, an interactive airfoil plot,
+  pan/zoom/fit/sample-marker controls, a 4x3 direct matrix and derived
+  `CL0`/`alpha0`/`CD0`/`CM0`/`CLmax`/`(CL/CD)max` summaries. All display values
+  come from worker-owned results; selecting or filtering a point never reruns
+  the solver.
 - Added the optional owning detailed alpha sequence: each executed point
   keeps its compact polar row plus its full Cp surface and, for viscous
   points, its Cf distribution and CDF. The compact sequence API remains

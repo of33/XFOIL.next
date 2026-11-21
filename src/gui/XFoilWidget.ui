@@ -652,7 +652,7 @@
                <string>distribution-cp</string>
               </property>
               <property name="toolTip">
-               <string>Cp distribution of the selected operating point.</string>
+               <string>Cp distribution of the selected operating point; Y is -Cp.</string>
               </property>
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -726,7 +726,7 @@
          </attribute>
          <layout class="QVBoxLayout" name="clAlphaLayout">
           <item>
-           <widget class="xfoil::gui::ResultPlotView" name="clAlphaPlot">
+           <widget class="xfoil::gui::ScalarPlotView" name="clAlphaPlot">
             <property name="accessibleName">
              <string>CL(α) plot</string>
             </property>
@@ -755,7 +755,7 @@
          </attribute>
          <layout class="QVBoxLayout" name="clCdLayout">
           <item>
-           <widget class="xfoil::gui::ResultPlotView" name="clCdPlot">
+           <widget class="xfoil::gui::ScalarPlotView" name="clCdPlot">
             <property name="accessibleName">
              <string>CL(CD) plot</string>
             </property>
@@ -784,7 +784,7 @@
          </attribute>
          <layout class="QVBoxLayout" name="cmAlphaLayout">
           <item>
-           <widget class="xfoil::gui::ResultPlotView" name="cmAlphaPlot">
+           <widget class="xfoil::gui::ScalarPlotView" name="cmAlphaPlot">
             <property name="accessibleName">
              <string>CM(α) plot</string>
             </property>
@@ -813,7 +813,7 @@
          </attribute>
          <layout class="QVBoxLayout" name="cmClLayout">
           <item>
-           <widget class="xfoil::gui::ResultPlotView" name="cmClPlot">
+           <widget class="xfoil::gui::ScalarPlotView" name="cmClPlot">
             <property name="accessibleName">
              <string>CM(CL) plot</string>
             </property>
@@ -842,7 +842,7 @@
          </attribute>
          <layout class="QVBoxLayout" name="efficiencyClLayout">
           <item>
-           <widget class="xfoil::gui::ResultPlotView" name="efficiencyClPlot">
+           <widget class="xfoil::gui::ScalarPlotView" name="efficiencyClPlot">
             <property name="accessibleName">
              <string>CL/CD(CL) plot</string>
             </property>
@@ -867,19 +867,19 @@
         </widget>
         <widget class="QWidget" name="cpAlphaPage">
          <attribute name="title">
-          <string>Cp(α)</string>
+          <string>Cp</string>
          </attribute>
          <layout class="QVBoxLayout" name="cpAlphaLayout">
           <item>
            <widget class="xfoil::gui::ResultPlotView" name="cpAlphaPlot">
             <property name="accessibleName">
-             <string>Cp(α) plot</string>
+             <string>Cp distribution plot</string>
             </property>
             <property name="xfoilPlotRole" stdset="0">
              <string>distribution-cp</string>
             </property>
             <property name="toolTip">
-             <string>Cp distribution of the selected operating point.</string>
+             <string>Cp distribution of the selected operating point; Y is -Cp.</string>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -893,19 +893,19 @@
         </widget>
         <widget class="QWidget" name="cfAlphaPage">
          <attribute name="title">
-          <string>Cf(α)</string>
+          <string>Cf</string>
          </attribute>
          <layout class="QVBoxLayout" name="cfAlphaLayout">
           <item>
            <widget class="xfoil::gui::ResultPlotView" name="cfAlphaPlot">
             <property name="accessibleName">
-             <string>Cf(α) plot</string>
+             <string>Cf distribution plot</string>
             </property>
             <property name="xfoilPlotRole" stdset="0">
              <string>distribution-cf</string>
             </property>
             <property name="toolTip">
-             <string>Cf distribution of the selected operating point; empty for an inviscid point.</string>
+             <string>Cf distribution of the selected operating point over s; empty for an inviscid point.</string>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -1351,7 +1351,7 @@
                <item>
                 <widget class="QLabel" name="alpha0ValueCaption">
                  <property name="text">
-                  <string>α0</string>
+                  <string>α0 [°]</string>
                  </property>
                  <property name="alignment">
                   <set>Qt::AlignCenter</set>
@@ -1367,7 +1367,7 @@
                   <set>Qt::AlignCenter</set>
                  </property>
                  <property name="accessibleName">
-                  <string>α0 value</string>
+                  <string>α0 value in degrees</string>
                  </property>
                 </widget>
                </item>
@@ -1661,6 +1661,12 @@
    <class>xfoil::gui::GeometryPlotView</class>
    <extends>QWidget</extends>
    <header>plots/GeometryPlotView.h</header>
+   <container>0</container>
+  </customwidget>
+  <customwidget>
+   <class>xfoil::gui::ScalarPlotView</class>
+   <extends>QWidget</extends>
+   <header>plots/ScalarPlotView.h</header>
    <container>0</container>
   </customwidget>
   <customwidget>

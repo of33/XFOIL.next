@@ -67,6 +67,18 @@ QCustomPlot* plotOf(GeometryPlotView& view) {
   return plot;
 }
 
+QCPCurve* curveOf(QCustomPlot* plot, const char* name) {
+  QCPCurve* curve = plot->findChild<QCPCurve*>(QString::fromLatin1(name));
+  Q_ASSERT(curve != nullptr);
+  return curve;
+}
+
+QCPGraph* graphOf(QCustomPlot* plot, const char* name) {
+  QCPGraph* graph = plot->findChild<QCPGraph*>(QString::fromLatin1(name));
+  Q_ASSERT(graph != nullptr);
+  return graph;
+}
+
 }  // namespace
 
 class GeometryPlotViewTests : public QObject {
@@ -93,13 +105,25 @@ class GeometryPlotViewTests : public QObject {
     QVERIFY(view.panelNodesVisible());
 
     QCustomPlot* plot = plotOf(view);
-    QCOMPARE(plot->graphCount(), 3);
-    QCOMPARE(plot->graph(0)->dataCount(), 6);
-    QCOMPARE(plot->graph(1)->dataCount(), 6);
-    QCOMPARE(plot->graph(2)->dataCount(), 5);
-    QVERIFY(plot->graph(0)->visible());
-    QVERIFY(plot->graph(1)->visible());
-    QVERIFY(plot->graph(2)->visible());
+    QCOMPARE(plot->graphCount(), 1);
+    QCOMPARE(plot->plottableCount(), 3);
+    QCPCurve* geometryCurve = curveOf(plot, "geometryContour");
+    QCPCurve* panelContour = curveOf(plot, "panelContour");
+    QCPGraph* nodes = graphOf(plot, "panelNodes");
+    QCOMPARE(geometryCurve->dataCount(), 6);
+    QCOMPARE(panelContour->dataCount(), 6);
+    QCOMPARE(nodes->dataCount(), 5);
+    QVERIFY(geometryCurve->visible());
+    QVERIFY(panelContour->visible());
+    QVERIFY(nodes->visible());
+    const auto contour = geometryCurve->data();
+    auto iterator = contour->constBegin();
+    QCOMPARE(iterator->t, 0.0);
+    QCOMPARE(iterator->key, 1.0);
+    ++iterator;
+    QCOMPARE(iterator->key, 0.5);
+    ++iterator;
+    QCOMPARE(iterator->key, 0.0);
     QCOMPARE(plot->xAxis->label(), QStringLiteral("x/c"));
     QCOMPARE(plot->yAxis->label(), QStringLiteral("y/c"));
     QVERIFY(plot->xAxis->range().lower < 0.0);
@@ -117,26 +141,29 @@ class GeometryPlotViewTests : public QObject {
     view.setPanelGeometry(panelFor(geometry));
     QCustomPlot* plot = plotOf(view);
 
+    QCPCurve* geometryCurve = curveOf(plot, "geometryContour");
+    QCPCurve* panelContour = curveOf(plot, "panelContour");
+    QCPGraph* nodes = graphOf(plot, "panelNodes");
     view.showPanelNodes(false);
     QVERIFY(!view.panelNodesVisible());
-    QVERIFY(!plot->graph(2)->visible());
+    QVERIFY(!nodes->visible());
     view.showPanelNodes(true);
-    QVERIFY(plot->graph(2)->visible());
+    QVERIFY(nodes->visible());
 
     view.clearPanel();
     QCOMPARE(view.panelPointCount(), std::size_t{0});
-    QCOMPARE(plot->graph(1)->dataCount(), 0);
-    QCOMPARE(plot->graph(2)->dataCount(), 0);
-    QVERIFY(!plot->graph(1)->visible());
-    QVERIFY(!plot->graph(2)->visible());
+    QCOMPARE(panelContour->dataCount(), 0);
+    QCOMPARE(nodes->dataCount(), 0);
+    QVERIFY(!panelContour->visible());
+    QVERIFY(!nodes->visible());
     QCOMPARE(view.geometryPointCount(), std::size_t{5});
-    QVERIFY(plot->graph(0)->visible());
+    QVERIFY(geometryCurve->visible());
 
     view.clear();
     QCOMPARE(view.geometryPointCount(), std::size_t{0});
     QCOMPARE(view.panelPointCount(), std::size_t{0});
-    QCOMPARE(plot->graph(0)->dataCount(), 0);
-    QVERIFY(!plot->graph(0)->visible());
+    QCOMPARE(geometryCurve->dataCount(), 0);
+    QVERIFY(!geometryCurve->visible());
   }
 
   void equalAxisScaleIsMaintained() {

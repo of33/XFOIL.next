@@ -49,12 +49,12 @@ QWidget* plotWidget(QWidget& widget, const QString& name) {
 }
 
 xfoil::gui::GuiPointEntry point(std::size_t sourceIndex, double alpha,
-                                bool converged, bool active) {
+                                bool converged, bool enabled) {
   xfoil::gui::GuiPointEntry entry;
   entry.sourceIndex = sourceIndex;
   entry.alpha = alpha;
   entry.converged = converged;
-  entry.active = active;
+  entry.enabled = enabled;
   return entry;
 }
 
@@ -178,9 +178,9 @@ class GuiDetailedSequenceContractTests : public QObject {
 
     QVERIFY(selection.deactivate(std::size_t{2}));
     QCOMPARE(selection.currentSourceIndex().value(), std::size_t{1});
-    QCOMPARE(selection.activePoints().size(), std::size_t{1});
+    QCOMPARE(selection.enabledPoints().size(), std::size_t{1});
     QVERIFY(selection.activate(std::size_t{2}));
-    QCOMPARE(selection.activePoints().size(), std::size_t{2});
+    QCOMPARE(selection.enabledPoints().size(), std::size_t{2});
     QCOMPARE(selection.points()[1].alpha, 1.0);
     QCOMPARE(selection.points()[1].sourceIndex, std::size_t{2});
   }

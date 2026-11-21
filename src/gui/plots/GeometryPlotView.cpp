@@ -34,9 +34,20 @@
 #include <QVBoxLayout>
 #include <QVector>
 
+#include "plots/InteractivePlotController.h"
 #include "qcustomplot.h"
 
 namespace xfoil::gui {
+namespace {
+
+const QColor kSampleColor(42, 118, 188);
+
+QCPScatterStyle sampleStyle() {
+  return QCPScatterStyle(QCPScatterStyle::ssCircle,
+                         QPen(kSampleColor, 1.0), Qt::NoBrush, 4.5);
+}
+
+}  // namespace
 namespace {
 
 struct Bounds {
@@ -104,6 +115,16 @@ QVector<double> nodeY(const std::vector<xfoil::Point2D>& points) {
   return values;
 }
 
+void setCurveData(QCPCurve* curve, const QVector<double>& x,
+                  const QVector<double>& y) {
+  QVector<double> t;
+  t.reserve(x.size());
+  for (int index = 0; index < x.size(); ++index) {
+    t.push_back(index);
+  }
+  curve->setData(t, x, y, true);
+}
+
 }  // namespace
 
 GeometryPlotView::GeometryPlotView(QWidget* parent) : QWidget(parent) {
@@ -116,19 +137,33 @@ GeometryPlotView::GeometryPlotView(QWidget* parent) : QWidget(parent) {
   plot_->xAxis->setLabel(QStringLiteral("x/c"));
   plot_->yAxis->setLabel(QStringLiteral("y/c"));
 
-  geometryContour_ = plot_->addGraph();
+  geometryContour_ = new QCPCurve(plot_->xAxis, plot_->yAxis);
+  geometryContour_->setObjectName(QStringLiteral("geometryContour"));
   geometryContour_->setName(QStringLiteral("Geometry contour"));
   geometryContour_->setPen(QPen(QColor(32, 78, 121), 2.0));
+  geometryContour_->setLineStyle(QCPCurve::lsLine);
+  geometryContour_->setScatterStyle(QCPScatterStyle::ssNone);
 
-  panelContour_ = plot_->addGraph();
+  panelContour_ = new QCPCurve(plot_->xAxis, plot_->yAxis);
+  panelContour_->setObjectName(QStringLiteral("panelContour"));
   panelContour_->setName(QStringLiteral("Panel contour"));
   panelContour_->setPen(QPen(QColor(198, 93, 27), 1.5));
+  panelContour_->setLineStyle(QCPCurve::lsLine);
+  panelContour_->setScatterStyle(QCPScatterStyle::ssNone);
 
   panelNodes_ = plot_->addGraph();
+  panelNodes_->setObjectName(QStringLiteral("panelNodes"));
   panelNodes_->setName(QStringLiteral("Panel nodes"));
   panelNodes_->setLineStyle(QCPGraph::lsNone);
   panelNodes_->setScatterStyle(
       QCPScatterStyle(QCPScatterStyle::ssDisc, QColor(198, 93, 27), 3.0));
+
+  interaction_ = new InteractivePlotController(plot_, true, true, this);
+  interaction_->setFitCallback([this]() { fitVisibleData(); });
+  interaction_->setMarkerToggleCallback([this]() {
+    sampleMarkersEnabled_ = interaction_->sampleMarkersEnabled();
+    applySampleMarkers();
+  });
 
   clear();
 }
@@ -141,7 +176,7 @@ void GeometryPlotView::setGeometry(
                                     geometry.coordinates().end());
   geometryPointCount_ = points.size();
   hasGeometry_ = !points.empty();
-  geometryContour_->setData(closedX(points), closedY(points));
+  setCurveData(geometryContour_, closedX(points), closedY(points));
   geometryContour_->setVisible(hasGeometry_);
   updateAxes();
 }
@@ -149,7 +184,7 @@ void GeometryPlotView::setGeometry(
 void GeometryPlotView::setPanelGeometry(const SurfaceGeometry& panel) {
   panelPointCount_ = panel.points.size();
   hasPanel_ = !panel.points.empty();
-  panelContour_->setData(closedX(panel.points), closedY(panel.points));
+  setCurveData(panelContour_, closedX(panel.points), closedY(panel.points));
   panelNodes_->setData(nodeX(panel.points), nodeY(panel.points));
   panelContour_->setVisible(hasPanel_);
   panelNodes_->setVisible(hasPanel_ && panelNodesVisible_);
@@ -188,7 +223,39 @@ void GeometryPlotView::clear() {
 
 void GeometryPlotView::resizeEvent(QResizeEvent* event) {
   QWidget::resizeEvent(event);
+  applyEqualAspect();
+}
+
+void GeometryPlotView::fitVisibleData() {
+  if (!hasGeometry_ && !hasPanel_) {
+    return;
+  }
   updateAxes();
+}
+
+void GeometryPlotView::setSampleMarkersEnabled(bool enabled) {
+  sampleMarkersEnabled_ = enabled;
+  if (interaction_ != nullptr) {
+    interaction_->setSampleMarkersEnabled(enabled);
+  }
+  applySampleMarkers();
+}
+
+void GeometryPlotView::applySampleMarkers() {
+  const QCPScatterStyle style =
+      sampleMarkersEnabled_ ? sampleStyle()
+                            : QCPScatterStyle(QCPScatterStyle::ssNone);
+  geometryContour_->setScatterStyle(style);
+  panelContour_->setScatterStyle(style);
+  plot_->replot();
+}
+
+void GeometryPlotView::applyEqualAspect() {
+  if (!hasGeometry_ && !hasPanel_) {
+    return;
+  }
+  plot_->yAxis->setScaleRatio(plot_->xAxis, 1.0);
+  plot_->replot();
 }
 
 void GeometryPlotView::updateAxes() {
@@ -223,7 +290,8 @@ void GeometryPlotView::updateAxes() {
 
   plot_->xAxis->setRange(xCenter - 0.5 * span - padding,
                          xCenter + 0.5 * span + padding);
-  plot_->yAxis->setRange(yCenter, 0.1);
+  plot_->yAxis->setRange(yCenter - 0.5 * span - padding,
+                         yCenter + 0.5 * span + padding);
   plot_->yAxis->setScaleRatio(plot_->xAxis, 1.0);
   plot_->replot();
 }
