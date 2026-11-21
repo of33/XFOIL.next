@@ -131,9 +131,11 @@ Plotting is not available in this build.
 
 An optional Qt 6.12.x GUI definition surface now exists, but it is not a
 finished application and does not change the CLI plotting contract. It owns a
-geometry/paneling/operating/target definition and an offscreen-checked
-geometry and panel preview. It does not run an analysis yet. The numerical,
-textual, and file-related parts of mixed commands are kept.
+geometry/paneling/operating/target definition, an offscreen-checked geometry
+and panel preview and a result workspace with seven empty plot shells, a 4x3
+result matrix, point-selection placeholders and setup diagnostics. It does not
+run an analysis yet. The numerical, textual, and file-related parts of mixed
+commands are kept.
 This is a port of XFOIL, not an independent re-derivation of the
 solver, and it is not a bit-identical reproduction of every Fortran build
 variant (see [known differences](docs/known-differences.md)).

@@ -126,8 +126,12 @@ GUI_ARCHIVE_OBJS := \
 	$(GUI_OBJ_DIR)/XFoilWidget.o \
 	$(GUI_OBJ_DIR)/moc_XFoilWidget.o \
 	$(GUI_OBJ_DIR)/model/GuiDefinitionModel.o \
+	$(GUI_OBJ_DIR)/model/GuiResultSelectionModel.o \
+	$(GUI_OBJ_DIR)/model/GuiResultSummary.o \
 	$(GUI_OBJ_DIR)/backend/GuiSessionBackend.o \
 	$(GUI_OBJ_DIR)/plots/GeometryPlotView.o \
+	$(GUI_OBJ_DIR)/plots/GuiPointPresentation.o \
+	$(GUI_OBJ_DIR)/plots/ResultPlotView.o \
 	$(GUI_OBJ_DIR)/moc_qcustomplot.o \
 	$(GUI_OBJ_DIR)/qcustomplot.o
 GUI_TEST_BIN := $(GUI_TEST_DIR)/$(GUI_VARIANT)/xfoil_gui_tests
@@ -136,6 +140,8 @@ GUI_TEST_OBJS := \
 	$(GUI_OBJ_DIR)/tests/QCustomPlotSmoke.o \
 	$(GUI_OBJ_DIR)/tests/GeometryPlotViewTests.o \
 	$(GUI_OBJ_DIR)/tests/GuiDefinitionModelTests.o \
+	$(GUI_OBJ_DIR)/tests/GuiResultSelectionModelTests.o \
+	$(GUI_OBJ_DIR)/tests/GuiResultWorkspaceTests.o \
 	$(GUI_OBJ_DIR)/tests/GuiSessionBackendTests.o \
 	$(GUI_OBJ_DIR)/tests/XFoilWidgetG2Tests.o \
 	$(GUI_OBJ_DIR)/tests/XFoilWidgetShellTests.o
@@ -236,6 +242,18 @@ $(GUI_OBJ_DIR)/model/GuiDefinitionModel.o: \
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
 
+$(GUI_OBJ_DIR)/model/GuiResultSelectionModel.o: \
+		src/gui/model/GuiResultSelectionModel.cpp \
+		src/gui/model/GuiResultSelectionModel.h | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/model/GuiResultSummary.o: \
+		src/gui/model/GuiResultSummary.cpp \
+		src/gui/model/GuiResultSummary.h | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
 $(GUI_OBJ_DIR)/backend/GuiSessionBackend.o: \
 		src/gui/backend/GuiSessionBackend.cpp \
 		src/gui/backend/GuiSessionBackend.h | $(GUI_STAMP)
@@ -245,6 +263,18 @@ $(GUI_OBJ_DIR)/backend/GuiSessionBackend.o: \
 $(GUI_OBJ_DIR)/plots/GeometryPlotView.o: \
 		src/gui/plots/GeometryPlotView.cpp \
 		src/gui/plots/GeometryPlotView.h | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/plots/GuiPointPresentation.o: \
+		src/gui/plots/GuiPointPresentation.cpp \
+		src/gui/plots/GuiPointPresentation.h | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/plots/ResultPlotView.o: \
+		src/gui/plots/ResultPlotView.cpp \
+		src/gui/plots/ResultPlotView.h | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
 
@@ -280,6 +310,18 @@ $(GUI_OBJ_DIR)/tests/GuiDefinitionModelTests.o: \
 		$(GUI_GEN_DIR)/GuiDefinitionModelTests.moc | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/tests/GuiResultSelectionModelTests.o: \
+		tests/gui/GuiResultSelectionModelTests.cpp \
+		$(GUI_GEN_DIR)/GuiResultSelectionModelTests.moc | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/tests/GuiResultWorkspaceTests.o: \
+		tests/gui/GuiResultWorkspaceTests.cpp \
+		$(GUI_GEN_DIR)/GuiResultWorkspaceTests.moc | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
 
 $(GUI_OBJ_DIR)/tests/GuiSessionBackendTests.o: \
 		tests/gui/GuiSessionBackendTests.cpp \

@@ -36,9 +36,12 @@
 #include <QLocale>
 #include <QMainWindow>
 #include <QPalette>
+#include <QPlainTextEdit>
 #include <QPointer>
+#include <QPushButton>
 #include <QRegularExpression>
 #include <QSpinBox>
+#include <QScrollArea>
 #include <QSplitter>
 #include <QStringList>
 #include <QTabWidget>
@@ -47,6 +50,7 @@
 #include <QtTest/QTest>
 
 #include "plots/GeometryPlotView.h"
+#include "plots/ResultPlotView.h"
 #include "xfoil/gui/XFoilWidget.h"
 
 namespace {
@@ -112,9 +116,11 @@ class XFoilWidgetShellTests : public QObject {
     XFoilWidget widget;
 
     QVERIFY(widget.findChild<QFrame*>("definitionsFrame") != nullptr);
-    QVERIFY(widget.findChild<QSplitter*>("workspaceSplitter") != nullptr);
-    QVERIFY(widget.findChild<QTabWidget*>("plotTabs") != nullptr);
-    QVERIFY(widget.findChild<QFrame*>("resultsPanel") != nullptr);
+    QVERIFY(widget.findChild<QScrollArea*>("definitionsScrollArea") != nullptr);
+    QVERIFY(widget.findChild<QWidget*>("definitionsRow") != nullptr);
+    QVERIFY(widget.findChild<QWidget*>("resultWorkspace") != nullptr);
+    QVERIFY(widget.findChild<QWidget*>("leftPlotColumn") != nullptr);
+    QVERIFY(widget.findChild<QFrame*>("resultsColumn") != nullptr);
     QVERIFY(widget.findChild<QFrame*>("statusFrame") != nullptr);
 
     QVERIFY(widget.findChild<QGroupBox*>("geometryGroup") != nullptr);
@@ -122,26 +128,16 @@ class XFoilWidgetShellTests : public QObject {
     QVERIFY(widget.findChild<QGroupBox*>("operatingGroup") != nullptr);
     QVERIFY(widget.findChild<QGroupBox*>("targetGroup") != nullptr);
     QVERIFY(widget.findChild<QLabel*>("definitionsPlaceholder") == nullptr);
-    QVERIFY(widget.findChild<QLabel*>("geometryPlaceholder") == nullptr);
-    QVERIFY(widget.findChild<QWidget*>("geometryPlot") != nullptr);
-    QVERIFY(widget.findChild<QLabel*>("cpPlaceholder") != nullptr);
-    QVERIFY(widget.findChild<QLabel*>("cfPlaceholder") != nullptr);
-    QVERIFY(widget.findChild<QLabel*>("polarPlaceholder") != nullptr);
-    QVERIFY(widget.findChild<QLabel*>("resultsPlaceholder") != nullptr);
-    QCOMPARE(widget.findChild<QLabel*>("resultsPlaceholder")->text(),
-             QStringLiteral("No analysis results"));
-    QVERIFY(widget.findChild<QLabel*>("diagnosticsPlaceholder") != nullptr);
+    QVERIFY(widget.findChild<QWidget*>("airfoilPlot") != nullptr);
+    QVERIFY(widget.findChild<QWidget*>("cpPlot") != nullptr);
+    QVERIFY(widget.findChild<QPlainTextEdit*>("setupDiagnosticsView") != nullptr);
+    QVERIFY(widget.findChild<QPushButton*>("analyzeButton") != nullptr);
     QVERIFY(widget.findChild<QLabel*>("statusLabel") != nullptr);
 
-    QTabWidget* tabs = widget.findChild<QTabWidget*>("plotTabs");
+    QTabWidget* tabs = widget.findChild<QTabWidget*>("resultPlotTabs");
     QVERIFY(tabs != nullptr);
-    QCOMPARE(tabs->count(), 4);
-    QCOMPARE(tabs->widget(0), widget.findChild<QWidget*>("geometryPage"));
-    QCOMPARE(tabs->widget(1), widget.findChild<QWidget*>("cpPage"));
-    QCOMPARE(tabs->widget(2), widget.findChild<QWidget*>("cfPage"));
-    QCOMPARE(tabs->widget(3), widget.findChild<QWidget*>("polarPage"));
+    QCOMPARE(tabs->count(), 7);
   }
-
 
   void g2StructureUsesSemanticNamesAndPromotedPlot() {
     XFoilWidget widget;
@@ -168,21 +164,25 @@ class XFoilWidgetShellTests : public QObject {
         QStringLiteral("sequenceStartSpin"),
         QStringLiteral("sequenceEndSpin"),
         QStringLiteral("sequenceStepSpin"),
-        QStringLiteral("geometryPlot"),
-        QStringLiteral("resultsPanel"),
+        QStringLiteral("airfoilPlot"),
+        QStringLiteral("resultsColumn"),
         QStringLiteral("statusFrame"),
-        QStringLiteral("validationLabel"),
+        QStringLiteral("setupDiagnosticsView"),
     };
     for (const QString& name : required) {
       QVERIFY2(widget.findChild<QWidget*>(name) != nullptr,
                qPrintable(name));
     }
 
-    auto* plotWidget = widget.findChild<QWidget*>("geometryPlot");
+    auto* plotWidget = widget.findChild<QWidget*>("airfoilPlot");
     QVERIFY(plotWidget != nullptr);
     auto* plot = dynamic_cast<xfoil::gui::GeometryPlotView*>(plotWidget);
     QVERIFY(plot != nullptr);
-    QCOMPARE(plot->objectName(), QStringLiteral("geometryPlot"));
+    QCOMPARE(plot->objectName(), QStringLiteral("airfoilPlot"));
+
+    auto* cpWidget = widget.findChild<QWidget*>("cpPlot");
+    QVERIFY(cpWidget != nullptr);
+    QVERIFY(dynamic_cast<xfoil::gui::ResultPlotView*>(cpWidget) != nullptr);
 
     const QRegularExpression generic(
         QStringLiteral("^(frame|label|groupBox|widget|layoutWidget)_?\\d+$"));
@@ -240,8 +240,8 @@ class XFoilWidgetShellTests : public QObject {
     QVERIFY(first != second);
     QCOMPARE(first->parentWidget(), hostA);
     QCOMPARE(second->parentWidget(), hostB);
-    QVERIFY(first->findChild<QFrame*>("resultsPanel") !=
-            second->findChild<QFrame*>("resultsPanel"));
+    QVERIFY(first->findChild<QFrame*>("resultsColumn") !=
+            second->findChild<QFrame*>("resultsColumn"));
 
     delete hostA;
     QVERIFY(firstGuard.isNull());

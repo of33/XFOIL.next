@@ -59,16 +59,19 @@ QT_ROOT=/path/to/Qt/6.12.0/gcc_64 QT_QPA_PLATFORM=offscreen make gui-link-check
 Run the GUI targets sequentially. The current definition surface owns memory,
 NACA or NACS geometry, paneling options, an `AnalysisConfig` and exactly one
 alpha, CL or exclusive-end alpha-sequence target. It exposes an owning
-validated run snapshot for the later worker and previews the geometry contour
-and panel nodes. The GUI tests cover the definition model, the public-session
-backend boundary, host/UI bindings, state invalidation, two independent
-widgets, the plot view and the public-header link check.
+validated run snapshot for the later worker. The result workspace has a left
+Cp/Airfoil column, seven empty result-plot shells, a fixed right selection and
+4x3 results column, setup diagnostics and an Analyze button. The GUI tests
+cover the definition model, result selection model, public-session backend
+boundary, host/UI bindings, state invalidation, layout structure, plot shells,
+two independent widgets and the public-header link check.
 
 The definition surface performs no analysis, creates no worker, reads and
 writes no files, uses no `QSettings` and starts no standalone application.
-Result plots remain placeholders; the results panel says `No analysis results`.
-The Windows UCRT64 Qt 6.12.0/GCC 16.2.0 Rev7 development build is qualified,
-but no Windows GUI package is provided.
+Result plots remain empty shells; the matrix uses `n/a`, no points or values are
+fabricated, and Analyze does not execute an analysis in this slice. The Windows
+UCRT64 Qt 6.12.0/GCC 16.2.0 Rev7 development build is qualified, but no
+Windows GUI package is provided.
 
 The adapter also accepts a kit found through `pkg-config` or `qmake`. The
 build emits generated MOC/UIC files only below `build/gui/`; debug and release

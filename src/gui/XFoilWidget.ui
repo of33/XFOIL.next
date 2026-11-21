@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1100</width>
-    <height>820</height>
+    <width>1280</width>
+    <height>800</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>960</width>
+    <height>640</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>XFOIL.next</string>
@@ -19,474 +25,1440 @@
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>
-     <layout class="QGridLayout" name="definitionsLayout">
-      <item row="0" column="0">
-       <widget class="QGroupBox" name="geometryGroup">
-        <property name="title">
-         <string>Geometry</string>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <layout class="QVBoxLayout" name="definitionsFrameLayout">
+      <item>
+       <widget class="QScrollArea" name="definitionsScrollArea">
+        <property name="widgetResizable">
+         <bool>true</bool>
         </property>
-        <layout class="QFormLayout" name="geometryForm">
-         <item row="0" column="0">
-          <widget class="QLabel" name="geometrySourceLabel">
-           <property name="text">
-            <string>Source</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QComboBox" name="geometrySourceCombo">
-           <property name="toolTip">
-            <string>Memory geometry is supplied by the host through setGeometry(). NACA and NACS generate in memory.</string>
-           </property>
-           <property name="accessibleName">
-            <string>Geometry source</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="nacaDesignationLabel">
-           <property name="text">
-            <string>NACA/NACS designation</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLineEdit" name="nacaDesignationEdit">
-           <property name="placeholderText">
-            <string>e.g. 2412</string>
-           </property>
-           <property name="toolTip">
-            <string>NACA 4/5-digit or NACS designation, for example 2412.</string>
-           </property>
-           <property name="accessibleName">
-            <string>NACA or NACS designation</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QPushButton" name="applyGeometryButton">
-           <property name="text">
-            <string>Apply Geometry</string>
-           </property>
-           <property name="toolTip">
-            <string>Validate and adopt the selected NACA or NACS geometry.</string>
-           </property>
-           <property name="accessibleName">
-            <string>Apply geometry</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QLabel" name="geometryNameCaption">
-           <property name="text">
-            <string>Name</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="1">
-          <widget class="QLabel" name="geometryNameLabel">
-           <property name="text">
-            <string>No geometry</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0">
-          <widget class="QLabel" name="geometryStatusCaption">
-           <property name="text">
-            <string>Status</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="1">
-          <widget class="QLabel" name="geometryStatusLabel">
-           <property name="text">
-            <string>Not set</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
+        </property>
+        <property name="horizontalScrollBarPolicy">
+         <enum>Qt::ScrollBarAsNeeded</enum>
+        </property>
+        <property name="verticalScrollBarPolicy">
+         <enum>Qt::ScrollBarAlwaysOff</enum>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>1</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <widget class="QWidget" name="definitionsRow">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>1</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <layout class="QHBoxLayout" name="definitionsRowLayout">
+          <item>
+           <widget class="QGroupBox" name="geometryGroup">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>1</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="title">
+             <string>Geometry</string>
+            </property>
+            <layout class="QFormLayout" name="geometryForm">
+             <item row="0" column="0">
+              <widget class="QLabel" name="geometrySourceLabel">
+               <property name="text">
+                <string>Source</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QComboBox" name="geometrySourceCombo">
+               <property name="toolTip">
+                <string>Memory geometry is supplied by the host through setGeometry(). NACA and NACS generate in memory.</string>
+               </property>
+               <property name="accessibleName">
+                <string>Geometry source</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="nacaDesignationLabel">
+               <property name="text">
+                <string>NACA/NACS designation</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QLineEdit" name="nacaDesignationEdit">
+               <property name="placeholderText">
+                <string>e.g. 2412</string>
+               </property>
+               <property name="toolTip">
+                <string>NACA 4/5-digit or NACS designation, for example 2412.</string>
+               </property>
+               <property name="accessibleName">
+                <string>NACA or NACS designation</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QPushButton" name="applyGeometryButton">
+               <property name="text">
+                <string>Apply Geometry</string>
+               </property>
+               <property name="toolTip">
+                <string>Validate and adopt the selected NACA or NACS geometry.</string>
+               </property>
+               <property name="accessibleName">
+                <string>Apply geometry</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="geometryNameCaption">
+               <property name="text">
+                <string>Name</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QLabel" name="geometryNameLabel">
+               <property name="text">
+                <string>No geometry</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0">
+              <widget class="QLabel" name="geometryStatusCaption">
+               <property name="text">
+                <string>Status</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="1">
+              <widget class="QLabel" name="geometryStatusLabel">
+               <property name="text">
+                <string>Not set</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="panelingGroup">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>1</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="title">
+             <string>Paneling</string>
+            </property>
+            <layout class="QFormLayout" name="panelingForm">
+             <item row="0" column="0">
+              <widget class="QLabel" name="panelCountLabel">
+               <property name="text">
+                <string>Panel count</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QSpinBox" name="panelCountSpin">
+               <property name="toolTip">
+                <string>Panel-node count; public library range 2 to 595.</string>
+               </property>
+               <property name="accessibleName">
+                <string>Panel count</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="bunchingLabel">
+               <property name="text">
+                <string>Bunching parameter</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QDoubleSpinBox" name="bunchingSpin">
+               <property name="toolTip">
+                <string>Dimensionless PANGEN bunching parameter.</string>
+               </property>
+               <property name="accessibleName">
+                <string>Bunching parameter</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLabel" name="teToLeLabel">
+               <property name="text">
+                <string>TE/LE density ratio</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QDoubleSpinBox" name="teToLeSpin">
+               <property name="toolTip">
+                <string>Dimensionless trailing-edge to leading-edge density ratio.</string>
+               </property>
+               <property name="accessibleName">
+                <string>Trailing-edge to leading-edge density ratio</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="refinementLabel">
+               <property name="text">
+                <string>Refinement density ratio</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QDoubleSpinBox" name="refinementSpin">
+               <property name="toolTip">
+                <string>Dimensionless refinement density ratio.</string>
+               </property>
+               <property name="accessibleName">
+                <string>Refinement density ratio</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0">
+              <widget class="QLabel" name="showPanelNodesLabel">
+               <property name="text">
+                <string>Preview</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="1">
+              <widget class="QCheckBox" name="showPanelNodesCheck">
+               <property name="text">
+                <string>Show panel nodes</string>
+               </property>
+               <property name="toolTip">
+                <string>Show panel nodes on the geometry preview.</string>
+               </property>
+               <property name="accessibleName">
+                <string>Show panel nodes</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="1">
+              <widget class="QPushButton" name="generatePanelButton">
+               <property name="text">
+                <string>Generate Panel</string>
+               </property>
+               <property name="toolTip">
+                <string>Generate the panel from the current geometry and paneling options.</string>
+               </property>
+               <property name="accessibleName">
+                <string>Generate panel</string>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="0">
+              <widget class="QLabel" name="panelStatusCaption">
+               <property name="text">
+                <string>Status</string>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="1">
+              <widget class="QLabel" name="panelStatusLabel">
+               <property name="text">
+                <string>Not generated</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="operatingGroup">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>1</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="title">
+             <string>Operating conditions</string>
+            </property>
+            <layout class="QFormLayout" name="operatingForm">
+             <item row="0" column="0">
+              <widget class="QLabel" name="reynoldsLabel">
+               <property name="text">
+                <string>Reynolds number</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QDoubleSpinBox" name="reynoldsSpin">
+               <property name="toolTip">
+                <string>Dimensionless Reynolds number. Viscous analysis requires a positive value.</string>
+               </property>
+               <property name="accessibleName">
+                <string>Reynolds number</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="machLabel">
+               <property name="text">
+                <string>Mach number</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QDoubleSpinBox" name="machSpin">
+               <property name="toolTip">
+                <string>Dimensionless Mach number in [0, 1).</string>
+               </property>
+               <property name="accessibleName">
+                <string>Mach number</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLabel" name="viscousLabel">
+               <property name="text">
+                <string>Viscous</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QCheckBox" name="viscousCheck">
+               <property name="text">
+                <string>Boundary layer enabled</string>
+               </property>
+               <property name="toolTip">
+                <string>Enable the boundary-layer calculation for the configured run.</string>
+               </property>
+               <property name="accessibleName">
+                <string>Viscous boundary layer enabled</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="iterationsLabel">
+               <property name="text">
+                <string>Iteration limit</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QSpinBox" name="iterationsSpin">
+               <property name="toolTip">
+                <string>Positive maximum iteration count.</string>
+               </property>
+               <property name="accessibleName">
+                <string>Maximum iterations</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0">
+              <widget class="QLabel" name="ncritLabel">
+               <property name="text">
+                <string>Ncrit</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="1">
+              <widget class="QDoubleSpinBox" name="ncritSpin">
+               <property name="toolTip">
+                <string>Critical amplification exponent; must be positive.</string>
+               </property>
+               <property name="accessibleName">
+                <string>Ncrit</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="0">
+              <widget class="QLabel" name="xtrUpperLabel">
+               <property name="text">
+                <string>Xtr upper (x/c)</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="1">
+              <widget class="QDoubleSpinBox" name="xtrUpperSpin">
+               <property name="toolTip">
+                <string>Upper transition trip position x/c in [0, 1].</string>
+               </property>
+               <property name="accessibleName">
+                <string>Upper transition position x over c</string>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="0">
+              <widget class="QLabel" name="xtrLowerLabel">
+               <property name="text">
+                <string>Xtr lower (x/c)</string>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="1">
+              <widget class="QDoubleSpinBox" name="xtrLowerSpin">
+               <property name="toolTip">
+                <string>Lower transition trip position x/c in [0, 1].</string>
+               </property>
+               <property name="accessibleName">
+                <string>Lower transition position x over c</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="targetGroup">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>1</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="title">
+             <string>Analysis target</string>
+            </property>
+            <layout class="QFormLayout" name="targetForm">
+             <item row="0" column="0">
+              <widget class="QLabel" name="targetModeLabel">
+               <property name="text">
+                <string>Mode</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QComboBox" name="targetModeCombo">
+               <property name="toolTip">
+                <string>Choose alpha point, CL point or alpha sequence.</string>
+               </property>
+               <property name="accessibleName">
+                <string>Analysis target mode</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="alphaTargetLabel">
+               <property name="text">
+                <string>Alpha target (deg)</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QDoubleSpinBox" name="alphaTargetSpin">
+               <property name="toolTip">
+                <string>Alpha target in degrees.</string>
+               </property>
+               <property name="accessibleName">
+                <string>Alpha target in degrees</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLabel" name="clTargetLabel">
+               <property name="text">
+                <string>CL target</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QDoubleSpinBox" name="clTargetSpin">
+               <property name="toolTip">
+                <string>Lift coefficient target; dimensionless.</string>
+               </property>
+               <property name="accessibleName">
+                <string>Lift coefficient target</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0" colspan="2">
+              <widget class="QWidget" name="sequenceFields" native="true">
+               <layout class="QFormLayout" name="sequenceForm">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="sequenceStartLabel">
+                  <property name="text">
+                   <string>Sequence start (deg)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QDoubleSpinBox" name="sequenceStartSpin">
+                  <property name="toolTip">
+                   <string>Sequence start in degrees.</string>
+                  </property>
+                  <property name="accessibleName">
+                   <string>Sequence start in degrees</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="sequenceEndLabel">
+                  <property name="text">
+                   <string>Sequence end, exclusive (deg)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QDoubleSpinBox" name="sequenceEndSpin">
+                  <property name="toolTip">
+                   <string>Exclusive end: the end value itself is not run.</string>
+                  </property>
+                  <property name="accessibleName">
+                   <string>Sequence exclusive end in degrees</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="sequenceStepLabel">
+                  <property name="text">
+                   <string>Sequence step (deg)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QDoubleSpinBox" name="sequenceStepSpin">
+                  <property name="toolTip">
+                   <string>Sequence step in degrees. Zero is rejected.</string>
+                  </property>
+                  <property name="accessibleName">
+                   <string>Sequence step in degrees</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item row="4" column="0">
+              <widget class="QLabel" name="targetStatusCaption">
+               <property name="text">
+                <string>Status</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="1">
+              <widget class="QLabel" name="targetStatusLabel">
+               <property name="text">
+                <string>Alpha point</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QGroupBox" name="panelingGroup">
-        <property name="title">
-         <string>Paneling</string>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="resultWorkspace">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>1</horstretch>
+       <verstretch>1</verstretch>
+      </sizepolicy>
+     </property>
+     <layout class="QHBoxLayout" name="resultWorkspaceLayout">
+      <item>
+       <widget class="QWidget" name="leftPlotColumn">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>1</horstretch>
+          <verstretch>1</verstretch>
+         </sizepolicy>
         </property>
-        <layout class="QFormLayout" name="panelingForm">
-         <item row="0" column="0">
-          <widget class="QLabel" name="panelCountLabel">
-           <property name="text">
-            <string>Panel count</string>
+        <layout class="QVBoxLayout" name="leftPlotColumnLayout">
+         <item>
+          <widget class="QWidget" name="cpSection">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>2</verstretch>
+            </sizepolicy>
            </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QSpinBox" name="panelCountSpin">
-           <property name="toolTip">
-            <string>Panel-node count; public library range 2 to 595.</string>
-           </property>
-           <property name="accessibleName">
-            <string>Panel count</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="bunchingLabel">
-           <property name="text">
-            <string>Bunching parameter</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QDoubleSpinBox" name="bunchingSpin">
-           <property name="toolTip">
-            <string>Dimensionless PANGEN bunching parameter.</string>
-           </property>
-           <property name="accessibleName">
-            <string>Bunching parameter</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="teToLeLabel">
-           <property name="text">
-            <string>TE/LE density ratio</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QDoubleSpinBox" name="teToLeSpin">
-           <property name="toolTip">
-            <string>Dimensionless trailing-edge to leading-edge density ratio.</string>
-           </property>
-           <property name="accessibleName">
-            <string>Trailing-edge to leading-edge density ratio</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QLabel" name="refinementLabel">
-           <property name="text">
-            <string>Refinement density ratio</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="1">
-          <widget class="QDoubleSpinBox" name="refinementSpin">
-           <property name="toolTip">
-            <string>Dimensionless refinement density ratio.</string>
-           </property>
-           <property name="accessibleName">
-            <string>Refinement density ratio</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0">
-          <widget class="QLabel" name="showPanelNodesLabel">
-           <property name="text">
-            <string>Preview</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="1">
-          <widget class="QCheckBox" name="showPanelNodesCheck">
-           <property name="text">
-            <string>Show panel nodes</string>
-           </property>
-           <property name="toolTip">
-            <string>Show panel nodes on the geometry preview.</string>
-           </property>
-           <property name="accessibleName">
-            <string>Show panel nodes</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="1">
-          <widget class="QPushButton" name="generatePanelButton">
-           <property name="text">
-            <string>Generate Panel</string>
-           </property>
-           <property name="toolTip">
-            <string>Generate the panel from the current geometry and paneling options.</string>
-           </property>
-           <property name="accessibleName">
-            <string>Generate panel</string>
-           </property>
-          </widget>
-         </item>
-         <item row="6" column="0">
-          <widget class="QLabel" name="panelStatusCaption">
-           <property name="text">
-            <string>Status</string>
-           </property>
-          </widget>
-         </item>
-         <item row="6" column="1">
-          <widget class="QLabel" name="panelStatusLabel">
-           <property name="text">
-            <string>Not generated</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QGroupBox" name="operatingGroup">
-        <property name="title">
-         <string>Operating conditions</string>
-        </property>
-        <layout class="QFormLayout" name="operatingForm">
-         <item row="0" column="0">
-          <widget class="QLabel" name="reynoldsLabel">
-           <property name="text">
-            <string>Reynolds number</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QDoubleSpinBox" name="reynoldsSpin">
-           <property name="toolTip">
-            <string>Dimensionless Reynolds number. Viscous analysis requires a positive value.</string>
-           </property>
-           <property name="accessibleName">
-            <string>Reynolds number</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="machLabel">
-           <property name="text">
-            <string>Mach number</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QDoubleSpinBox" name="machSpin">
-           <property name="toolTip">
-            <string>Dimensionless Mach number in [0, 1).</string>
-           </property>
-           <property name="accessibleName">
-            <string>Mach number</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="viscousLabel">
-           <property name="text">
-            <string>Viscous</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QCheckBox" name="viscousCheck">
-           <property name="text">
-            <string>Boundary layer enabled</string>
-           </property>
-           <property name="toolTip">
-            <string>Enable the boundary-layer calculation for the configured run.</string>
-           </property>
-           <property name="accessibleName">
-            <string>Viscous boundary layer enabled</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QLabel" name="iterationsLabel">
-           <property name="text">
-            <string>Iteration limit</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="1">
-          <widget class="QSpinBox" name="iterationsSpin">
-           <property name="toolTip">
-            <string>Positive maximum iteration count.</string>
-           </property>
-           <property name="accessibleName">
-            <string>Maximum iterations</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0">
-          <widget class="QLabel" name="ncritLabel">
-           <property name="text">
-            <string>Ncrit</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="1">
-          <widget class="QDoubleSpinBox" name="ncritSpin">
-           <property name="toolTip">
-            <string>Critical amplification exponent; must be positive.</string>
-           </property>
-           <property name="accessibleName">
-            <string>Ncrit</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="0">
-          <widget class="QLabel" name="xtrUpperLabel">
-           <property name="text">
-            <string>Xtr upper (x/c)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="1">
-          <widget class="QDoubleSpinBox" name="xtrUpperSpin">
-           <property name="toolTip">
-            <string>Upper transition trip position x/c in [0, 1].</string>
-           </property>
-           <property name="accessibleName">
-            <string>Upper transition position x over c</string>
-           </property>
-          </widget>
-         </item>
-         <item row="6" column="0">
-          <widget class="QLabel" name="xtrLowerLabel">
-           <property name="text">
-            <string>Xtr lower (x/c)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="6" column="1">
-          <widget class="QDoubleSpinBox" name="xtrLowerSpin">
-           <property name="toolTip">
-            <string>Lower transition trip position x/c in [0, 1].</string>
-           </property>
-           <property name="accessibleName">
-            <string>Lower transition position x over c</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QGroupBox" name="targetGroup">
-        <property name="title">
-         <string>Analysis target</string>
-        </property>
-        <layout class="QFormLayout" name="targetForm">
-         <item row="0" column="0">
-          <widget class="QLabel" name="targetModeLabel">
-           <property name="text">
-            <string>Mode</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QComboBox" name="targetModeCombo">
-           <property name="toolTip">
-            <string>Choose alpha point, CL point or alpha sequence.</string>
-           </property>
-           <property name="accessibleName">
-            <string>Analysis target mode</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="alphaTargetLabel">
-           <property name="text">
-            <string>Alpha target (deg)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QDoubleSpinBox" name="alphaTargetSpin">
-           <property name="toolTip">
-            <string>Alpha target in degrees.</string>
-           </property>
-           <property name="accessibleName">
-            <string>Alpha target in degrees</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="clTargetLabel">
-           <property name="text">
-            <string>CL target</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QDoubleSpinBox" name="clTargetSpin">
-           <property name="toolTip">
-            <string>Lift coefficient target; dimensionless.</string>
-           </property>
-           <property name="accessibleName">
-            <string>Lift coefficient target</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0" colspan="2">
-          <widget class="QWidget" name="sequenceFields" native="true">
-           <layout class="QFormLayout" name="sequenceForm">
-            <item row="0" column="0">
-             <widget class="QLabel" name="sequenceStartLabel">
-              <property name="text">
-               <string>Sequence start (deg)</string>
-              </property>
-             </widget>
+           <layout class="QVBoxLayout" name="cpSectionLayout">
+            <item>
+             <layout class="QHBoxLayout" name="cpHeaderLayout">
+              <item>
+               <widget class="QLabel" name="cpTitleLabel">
+                <property name="text">
+                 <string>Cp</string>
+                </property>
+                <property name="accessibleName">
+                 <string>Cp plot</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QFrame" name="currentPointConvergenceFrame">
+                <property name="frameShape">
+                 <enum>QFrame::StyledPanel</enum>
+                </property>
+                <property name="accessibleName">
+                 <string>Current point convergence</string>
+                </property>
+                <layout class="QHBoxLayout" name="currentPointConvergenceLayout">
+                 <item>
+                  <widget class="QLabel" name="currentPointConvergenceIcon">
+                   <property name="text">
+                    <string>○</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Convergence icon</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="currentPointConvergenceLabel">
+                   <property name="text">
+                    <string>No point selected</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Convergence state</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+             </layout>
             </item>
-            <item row="0" column="1">
-             <widget class="QDoubleSpinBox" name="sequenceStartSpin">
-              <property name="toolTip">
-               <string>Sequence start in degrees.</string>
-              </property>
+            <item>
+             <widget class="xfoil::gui::ResultPlotView" name="cpPlot">
               <property name="accessibleName">
-               <string>Sequence start in degrees</string>
+               <string>Cp plot</string>
               </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="sequenceEndLabel">
-              <property name="text">
-               <string>Sequence end, exclusive (deg)</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QDoubleSpinBox" name="sequenceEndSpin">
-              <property name="toolTip">
-               <string>Exclusive end: the end value itself is not run.</string>
-              </property>
-              <property name="accessibleName">
-               <string>Sequence exclusive end in degrees</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="sequenceStepLabel">
-              <property name="text">
-               <string>Sequence step (deg)</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QDoubleSpinBox" name="sequenceStepSpin">
-              <property name="toolTip">
-               <string>Sequence step in degrees. Zero is rejected.</string>
-              </property>
-              <property name="accessibleName">
-               <string>Sequence step in degrees</string>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>1</horstretch>
+                <verstretch>1</verstretch>
+               </sizepolicy>
               </property>
              </widget>
             </item>
            </layout>
           </widget>
          </item>
-         <item row="4" column="0">
-          <widget class="QLabel" name="targetStatusCaption">
-           <property name="text">
-            <string>Status</string>
+         <item>
+          <widget class="QWidget" name="airfoilSection">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>1</verstretch>
+            </sizepolicy>
            </property>
+           <layout class="QVBoxLayout" name="airfoilSectionLayout">
+            <item>
+             <widget class="QLabel" name="airfoilTitleLabel">
+              <property name="text">
+               <string>Airfoil</string>
+              </property>
+              <property name="accessibleName">
+               <string>Airfoil plot</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="xfoil::gui::GeometryPlotView" name="airfoilPlot">
+              <property name="accessibleName">
+               <string>Airfoil geometry and panel preview</string>
+              </property>
+              <property name="toolTip">
+               <string>Geometry contour and optional panel nodes in x/c and y/c.</string>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>1</horstretch>
+                <verstretch>1</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
-         <item row="4" column="1">
-          <widget class="QLabel" name="targetStatusLabel">
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QTabWidget" name="resultPlotTabs">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>1</horstretch>
+          <verstretch>1</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="accessibleName">
+         <string>Result plots</string>
+        </property>
+        <widget class="QWidget" name="clAlphaPage">
+         <attribute name="title">
+          <string>CL(α)</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="clAlphaLayout">
+          <item>
+           <widget class="xfoil::gui::ResultPlotView" name="clAlphaPlot">
+            <property name="accessibleName">
+             <string>CL(α) plot</string>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>1</horstretch>
+              <verstretch>1</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="clCdPage">
+         <attribute name="title">
+          <string>CL(CD)</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="clCdLayout">
+          <item>
+           <widget class="xfoil::gui::ResultPlotView" name="clCdPlot">
+            <property name="accessibleName">
+             <string>CL(CD) plot</string>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>1</horstretch>
+              <verstretch>1</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="cmAlphaPage">
+         <attribute name="title">
+          <string>CM(α)</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="cmAlphaLayout">
+          <item>
+           <widget class="xfoil::gui::ResultPlotView" name="cmAlphaPlot">
+            <property name="accessibleName">
+             <string>CM(α) plot</string>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>1</horstretch>
+              <verstretch>1</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="cmClPage">
+         <attribute name="title">
+          <string>CM(CL)</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="cmClLayout">
+          <item>
+           <widget class="xfoil::gui::ResultPlotView" name="cmClPlot">
+            <property name="accessibleName">
+             <string>CM(CL) plot</string>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>1</horstretch>
+              <verstretch>1</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="efficiencyClPage">
+         <attribute name="title">
+          <string>CL/CD(CL)</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="efficiencyClLayout">
+          <item>
+           <widget class="xfoil::gui::ResultPlotView" name="efficiencyClPlot">
+            <property name="accessibleName">
+             <string>CL/CD(CL) plot</string>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>1</horstretch>
+              <verstretch>1</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="cpAlphaPage">
+         <attribute name="title">
+          <string>Cp(α)</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="cpAlphaLayout">
+          <item>
+           <widget class="xfoil::gui::ResultPlotView" name="cpAlphaPlot">
+            <property name="accessibleName">
+             <string>Cp(α) plot</string>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>1</horstretch>
+              <verstretch>1</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="cfAlphaPage">
+         <attribute name="title">
+          <string>Cf(α)</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="cfAlphaLayout">
+          <item>
+           <widget class="xfoil::gui::ResultPlotView" name="cfAlphaPlot">
+            <property name="accessibleName">
+             <string>Cf(α) plot</string>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>1</horstretch>
+              <verstretch>1</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+      </item>
+      <item>
+       <widget class="QFrame" name="resultsColumn">
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>1</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumWidth">
+         <number>340</number>
+        </property>
+        <property name="maximumWidth">
+         <number>340</number>
+        </property>
+        <layout class="QVBoxLayout" name="resultsColumnLayout">
+         <item>
+          <widget class="QGroupBox" name="pointSelectionGroup">
+           <property name="title">
+            <string>Point selection</string>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>1</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <layout class="QGridLayout" name="pointSelectionLayout">
+            <item row="0" column="0">
+             <widget class="QLabel" name="operatingPointComboLabel">
+              <property name="text">
+               <string>Alpha</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QComboBox" name="operatingPointCombo">
+              <property name="accessibleName">
+               <string>Alpha</string>
+              </property>
+              <property name="toolTip">
+               <string>Calculated operating points. (nc) marks a not-converged point.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLabel" name="deactivatePointComboLabel">
+              <property name="text">
+               <string>Deactivate</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QComboBox" name="deactivatePointCombo">
+              <property name="accessibleName">
+               <string>Deactivate</string>
+              </property>
+              <property name="toolTip">
+               <string>Active points available to hide from the view.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QLabel" name="activatePointComboLabel">
+              <property name="text">
+               <string>Activate</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="2">
+             <widget class="QComboBox" name="activatePointCombo">
+              <property name="accessibleName">
+               <string>Activate</string>
+              </property>
+              <property name="toolTip">
+               <string>Deactivated points available to show again.</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="resultMatrixGroup">
+           <property name="title">
+            <string>Results</string>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>1</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <layout class="QGridLayout" name="resultMatrixLayout">
+            <item row="0" column="0">
+             <widget class="QWidget" name="cdValueCell">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>1</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <layout class="QVBoxLayout" name="cdValueCellLayout">
+               <item>
+                <widget class="QLabel" name="cdValueCaption">
+                 <property name="text">
+                  <string>CD</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="cdValue">
+                 <property name="text">
+                  <string>n/a</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                 <property name="accessibleName">
+                  <string>CD value</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QWidget" name="cdfValueCell">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>1</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <layout class="QVBoxLayout" name="cdfValueCellLayout">
+               <item>
+                <widget class="QLabel" name="cdfValueCaption">
+                 <property name="text">
+                  <string>CDF</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="cdfValue">
+                 <property name="text">
+                  <string>n/a</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                 <property name="accessibleName">
+                  <string>CDF value</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QWidget" name="cdpValueCell">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>1</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <layout class="QVBoxLayout" name="cdpValueCellLayout">
+               <item>
+                <widget class="QLabel" name="cdpValueCaption">
+                 <property name="text">
+                  <string>CDp</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="cdpValue">
+                 <property name="text">
+                  <string>n/a</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                 <property name="accessibleName">
+                  <string>CDp value</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QWidget" name="clValueCell">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>1</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <layout class="QVBoxLayout" name="clValueCellLayout">
+               <item>
+                <widget class="QLabel" name="clValueCaption">
+                 <property name="text">
+                  <string>CL</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="clValue">
+                 <property name="text">
+                  <string>n/a</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                 <property name="accessibleName">
+                  <string>CL value</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QWidget" name="cmValueCell">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>1</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <layout class="QVBoxLayout" name="cmValueCellLayout">
+               <item>
+                <widget class="QLabel" name="cmValueCaption">
+                 <property name="text">
+                  <string>CM</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="cmValue">
+                 <property name="text">
+                  <string>n/a</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                 <property name="accessibleName">
+                  <string>CM value</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="1" column="2">
+             <widget class="QWidget" name="efficiencyValueCell">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>1</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <layout class="QVBoxLayout" name="efficiencyValueCellLayout">
+               <item>
+                <widget class="QLabel" name="efficiencyValueCaption">
+                 <property name="text">
+                  <string>CL/CD</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="efficiencyValue">
+                 <property name="text">
+                  <string>n/a</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                 <property name="accessibleName">
+                  <string>CL/CD value</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QWidget" name="cd0ValueCell">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>1</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <layout class="QVBoxLayout" name="cd0ValueCellLayout">
+               <item>
+                <widget class="QLabel" name="cd0ValueCaption">
+                 <property name="text">
+                  <string>CD0</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="cd0Value">
+                 <property name="text">
+                  <string>n/a</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                 <property name="accessibleName">
+                  <string>CD0 value</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QWidget" name="cl0ValueCell">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>1</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <layout class="QVBoxLayout" name="cl0ValueCellLayout">
+               <item>
+                <widget class="QLabel" name="cl0ValueCaption">
+                 <property name="text">
+                  <string>CL0</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="cl0Value">
+                 <property name="text">
+                  <string>n/a</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                 <property name="accessibleName">
+                  <string>CL0 value</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="2" column="2">
+             <widget class="QWidget" name="cm0ValueCell">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>1</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <layout class="QVBoxLayout" name="cm0ValueCellLayout">
+               <item>
+                <widget class="QLabel" name="cm0ValueCaption">
+                 <property name="text">
+                  <string>CM0</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="cm0Value">
+                 <property name="text">
+                  <string>n/a</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                 <property name="accessibleName">
+                  <string>CM0 value</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QWidget" name="alpha0ValueCell">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>1</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <layout class="QVBoxLayout" name="alpha0ValueCellLayout">
+               <item>
+                <widget class="QLabel" name="alpha0ValueCaption">
+                 <property name="text">
+                  <string>α0</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="alpha0Value">
+                 <property name="text">
+                  <string>n/a</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                 <property name="accessibleName">
+                  <string>α0 value</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QWidget" name="clMaxValueCell">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>1</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <layout class="QVBoxLayout" name="clMaxValueCellLayout">
+               <item>
+                <widget class="QLabel" name="clMaxValueCaption">
+                 <property name="text">
+                  <string>CLmax</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="clMaxValue">
+                 <property name="text">
+                  <string>n/a</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                 <property name="accessibleName">
+                  <string>CLmax value</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="3" column="2">
+             <widget class="QWidget" name="efficiencyMaxValueCell">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>1</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <layout class="QVBoxLayout" name="efficiencyMaxValueCellLayout">
+               <item>
+                <widget class="QLabel" name="efficiencyMaxValueCaption">
+                 <property name="text">
+                  <string>(CL/CD)max</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="efficiencyMaxValue">
+                 <property name="text">
+                  <string>n/a</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                 <property name="accessibleName">
+                  <string>(CL/CD)max value</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="setupDiagnosticsGroup">
+           <property name="title">
+            <string>Setup Diagnostics</string>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>1</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>1</verstretch>
+            </sizepolicy>
+           </property>
+           <layout class="QVBoxLayout" name="setupDiagnosticsLayout">
+            <item>
+             <widget class="QPlainTextEdit" name="setupDiagnosticsView">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+              <property name="placeholderText">
+               <string>No setup diagnostics</string>
+              </property>
+              <property name="accessibleName">
+               <string>Setup diagnostics</string>
+              </property>
+              <property name="toolTip">
+               <string>Structured geometry, paneling, configuration and target messages.</string>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>1</horstretch>
+                <verstretch>1</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>100</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <spacer name="resultsColumnSpacer">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Expanding</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="analyzeButton">
            <property name="text">
-            <string>Alpha point</string>
+            <string>Analyze</string>
+           </property>
+           <property name="accessibleName">
+            <string>Analyze</string>
+           </property>
+           <property name="toolTip">
+            <string>Starts the G3 analysis when the definition is ready.</string>
+           </property>
+           <property name="enabled">
+            <bool>false</bool>
            </property>
           </widget>
          </item>
@@ -494,140 +1466,6 @@
        </widget>
       </item>
      </layout>
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QSplitter" name="workspaceSplitter">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <widget class="QTabWidget" name="plotTabs">
-      <property name="currentIndex">
-       <number>0</number>
-      </property>
-      <widget class="QWidget" name="geometryPage">
-       <attribute name="title">
-        <string>Geometry</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="geometryLayout">
-        <item>
-         <widget class="xfoil::gui::GeometryPlotView" name="geometryPlot">
-          <property name="toolTip">
-           <string>Geometry contour and optional panel nodes in x/c and y/c.</string>
-          </property>
-          <property name="accessibleName">
-           <string>Geometry and panel preview</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="cpPage">
-       <attribute name="title">
-        <string>Cp</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="cpLayout">
-        <item>
-         <widget class="QLabel" name="cpPlaceholder">
-          <property name="text">
-           <string>Pressure coefficient plot</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="cfPage">
-       <attribute name="title">
-        <string>Cf</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="cfLayout">
-        <item>
-         <widget class="QLabel" name="cfPlaceholder">
-          <property name="text">
-           <string>Skin-friction plot</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="polarPage">
-       <attribute name="title">
-        <string>Polar</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="polarLayout">
-        <item>
-         <widget class="QLabel" name="polarPlaceholder">
-          <property name="text">
-           <string>Polar plot</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>3</horstretch>
-        <verstretch>1</verstretch>
-       </sizepolicy>
-      </property>
-     </widget>
-     <widget class="QFrame" name="resultsPanel">
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <layout class="QVBoxLayout" name="resultsLayout">
-       <item>
-        <widget class="QLabel" name="resultsPlaceholder">
-         <property name="text">
-          <string>No analysis results</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="diagnosticsPlaceholder">
-         <property name="text">
-          <string>No setup diagnostics</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-        <horstretch>1</horstretch>
-        <verstretch>1</verstretch>
-       </sizepolicy>
-      </property>
-     </widget>
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>1</verstretch>
-      </sizepolicy>
-     </property>
     </widget>
    </item>
    <item>
@@ -635,42 +1473,28 @@
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>
-     <layout class="QVBoxLayout" name="statusLayout">
-      <item>
-       <layout class="QHBoxLayout" name="statusLine">
-        <item>
-         <widget class="QLabel" name="workflowStateLabel">
-          <property name="text">
-           <string>Workflow: Empty</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="statusLabel">
-          <property name="text">
-           <string>Not ready</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="QLabel" name="validationLabel">
-        <property name="text">
-         <string>No validation errors</string>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-     </layout>
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <layout class="QHBoxLayout" name="statusLayout">
+      <item>
+       <widget class="QLabel" name="workflowStateLabel">
+        <property name="text">
+         <string>Workflow: Empty</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="statusLabel">
+        <property name="text">
+         <string>Not ready</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
   </layout>
@@ -698,14 +1522,24 @@
   <tabstop>sequenceStartSpin</tabstop>
   <tabstop>sequenceEndSpin</tabstop>
   <tabstop>sequenceStepSpin</tabstop>
+  <tabstop>resultPlotTabs</tabstop>
+  <tabstop>operatingPointCombo</tabstop>
+  <tabstop>deactivatePointCombo</tabstop>
+  <tabstop>activatePointCombo</tabstop>
+  <tabstop>setupDiagnosticsView</tabstop>
+  <tabstop>analyzeButton</tabstop>
  </tabstops>
- <resources />
- <connections />
  <customwidgets>
   <customwidget>
    <class>xfoil::gui::GeometryPlotView</class>
    <extends>QWidget</extends>
    <header>plots/GeometryPlotView.h</header>
+   <container>0</container>
+  </customwidget>
+  <customwidget>
+   <class>xfoil::gui::ResultPlotView</class>
+   <extends>QWidget</extends>
+   <header>plots/ResultPlotView.h</header>
    <container>0</container>
   </customwidget>
  </customwidgets>

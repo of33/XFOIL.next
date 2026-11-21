@@ -38,6 +38,7 @@
 #include <QDoubleSpinBox>
 #include <QLabel>
 #include <QLineEdit>
+#include <QPlainTextEdit>
 #include <QPushButton>
 #include <QSignalSpy>
 #include <QSpinBox>
@@ -118,8 +119,20 @@ class XFoilWidgetG2Tests : public QObject {
     QVERIFY(child<QComboBox>(widget, "targetModeCombo") != nullptr);
     QVERIFY(widget.findChild<QLabel*>("definitionsPlaceholder") == nullptr);
     QVERIFY(widget.findChild<QLabel*>("geometryPlaceholder") == nullptr);
-    QCOMPARE(widget.findChild<QLabel*>("resultsPlaceholder")->text(),
-             QStringLiteral("No analysis results"));
+    QCOMPARE(widget.findChild<QLabel*>("cdValue")->text(),
+             QStringLiteral("n/a"));
+    QCOMPARE(widget.findChild<QLabel*>("efficiencyMaxValue")->text(),
+             QStringLiteral("n/a"));
+    auto* diagnostics =
+        widget.findChild<QPlainTextEdit*>("setupDiagnosticsView");
+    QVERIFY(diagnostics != nullptr);
+    QVERIFY(diagnostics->isReadOnly());
+    QVERIFY(diagnostics->toPlainText().isEmpty());
+    auto* analyze = widget.findChild<QPushButton*>("analyzeButton");
+    QVERIFY(analyze != nullptr);
+    QVERIFY(!analyze->isEnabled());
+    QCOMPARE(widget.findChild<QLabel*>("currentPointConvergenceLabel")->text(),
+             QStringLiteral("No point selected"));
   }
 
   void programmaticSettersUpdateControlsAndPaths() {
@@ -229,8 +242,9 @@ class XFoilWidgetG2Tests : public QObject {
     child<QDoubleSpinBox>(widget, "sequenceStepSpin")->setValue(0.0);
     QVERIFY(widget.state() == XFoilGuiState::error);
     QVERIFY(!widget.isReadyToAnalyze());
-    QVERIFY(child<QLabel>(widget, "validationLabel")->text().contains(
-        QStringLiteral("sequence.zeroStep")));
+    QVERIFY(child<QPlainTextEdit>(widget, "setupDiagnosticsView")
+                ->toPlainText()
+                .contains(QStringLiteral("sequence.zeroStep")));
 
     child<QDoubleSpinBox>(widget, "sequenceStepSpin")->setValue(1.0);
     QVERIFY(widget.state() == XFoilGuiState::configured);
@@ -269,8 +283,9 @@ class XFoilWidgetG2Tests : public QObject {
                 std::string(widget.geometry()->name()))
                 .startsWith(QStringLiteral("NACA")));
     QVERIFY(!widget.isReadyToAnalyze());
-    QVERIFY(child<QLabel>(widget, "validationLabel")->text().contains(
-        QString::fromStdString(failed.error().code)));
+    QVERIFY(child<QPlainTextEdit>(widget, "setupDiagnosticsView")
+                ->toPlainText()
+                .contains(QString::fromStdString(failed.error().code)));
 
     QVERIFY(widget.setNaca("2412").isOk());
     QVERIFY(widget.generatePanel(PanelingOptions{}).isOk());

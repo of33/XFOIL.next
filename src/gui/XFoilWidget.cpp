@@ -46,7 +46,11 @@
 
 #include "backend/GuiSessionBackend.h"
 #include "model/GuiDefinitionModel.h"
+#include "model/GuiResultSelectionModel.h"
+#include "model/GuiResultSummary.h"
 #include "plots/GeometryPlotView.h"
+#include "plots/GuiPointPresentation.h"
+#include "plots/ResultPlotView.h"
 #include "ui_XFoilWidget.h"
 #include "xfoil/Limits.h"
 
@@ -167,7 +171,10 @@ class XFoilWidget::Impl {
   }
 
   void initialize() {
+    configureResultViews();
+    updateResultMatrix();
     (void)owner_->setConfiguration(configurationFromControls(ui));
+    refreshPointSelection();
     refreshUi();
   }
 
@@ -183,8 +190,8 @@ class XFoilWidget::Impl {
     const bool hadPanel = model_.panel().has_value();
     model_.acceptGeometry(geometry);
     updateGeometryControls();
-    ui.geometryPlot->setGeometry(geometry);
-    ui.geometryPlot->clearPanel();
+    ui.airfoilPlot->setGeometry(geometry);
+    ui.airfoilPlot->clearPanel();
     refreshUi();
     Q_EMIT owner_->geometryChanged();
     if (hadPanel) {
@@ -208,8 +215,8 @@ class XFoilWidget::Impl {
     const bool hadPanel = model_.panel().has_value();
     model_.acceptNaca(geometry, std::string(designation), sharpTrailingEdge);
     updateGeometryControls();
-    ui.geometryPlot->setGeometry(geometry);
-    ui.geometryPlot->clearPanel();
+    ui.airfoilPlot->setGeometry(geometry);
+    ui.airfoilPlot->clearPanel();
     refreshUi();
     Q_EMIT owner_->geometryChanged();
     if (hadPanel) {
@@ -221,7 +228,7 @@ class XFoilWidget::Impl {
   void setPanelingOptions(const PanelingOptions& options) {
     model_.setPanelingOptions(options);
     updatePanelingControls(options);
-    ui.geometryPlot->clearPanel();
+    ui.airfoilPlot->clearPanel();
     refreshUi();
     Q_EMIT owner_->panelingChanged();
   }
@@ -238,8 +245,8 @@ class XFoilWidget::Impl {
     const SurfaceGeometry panel = result.value();
     model_.acceptPanel(panel, options);
     updatePanelingControls(options);
-    ui.geometryPlot->setPanelGeometry(panel);
-    ui.geometryPlot->showPanelNodes(ui.showPanelNodesCheck->isChecked());
+    ui.airfoilPlot->setPanelGeometry(panel);
+    ui.airfoilPlot->showPanelNodes(ui.showPanelNodesCheck->isChecked());
     refreshUi();
     Q_EMIT owner_->panelingChanged();
     return Result<SurfaceGeometry>::ok(panel);
@@ -446,7 +453,7 @@ class XFoilWidget::Impl {
             [this]() { generatePanelFromControls(); });
     QObject::connect(ui.showPanelNodesCheck, &QCheckBox::toggled, owner_,
             [this](bool checked) {
-              ui.geometryPlot->showPanelNodes(checked);
+              ui.airfoilPlot->showPanelNodes(checked);
             });
 
     for (QDoubleSpinBox* spin :
@@ -604,6 +611,100 @@ class XFoilWidget::Impl {
     updateTargetControlState();
   }
 
+  void configureResultViews() {
+    ui.cpPlot->setCpMode(true);
+    ui.cpPlot->setAxisTitles(QStringLiteral("x/c"), QStringLiteral("-Cp"));
+    ui.clAlphaPlot->setAxisTitles(QStringLiteral("α [deg]"), QStringLiteral("CL"));
+    ui.clCdPlot->setAxisTitles(QStringLiteral("CD"), QStringLiteral("CL"));
+    ui.cmAlphaPlot->setAxisTitles(QStringLiteral("α [deg]"), QStringLiteral("CM"));
+    ui.cmClPlot->setAxisTitles(QStringLiteral("CL"), QStringLiteral("CM"));
+    ui.efficiencyClPlot->setAxisTitles(QStringLiteral("CL"),
+                                       QStringLiteral("CL/CD"));
+    ui.cpAlphaPlot->setAxisTitles(QStringLiteral("α [deg]"),
+                                  QStringLiteral("Cp (contract open)"));
+    ui.cfAlphaPlot->setAxisTitles(QStringLiteral("α [deg]"),
+                                  QStringLiteral("Cf (contract open)"));
+  }
+
+  void updateResultMatrix() {
+    ui.cdValue->setText(QString::fromStdString(
+        formatResultValue(summary_.cd)));
+    ui.cdfValue->setText(QString::fromStdString(
+        formatResultValue(summary_.cdf)));
+    ui.cdpValue->setText(QString::fromStdString(
+        formatResultValue(summary_.cdp)));
+    ui.clValue->setText(QString::fromStdString(
+        formatResultValue(summary_.cl)));
+    ui.cmValue->setText(QString::fromStdString(
+        formatResultValue(summary_.cm)));
+    ui.efficiencyValue->setText(QString::fromStdString(
+        formatResultValue(summary_.efficiency)));
+    ui.cd0Value->setText(QString::fromStdString(
+        formatResultValue(summary_.cd0)));
+    ui.cl0Value->setText(QString::fromStdString(
+        formatResultValue(summary_.cl0)));
+    ui.cm0Value->setText(QString::fromStdString(
+        formatResultValue(summary_.cm0)));
+    ui.alpha0Value->setText(QString::fromStdString(
+        formatResultValue(summary_.alpha0)));
+    ui.clMaxValue->setText(QString::fromStdString(
+        formatResultValue(summary_.clMaximum)));
+    ui.efficiencyMaxValue->setText(QString::fromStdString(
+        formatResultValue(summary_.efficiencyMaximum)));
+  }
+
+  void refreshPointSelection() {
+    const QSignalBlocker operatingBlocker(ui.operatingPointCombo);
+    const QSignalBlocker deactivateBlocker(ui.deactivatePointCombo);
+    const QSignalBlocker activateBlocker(ui.activatePointCombo);
+    ui.operatingPointCombo->clear();
+    ui.deactivatePointCombo->clear();
+    ui.activatePointCombo->clear();
+
+    for (const GuiPointEntry& point : selectionModel_.activePoints()) {
+      ui.operatingPointCombo->addItem(
+          QString::fromStdString(formatOperatingPointLabel(point)),
+          static_cast<qulonglong>(point.sourceIndex));
+      ui.deactivatePointCombo->addItem(
+          QString::fromStdString(formatOperatingPointLabel(point)),
+          static_cast<qulonglong>(point.sourceIndex));
+    }
+    for (const GuiPointEntry& point : selectionModel_.inactivePoints()) {
+      ui.activatePointCombo->addItem(
+          QString::fromStdString(formatOperatingPointLabel(point)),
+          static_cast<qulonglong>(point.sourceIndex));
+    }
+
+    ui.operatingPointCombo->setEnabled(ui.operatingPointCombo->count() > 0);
+    ui.deactivatePointCombo->setEnabled(
+        ui.deactivatePointCombo->count() > 0);
+    ui.activatePointCombo->setEnabled(ui.activatePointCombo->count() > 0);
+
+    if (const std::optional<GuiPointEntry> current =
+            selectionModel_.currentPoint();
+        current.has_value()) {
+      const int index = ui.operatingPointCombo->findData(
+          static_cast<qulonglong>(current->sourceIndex));
+      if (index >= 0) {
+        ui.operatingPointCombo->setCurrentIndex(index);
+      }
+      const GuiConvergenceText convergence = formatConvergence(
+          current->converged ? GuiConvergenceState::converged
+                             : GuiConvergenceState::notConverged);
+      ui.currentPointConvergenceIcon->setText(
+          QString::fromStdString(convergence.icon));
+      ui.currentPointConvergenceLabel->setText(
+          QString::fromStdString(convergence.label));
+    } else {
+      const GuiConvergenceText convergence =
+          formatConvergence(GuiConvergenceState::noPoint);
+      ui.currentPointConvergenceIcon->setText(
+          QString::fromStdString(convergence.icon));
+      ui.currentPointConvergenceLabel->setText(
+          QString::fromStdString(convergence.label));
+    }
+  }
+
   void refreshUi() {
     const XFoilGuiState state = model_.state();
     const bool ready = model_.isReady();
@@ -615,16 +716,12 @@ class XFoilWidget::Impl {
                                   : QStringLiteral("Not ready"));
 
     if (model_.error().has_value()) {
-      const QString error = formatError(*model_.error());
-      ui.validationLabel->setText(error);
-      ui.diagnosticsPlaceholder->setText(error);
+      ui.setupDiagnosticsView->setPlainText(
+          formatError(*model_.error()));
     } else {
-      ui.validationLabel->setText(
-          ready ? QStringLiteral("Definition complete")
-                : QStringLiteral("Complete the workflow steps."));
-      ui.diagnosticsPlaceholder->setText(
-          QStringLiteral("No setup diagnostics"));
+      ui.setupDiagnosticsView->clear();
     }
+    ui.analyzeButton->setEnabled(ready);
 
     if (model_.geometry().has_value()) {
       const std::string_view name = model_.geometry()->name();
@@ -671,6 +768,8 @@ class XFoilWidget::Impl {
   Ui::XFoilWidget ui;
   GuiSessionBackend backend_;
   GuiDefinitionModel model_;
+  GuiResultSelectionModel selectionModel_;
+  GuiResultSummary summary_;
   bool updatingControls_{false};
   XFoilGuiState lastState_{XFoilGuiState::empty};
   bool lastReady_{false};

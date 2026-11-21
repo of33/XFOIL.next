@@ -13,6 +13,10 @@ keep-a-changelog layout.
   geometry, paneling, operating conditions, alpha/CL/alpha-sequence targets,
   an owning validated run snapshot and a geometry/panel preview. No analysis
   is executed and no worker or result data is present yet.
+- Revised the GUI workspace to a 1x4 definition row, a Cp/Airfoil plus
+  seven-tab result area and a fixed right results column with point-selection
+  placeholders, a 4x3 n/a matrix, setup diagnostics and a non-executing
+  Analyze button. No result data or interpolation is implemented.
 - Adopted the current 2.0 GUI development baseline: GCC/MinGW 16.2.0 Rev7
   on Windows and Qt 6.12.0 for Linux and Windows GUI qualification. The
   1.2.1 release evidence remains on GCC/MinGW 16.1.0 Rev5.
