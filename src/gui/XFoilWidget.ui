@@ -1521,7 +1521,7 @@
             <string>Analyze</string>
            </property>
            <property name="toolTip">
-            <string>Starts the G3 analysis when the definition is ready.</string>
+            <string>Starts one analysis in the widget worker when the definition is ready.</string>
            </property>
            <property name="enabled">
             <bool>false</bool>
@@ -1560,6 +1560,66 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QLabel" name="analysisStatusLabel">
+        <property name="text">
+         <string>Idle</string>
+        </property>
+        <property name="accessibleName">
+         <string>Analysis status</string>
+        </property>
+        <property name="toolTip">
+         <string>Phase and outcome of the current or last analysis.</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QProgressBar" name="analysisProgressBar">
+        <property name="minimumSize">
+         <size>
+          <width>120</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>220</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="value">
+         <number>0</number>
+        </property>
+        <property name="textVisible">
+         <bool>true</bool>
+        </property>
+        <property name="accessibleName">
+         <string>Analysis progress</string>
+        </property>
+        <property name="toolTip">
+         <string>Determinate progress when a total is known; busy otherwise.</string>
+        </property>
+        <property name="visible">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="cancelButton">
+        <property name="text">
+         <string>Cancel</string>
+        </property>
+        <property name="accessibleName">
+         <string>Cancel analysis</string>
+        </property>
+        <property name="toolTip">
+         <string>Requests cancellation of the active analysis.</string>
+        </property>
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
@@ -1594,6 +1654,7 @@
   <tabstop>activatePointCombo</tabstop>
   <tabstop>setupDiagnosticsView</tabstop>
   <tabstop>analyzeButton</tabstop>
+  <tabstop>cancelButton</tabstop>
  </tabstops>
  <customwidgets>
   <customwidget>

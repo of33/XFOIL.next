@@ -135,13 +135,15 @@ report:
 Plotting is not available in this build.
 ```
 
-An optional Qt 6.12.x GUI definition surface now exists, but it is not a
+An optional Qt 6.12.x GUI analysis surface now exists, but it is not a
 finished application and does not change the CLI plotting contract. It owns a
 geometry/paneling/operating/target definition, an offscreen-checked geometry
-and panel preview and a result workspace with seven empty plot shells, a 4x3
-result matrix, point-selection placeholders and setup diagnostics. It does not
-run an analysis yet. The numerical, textual, and file-related parts of mixed
-commands are kept.
+and panel preview and a result workspace with seven plot shells, a 4x3 result
+matrix, point-selection placeholders, diagnostics, progress and cancellation.
+Alpha, CL and detailed alpha-sequence analyses run asynchronously in exactly
+one persistent worker thread and one worker-owned `xfoil::Session`. Cp, Cf and
+polar plot binding, matrix calculation and point selection are not implemented
+yet. The numerical, textual and file-related parts of mixed commands are kept.
 This is a port of XFOIL, not an independent re-derivation of the
 solver, and it is not a bit-identical reproduction of every Fortran build
 variant (see [known differences](docs/known-differences.md)).
@@ -184,7 +186,7 @@ make library-demo                 # standalone staged-library demo
 make test-library-demo            # demo integration tests
 ```
 
-Optional GUI definition surface build (Qt 6.12.x, Linux):
+Optional GUI analysis surface build (Qt 6.12.x, Linux):
 
 ```sh
 QT_ROOT=/path/to/Qt/6.12.0/gcc_64 make gui
@@ -194,11 +196,12 @@ QT_ROOT=/path/to/Qt/6.12.0/gcc_64 make gui-link-check
 
 Run the GUI targets sequentially. The embeddable `xfoil::gui::XFoilWidget`
 accepts memory, NACA and NACS geometry, paneling options, an `AnalysisConfig`
-and an alpha/CL/alpha-sequence target. It validates through the public
-`xfoil::Session` setup methods, exposes an owning run snapshot for the future
-worker, and previews geometry and panel nodes with QCustomPlot. There is no
-analysis execution, worker, result panel data, standalone main window, file
-dialog, QSettings or import/export adapter. It has no GUI release asset. The
+and an alpha/CL/alpha-sequence target. It validates setup through the public
+`xfoil::Session` API and runs analysis in one persistent worker-owned session
+with owning result values, progress, cancellation and structured errors. It
+previews geometry and panel nodes with QCustomPlot. There is still no
+standalone main window, file dialog, QSettings or import/export adapter, and
+no Cp/Cf/polar plot or matrix binding. It has no GUI release asset. The
 Windows UCRT64 Qt 6.12.0 development build is qualified, but no Windows GUI
 package is provided. See [building and testing](docs/building-and-testing.md)
 for the complete target list, compiler requirements, and validation checks.

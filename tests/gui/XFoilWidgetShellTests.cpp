@@ -38,6 +38,7 @@
 #include <QPalette>
 #include <QPlainTextEdit>
 #include <QPointer>
+#include <QProgressBar>
 #include <QPushButton>
 #include <QRegularExpression>
 #include <QSpinBox>
@@ -132,6 +133,9 @@ class XFoilWidgetShellTests : public QObject {
     QVERIFY(widget.findChild<QWidget*>("cpPlot") != nullptr);
     QVERIFY(widget.findChild<QPlainTextEdit*>("setupDiagnosticsView") != nullptr);
     QVERIFY(widget.findChild<QPushButton*>("analyzeButton") != nullptr);
+    QVERIFY(widget.findChild<QPushButton*>("cancelButton") != nullptr);
+    QVERIFY(widget.findChild<QProgressBar*>("analysisProgressBar") != nullptr);
+    QVERIFY(widget.findChild<QLabel*>("analysisStatusLabel") != nullptr);
     QVERIFY(widget.findChild<QLabel*>("statusLabel") != nullptr);
 
     QTabWidget* tabs = widget.findChild<QTabWidget*>("resultPlotTabs");
@@ -168,6 +172,10 @@ class XFoilWidgetShellTests : public QObject {
         QStringLiteral("resultsColumn"),
         QStringLiteral("statusFrame"),
         QStringLiteral("setupDiagnosticsView"),
+        QStringLiteral("analyzeButton"),
+        QStringLiteral("cancelButton"),
+        QStringLiteral("analysisProgressBar"),
+        QStringLiteral("analysisStatusLabel"),
     };
     for (const QString& name : required) {
       QVERIFY2(widget.findChild<QWidget*>(name) != nullptr,

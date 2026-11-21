@@ -11,12 +11,16 @@ keep-a-changelog layout.
   tests, a public-header link check and GUI dependency/vendoring gates.
 - Added the GUI definition model and input surface: memory/NACA/NACS
   geometry, paneling, operating conditions, alpha/CL/alpha-sequence targets,
-  an owning validated run snapshot and a geometry/panel preview. No analysis
-  is executed and no worker or result data is present yet.
+  an owning validated run snapshot and a geometry/panel preview.
 - Revised the GUI workspace to a 1x4 definition row, a Cp/Airfoil plus
   seven-tab result area and a fixed right results column with point-selection
-  placeholders, a 4x3 n/a matrix, setup diagnostics and a non-executing
-  Analyze button. No result data or interpolation is implemented.
+  placeholders, a 4x3 n/a matrix and setup diagnostics.
+- Added the G3 GUI analysis worker: one persistent worker thread and one
+  worker-owned session run alpha, CL and detailed alpha-sequence analyses
+  asynchronously. Owning results, progress, cancellation, structured errors,
+  job/generation stale-result rejection, busy setup guards and safe worker
+  shutdown are covered by tests. Cp/Cf/polar plot binding and matrix
+  calculation remain later work.
 - Added the optional owning detailed alpha sequence: each executed point
   keeps its compact polar row plus its full Cp surface and, for viscous
   points, its Cf distribution and CDF. The compact sequence API remains

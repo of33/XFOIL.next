@@ -22,9 +22,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // File: include/xfoil/gui/XFoilWidget.h
-// Public embeddable GUI definition surface. G2 validates and snapshots
-// memory/NACA/NACS geometry, paneling, analysis configuration and one
-// target. It performs no analysis, file I/O or application startup.
+// Public embeddable GUI surface. Setup is validated and snapshotted in the
+// widget model and applied to one worker-owned xfoil::Session. Analysis runs
+// asynchronously in exactly one worker thread; results are owning values.
+// Definition setters, analyze(), cancel() and the getters are widget-thread
+// operations.
 
 #pragma once
 
@@ -38,12 +40,16 @@
 #include "xfoil/AnalysisConfig.h"
 #include "xfoil/AnalysisData.h"
 #include "xfoil/AnalysisRequest.h"
+#include "xfoil/Progress.h"
 #include "xfoil/Result.h"
+#include "xfoil/SequenceResult.h"
 #include "xfoil/Session.h"
 #include "xfoil/SessionOptions.h"
 #include "xfoil/geometry/AirfoilGeometry.h"
 #include "xfoil/gui/Export.h"
 #include "xfoil/gui/GuiState.h"
+
+class QAction;
 
 namespace xfoil::gui {
 
@@ -92,6 +98,29 @@ class XFOIL_GUI_API XFoilWidget : public QWidget {
   [[nodiscard]]
   bool isReadyToAnalyze() const;
 
+  // Starts one alpha, CL or detailed alpha-sequence analysis in the
+  // widget-owned worker. A call while not ready or while another analysis
+  // is active is a deterministic no-op.
+  void analyze();
+  // Requests cancellation of the active job through its atomic token. A
+  // call outside an active job is an idempotent no-op.
+  void cancel();
+  [[nodiscard]]
+  bool isRunning() const;
+
+  [[nodiscard]]
+  QAction* analyzeAction();
+  [[nodiscard]]
+  QAction* cancelAction();
+
+  // Owning copies of the current analysis result. A setup change or a new
+  // analysis clears the current values. No widget or session reference is
+  // returned.
+  [[nodiscard]]
+  std::optional<xfoil::OperatingPointData> currentOperatingPoint() const;
+  [[nodiscard]]
+  std::optional<xfoil::DetailedSequenceResult> currentSequence() const;
+
  signals:
   void geometryChanged();
   void panelingChanged();
@@ -99,6 +128,12 @@ class XFOIL_GUI_API XFoilWidget : public QWidget {
   void targetChanged();
   void stateChanged(XFoilGuiState state);
   void validationChanged(bool valid);
+  void analysisStarted();
+  void progressChanged(xfoil::ProgressEvent event);
+  void operatingPointReady(xfoil::OperatingPointData point);
+  void sequenceReady(xfoil::DetailedSequenceResult sequence);
+  void analysisCancelled();
+  void analysisFailed(xfoil::Error error);
 
  private:
   class Impl;
@@ -108,5 +143,9 @@ class XFOIL_GUI_API XFoilWidget : public QWidget {
 }  // namespace xfoil::gui
 
 Q_DECLARE_METATYPE(xfoil::gui::XFoilGuiState)
+Q_DECLARE_METATYPE(xfoil::ProgressEvent)
+Q_DECLARE_METATYPE(xfoil::OperatingPointData)
+Q_DECLARE_METATYPE(xfoil::DetailedSequenceResult)
+Q_DECLARE_METATYPE(xfoil::Error)
 
 // End: include/xfoil/gui/XFoilWidget.h

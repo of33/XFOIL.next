@@ -35,6 +35,8 @@ int runGuiResultWorkspaceTests(int argc, char** argv);
 int runGuiDetailedSequenceContractTests(int argc, char** argv);
 int runGuiSessionBackendTests(int argc, char** argv);
 int runXFoilWidgetG2Tests(int argc, char** argv);
+int runXFoilWidgetG3Tests(int argc, char** argv);
+int runGuiAnalysisWorkerTests(int argc, char** argv);
 int runXFoilWidgetShellTests(int argc, char** argv);
 
 int main(int argc, char** argv) {
@@ -49,6 +51,8 @@ int main(int argc, char** argv) {
   failures += runGuiDetailedSequenceContractTests(argc, argv);
   failures += runGuiSessionBackendTests(argc, argv);
   failures += runXFoilWidgetG2Tests(argc, argv);
+  failures += runXFoilWidgetG3Tests(argc, argv);
+  failures += runGuiAnalysisWorkerTests(argc, argv);
   failures += runXFoilWidgetShellTests(argc, argv);
   return failures == 0 ? 0 : 1;
 }

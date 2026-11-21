@@ -87,7 +87,9 @@ PUBLIC_ALLOWED_EXACT = {
     "xfoil/AnalysisConfig.h",
     "xfoil/AnalysisData.h",
     "xfoil/AnalysisRequest.h",
+    "xfoil/Progress.h",
     "xfoil/Result.h",
+    "xfoil/SequenceResult.h",
     "xfoil/Session.h",
     "xfoil/SessionOptions.h",
     "xfoil/geometry/AirfoilGeometry.h",
@@ -137,6 +139,8 @@ SESSION_ALLOWED_SOURCES = {
     "src/gui/backend/GuiSessionBackend.h",
     "src/gui/model/GuiDefinitionModel.h",
     "src/gui/model/GuiRunSpec.h",
+    "src/gui/worker/GuiAnalysisWorker.cpp",
+    "src/gui/worker/GuiAnalysisWorker.h",
 }
 
 INCLUDE_RE = re.compile(r'^\s*#\s*include\s*[<"]([^>"]+)[>"]')

@@ -145,7 +145,7 @@ QT_DEFINES := \
 GUI_INCLUDES := -I. -Iinclude -Isrc -Isrc/gui -I$(GUI_GEN_DIR) $(QT_SYSTEM_INCLUDES)
 GUI_FLAGS := $(CXXSTD) $(GUI_INCLUDES) $(QT_DEFINES) $(GUI_WARNINGS) \
 	$(GUI_MODE_FLAGS) -fPIC
-GUI_MOC_FLAGS := $(QT_DEFINES) -Iinclude $(QT_MOC_INCLUDES)
+GUI_MOC_FLAGS := $(QT_DEFINES) -Iinclude -Isrc -Isrc/gui $(QT_MOC_INCLUDES)
 GUI_QT_LIBS := -L$(QT_LIB_DIR) -lQt6Widgets -lQt6Gui -lQt6Core \
 	-lQt6PrintSupport
 GUI_TEST_LIBS := $(GUI_QT_LIBS) -lQt6Test
@@ -164,6 +164,8 @@ GUI_ARCHIVE_OBJS := \
 	$(GUI_OBJ_DIR)/model/GuiResultSelectionModel.o \
 	$(GUI_OBJ_DIR)/model/GuiResultSummary.o \
 	$(GUI_OBJ_DIR)/backend/GuiSessionBackend.o \
+	$(GUI_OBJ_DIR)/worker/GuiAnalysisWorker.o \
+	$(GUI_OBJ_DIR)/moc_GuiAnalysisWorker.o \
 	$(GUI_OBJ_DIR)/plots/GeometryPlotView.o \
 	$(GUI_OBJ_DIR)/plots/GuiPointPresentation.o \
 	$(GUI_OBJ_DIR)/plots/ResultPlotView.o \
@@ -180,6 +182,8 @@ GUI_TEST_OBJS := \
 	$(GUI_OBJ_DIR)/tests/GuiDetailedSequenceContractTests.o \
 	$(GUI_OBJ_DIR)/tests/GuiSessionBackendTests.o \
 	$(GUI_OBJ_DIR)/tests/XFoilWidgetG2Tests.o \
+	$(GUI_OBJ_DIR)/tests/XFoilWidgetG3Tests.o \
+	$(GUI_OBJ_DIR)/tests/GuiAnalysisWorkerTests.o \
 	$(GUI_OBJ_DIR)/tests/XFoilWidgetShellTests.o
 GUI_LINKCHECK := $(GUI_TEST_DIR)/$(GUI_VARIANT)/gui-link-check$(GUI_EXE_SUFFIX)
 ifeq ($(GUI_EXE_SUFFIX),.exe)
@@ -267,6 +271,9 @@ $(GUI_GEN_DIR)/ui_XFoilWidget.h: src/gui/XFoilWidget.ui | $(GUI_GEN_DIR) $(GUI_S
 $(GUI_GEN_DIR)/moc_XFoilWidget.cpp: include/xfoil/gui/XFoilWidget.h | $(GUI_GEN_DIR) $(GUI_STAMP)
 	$(QT_MOC) $(GUI_MOC_FLAGS) $< -o $@
 
+$(GUI_GEN_DIR)/moc_GuiAnalysisWorker.cpp: src/gui/worker/GuiAnalysisWorker.h | $(GUI_GEN_DIR) $(GUI_STAMP)
+	$(QT_MOC) $(GUI_MOC_FLAGS) $< -o $@
+
 $(GUI_GEN_DIR)/moc_qcustomplot.cpp: $(QCP_DIR)/qcustomplot.h | $(GUI_GEN_DIR) $(GUI_STAMP)
 	$(QT_MOC) $(GUI_MOC_FLAGS) -I$(QCP_DIR) $< -o $@
 
@@ -301,6 +308,17 @@ $(GUI_OBJ_DIR)/model/GuiResultSummary.o: \
 $(GUI_OBJ_DIR)/backend/GuiSessionBackend.o: \
 		src/gui/backend/GuiSessionBackend.cpp \
 		src/gui/backend/GuiSessionBackend.h | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/worker/GuiAnalysisWorker.o: \
+		src/gui/worker/GuiAnalysisWorker.cpp \
+		src/gui/worker/GuiAnalysisWorker.h \
+		src/gui/worker/GuiJobTracker.h | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/moc_GuiAnalysisWorker.o: $(GUI_GEN_DIR)/moc_GuiAnalysisWorker.cpp | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
 
@@ -382,6 +400,18 @@ $(GUI_OBJ_DIR)/tests/GuiSessionBackendTests.o: \
 $(GUI_OBJ_DIR)/tests/XFoilWidgetG2Tests.o: \
 		tests/gui/XFoilWidgetG2Tests.cpp \
 		$(GUI_GEN_DIR)/XFoilWidgetG2Tests.moc | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/tests/XFoilWidgetG3Tests.o: \
+		tests/gui/XFoilWidgetG3Tests.cpp \
+		$(GUI_GEN_DIR)/XFoilWidgetG3Tests.moc | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/tests/GuiAnalysisWorkerTests.o: \
+		tests/gui/GuiAnalysisWorkerTests.cpp \
+		$(GUI_GEN_DIR)/GuiAnalysisWorkerTests.moc | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
 

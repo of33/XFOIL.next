@@ -296,7 +296,7 @@ class GuiResultWorkspaceTests : public QObject {
                  .isEmpty());
   }
 
-  void diagnosticsAreReadOnlyAndAnalyzeDoesNothing() {
+  void diagnosticsAreReadOnlyAndAnalyzeBecomesAvailable() {
     XFoilWidget widget;
     auto* diagnostics =
         widget.findChild<QPlainTextEdit*>("setupDiagnosticsView");
@@ -312,10 +312,8 @@ class GuiResultWorkspaceTests : public QObject {
     QVERIFY(widget.setNaca("2412").isOk());
     QVERIFY(widget.generatePanel(xfoil::PanelingOptions{}).isOk());
     QVERIFY(analyze->isEnabled());
-    const XFoilGuiState beforeClick = widget.state();
-    analyze->click();
-    QVERIFY(widget.state() == beforeClick);
     QVERIFY(widget.isReadyToAnalyze());
+    QVERIFY(!widget.isRunning());
   }
 
   void newObjectNamesAreSemantic() {

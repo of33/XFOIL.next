@@ -22,29 +22,37 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // File: src/gui/XFoilWidget.cpp
-// G2 definition surface. Programmatic setters and visible controls share
-// this single controller path. The widget owns a backend session but does
-// not run an analysis, create an application or touch the file system.
+// G3 widget controller. The widget owns one QThread and one worker-owned
+// Session. Programmatic setters are short synchronous worker calls outside
+// a job; analysis is queued and all results return as owning values. No
+// file system or application ownership is introduced.
 
 #include "xfoil/gui/XFoilWidget.h"
 
+#include <algorithm>
 #include <cmath>
+#include <exception>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <variant>
+#include <vector>
 
+#include <QAction>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMetaObject>
+#include <QProgressBar>
 #include <QPushButton>
 #include <QSignalBlocker>
 #include <QSpinBox>
 #include <QString>
+#include <QThread>
 
-#include "backend/GuiSessionBackend.h"
 #include "model/GuiDefinitionModel.h"
 #include "model/GuiResultSelectionModel.h"
 #include "model/GuiResultSummary.h"
@@ -52,15 +60,122 @@
 #include "plots/GuiPointPresentation.h"
 #include "plots/ResultPlotView.h"
 #include "ui_XFoilWidget.h"
+#include "worker/GuiAnalysisWorker.h"
+#include "worker/GuiJobTracker.h"
+#include "xfoil/Diagnostic.h"
 #include "xfoil/Limits.h"
 
 namespace xfoil::gui {
 namespace {
 
-void ensureGuiStateMetaType() {
-  static const int registered =
+void ensureGuiMetaTypes() {
+  static const int state =
       qRegisterMetaType<XFoilGuiState>("XFoilGuiState");
-  (void)registered;
+  static const int progress =
+      qRegisterMetaType<xfoil::ProgressEvent>("xfoil::ProgressEvent");
+  static const int point = qRegisterMetaType<xfoil::OperatingPointData>(
+      "xfoil::OperatingPointData");
+  static const int sequence =
+      qRegisterMetaType<xfoil::DetailedSequenceResult>(
+          "xfoil::DetailedSequenceResult");
+  static const int error = qRegisterMetaType<xfoil::Error>("xfoil::Error");
+  static const int finish = qRegisterMetaType<GuiAnalysisFinish>(
+      "xfoil::gui::GuiAnalysisFinish");
+  (void)state;
+  (void)progress;
+  (void)point;
+  (void)sequence;
+  (void)error;
+  (void)finish;
+}
+
+Error busyError() {
+  return Error::make(ErrorCategory::invalidState, "gui.busy",
+                     "An analysis is already running or the worker is in use",
+                     "worker");
+}
+
+Error wrongThreadError() {
+  return Error::make(ErrorCategory::invalidState, "gui.wrongThread",
+                     "GUI setup calls must run on the widget thread",
+                     "worker");
+}
+
+Error workerUnavailableError() {
+  return Error::make(ErrorCategory::invalidState,
+                     "gui.workerUnavailable",
+                     "The analysis worker session is not available",
+                     "worker");
+}
+
+QString phaseName(ProgressPhase phase) {
+  switch (phase) {
+    case ProgressPhase::geometry:
+      return QStringLiteral("geometry");
+    case ProgressPhase::paneling:
+      return QStringLiteral("paneling");
+    case ProgressPhase::initialization:
+      return QStringLiteral("initialization");
+    case ProgressPhase::inviscidSolve:
+      return QStringLiteral("inviscid solve");
+    case ProgressPhase::viscousIteration:
+      return QStringLiteral("viscous iteration");
+    case ProgressPhase::sequence:
+      return QStringLiteral("alpha sequence");
+    case ProgressPhase::none:
+      break;
+  }
+  return QStringLiteral("analysis");
+}
+
+QString formatProgress(const ProgressEvent& event) {
+  QString text = QStringLiteral("Running: %1").arg(phaseName(event.phase));
+  if (event.sequenceIndex.has_value()) {
+    text += QStringLiteral(", point %1")
+                .arg(static_cast<qulonglong>(*event.sequenceIndex + 1));
+  }
+  if (event.iteration.has_value()) {
+    text += QStringLiteral(", iteration %1")
+                .arg(static_cast<qulonglong>(*event.iteration + 1));
+  }
+  if (event.total.has_value() && *event.total > 0) {
+    text += QStringLiteral(" (%1/%2)")
+                .arg(static_cast<qulonglong>(event.completed))
+                .arg(static_cast<qulonglong>(*event.total));
+  } else if (event.completed > 0) {
+    text += QStringLiteral(" (%1)")
+                .arg(static_cast<qulonglong>(event.completed));
+  }
+  return text;
+}
+
+QString severityName(DiagnosticSeverity severity) {
+  switch (severity) {
+    case DiagnosticSeverity::info:
+      return QStringLiteral("info");
+    case DiagnosticSeverity::warning:
+      return QStringLiteral("warning");
+    case DiagnosticSeverity::error:
+      return QStringLiteral("error");
+  }
+  return QStringLiteral("info");
+}
+
+QString formatDiagnostic(const Diagnostic& diagnostic) {
+  QString text = QStringLiteral("[%1]").arg(severityName(diagnostic.severity));
+  if (!diagnostic.code.empty()) {
+    text += QStringLiteral(" %1")
+                .arg(QString::fromStdString(diagnostic.code));
+  }
+  if (!diagnostic.message.empty()) {
+    text += QStringLiteral(": %1")
+                .arg(QString::fromStdString(diagnostic.message));
+  }
+  if (diagnostic.iteration.has_value()) {
+    text += QStringLiteral(" (iteration %1)")
+                .arg(static_cast<qulonglong>(*diagnostic.iteration + 1));
+  }
+  return text;
 }
 
 QString formatError(const Error& error) {
@@ -163,24 +278,42 @@ int geometrySourceIndex(GeometrySource source) {
 class XFoilWidget::Impl {
  public:
   explicit Impl(XFoilWidget* owner) : owner_(owner) {
-    ensureGuiStateMetaType();
+    ensureGuiMetaTypes();
     ui.setupUi(owner_);
     populateChoiceControls();
     initializeControlValues();
     connectControls();
+    createActions();
+    startWorker();
   }
+
+  ~Impl() { shutdown(); }
 
   void initialize() {
     configureResultViews();
     updateResultMatrix();
-    (void)owner_->setConfiguration(configurationFromControls(ui));
+    if (workerReady_) {
+      (void)owner_->setConfiguration(configurationFromControls(ui));
+    }
     refreshPointSelection();
     refreshUi();
   }
 
   [[nodiscard]]
   Result<void> setGeometry(const geometry::AirfoilGeometry& geometry) {
-    const Result<void> result = backend_.setGeometry(geometry);
+    if (const Result<void> validation = validateSetupCall();
+        validation.isErr()) {
+      return validation;
+    }
+    invalidateAnalysis();
+    const std::optional<Result<void>> invoked =
+        invokeWorker([this, &geometry]() {
+          return worker_->setGeometry(geometry);
+        });
+    if (!invoked.has_value()) {
+      return failUnavailable(workerUnavailableError());
+    }
+    const Result<void> result = *invoked;
     if (result.isErr()) {
       model_.fail(result.error());
       refreshUi();
@@ -203,8 +336,19 @@ class XFoilWidget::Impl {
   [[nodiscard]]
   Result<void> setNaca(std::string_view designation,
                        bool sharpTrailingEdge) {
-    const Result<geometry::AirfoilGeometry> result =
-        backend_.setNaca(designation, sharpTrailingEdge);
+    if (const Result<void> validation = validateSetupCall();
+        validation.isErr()) {
+      return validation;
+    }
+    invalidateAnalysis();
+    const std::optional<Result<geometry::AirfoilGeometry>> invoked =
+        invokeWorker([this, designation, sharpTrailingEdge]() {
+          return worker_->setNaca(designation, sharpTrailingEdge);
+        });
+    if (!invoked.has_value()) {
+      return failUnavailable(workerUnavailableError());
+    }
+    const Result<geometry::AirfoilGeometry> result = *invoked;
     if (result.isErr()) {
       model_.fail(result.error());
       refreshUi();
@@ -213,7 +357,8 @@ class XFoilWidget::Impl {
 
     geometry::AirfoilGeometry geometry = result.value();
     const bool hadPanel = model_.panel().has_value();
-    model_.acceptNaca(geometry, std::string(designation), sharpTrailingEdge);
+    model_.acceptNaca(geometry, std::string(designation),
+                      sharpTrailingEdge);
     updateGeometryControls();
     ui.airfoilPlot->setGeometry(geometry);
     ui.airfoilPlot->clearPanel();
@@ -226,6 +371,10 @@ class XFoilWidget::Impl {
   }
 
   void setPanelingOptions(const PanelingOptions& options) {
+    if (validateSetupCall().isErr()) {
+      return;
+    }
+    invalidateAnalysis();
     model_.setPanelingOptions(options);
     updatePanelingControls(options);
     ui.airfoilPlot->clearPanel();
@@ -235,7 +384,19 @@ class XFoilWidget::Impl {
 
   [[nodiscard]]
   Result<SurfaceGeometry> generatePanel(const PanelingOptions& options) {
-    const Result<SurfaceGeometry> result = backend_.generatePanel(options);
+    if (const Result<void> validation = validateSetupCall();
+        validation.isErr()) {
+      return Result<SurfaceGeometry>::fail(validation.error());
+    }
+    invalidateAnalysis();
+    const std::optional<Result<SurfaceGeometry>> invoked =
+        invokeWorker([this, &options]() {
+          return worker_->generatePanel(options);
+        });
+    if (!invoked.has_value()) {
+      return failUnavailable<SurfaceGeometry>(workerUnavailableError());
+    }
+    const Result<SurfaceGeometry> result = *invoked;
     if (result.isErr()) {
       model_.fail(result.error());
       refreshUi();
@@ -254,7 +415,19 @@ class XFoilWidget::Impl {
 
   [[nodiscard]]
   Result<void> setConfiguration(const AnalysisConfig& configuration) {
-    const Result<void> result = backend_.setConfiguration(configuration);
+    if (const Result<void> validation = validateSetupCall();
+        validation.isErr()) {
+      return validation;
+    }
+    invalidateAnalysis();
+    const std::optional<Result<void>> invoked =
+        invokeWorker([this, &configuration]() {
+          return worker_->setConfiguration(configuration);
+        });
+    if (!invoked.has_value()) {
+      return failUnavailable(workerUnavailableError());
+    }
+    const Result<void> result = *invoked;
     if (result.isErr()) {
       model_.fail(result.error());
       refreshUi();
@@ -269,6 +442,10 @@ class XFoilWidget::Impl {
   }
 
   void setTarget(const AnalysisTarget& target) {
+    if (validateSetupCall().isErr()) {
+      return;
+    }
+    invalidateAnalysis();
     const Result<void> result = model_.setTarget(target);
     if (result.isOk()) {
       updateTargetControls();
@@ -278,6 +455,10 @@ class XFoilWidget::Impl {
   }
 
   void setSequence(const AlphaSequence& sequence) {
+    if (validateSetupCall().isErr()) {
+      return;
+    }
+    invalidateAnalysis();
     const Result<void> result = model_.setSequence(sequence);
     if (result.isOk()) {
       updateTargetControls();
@@ -285,6 +466,70 @@ class XFoilWidget::Impl {
     refreshUi();
     Q_EMIT owner_->targetChanged();
   }
+
+  void analyze() {
+    if (QThread::currentThread() != owner_->thread() ||
+        !workerReady_ || worker_ == nullptr || thread_ == nullptr ||
+        !thread_->isRunning() || tracker_.isRunning() ||
+        !model_.isReady()) {
+      return;
+    }
+
+    const Result<GuiRunSpec> spec = model_.makeRunSpec();
+    if (spec.isErr()) {
+      return;
+    }
+    const std::optional<GuiJobKey> key = tracker_.begin();
+    if (!key.has_value()) {
+      return;
+    }
+
+    analysisOutcome_ = AnalysisOutcome::running;
+    analysisStatusText_ = QStringLiteral("Starting");
+    analysisDiagnostics_.clear();
+    currentOperatingPoint_.reset();
+    currentSequence_.reset();
+    progressFraction_.reset();
+    setPointConvergence(std::nullopt);
+    activeToken_ = std::make_shared<CancellationToken>();
+
+    GuiAnalysisJob job{std::move(spec.value()), key->jobId,
+                       key->generationId, activeToken_, {}};
+    if (!queueJob(std::move(job))) {
+      tracker_.finish(key->jobId, key->generationId);
+      activeToken_.reset();
+      analysisOutcome_ = AnalysisOutcome::error;
+      analysisStatusText_ = QStringLiteral("Analysis failed");
+      analysisDiagnostics_.push_back(formatError(workerUnavailableError()));
+      refreshUi();
+      Q_EMIT owner_->analysisFailed(workerUnavailableError());
+      return;
+    }
+
+    refreshUi();
+    Q_EMIT owner_->analysisStarted();
+  }
+
+  void cancel() {
+    if (QThread::currentThread() != owner_->thread() ||
+        !tracker_.isRunning() || !activeToken_) {
+      return;
+    }
+    activeToken_->requestCancellation();
+    analysisStatusText_ = QStringLiteral("Cancelling");
+    refreshUi();
+  }
+
+  [[nodiscard]]
+  bool isRunning() const {
+    return tracker_.isRunning();
+  }
+
+  [[nodiscard]]
+  QAction* analyzeAction() { return analyzeAction_; }
+
+  [[nodiscard]]
+  QAction* cancelAction() { return cancelAction_; }
 
   [[nodiscard]]
   std::optional<geometry::AirfoilGeometry> geometry() const {
@@ -318,6 +563,21 @@ class XFoilWidget::Impl {
 
   [[nodiscard]]
   XFoilGuiState state() const {
+    if (tracker_.isRunning()) {
+      return XFoilGuiState::running;
+    }
+    switch (analysisOutcome_) {
+      case AnalysisOutcome::none:
+        return model_.state();
+      case AnalysisOutcome::running:
+        return XFoilGuiState::running;
+      case AnalysisOutcome::results:
+        return XFoilGuiState::results;
+      case AnalysisOutcome::cancelled:
+        return XFoilGuiState::cancelled;
+      case AnalysisOutcome::error:
+        return XFoilGuiState::error;
+    }
     return model_.state();
   }
 
@@ -326,7 +586,337 @@ class XFoilWidget::Impl {
     return model_.isReady();
   }
 
+  [[nodiscard]]
+  std::optional<OperatingPointData> currentOperatingPoint() const {
+    return currentOperatingPoint_;
+  }
+
+  [[nodiscard]]
+  std::optional<DetailedSequenceResult> currentSequence() const {
+    return currentSequence_;
+  }
+
+  void shutdown() {
+    if (shutdown_) {
+      return;
+    }
+    shutdown_ = true;
+    if (activeToken_) {
+      activeToken_->requestCancellation();
+    }
+    if (worker_ != nullptr) {
+      QObject::disconnect(worker_, nullptr, nullptr, nullptr);
+    }
+    if (thread_ != nullptr) {
+      thread_->quit();
+      thread_->wait();
+    }
+    delete worker_;
+    worker_ = nullptr;
+    delete thread_;
+    thread_ = nullptr;
+    workerReady_ = false;
+    activeToken_.reset();
+  }
+
  private:
+  enum class AnalysisOutcome {
+    none,
+    running,
+    results,
+    cancelled,
+    error
+  };
+
+  template <typename Function>
+  [[nodiscard]]
+  auto invokeWorker(Function&& function)
+      -> std::optional<decltype(function())> {
+    if (!workerReady_ || worker_ == nullptr || thread_ == nullptr ||
+        !thread_->isRunning() ||
+        QThread::currentThread() != owner_->thread()) {
+      return std::nullopt;
+    }
+    std::optional<decltype(function())> result;
+    const bool invoked = QMetaObject::invokeMethod(
+        worker_,
+        [&function, &result]() { result.emplace(function()); },
+        Qt::BlockingQueuedConnection);
+    if (!invoked) {
+      return std::nullopt;
+    }
+    return result;
+  }
+
+  template <typename T>
+  [[nodiscard]]
+  Result<T> failUnavailable(Error error) {
+    model_.fail(error);
+    refreshUi();
+    return Result<T>::fail(std::move(error));
+  }
+
+  [[nodiscard]]
+  Result<void> failUnavailable(Error error) {
+    model_.fail(error);
+    refreshUi();
+    return Result<void>::fail(std::move(error));
+  }
+
+  [[nodiscard]]
+  Result<void> validateSetupCall() const {
+    if (QThread::currentThread() != owner_->thread()) {
+      return Result<void>::fail(wrongThreadError());
+    }
+    if (!workerReady_ || worker_ == nullptr || thread_ == nullptr ||
+        !thread_->isRunning()) {
+      return Result<void>::fail(workerUnavailableError());
+    }
+    if (tracker_.isRunning()) {
+      return Result<void>::fail(busyError());
+    }
+    return Result<void>::ok();
+  }
+
+  [[nodiscard]]
+  bool queueJob(GuiAnalysisJob job) {
+    if (worker_ == nullptr) {
+      return false;
+    }
+    GuiAnalysisWorker* const worker = worker_;
+    return QMetaObject::invokeMethod(
+        worker_,
+        [worker, job = std::move(job)]() mutable {
+          worker->run(std::move(job));
+        },
+        Qt::QueuedConnection);
+  }
+
+  void invalidateAnalysis() {
+    tracker_.invalidate();
+    analysisOutcome_ = AnalysisOutcome::none;
+    currentOperatingPoint_.reset();
+    currentSequence_.reset();
+    analysisDiagnostics_.clear();
+    progressFraction_.reset();
+    activeToken_.reset();
+    analysisStatusText_ = QStringLiteral("Idle");
+    setPointConvergence(std::nullopt);
+  }
+
+  void startWorker() {
+    thread_ = new QThread(owner_);
+    worker_ = new GuiAnalysisWorker();
+    worker_->moveToThread(thread_);
+
+    QObject::connect(
+        worker_, &GuiAnalysisWorker::progressReady, owner_,
+        [this](qulonglong jobId, quint64 generationId,
+               const ProgressEvent& event) {
+          onProgress(jobId, generationId, event);
+        },
+        Qt::QueuedConnection);
+    QObject::connect(
+        worker_, &GuiAnalysisWorker::operatingPointReady, owner_,
+        [this](qulonglong jobId, quint64 generationId,
+               const OperatingPointData& point) {
+          onOperatingPoint(jobId, generationId, point);
+        },
+        Qt::QueuedConnection);
+    QObject::connect(
+        worker_, &GuiAnalysisWorker::sequenceReady, owner_,
+        [this](qulonglong jobId, quint64 generationId,
+               const DetailedSequenceResult& sequence) {
+          onSequence(jobId, generationId, sequence);
+        },
+        Qt::QueuedConnection);
+    QObject::connect(
+        worker_, &GuiAnalysisWorker::finished, owner_,
+        [this](qulonglong jobId, quint64 generationId,
+               GuiAnalysisFinish finish, Error error) {
+          onFinished(jobId, generationId, finish, std::move(error));
+        },
+        Qt::QueuedConnection);
+
+    thread_->start();
+    workerReady_ = true;
+    const std::optional<Result<void>> initialized =
+        invokeWorker([this]() { return worker_->initialize(); });
+    if (!initialized.has_value()) {
+      workerReady_ = false;
+      model_.fail(workerUnavailableError());
+      return;
+    }
+    if (initialized->isErr()) {
+      workerReady_ = false;
+      model_.fail(initialized->error());
+    }
+  }
+
+  void onProgress(qulonglong jobId, quint64 generationId,
+                  const ProgressEvent& event) {
+    if (!tracker_.accepts(jobId, generationId)) {
+      return;
+    }
+    updateProgress(event);
+    Q_EMIT owner_->progressChanged(event);
+  }
+
+  void onOperatingPoint(qulonglong jobId, quint64 generationId,
+                        const OperatingPointData& point) {
+    if (!tracker_.accepts(jobId, generationId)) {
+      return;
+    }
+    currentOperatingPoint_ = point;
+    currentSequence_.reset();
+    Q_EMIT owner_->operatingPointReady(point);
+  }
+
+  void onSequence(qulonglong jobId, quint64 generationId,
+                  const DetailedSequenceResult& sequence) {
+    if (!tracker_.accepts(jobId, generationId)) {
+      return;
+    }
+    currentSequence_ = sequence;
+    currentOperatingPoint_.reset();
+    Q_EMIT owner_->sequenceReady(sequence);
+  }
+
+  void onFinished(qulonglong jobId, quint64 generationId,
+                  GuiAnalysisFinish finish, Error error) {
+    if (!tracker_.accepts(jobId, generationId)) {
+      return;
+    }
+    tracker_.finish(jobId, generationId);
+    activeToken_.reset();
+    progressFraction_.reset();
+
+    if (finish == GuiAnalysisFinish::completed) {
+      analysisOutcome_ = AnalysisOutcome::results;
+      analysisDiagnostics_.clear();
+      appendResultDiagnostics();
+      if (currentOperatingPoint_.has_value()) {
+        setPointConvergence(currentOperatingPoint_);
+        analysisStatusText_ =
+            QStringLiteral("Analysis complete (alpha %1°)")
+                .arg(currentOperatingPoint_->alpha.value, 0, 'g', 8);
+      } else if (currentSequence_.has_value()) {
+        setPointConvergence(std::nullopt);
+        analysisStatusText_ =
+            QStringLiteral("Sequence complete (%1 points)")
+                .arg(static_cast<qulonglong>(
+                    currentSequence_->points.size()));
+      } else {
+        finish = GuiAnalysisFinish::failed;
+        error = Error::make(ErrorCategory::internal,
+                            "gui.emptyAnalysisResult",
+                            "The analysis completed without a result",
+                            "analysis");
+      }
+    }
+
+    if (finish == GuiAnalysisFinish::cancelled) {
+      analysisOutcome_ = AnalysisOutcome::cancelled;
+      analysisStatusText_ = QStringLiteral("Cancelled");
+      appendResultDiagnostics();
+      setPointConvergence(std::nullopt);
+      refreshUi();
+      Q_EMIT owner_->analysisCancelled();
+      return;
+    }
+    if (finish == GuiAnalysisFinish::failed) {
+      analysisOutcome_ = AnalysisOutcome::error;
+      analysisStatusText_ = QStringLiteral("Analysis failed");
+      appendResultDiagnostics();
+      analysisDiagnostics_.push_back(formatError(error));
+      setPointConvergence(std::nullopt);
+      refreshUi();
+      Q_EMIT owner_->analysisFailed(error);
+      return;
+    }
+
+    refreshUi();
+  }
+
+  void appendResultDiagnostics() {
+    if (currentOperatingPoint_.has_value()) {
+      for (const Diagnostic& diagnostic :
+           currentOperatingPoint_->diagnostics) {
+        analysisDiagnostics_.push_back(formatDiagnostic(diagnostic));
+      }
+    }
+    if (currentSequence_.has_value()) {
+      for (const Diagnostic& diagnostic :
+           currentSequence_->diagnostics) {
+        analysisDiagnostics_.push_back(formatDiagnostic(diagnostic));
+      }
+    }
+  }
+
+  void updateProgress(const ProgressEvent& event) {
+    analysisStatusText_ = formatProgress(event);
+    if (event.total.has_value() && *event.total > 0) {
+      const double fraction =
+          event.fraction.has_value()
+              ? std::clamp(*event.fraction, 0.0, 1.0)
+              : std::clamp(static_cast<double>(event.completed) /
+                               static_cast<double>(*event.total),
+                           0.0, 1.0);
+      progressFraction_ = fraction;
+    } else {
+      progressFraction_.reset();
+    }
+    refreshProgressBar();
+    ui.analysisStatusLabel->setText(analysisStatusText_);
+  }
+
+  void refreshProgressBar() {
+    const bool running = tracker_.isRunning();
+    ui.analysisProgressBar->setVisible(running);
+    if (!running) {
+      ui.analysisProgressBar->setRange(0, 1);
+      ui.analysisProgressBar->setValue(0);
+      return;
+    }
+    if (progressFraction_.has_value()) {
+      ui.analysisProgressBar->setRange(0, 100);
+      ui.analysisProgressBar->setValue(
+          static_cast<int>(std::lround(*progressFraction_ * 100.0)));
+    } else {
+      ui.analysisProgressBar->setRange(0, 0);
+    }
+  }
+
+  void setPointConvergence(
+      const std::optional<OperatingPointData>& point) {
+    GuiConvergenceState state = GuiConvergenceState::noPoint;
+    if (point.has_value() && analysisOutcome_ == AnalysisOutcome::results) {
+      state = point->convergence == ConvergenceStatus::converged
+                  ? GuiConvergenceState::converged
+                  : GuiConvergenceState::notConverged;
+    }
+    const GuiConvergenceText convergence = formatConvergence(state);
+    ui.currentPointConvergenceIcon->setText(
+        QString::fromStdString(convergence.icon));
+    ui.currentPointConvergenceLabel->setText(
+        QString::fromStdString(convergence.label));
+  }
+
+  void createActions() {
+    analyzeAction_ = new QAction(QStringLiteral("Analyze"), owner_);
+    analyzeAction_->setObjectName(QStringLiteral("analyzeAction"));
+    analyzeAction_->setToolTip(
+        QStringLiteral("Starts one analysis in the widget worker."));
+    cancelAction_ = new QAction(QStringLiteral("Cancel"), owner_);
+    cancelAction_->setObjectName(QStringLiteral("cancelAction"));
+    cancelAction_->setToolTip(
+        QStringLiteral("Requests cancellation of the active analysis."));
+    QObject::connect(analyzeAction_, &QAction::triggered, owner_,
+                     [this](bool) { analyze(); });
+    QObject::connect(cancelAction_, &QAction::triggered, owner_,
+                     [this](bool) { cancel(); });
+  }
+
   void populateChoiceControls() {
     ui.geometrySourceCombo->addItem(
         QStringLiteral("Memory"),
@@ -475,6 +1065,10 @@ class XFoilWidget::Impl {
       connect(spin, &QDoubleSpinBox::valueChanged, owner_,
               [this](double) { targetFieldsChanged(); });
     }
+    QObject::connect(ui.analyzeButton, &QPushButton::clicked, owner_,
+            [this]() { analyze(); });
+    QObject::connect(ui.cancelButton, &QPushButton::clicked, owner_,
+            [this]() { cancel(); });
   }
 
   void applyGeometryFromControls() {
@@ -696,32 +1290,44 @@ class XFoilWidget::Impl {
       ui.currentPointConvergenceLabel->setText(
           QString::fromStdString(convergence.label));
     } else {
-      const GuiConvergenceText convergence =
-          formatConvergence(GuiConvergenceState::noPoint);
-      ui.currentPointConvergenceIcon->setText(
-          QString::fromStdString(convergence.icon));
-      ui.currentPointConvergenceLabel->setText(
-          QString::fromStdString(convergence.label));
+      setPointConvergence(std::nullopt);
     }
   }
 
   void refreshUi() {
-    const XFoilGuiState state = model_.state();
+    const XFoilGuiState state = this->state();
     const bool ready = model_.isReady();
+    const bool running = tracker_.isRunning();
 
     ui.workflowStateLabel->setText(
         QStringLiteral("Workflow: %1")
             .arg(QString::fromLatin1(toString(state))));
     ui.statusLabel->setText(ready ? QStringLiteral("Ready to run")
                                   : QStringLiteral("Not ready"));
+    ui.analysisStatusLabel->setText(analysisStatusText_);
 
+    QString diagnostics;
     if (model_.error().has_value()) {
-      ui.setupDiagnosticsView->setPlainText(
-          formatError(*model_.error()));
-    } else {
-      ui.setupDiagnosticsView->clear();
+      diagnostics = formatError(*model_.error());
     }
-    ui.analyzeButton->setEnabled(ready);
+    for (const QString& line : analysisDiagnostics_) {
+      if (!diagnostics.isEmpty()) {
+        diagnostics += QLatin1Char('\n');
+      }
+      diagnostics += line;
+    }
+    ui.setupDiagnosticsView->setPlainText(diagnostics);
+
+    ui.analyzeButton->setEnabled(ready && !running);
+    ui.cancelButton->setEnabled(running);
+    ui.definitionsScrollArea->setEnabled(!running);
+    if (analyzeAction_ != nullptr) {
+      analyzeAction_->setEnabled(ready && !running);
+    }
+    if (cancelAction_ != nullptr) {
+      cancelAction_->setEnabled(running);
+    }
+    refreshProgressBar();
 
     if (model_.geometry().has_value()) {
       const std::string_view name = model_.geometry()->name();
@@ -766,11 +1372,24 @@ class XFoilWidget::Impl {
 
   XFoilWidget* owner_{};
   Ui::XFoilWidget ui;
-  GuiSessionBackend backend_;
   GuiDefinitionModel model_;
   GuiResultSelectionModel selectionModel_;
   GuiResultSummary summary_;
+  QThread* thread_{nullptr};
+  GuiAnalysisWorker* worker_{nullptr};
+  GuiJobTracker tracker_;
+  QAction* analyzeAction_{nullptr};
+  QAction* cancelAction_{nullptr};
+  std::shared_ptr<CancellationToken> activeToken_;
+  std::optional<OperatingPointData> currentOperatingPoint_;
+  std::optional<DetailedSequenceResult> currentSequence_;
+  std::vector<QString> analysisDiagnostics_;
+  std::optional<double> progressFraction_;
+  AnalysisOutcome analysisOutcome_{AnalysisOutcome::none};
+  QString analysisStatusText_{QStringLiteral("Idle")};
   bool updatingControls_{false};
+  bool workerReady_{false};
+  bool shutdown_{false};
   XFoilGuiState lastState_{XFoilGuiState::empty};
   bool lastReady_{false};
 };
@@ -847,6 +1466,34 @@ XFoilGuiState XFoilWidget::state() const {
 
 bool XFoilWidget::isReadyToAnalyze() const {
   return impl_->isReadyToAnalyze();
+}
+
+void XFoilWidget::analyze() {
+  impl_->analyze();
+}
+
+void XFoilWidget::cancel() {
+  impl_->cancel();
+}
+
+bool XFoilWidget::isRunning() const {
+  return impl_->isRunning();
+}
+
+QAction* XFoilWidget::analyzeAction() {
+  return impl_->analyzeAction();
+}
+
+QAction* XFoilWidget::cancelAction() {
+  return impl_->cancelAction();
+}
+
+std::optional<OperatingPointData> XFoilWidget::currentOperatingPoint() const {
+  return impl_->currentOperatingPoint();
+}
+
+std::optional<DetailedSequenceResult> XFoilWidget::currentSequence() const {
+  return impl_->currentSequence();
 }
 
 }  // namespace xfoil::gui
