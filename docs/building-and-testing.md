@@ -53,19 +53,35 @@ The GUI targets require Qt 6.12.x. Resolve it with `QT_ROOT`, for example:
 ```sh
 QT_ROOT=/path/to/Qt/6.12.0/gcc_64 make gui
 QT_ROOT=/path/to/Qt/6.12.0/gcc_64 QT_QPA_PLATFORM=offscreen make test-gui
+QT_ROOT=/path/to/Qt/6.12.0/gcc_64 QT_QPA_PLATFORM=offscreen make gui-link-check
 ```
+
+Run the GUI targets sequentially. The current definition surface owns memory,
+NACA or NACS geometry, paneling options, an `AnalysisConfig` and exactly one
+alpha, CL or exclusive-end alpha-sequence target. It exposes an owning
+validated run snapshot for the later worker and previews the geometry contour
+and panel nodes. The GUI tests cover the definition model, the public-session
+backend boundary, host/UI bindings, state invalidation, two independent
+widgets, the plot view and the public-header link check.
+
+The definition surface performs no analysis, creates no worker, reads and
+writes no files, uses no `QSettings` and starts no standalone application.
+Result plots remain placeholders; the results panel says `No analysis results`.
+The Windows UCRT64 Qt 6.12.0/GCC 16.2.0 Rev7 development build is qualified,
+but no Windows GUI package is provided.
 
 The adapter also accepts a kit found through `pkg-config` or `qmake`. The
 build emits generated MOC/UIC files only below `build/gui/`; debug and release
 objects, and objects from different compilers or Qt kits, use separate
-directories. The GUI archive is debug or release specific and contains only the
-widget shell, generated UI object, QCustomPlot object and its meta-object. It
-does not contain core, session or CLI objects.
+directories. The GUI archive is debug or release specific and contains the
+widget shell, definition model, session backend, geometry preview, generated
+UI/meta-objects and QCustomPlot. Core, session and CLI objects remain in the
+separate public library.
 
-This is a G1 build skeleton and embeddable widget shell, not a finished GUI
-application. No GUI release package or installer is provided. A Windows
-UCRT64 Qt 6.12.0 development build is qualified, but not packaged. The
-product version remains 1.2.1.
+This is a definition/input surface, not a finished GUI application. No GUI
+release package or installer is provided. A Windows UCRT64 Qt 6.12.0
+development build is qualified, but not packaged. The product version remains
+1.2.1.
 
 Binaries land under `build/<mode>/`; libraries land under
 `build/<mode>/lib/`. The library archive contains the core, session and

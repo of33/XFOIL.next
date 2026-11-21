@@ -26,15 +26,19 @@
 // tests for the public XFoilWidget shell.
 
 #include <QApplication>
+#include <QComboBox>
 #include <QCoreApplication>
 #include <QDir>
 #include <QFrame>
+#include <QGroupBox>
 #include <QGuiApplication>
 #include <QLabel>
 #include <QLocale>
 #include <QMainWindow>
 #include <QPalette>
 #include <QPointer>
+#include <QRegularExpression>
+#include <QSpinBox>
 #include <QSplitter>
 #include <QStringList>
 #include <QTabWidget>
@@ -42,6 +46,7 @@
 #include <QWidget>
 #include <QtTest/QTest>
 
+#include "plots/GeometryPlotView.h"
 #include "xfoil/gui/XFoilWidget.h"
 
 namespace {
@@ -112,12 +117,19 @@ class XFoilWidgetShellTests : public QObject {
     QVERIFY(widget.findChild<QFrame*>("resultsPanel") != nullptr);
     QVERIFY(widget.findChild<QFrame*>("statusFrame") != nullptr);
 
-    QVERIFY(widget.findChild<QLabel*>("definitionsPlaceholder") != nullptr);
-    QVERIFY(widget.findChild<QLabel*>("geometryPlaceholder") != nullptr);
+    QVERIFY(widget.findChild<QGroupBox*>("geometryGroup") != nullptr);
+    QVERIFY(widget.findChild<QGroupBox*>("panelingGroup") != nullptr);
+    QVERIFY(widget.findChild<QGroupBox*>("operatingGroup") != nullptr);
+    QVERIFY(widget.findChild<QGroupBox*>("targetGroup") != nullptr);
+    QVERIFY(widget.findChild<QLabel*>("definitionsPlaceholder") == nullptr);
+    QVERIFY(widget.findChild<QLabel*>("geometryPlaceholder") == nullptr);
+    QVERIFY(widget.findChild<QWidget*>("geometryPlot") != nullptr);
     QVERIFY(widget.findChild<QLabel*>("cpPlaceholder") != nullptr);
     QVERIFY(widget.findChild<QLabel*>("cfPlaceholder") != nullptr);
     QVERIFY(widget.findChild<QLabel*>("polarPlaceholder") != nullptr);
     QVERIFY(widget.findChild<QLabel*>("resultsPlaceholder") != nullptr);
+    QCOMPARE(widget.findChild<QLabel*>("resultsPlaceholder")->text(),
+             QStringLiteral("No analysis results"));
     QVERIFY(widget.findChild<QLabel*>("diagnosticsPlaceholder") != nullptr);
     QVERIFY(widget.findChild<QLabel*>("statusLabel") != nullptr);
 
@@ -128,6 +140,64 @@ class XFoilWidgetShellTests : public QObject {
     QCOMPARE(tabs->widget(1), widget.findChild<QWidget*>("cpPage"));
     QCOMPARE(tabs->widget(2), widget.findChild<QWidget*>("cfPage"));
     QCOMPARE(tabs->widget(3), widget.findChild<QWidget*>("polarPage"));
+  }
+
+
+  void g2StructureUsesSemanticNamesAndPromotedPlot() {
+    XFoilWidget widget;
+    const QStringList required = {
+        QStringLiteral("geometrySourceCombo"),
+        QStringLiteral("nacaDesignationEdit"),
+        QStringLiteral("applyGeometryButton"),
+        QStringLiteral("panelCountSpin"),
+        QStringLiteral("bunchingSpin"),
+        QStringLiteral("teToLeSpin"),
+        QStringLiteral("refinementSpin"),
+        QStringLiteral("showPanelNodesCheck"),
+        QStringLiteral("generatePanelButton"),
+        QStringLiteral("reynoldsSpin"),
+        QStringLiteral("machSpin"),
+        QStringLiteral("viscousCheck"),
+        QStringLiteral("iterationsSpin"),
+        QStringLiteral("ncritSpin"),
+        QStringLiteral("xtrUpperSpin"),
+        QStringLiteral("xtrLowerSpin"),
+        QStringLiteral("targetModeCombo"),
+        QStringLiteral("alphaTargetSpin"),
+        QStringLiteral("clTargetSpin"),
+        QStringLiteral("sequenceStartSpin"),
+        QStringLiteral("sequenceEndSpin"),
+        QStringLiteral("sequenceStepSpin"),
+        QStringLiteral("geometryPlot"),
+        QStringLiteral("resultsPanel"),
+        QStringLiteral("statusFrame"),
+        QStringLiteral("validationLabel"),
+    };
+    for (const QString& name : required) {
+      QVERIFY2(widget.findChild<QWidget*>(name) != nullptr,
+               qPrintable(name));
+    }
+
+    auto* plotWidget = widget.findChild<QWidget*>("geometryPlot");
+    QVERIFY(plotWidget != nullptr);
+    auto* plot = dynamic_cast<xfoil::gui::GeometryPlotView*>(plotWidget);
+    QVERIFY(plot != nullptr);
+    QCOMPARE(plot->objectName(), QStringLiteral("geometryPlot"));
+
+    const QRegularExpression generic(
+        QStringLiteral("^(frame|label|groupBox|widget|layoutWidget)_?\\d+$"));
+    for (QWidget* child : widget.findChildren<QWidget*>()) {
+      const QString name = child->objectName();
+      QVERIFY2(!generic.match(name).hasMatch(), qPrintable(name));
+    }
+
+    QVERIFY(!widget.findChild<QComboBox*>(
+                 QStringLiteral("geometrySourceCombo"))
+                 ->accessibleName()
+                 .isEmpty());
+    QVERIFY(!widget.findChild<QSpinBox*>(QStringLiteral("panelCountSpin"))
+                 ->toolTip()
+                 .isEmpty());
   }
 
   void parentOwnershipIsQtManaged() {

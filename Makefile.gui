@@ -107,7 +107,7 @@ QT_DEFINES := \
 	-DQT_WIDGETS_LIB \
 	-DQT_PRINTSUPPORT_LIB \
 	-DQT_TESTLIB_LIB
-GUI_INCLUDES := -I. -Iinclude -Isrc -I$(GUI_GEN_DIR) $(QT_SYSTEM_INCLUDES)
+GUI_INCLUDES := -I. -Iinclude -Isrc -Isrc/gui -I$(GUI_GEN_DIR) $(QT_SYSTEM_INCLUDES)
 GUI_FLAGS := $(CXXSTD) $(GUI_INCLUDES) $(QT_DEFINES) $(GUI_WARNINGS) \
 	$(GUI_MODE_FLAGS) -fPIC
 GUI_MOC_FLAGS := $(QT_DEFINES) -Iinclude $(QT_MOC_INCLUDES)
@@ -125,12 +125,19 @@ GUI_ARCHIVE := $(GUI_LIB_DIR)/$(GUI_VARIANT)/libxfoil_next_gui.a
 GUI_ARCHIVE_OBJS := \
 	$(GUI_OBJ_DIR)/XFoilWidget.o \
 	$(GUI_OBJ_DIR)/moc_XFoilWidget.o \
+	$(GUI_OBJ_DIR)/model/GuiDefinitionModel.o \
+	$(GUI_OBJ_DIR)/backend/GuiSessionBackend.o \
+	$(GUI_OBJ_DIR)/plots/GeometryPlotView.o \
 	$(GUI_OBJ_DIR)/moc_qcustomplot.o \
 	$(GUI_OBJ_DIR)/qcustomplot.o
 GUI_TEST_BIN := $(GUI_TEST_DIR)/$(GUI_VARIANT)/xfoil_gui_tests
 GUI_TEST_OBJS := \
 	$(GUI_OBJ_DIR)/tests/GuiTestMain.o \
 	$(GUI_OBJ_DIR)/tests/QCustomPlotSmoke.o \
+	$(GUI_OBJ_DIR)/tests/GeometryPlotViewTests.o \
+	$(GUI_OBJ_DIR)/tests/GuiDefinitionModelTests.o \
+	$(GUI_OBJ_DIR)/tests/GuiSessionBackendTests.o \
+	$(GUI_OBJ_DIR)/tests/XFoilWidgetG2Tests.o \
 	$(GUI_OBJ_DIR)/tests/XFoilWidgetShellTests.o
 GUI_LINKCHECK := $(GUI_TEST_DIR)/$(GUI_VARIANT)/gui-link-check
 CORE_LIBRARY := $(CORE_BUILDROOT)/$(GUI_MODE)/lib/libxfoil_next.a
@@ -222,6 +229,25 @@ $(GUI_OBJ_DIR)/XFoilWidget.o: src/gui/XFoilWidget.cpp \
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
 
+$(GUI_OBJ_DIR)/model/GuiDefinitionModel.o: \
+		src/gui/model/GuiDefinitionModel.cpp \
+		src/gui/model/GuiDefinitionModel.h \
+		src/gui/model/GuiRunSpec.h | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/backend/GuiSessionBackend.o: \
+		src/gui/backend/GuiSessionBackend.cpp \
+		src/gui/backend/GuiSessionBackend.h | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/plots/GeometryPlotView.o: \
+		src/gui/plots/GeometryPlotView.cpp \
+		src/gui/plots/GeometryPlotView.h | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
+
 $(GUI_OBJ_DIR)/moc_XFoilWidget.o: $(GUI_GEN_DIR)/moc_XFoilWidget.cpp | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
@@ -243,6 +269,30 @@ $(GUI_OBJ_DIR)/tests/QCustomPlotSmoke.o: tests/gui/QCustomPlotSmoke.cpp \
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
 
+$(GUI_OBJ_DIR)/tests/GeometryPlotViewTests.o: \
+		tests/gui/GeometryPlotViewTests.cpp \
+		$(GUI_GEN_DIR)/GeometryPlotViewTests.moc | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/tests/GuiDefinitionModelTests.o: \
+		tests/gui/GuiDefinitionModelTests.cpp \
+		$(GUI_GEN_DIR)/GuiDefinitionModelTests.moc | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/tests/GuiSessionBackendTests.o: \
+		tests/gui/GuiSessionBackendTests.cpp \
+		$(GUI_GEN_DIR)/GuiSessionBackendTests.moc | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/tests/XFoilWidgetG2Tests.o: \
+		tests/gui/XFoilWidgetG2Tests.cpp \
+		$(GUI_GEN_DIR)/XFoilWidgetG2Tests.moc | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
 $(GUI_OBJ_DIR)/tests/XFoilWidgetShellTests.o: \
 		tests/gui/XFoilWidgetShellTests.cpp \
 		$(GUI_GEN_DIR)/XFoilWidgetShellTests.moc | $(GUI_STAMP)
@@ -258,7 +308,7 @@ $(GUI_ARCHIVE): $(GUI_ARCHIVE_OBJS)
 	rm -f $@
 	$(AR) rcs $@ $(GUI_ARCHIVE_OBJS)
 
-$(GUI_TEST_BIN): $(GUI_TEST_OBJS) $(GUI_ARCHIVE)
+$(GUI_TEST_BIN): $(GUI_TEST_OBJS) $(GUI_ARCHIVE) $(CORE_LIBRARY)
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXSTD) $(GUI_MODE_FLAGS) $^ $(GUI_TEST_LIBS) -o $@
 

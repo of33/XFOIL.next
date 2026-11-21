@@ -22,16 +22,28 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // File: include/xfoil/gui/XFoilWidget.h
-// Minimal public embeddable GUI shell. G1 exposes layout only: no session,
-// solver, worker, file I/O or application object is owned by the widget.
+// Public embeddable GUI definition surface. G2 validates and snapshots
+// memory/NACA/NACS geometry, paneling, analysis configuration and one
+// target. It performs no analysis, file I/O or application startup.
 
 #pragma once
 
 #include <memory>
+#include <optional>
+#include <string_view>
 
+#include <QMetaType>
 #include <QWidget>
 
+#include "xfoil/AnalysisConfig.h"
+#include "xfoil/AnalysisData.h"
+#include "xfoil/AnalysisRequest.h"
+#include "xfoil/Result.h"
+#include "xfoil/Session.h"
+#include "xfoil/SessionOptions.h"
+#include "xfoil/geometry/AirfoilGeometry.h"
 #include "xfoil/gui/Export.h"
+#include "xfoil/gui/GuiState.h"
 
 namespace xfoil::gui {
 
@@ -47,11 +59,54 @@ class XFOIL_GUI_API XFoilWidget : public QWidget {
   XFoilWidget(XFoilWidget&&) = delete;
   XFoilWidget& operator=(XFoilWidget&&) = delete;
 
+  [[nodiscard]]
+  Result<void> setGeometry(const geometry::AirfoilGeometry& geometry);
+  [[nodiscard]]
+  Result<void> setNaca(std::string_view designation);
+  [[nodiscard]]
+  Result<void> setNacs(std::string_view designation);
+
+  void setPanelingOptions(const PanelingOptions& options);
+  [[nodiscard]]
+  Result<SurfaceGeometry> generatePanel(const PanelingOptions& options);
+  [[nodiscard]]
+  Result<void> setConfiguration(const AnalysisConfig& configuration);
+
+  void setTarget(const AnalysisTarget& target);
+  void setSequence(const AlphaSequence& sequence);
+
+  [[nodiscard]]
+  std::optional<geometry::AirfoilGeometry> geometry() const;
+  [[nodiscard]]
+  std::optional<SurfaceGeometry> panelGeometry() const;
+  [[nodiscard]]
+  PanelingOptions panelingOptions() const;
+  [[nodiscard]]
+  AnalysisConfig configuration() const;
+  [[nodiscard]]
+  AnalysisTarget target() const;
+  [[nodiscard]]
+  AlphaSequence sequence() const;
+  [[nodiscard]]
+  XFoilGuiState state() const;
+  [[nodiscard]]
+  bool isReadyToAnalyze() const;
+
+ signals:
+  void geometryChanged();
+  void panelingChanged();
+  void configurationChanged();
+  void targetChanged();
+  void stateChanged(XFoilGuiState state);
+  void validationChanged(bool valid);
+
  private:
   class Impl;
   std::unique_ptr<Impl> impl_;
 };
 
 }  // namespace xfoil::gui
+
+Q_DECLARE_METATYPE(xfoil::gui::XFoilGuiState)
 
 // End: include/xfoil/gui/XFoilWidget.h

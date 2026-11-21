@@ -25,6 +25,8 @@
 // Minimal external consumer: public GUI header and archives only, one
 // host widget, one embeddable widget, no event loop.
 
+#include <variant>
+
 #include <QApplication>
 #include <QVBoxLayout>
 #include <QWidget>
@@ -41,6 +43,37 @@ int main(int argc, char** argv) {
 
   if (widget->parentWidget() != &host || layout->count() != 1) {
     return 1;
+  }
+  if (!widget->setNaca("2412").isOk()) {
+    return 2;
+  }
+  if (!widget->generatePanel(xfoil::PanelingOptions{}).isOk()) {
+    return 3;
+  }
+  if (!widget->setConfiguration(xfoil::AnalysisConfig{}).isOk()) {
+    return 4;
+  }
+  widget->setTarget(xfoil::LiftTarget{0.5});
+  if (!std::holds_alternative<xfoil::LiftTarget>(widget->target())) {
+    return 5;
+  }
+  if (!widget->isReadyToAnalyze()) {
+    return 6;
+  }
+
+  xfoil::AlphaSequence sequence;
+  sequence.start = xfoil::Degrees{-2.0};
+  sequence.endExclusive = xfoil::Degrees{2.0};
+  sequence.step = xfoil::Degrees{1.0};
+  widget->setSequence(sequence);
+  if (widget->sequence().endExclusive.value != 2.0 ||
+      !widget->isReadyToAnalyze()) {
+    return 7;
+  }
+
+  if (!widget->geometry().has_value() ||
+      !widget->panelGeometry().has_value()) {
+    return 8;
   }
 
   QCoreApplication::processEvents();

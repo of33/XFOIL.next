@@ -22,7 +22,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Non-mutating G1 GUI dependency, boundary and vendoring gate.
+"""Non-mutating GUI dependency, boundary and vendoring gate.
 
 Checks:
   - public GUI headers use only the permitted Qt/public-include surface;
@@ -80,7 +80,17 @@ PUBLIC_ALLOWED_EXACT = {
     "QRect",
     "QRectF",
     "QMetaObject",
+    "QMetaType",
     "QtGlobal",
+    "optional",
+    "string_view",
+    "xfoil/AnalysisConfig.h",
+    "xfoil/AnalysisData.h",
+    "xfoil/AnalysisRequest.h",
+    "xfoil/Result.h",
+    "xfoil/Session.h",
+    "xfoil/SessionOptions.h",
+    "xfoil/geometry/AirfoilGeometry.h",
 }
 PUBLIC_ALLOWED_PREFIXES = (
     "QtCore/",
@@ -93,7 +103,6 @@ PUBLIC_FORBIDDEN_PREFIXES = (
     "xfoil/core/",
     "xfoil/io/",
     "xfoil/XFoil.h",
-    "xfoil/Session.h",
     "xfoil/XFoilSession.h",
     "src/",
     "app/",
@@ -122,6 +131,13 @@ SOURCE_FORBIDDEN_TEXT = (
     "std::ifstream",
     "std::ofstream",
 )
+
+SESSION_ALLOWED_SOURCES = {
+    "src/gui/backend/GuiSessionBackend.cpp",
+    "src/gui/backend/GuiSessionBackend.h",
+    "src/gui/model/GuiDefinitionModel.h",
+    "src/gui/model/GuiRunSpec.h",
+}
 
 INCLUDE_RE = re.compile(r'^\s*#\s*include\s*[<"]([^>"]+)[>"]')
 INTERNAL_PATH_RE = re.compile(
@@ -197,9 +213,12 @@ def check_sources(root, failures):
             rel = rel_dir + "/" + name
             text = read_text(os.path.join(root, rel))
             for token in SOURCE_FORBIDDEN_TEXT:
-                if token in text:
-                    failures.append("%s: forbidden GUI source token: %s"
-                                    % (rel, token))
+                if token not in text:
+                    continue
+                if token == "xfoil/Session.h" and rel in SESSION_ALLOWED_SOURCES:
+                    continue
+                failures.append("%s: forbidden GUI source token: %s"
+                                % (rel, token))
             for target in includes(text):
                 if ABSOLUTE_INCLUDE_RE.match(target):
                     failures.append("%s: absolute source include: %s"

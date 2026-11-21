@@ -129,8 +129,10 @@ report:
 Plotting is not available in this build.
 ```
 
-An optional Qt 6.12.x GUI build skeleton now exists, but it is not a finished
-application and does not change the CLI plotting contract. The numerical,
+An optional Qt 6.12.x GUI definition surface now exists, but it is not a
+finished application and does not change the CLI plotting contract. It owns a
+geometry/paneling/operating/target definition and an offscreen-checked
+geometry and panel preview. It does not run an analysis yet. The numerical,
 textual, and file-related parts of mixed commands are kept.
 This is a port of XFOIL, not an independent re-derivation of the
 solver, and it is not a bit-identical reproduction of every Fortran build
@@ -169,18 +171,24 @@ make library-demo                 # standalone staged-library demo
 make test-library-demo            # demo integration tests
 ```
 
-Optional GUI skeleton build (Qt 6.12.x, Linux):
+Optional GUI definition surface build (Qt 6.12.x, Linux):
 
 ```sh
 QT_ROOT=/path/to/Qt/6.12.0/gcc_64 make gui
 QT_ROOT=/path/to/Qt/6.12.0/gcc_64 make test-gui
+QT_ROOT=/path/to/Qt/6.12.0/gcc_64 make gui-link-check
 ```
 
-This is a build skeleton and embeddable widget shell, not a finished GUI
-application. It has no GUI release asset. The Windows UCRT64 Qt 6.12.0
-development build is qualified, but no Windows GUI package is provided. See
-[building and testing](docs/building-and-testing.md) for the complete target
-list, compiler requirements, and validation checks.
+Run the GUI targets sequentially. The embeddable `xfoil::gui::XFoilWidget`
+accepts memory, NACA and NACS geometry, paneling options, an `AnalysisConfig`
+and an alpha/CL/alpha-sequence target. It validates through the public
+`xfoil::Session` setup methods, exposes an owning run snapshot for the future
+worker, and previews geometry and panel nodes with QCustomPlot. There is no
+analysis execution, worker, result panel data, standalone main window, file
+dialog, QSettings or import/export adapter. It has no GUI release asset. The
+Windows UCRT64 Qt 6.12.0 development build is qualified, but no Windows GUI
+package is provided. See [building and testing](docs/building-and-testing.md)
+for the complete target list, compiler requirements, and validation checks.
 
 ## Portable runtime executables
 
