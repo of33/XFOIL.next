@@ -82,6 +82,25 @@ QCPCurve* curve(QCustomPlot* plot, const char* name) {
   return value;
 }
 
+void verifySelectedRedFilled(QCPGraph* marker) {
+  QVERIFY(marker != nullptr);
+  QCOMPARE(marker->scatterStyle().shape(), QCPScatterStyle::ssDisc);
+  QCOMPARE(marker->scatterStyle().pen().color(), QColor(205, 45, 45));
+  QCOMPARE(marker->scatterStyle().brush().color(), QColor(205, 45, 45));
+  QVERIFY(marker->visible());
+}
+
+bool markerDataContains(QCPGraph* marker, double key, double value) {
+  const auto data = marker->data();
+  for (auto iterator = data->constBegin(); iterator != data->constEnd();
+       ++iterator) {
+    if (iterator->key == key && iterator->value == value) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void sendMouse(QWidget* widget, QEvent::Type type, const QPoint& position,
                Qt::MouseButton button, Qt::MouseButtons buttons,
                Qt::KeyboardModifiers modifiers = Qt::NoModifier) {
@@ -132,12 +151,10 @@ class GuiScalarPlotTests : public QObject {
     QCPGraph* selected = graph(plot, "selectedMarker");
     QCOMPARE(unselected->scatterStyle().shape(), QCPScatterStyle::ssCircle);
     QCOMPARE(unselected->scatterStyle().brush().style(), Qt::NoBrush);
-    QCOMPARE(selected->scatterStyle().shape(), QCPScatterStyle::ssDisc);
-    QCOMPARE(selected->scatterStyle().brush().color(),
-             QColor(205, 45, 45));
+    verifySelectedRedFilled(selected);
   }
 
-  void selectedNcIsVisibleAndUsesDashedNeighbors() {
+  void selectedNcIsRedFilledAndUsesDashedNeighbors() {
     ScalarPlotView view;
     view.setKind(GuiScalarPlotKind::clAlpha);
     view.resize(640, 480);
@@ -156,20 +173,24 @@ class GuiScalarPlotTests : public QObject {
     QCustomPlot* plot = canvas(view);
     QCOMPARE(curve(plot, "solidBefore")->dataCount(), 1);
     QCOMPARE(curve(plot, "solidAfter")->dataCount(), 1);
+    QCPCurve* dashed = curve(plot, "ncDashed");
+    QCOMPARE(dashed->pen().style(), Qt::DashLine);
+    QVERIFY(dashed->visible());
     QCPGraph* selected = graph(plot, "selectedMarker");
-    QCOMPARE(selected->scatterStyle().shape(), QCPScatterStyle::ssCircle);
-    QCOMPARE(selected->scatterStyle().brush().style(), Qt::NoBrush);
+    verifySelectedRedFilled(selected);
 
     view.setPoints(points, std::size_t{0}, false);
     QCOMPARE(view.visiblePointCount(), std::size_t{2});
     QCOMPARE(view.solidPointCount(), std::size_t{2});
     QCOMPARE(view.dashedPointCount(), std::size_t{0});
+    QVERIFY(!dashed->visible());
     QCOMPARE(curve(plot, "solidBefore")->dataCount(), 2);
     QCOMPARE(curve(plot, "solidAfter")->dataCount(), 0);
     QCOMPARE(view.unselectedMarkerCount(), std::size_t{1});
     QCOMPARE(view.selectedMarkerCount(), std::size_t{1});
-    QCOMPARE(graph(plot, "selectedMarker")->scatterStyle().shape(),
-             QCPScatterStyle::ssDisc);
+    verifySelectedRedFilled(graph(plot, "selectedMarker"));
+    QVERIFY(!markerDataContains(graph(plot, "unselectedMarkers"),
+                                1.0, 0.8));
   }
 
   void selectedNcAppearsInEveryScalarKind() {
@@ -189,11 +210,17 @@ class GuiScalarPlotTests : public QObject {
       view.setPoints(points, std::size_t{1}, true);
       QCOMPARE(view.visiblePointCount(), std::size_t{3});
       QCOMPARE(view.dashedPointCount(), std::size_t{3});
+      QCOMPARE(view.unselectedMarkerCount(), std::size_t{2});
       QCOMPARE(view.selectedMarkerCount(), std::size_t{1});
-      QCOMPARE(graph(canvas(view), "selectedMarker")
-                   ->scatterStyle()
-                   .shape(),
-               QCPScatterStyle::ssCircle);
+      verifySelectedRedFilled(graph(canvas(view), "selectedMarker"));
+
+      view.setPoints(points, std::size_t{0}, false);
+      QCOMPARE(view.visiblePointCount(), std::size_t{2});
+      QCOMPARE(view.solidPointCount(), std::size_t{2});
+      QCOMPARE(view.dashedPointCount(), std::size_t{0});
+      QCOMPARE(view.unselectedMarkerCount(), std::size_t{1});
+      QCOMPARE(view.selectedMarkerCount(), std::size_t{1});
+      verifySelectedRedFilled(graph(canvas(view), "selectedMarker"));
     }
   }
 

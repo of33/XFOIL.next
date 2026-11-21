@@ -58,11 +58,6 @@ QCPScatterStyle filledCircle() {
                          kSelectedColor, 7.0);
 }
 
-QCPScatterStyle outlinedSelectedCircle() {
-  return QCPScatterStyle(QCPScatterStyle::ssCircle,
-                         QPen(kSelectedColor, 1.6), Qt::NoBrush, 7.0);
-}
-
 struct CurvePoint {
   double t{};
   double x{};
@@ -367,9 +362,7 @@ void ScalarPlotView::updateGraphs() {
     }
   }
 
-  selectedMarker_->setScatterStyle(selectedNotConverged
-                                      ? outlinedSelectedCircle()
-                                      : filledCircle());
+  selectedMarker_->setScatterStyle(filledCircle());
   setCurveData(solidBefore_, before);
   setCurveData(solidAfter_, after);
   setCurveData(dashed_, dashed);
