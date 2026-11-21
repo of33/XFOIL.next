@@ -69,7 +69,7 @@ void reportFailure(const std::string& message) {
 TEST(regression, PaccDumpByteParityMatchesXfoil6996S12Target) {
   const char* configuredPath = std::getenv("XFOIL_CLI_PATH");
   const std::string program =
-      configuredPath != nullptr ? configuredPath : "build/debug/xfoil.next";
+      configuredPath != nullptr ? configuredPath : "bin/debug/xfoil.next";
 
  // Own, unique test directory per run; the
   // case artifacts lie collision-free and are removed by RAII.

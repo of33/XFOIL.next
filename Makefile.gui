@@ -31,9 +31,23 @@ AR ?= ar
 
 CXXSTD := -std=c++20 -pthread
 BUILDROOT ?= build
+BINROOT ?= bin
 GUI_BUILDROOT ?= $(BUILDROOT)/gui
 GUI_MODE ?= debug
 CORE_BUILDROOT ?= $(BUILDROOT)
+
+# Reserved canonical product paths for the future GUI executable. G2c does
+# not build or create either file; the GUI archive and tests stay below
+# build/gui/. G5 will link these reserved names from the GUI archive.
+ifeq ($(OS),Windows_NT)
+GUI_EXE_SUFFIX := .exe
+else ifneq (,$(filter Msys Cygwin,$(shell uname -o 2>/dev/null)))
+GUI_EXE_SUFFIX := .exe
+else
+GUI_EXE_SUFFIX :=
+endif
+GUI_DEBUG_EXE := $(BINROOT)/debug/xfoil.next-gui$(GUI_EXE_SUFFIX)
+GUI_RELEASE_EXE := $(BINROOT)/release/xfoil.next-gui$(GUI_EXE_SUFFIX)
 
 GUI_TOOLCHAIN := $(shell printf '%s' "$(CXX)" | md5sum | cut -c1-8)
 QT_ROOT ?=
@@ -53,11 +67,32 @@ ifeq ($(strip $(QT_VERSION)),)
 QT_VERSION := $(shell sed -n 's/^#define QTCORE_VERSION_STR "\([^"]*\)"/\1/p' \
 	$(QT_ROOT)/include/QtCore/qtcoreversion.h 2>/dev/null)
 endif
+QT_INCLUDE_DIR := $(shell $(QT_QMAKE) -query QT_INSTALL_HEADERS 2>/dev/null)
+QT_LIB_DIR := $(shell $(QT_QMAKE) -query QT_INSTALL_LIBS 2>/dev/null)
+QT_PLUGIN_DIR := $(shell $(QT_QMAKE) -query QT_INSTALL_PLUGINS 2>/dev/null)
+QT_LIBEXECS := $(shell $(QT_QMAKE) -query QT_INSTALL_LIBEXECS 2>/dev/null)
+QT_HOST_BINS := $(shell $(QT_QMAKE) -query QT_HOST_BINS 2>/dev/null)
+ifeq ($(strip $(QT_INCLUDE_DIR)),)
 QT_INCLUDE_DIR := $(QT_ROOT)/include
+endif
+ifeq ($(strip $(QT_LIB_DIR)),)
 QT_LIB_DIR := $(QT_ROOT)/lib
+endif
+ifeq ($(strip $(QT_PLUGIN_DIR)),)
 QT_PLUGIN_DIR := $(QT_ROOT)/plugins
-QT_MOC := $(firstword $(wildcard $(QT_ROOT)/libexec/moc $(QT_ROOT)/bin/moc))
-QT_UIC := $(firstword $(wildcard $(QT_ROOT)/libexec/uic $(QT_ROOT)/bin/uic))
+endif
+QT_MOC := $(firstword $(wildcard \
+	$(QT_LIBEXECS)/moc $(QT_LIBEXECS)/moc.exe \
+	$(QT_HOST_BINS)/moc $(QT_HOST_BINS)/moc.exe \
+	$(QT_ROOT)/libexec/moc $(QT_ROOT)/bin/moc \
+	$(QT_ROOT)/libexec/moc.exe $(QT_ROOT)/bin/moc.exe \
+	$(QT_ROOT)/share/qt6/bin/moc.exe))
+QT_UIC := $(firstword $(wildcard \
+	$(QT_LIBEXECS)/uic $(QT_LIBEXECS)/uic.exe \
+	$(QT_HOST_BINS)/uic $(QT_HOST_BINS)/uic.exe \
+	$(QT_ROOT)/libexec/uic $(QT_ROOT)/bin/uic \
+	$(QT_ROOT)/libexec/uic.exe $(QT_ROOT)/bin/uic.exe \
+	$(QT_ROOT)/share/qt6/bin/uic.exe))
 QT_KIT_TAG := $(shell printf '%s' "$(QT_ROOT)" | md5sum | cut -c1-8)
 GUI_VARIANT := $(GUI_TOOLCHAIN)-$(QT_KIT_TAG)
 
@@ -88,12 +123,12 @@ GUI_WARNINGS := \
 	-Werror
 
 QT_SYSTEM_INCLUDES := \
-	-isystem$(QT_INCLUDE_DIR) \
-	-isystem$(QT_INCLUDE_DIR)/QtCore \
-	-isystem$(QT_INCLUDE_DIR)/QtGui \
-	-isystem$(QT_INCLUDE_DIR)/QtWidgets \
-	-isystem$(QT_INCLUDE_DIR)/QtPrintSupport \
-	-isystem$(QT_INCLUDE_DIR)/QtTest
+	-isystem $(QT_INCLUDE_DIR) \
+	-isystem $(QT_INCLUDE_DIR)/QtCore \
+	-isystem $(QT_INCLUDE_DIR)/QtGui \
+	-isystem $(QT_INCLUDE_DIR)/QtWidgets \
+	-isystem $(QT_INCLUDE_DIR)/QtPrintSupport \
+	-isystem $(QT_INCLUDE_DIR)/QtTest
 QT_MOC_INCLUDES := \
 	-I$(QT_INCLUDE_DIR) \
 	-I$(QT_INCLUDE_DIR)/QtCore \
@@ -134,7 +169,7 @@ GUI_ARCHIVE_OBJS := \
 	$(GUI_OBJ_DIR)/plots/ResultPlotView.o \
 	$(GUI_OBJ_DIR)/moc_qcustomplot.o \
 	$(GUI_OBJ_DIR)/qcustomplot.o
-GUI_TEST_BIN := $(GUI_TEST_DIR)/$(GUI_VARIANT)/xfoil_gui_tests
+GUI_TEST_BIN := $(GUI_TEST_DIR)/$(GUI_VARIANT)/xfoil_gui_tests$(GUI_EXE_SUFFIX)
 GUI_TEST_OBJS := \
 	$(GUI_OBJ_DIR)/tests/GuiTestMain.o \
 	$(GUI_OBJ_DIR)/tests/QCustomPlotSmoke.o \
@@ -146,8 +181,13 @@ GUI_TEST_OBJS := \
 	$(GUI_OBJ_DIR)/tests/GuiSessionBackendTests.o \
 	$(GUI_OBJ_DIR)/tests/XFoilWidgetG2Tests.o \
 	$(GUI_OBJ_DIR)/tests/XFoilWidgetShellTests.o
-GUI_LINKCHECK := $(GUI_TEST_DIR)/$(GUI_VARIANT)/gui-link-check
-CORE_LIBRARY := $(CORE_BUILDROOT)/$(GUI_MODE)/lib/libxfoil_next.a
+GUI_LINKCHECK := $(GUI_TEST_DIR)/$(GUI_VARIANT)/gui-link-check$(GUI_EXE_SUFFIX)
+ifeq ($(GUI_EXE_SUFFIX),.exe)
+CORE_STATIC_NAME := libxfoil_next_static.a
+else
+CORE_STATIC_NAME := libxfoil_next.a
+endif
+CORE_LIBRARY := $(CORE_BUILDROOT)/$(GUI_MODE)/lib/$(CORE_STATIC_NAME)
 
 .PHONY: all gui gui-debug gui-release test-gui gui-qcustomplot-check \
 	gui-link-check clean check-gui-dependencies
@@ -209,8 +249,11 @@ $(GUI_STAMP):
 				echo "ERROR: missing Qt module: $$module"; exit 1; }; \
 		done; \
 		for lib in Qt6Core Qt6Gui Qt6Widgets Qt6PrintSupport Qt6Test; do \
-			ls "$(QT_LIB_DIR)"/lib$$lib.so* >/dev/null 2>&1 || { \
-				echo "ERROR: missing Qt library: $$lib"; exit 1; }; \
+			if ls "$(QT_LIB_DIR)"/lib$$lib.so* >/dev/null 2>&1 \
+			   || test -f "$(QT_LIB_DIR)/lib$$lib.dll.a"; then :; \
+			else \
+				echo "ERROR: missing Qt library: $$lib"; exit 1; \
+			fi; \
 		done; \
 		printf 'QT_ROOT=%s\nQT_VERSION=%s\n' \
 			"$(QT_ROOT)" "$(QT_VERSION)" > "$@"

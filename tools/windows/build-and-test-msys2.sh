@@ -36,8 +36,8 @@
 #
 # Expected suite totals are verified as final result lines, not only
 # via exit codes:
-#   core 465, unit 1868, integration 343, regression 5, batch 47,
-#   full suite 2266, PACC diagnostic 1.
+#   core 465, unit 1871, integration 351, regression 5, batch 47,
+#   full suite 2277, PACC diagnostic 1.
 #
 # Usage (normally invoked by the .bat entry point):
 #   build-and-test-msys2.sh <log-dir-outside-repo> <repo-dir>
@@ -95,11 +95,11 @@ mkdir "$LOGDIR" || exit 1
 cd "$REPO" || exit 1
 
 CORE_TOTAL=465
-UNIT_TOTAL=1868
-INTEGRATION_TOTAL=343
+UNIT_TOTAL=1871
+INTEGRATION_TOTAL=351
 REGRESSION_TOTAL=5
 BATCH_TOTAL=47
-FULL_TOTAL=2266
+FULL_TOTAL=2277
 PACC_TOTAL=1
 
 SUMMARY="$LOGDIR/50-summary.txt"
@@ -270,7 +270,7 @@ if [ "$BUILD_RC" = PASS ]; then
     "0 failure(s) in $BATCH_TOTAL test(s)" make test-batch || true
 
   # Release full suite against the release product binary.
-  CLI_RELEASE=$(exe build/release/xfoil.next)
+  CLI_RELEASE=$(exe bin/release/xfoil.next)
   RUNNER_RELEASE=$(exe build/release/xfoil_tests)
   step "release full suite" "$LOGDIR/30-release-full.txt" \
     "0 failure(s) in $FULL_TOTAL test(s)" \
@@ -278,7 +278,7 @@ if [ "$BUILD_RC" = PASS ]; then
 
   # Focused PACC dump diagnostic: XFOIL_DUMP_DIAG=1 only lifts report
   # sample caps; the test verdict must stay green.
-  CLI_DEBUG=$(exe build/debug/xfoil.next)
+  CLI_DEBUG=$(exe bin/debug/xfoil.next)
   RUNNER_DEBUG=$(exe build/debug/xfoil_tests)
   step "PACC diagnostic" "$LOGDIR/31-pacc-diagnostic.txt" \
     "0 failure(s) in $PACC_TOTAL test(s)" \
@@ -286,17 +286,18 @@ if [ "$BUILD_RC" = PASS ]; then
       "./$RUNNER_DEBUG" regression.PaccDumpByteParityMatchesXfoil6996S12Target || true
 
   # Binary contract (debug and release). On Windows the product binary
-  # is xfoil.next.exe; xfoil.exe must never exist.
+  # is bin/<mode>/xfoil.next.exe; xfoil.exe must never exist and the old
+  # build/<mode> product path must be absent.
   BINLOG="$LOGDIR/40-binary-contract.txt"
   BIN_RC=PASS
   {
-    echo "binary contract: xfoil.next(.exe) present, xfoil.exe absent"
+    echo "binary contract: bin/<mode>/xfoil.next.exe present, xfoil.exe absent"
     for d in debug release; do
       bin=""
-      if [ -f "build/$d/xfoil.next.exe" ]; then
-        bin="build/$d/xfoil.next.exe"
-      elif [ -f "build/$d/xfoil.next" ]; then
-        bin="build/$d/xfoil.next"
+      if [ -f "bin/$d/xfoil.next.exe" ]; then
+        bin="bin/$d/xfoil.next.exe"
+      elif [ -f "bin/$d/xfoil.next" ]; then
+        bin="bin/$d/xfoil.next"
       fi
       if [ -n "$bin" ]; then
         echo "present: $bin"
@@ -309,14 +310,20 @@ if [ "$BUILD_RC" = PASS ]; then
           BIN_RC=FAIL
         fi
       else
-        echo "VIOLATION: product binary missing in build/$d"
+        echo "VIOLATION: product binary missing in bin/$d"
         BIN_RC=FAIL
       fi
-      if [ -f "build/$d/xfoil.exe" ]; then
-        echo "VIOLATION: forbidden old-name binary present: build/$d/xfoil.exe"
+      if [ -f "bin/$d/xfoil.exe" ]; then
+        echo "VIOLATION: forbidden old-name binary present: bin/$d/xfoil.exe"
         BIN_RC=FAIL
       else
-        echo "absent (correct): build/$d/xfoil.exe"
+        echo "absent (correct): bin/$d/xfoil.exe"
+      fi
+      if [ -e "build/$d/xfoil.next.exe" ] || [ -e "build/$d/xfoil.next" ]; then
+        echo "VIOLATION: old product path present: build/$d/xfoil.next[.exe]"
+        BIN_RC=FAIL
+      else
+        echo "absent (correct): build/$d/xfoil.next[.exe]"
       fi
     done
   } > "$BINLOG" 2>&1
@@ -325,10 +332,12 @@ if [ "$BUILD_RC" = PASS ]; then
   else
     mark "binary contract" FAIL
   fi
+
+  step "layout gate" "$LOGDIR/41-layout-gate.txt"     "Product binary layout: OK" make check-product-binary-layout || true
 else
   skip_many "core r1" "core r2" "core r3" unit integration \
     "regression r1" "regression r2" "regression r3" batch \
-    "release full suite" "PACC diagnostic" "binary contract"
+    "release full suite" "PACC diagnostic" "binary contract" "layout gate"
 fi
 
 # ---------------------------------------------------------------------------

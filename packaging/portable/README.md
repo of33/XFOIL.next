@@ -50,6 +50,10 @@ build/portable/windows-x86_64/release/xfoil.next.exe
 build/portable/dist/
 ```
 
+Portable assets are packaging intermediates and intentionally stay below
+`build/portable/`. The normal product build writes its executable below
+`bin/<mode>/`.
+
 `make clean` removes the generated portable build and distribution area.
 
 ## Pinned build environments

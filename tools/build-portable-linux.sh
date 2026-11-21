@@ -36,6 +36,7 @@ ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$ROOT"
 
 BUILDROOT=${BUILDROOT:-build/portable/linux-x86_64}
+BINROOT=${BINROOT:-$BUILDROOT}
 IMAGE=${XFOIL_LINUX_IMAGE:-xfoil-portable-linux:22.04-gcc13.4}
 DOCKERFILE=${XFOIL_LINUX_DOCKERFILE:-tools/portable-linux.Dockerfile}
 JOBS=${JOBS:-$(getconf _NPROCESSORS_ONLN 2>/dev/null || printf '1')}
@@ -92,7 +93,7 @@ export XFOIL_SOURCE_COMMIT XFOIL_SOURCE_TREE XFOIL_SOURCE_REF
 export SOURCE_DATE_EPOCH
 
 if [ "${XFOIL_PORTABLE_CLEAN:-1}" = "1" ]; then
-    rm -rf "$BUILDROOT/release" "$BUILDROOT/source-metadata.json"
+    rm -rf "$BUILDROOT/release" "$BINROOT/release" "$BUILDROOT/source-metadata.json"
 fi
 
 mkdir -p "$BUILDROOT"
@@ -113,8 +114,8 @@ docker run --rm \
     -e XFOIL_SOURCE_TREE="$XFOIL_SOURCE_TREE" \
     -e XFOIL_SOURCE_REF="$XFOIL_SOURCE_REF" \
     "$IMAGE" \
-    bash -c 'set -e; make -j"$1" release BUILDROOT="$2" CXX="$3"' \
-    _ "$JOBS" "$BUILDROOT" "$CXX_FLAGS"
+    bash -c 'set -e; make -j"$1" release BUILDROOT="$2" BINROOT="$4" CXX="$3"' \
+    _ "$JOBS" "$BUILDROOT" "$CXX_FLAGS" "$BINROOT"
 
 VERSION=$(python3 -c \
     'import json,sys; print(json.load(open(sys.argv[1]))["version"])' \
@@ -122,7 +123,7 @@ VERSION=$(python3 -c \
 
 python3 packaging/portable/check_portable_binary.py \
     --platform linux \
-    --binary "$BUILDROOT/release/xfoil.next" \
+    --binary "$BINROOT/release/xfoil.next" \
     --expected-version "$VERSION" \
     --run-version
 
@@ -130,4 +131,4 @@ printf 'source commit: %s\n' "$XFOIL_SOURCE_COMMIT"
 printf 'source tree:   %s\n' "$XFOIL_SOURCE_TREE"
 printf 'source ref:    %s\n' "$XFOIL_SOURCE_REF"
 printf 'SOURCE_DATE_EPOCH: %s\n' "$SOURCE_DATE_EPOCH"
-printf 'portable binary: %s\n' "$BUILDROOT/release/xfoil.next"
+printf 'portable binary: %s\n' "$BINROOT/release/xfoil.next"

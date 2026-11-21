@@ -151,18 +151,23 @@ variant (see [known differences](docs/known-differences.md)).
 Build (default target is a release build):
 
 ```sh
-make            # release build, binary at build/release/xfoil.next
-make debug      # debug build,  binary at build/debug/xfoil.next
+make            # release build, binary at bin/release/xfoil.next
+make debug      # debug build,  binary at bin/debug/xfoil.next
 make library    # release static + shared library under build/release/lib
 make install DESTDIR=/tmp/stage PREFIX=/usr
 ```
 
+`BINROOT` is configurable (default `bin`); alternative toolchains should use
+their own root, for example `BINROOT=bin/clang`. Product programs are written
+below `bin/<mode>/`; intermediate objects, tests, generated files and
+libraries remain below `build/`.
+
 Run the interactive CLI:
 
 ```sh
-build/debug/xfoil.next                 # interactive session
-build/debug/xfoil.next profile.dat     # interactive session with a startup profile
-build/debug/xfoil.next < commands.txt  # drive the session from stdin
+bin/debug/xfoil.next                 # interactive session
+bin/debug/xfoil.next profile.dat     # interactive session with a startup profile
+bin/debug/xfoil.next < commands.txt  # drive the session from stdin
 ```
 
 Run the test suites:
@@ -298,8 +303,8 @@ there.
 Supported Windows environment: **Windows 11 with MSYS2 UCRT64**. In an
 UCRT64 shell, install the toolchain (`pacman -S mingw-w64-ucrt-x86_64-gcc
 mingw-w64-ucrt-x86_64-gcc-fortran make python`) and build with the same
-Makefile; the product binary is `build/debug/xfoil.next.exe` (or
-`build/release/xfoil.next.exe`). Confirmed for the 1.2.1 release on Windows 11
+Makefile; the product binary is `bin/debug/xfoil.next.exe` (or
+`bin/release/xfoil.next.exe`). Confirmed for the 1.2.1 release on Windows 11
 + MSYS2 UCRT64 with GCC/MinGW 16.1.0 Rev5: the Debug and Release builds are
 clean under `-Werror`, and
 `xfoil.next.exe` starts directly in the UCRT64 console; from PowerShell
@@ -361,11 +366,11 @@ cmd /k "call tools\windows\xfoil-next-env.bat D:\Programme\msys64"
 
 ### Starting the program
 
-The product binary is named `xfoil.next.exe` in `build\debug\` or
-`build\release\`. The former name `xfoil.exe` is never produced:
+The product binary is named `xfoil.next.exe` in `bin\debug\` or
+`bin\release\`. The former name `xfoil.exe` is never produced:
 
 ```bat
-build\release\xfoil.next.exe
+bin\release\xfoil.next.exe
 ```
 
 ### Windows-specific numerical contracts

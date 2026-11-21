@@ -41,7 +41,7 @@ namespace {
 
 std::string productProgramPath() {
   const char* configuredPath = std::getenv("XFOIL_CLI_PATH");
-  return configuredPath != nullptr ? configuredPath : "build/debug/xfoil.next";
+  return configuredPath != nullptr ? configuredPath : "bin/debug/xfoil.next";
 }
 
 std::string absoluteProductProgramPath() {

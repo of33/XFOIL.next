@@ -132,7 +132,7 @@ BL_REFERENCES = [
 ]
 
 # directory names skipped during tree traversals.
-SKIP_DIRS = {".git", ".git_custom", ".agents", "build"}
+SKIP_DIRS = {".git", ".git_custom", ".agents", "build", "bin"}
 
 # Expected executable files (must have the executable bit set).
 EXPECTED_EXECUTABLES = [

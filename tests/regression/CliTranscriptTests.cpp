@@ -94,7 +94,7 @@ TranscriptOutcome runTranscript(const TranscriptCase& testCase) {
 
   const char* const configuredPath = std::getenv("XFOIL_CLI_PATH");
   const std::string program =
-      configuredPath != nullptr ? configuredPath : "build/debug/xfoil.next";
+      configuredPath != nullptr ? configuredPath : "bin/debug/xfoil.next";
 
   // Resolve all reference paths absolutely before the working-directory
   // change; the goldens are only ever read.

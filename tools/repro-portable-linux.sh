@@ -37,6 +37,7 @@ case "$WORK" in
     *) WORK="$ROOT/$WORK" ;;
 esac
 BUILDROOT=build/portable/linux-x86_64
+BINROOT=${BINROOT:-$BUILDROOT}
 
 fail() {
     printf 'repro-portable-linux.sh: error: %s\n' "$*" >&2
@@ -87,17 +88,17 @@ tar -xzf "$WORK/source.tar.gz" -C "$WORK/b" --strip-components=1
 for side in a b; do
     (
         cd "$WORK/$side"
-        BUILDROOT="$BUILDROOT" tools/build-portable-linux.sh
+        BUILDROOT="$BUILDROOT" BINROOT="$BINROOT" tools/build-portable-linux.sh
         python3 packaging/portable/package_portable.py package \
             --platform linux \
-            --executable "$BUILDROOT/release/xfoil.next" \
+            --executable "$BINROOT/release/xfoil.next" \
             --output-dir "$WORK/dist-$side" \
             --metadata "$WORK/metadata.json"
     )
 done
 
-EXE_A="$WORK/a/$BUILDROOT/release/xfoil.next"
-EXE_B="$WORK/b/$BUILDROOT/release/xfoil.next"
+EXE_A="$WORK/a/$BINROOT/release/xfoil.next"
+EXE_B="$WORK/b/$BINROOT/release/xfoil.next"
 ARCHIVE_A="$WORK/dist-a/XFOIL.next-$VERSION-linux-x86_64.tar.xz"
 ARCHIVE_B="$WORK/dist-b/XFOIL.next-$VERSION-linux-x86_64.tar.xz"
 

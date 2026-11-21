@@ -23,9 +23,10 @@
 
 # File: Makefile
 # Reproducible build for the C++ implementation of XFOIL.next.
-# Standard build: release. Artifacts lie below build/<mode>/.
-# The public target contract is permanent; the targets are listed
-# in make help.
+# Standard build: release. Directly startable product programs are written
+# below bin/<mode>/; intermediate objects, tests, generated files and
+# libraries remain below build/<mode>/. The public target contract is
+# permanent; the targets are listed in make help.
 
 CXX      ?= g++
 CPPFLAGS := -Iinclude -Isrc
@@ -485,6 +486,7 @@ TEST_SRCS := \
 	tests/regression/CliTranscriptTests.cpp
 
 BUILDROOT := build
+BINROOT ?= bin
 
 GOLDEN_DIR  := tests/golden
 CAPTURE_DIR := $(BUILDROOT)/regression-capture
@@ -531,7 +533,7 @@ LIB_SHARED_IMPORT_FLAG := -Wl,--out-implib
 	test-reference test-reference-determinism test-harnesses \
 	check-fortran-sha check-dependencies \
 	check-release-inventory check-license-headers \
-	check-public-docs \
+	check-public-docs check-product-binary-layout \
 	core-link-check session-link-check library-link-check \
 	check-library-dependencies library-symbol-check print-library-sources \
 	test-library-isolation test-library-progress test-library-skin-friction \
@@ -582,10 +584,13 @@ clean-gui:
 
 # ---------------------------------------------------------------------------
 # Build: each variant gets build/<mode>/obj, build/<mode>/obj-tests,
-# build/<mode>/$(XFOIL_CLI) and build/<mode>/xfoil_tests. Object lists
-# are derived mechanically from the source groups.
+# build/<mode>/xfoil_tests, plus the product program at
+# bin/<mode>/$(XFOIL_CLI). Object lists are derived mechanically from the
+# source groups. BINROOT is configurable so alternative toolchains can use
+# separate product roots.
 # ---------------------------------------------------------------------------
 define MODE_RULES
+BIN_CLI_$(1) := $(BINROOT)/$(1)/$(XFOIL_CLI)
 OBJS_$(1) := $$(patsubst src/%.cpp,$(BUILDROOT)/$(1)/obj/%.o,$(SRCS))
 DEPS_$(1) := $$(OBJS_$(1):.o=.d)
 CORE_OBJS_$(1) := $$(patsubst src/%.cpp,$(BUILDROOT)/$(1)/obj/%.o,$(CORE_SRCS))
@@ -603,7 +608,7 @@ LIB_STATIC_DEPS_$(1) := $$(LIB_STATIC_OBJS_$(1):.o=.d)
 LIB_SHARED_DEPS_$(1) := $$(LIB_SHARED_OBJS_$(1):.o=.d)
 LIB_SHARED_LINK_$(1) := -shared $(if $(filter .exe,$(EXEEXT)),$(LIB_SHARED_IMPORT_FLAG) $(BUILDROOT)/$(1)/lib/$(LIB_IMPORT_NAME))
 
-$(1): $(BUILDROOT)/$(1)/$(XFOIL_CLI)
+$(1): $$(BIN_CLI_$(1))
 
 $(BUILDROOT)/$(1)/obj/%.o: src/%.cpp
 	@mkdir -p $$(dir $$@)
@@ -626,7 +631,7 @@ $(BUILDROOT)/$(1)/lib/$(LIB_SHARED_NAME): $(patsubst src/%.cpp,$(BUILDROOT)/$(1)
 	@mkdir -p $$(dir $$@)
 	$$(CXX) $$(CXXSTD) $$($(1)_FLAGS) $$(LIB_SHARED_LINK_$(1)) $$^ -o $$@
 
-$(BUILDROOT)/$(1)/$(XFOIL_CLI): $$(CLI_OBJS_$(1)) $(BUILDROOT)/$(1)/lib/$(LIB_STATIC_NAME)
+$$(BIN_CLI_$(1)): $$(CLI_OBJS_$(1)) $(BUILDROOT)/$(1)/lib/$(LIB_STATIC_NAME)
 	@mkdir -p $$(dir $$@)
 	$$(CXX) $$(CXXSTD) $$($(1)_FLAGS) $$(CLI_OBJS_$(1)) $(BUILDROOT)/$(1)/lib/$(LIB_STATIC_NAME) -o $$@
 
@@ -651,28 +656,29 @@ $(foreach mode,debug release sanitize tsan,$(eval $(call MODE_RULES,$(mode))))
 # Tests: standard run against the debug binary, sanitizer run against
 # the sanitizer binary. An optional argument is a name filter.
 # ---------------------------------------------------------------------------
-test: $(BUILDROOT)/debug/xfoil_tests $(BUILDROOT)/debug/$(XFOIL_CLI)
-	XFOIL_CLI_PATH=$(BUILDROOT)/debug/$(XFOIL_CLI) \
+test: $(BUILDROOT)/debug/xfoil_tests $(BIN_CLI_debug)
+	XFOIL_CLI_PATH=$(BIN_CLI_debug) \
 	$(BUILDROOT)/debug/xfoil_tests
 
 test-unit: $(BUILDROOT)/debug/xfoil_tests
 	$(BUILDROOT)/debug/xfoil_tests unit.
 
-test-integration: $(BUILDROOT)/debug/xfoil_tests $(BUILDROOT)/debug/$(XFOIL_CLI)
+test-integration: $(BUILDROOT)/debug/xfoil_tests $(BIN_CLI_debug)
+	XFOIL_CLI_PATH=$(BIN_CLI_debug) \
 	$(BUILDROOT)/debug/xfoil_tests integration.
 
-test-regression: $(BUILDROOT)/debug/xfoil_tests $(BUILDROOT)/debug/$(XFOIL_CLI)
-	XFOIL_CLI_PATH=$(BUILDROOT)/debug/$(XFOIL_CLI) \
+test-regression: $(BUILDROOT)/debug/xfoil_tests $(BIN_CLI_debug)
+	XFOIL_CLI_PATH=$(BIN_CLI_debug) \
 	$(BUILDROOT)/debug/xfoil_tests regression.
 
 # Native batch suite: filter 'batch.' against the debug test binary;
 # XFOIL_CLI_PATH points at the current debug product binary.
-test-batch: $(BUILDROOT)/debug/xfoil_tests $(BUILDROOT)/debug/$(XFOIL_CLI)
-	XFOIL_CLI_PATH=$(BUILDROOT)/debug/$(XFOIL_CLI) \
+test-batch: $(BUILDROOT)/debug/xfoil_tests $(BIN_CLI_debug)
+	XFOIL_CLI_PATH=$(BIN_CLI_debug) \
 	$(BUILDROOT)/debug/xfoil_tests batch.
 
-test-sanitize: $(BUILDROOT)/sanitize/xfoil_tests $(BUILDROOT)/sanitize/$(XFOIL_CLI)
-	XFOIL_CLI_PATH=$(BUILDROOT)/sanitize/$(XFOIL_CLI) \
+test-sanitize: $(BUILDROOT)/sanitize/xfoil_tests $(BIN_CLI_sanitize)
+	XFOIL_CLI_PATH=$(BIN_CLI_sanitize) \
 	$(BUILDROOT)/sanitize/xfoil_tests
 
 # ---------------------------------------------------------------------------
@@ -810,40 +816,40 @@ library-symbol-check: library
 		--shared "$(LIB_SHARED_$(LIB_MODE))"
 endif
 
-test-library-isolation: $(BUILDROOT)/debug/xfoil_tests $(BUILDROOT)/debug/$(XFOIL_CLI)
-	XFOIL_CLI_PATH=$(BUILDROOT)/debug/$(XFOIL_CLI) \
+test-library-isolation: $(BUILDROOT)/debug/xfoil_tests $(BIN_CLI_debug)
+	XFOIL_CLI_PATH=$(BIN_CLI_debug) \
 		$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) unit.LibraryIsolationL7
-	XFOIL_CLI_PATH=$(BUILDROOT)/debug/$(XFOIL_CLI) \
+	XFOIL_CLI_PATH=$(BIN_CLI_debug) \
 		$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) integration.LibraryIsolationL7
 
-test-library-progress: $(BUILDROOT)/debug/xfoil_tests $(BUILDROOT)/debug/$(XFOIL_CLI)
-	XFOIL_CLI_PATH=$(BUILDROOT)/debug/$(XFOIL_CLI) \
+test-library-progress: $(BUILDROOT)/debug/xfoil_tests $(BIN_CLI_debug)
+	XFOIL_CLI_PATH=$(BIN_CLI_debug) \
 		$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) unit.LibraryProgressL12
-	XFOIL_CLI_PATH=$(BUILDROOT)/debug/$(XFOIL_CLI) \
+	XFOIL_CLI_PATH=$(BIN_CLI_debug) \
 		$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) integration.LibraryProgressL12
 
-test-library-skin-friction: $(BUILDROOT)/debug/xfoil_tests $(BUILDROOT)/debug/$(XFOIL_CLI)
-	XFOIL_CLI_PATH=$(BUILDROOT)/debug/$(XFOIL_CLI) \
+test-library-skin-friction: $(BUILDROOT)/debug/xfoil_tests $(BIN_CLI_debug)
+	XFOIL_CLI_PATH=$(BIN_CLI_debug) \
 		$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) unit.LibrarySkinFrictionL13
-	XFOIL_CLI_PATH=$(BUILDROOT)/debug/$(XFOIL_CLI) \
+	XFOIL_CLI_PATH=$(BIN_CLI_debug) \
 		$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) integration.LibrarySkinFrictionL13
 
-test-library-operating-point: $(BUILDROOT)/debug/xfoil_tests $(BUILDROOT)/debug/$(XFOIL_CLI)
-	XFOIL_CLI_PATH=$(BUILDROOT)/debug/$(XFOIL_CLI) \
+test-library-operating-point: $(BUILDROOT)/debug/xfoil_tests $(BIN_CLI_debug)
+	XFOIL_CLI_PATH=$(BIN_CLI_debug) \
 		$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) unit.LibraryOperatingPointCompleteness
-	XFOIL_CLI_PATH=$(BUILDROOT)/debug/$(XFOIL_CLI) \
+	XFOIL_CLI_PATH=$(BIN_CLI_debug) \
 		$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) integration.LibraryOperatingPointCompleteness
 
-test-library-sequence-point: $(BUILDROOT)/debug/xfoil_tests $(BUILDROOT)/debug/$(XFOIL_CLI)
-	XFOIL_CLI_PATH=$(BUILDROOT)/debug/$(XFOIL_CLI) \
+test-library-sequence-point: $(BUILDROOT)/debug/xfoil_tests $(BIN_CLI_debug)
+	XFOIL_CLI_PATH=$(BIN_CLI_debug) \
 		$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) unit.LibrarySequencePointCompleteness
-	XFOIL_CLI_PATH=$(BUILDROOT)/debug/$(XFOIL_CLI) \
+	XFOIL_CLI_PATH=$(BIN_CLI_debug) \
 		$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) integration.LibrarySequencePointCompleteness
 
-test-library-detailed-sequence: $(BUILDROOT)/debug/xfoil_tests $(BUILDROOT)/debug/$(XFOIL_CLI)
-	XFOIL_CLI_PATH=$(BUILDROOT)/debug/$(XFOIL_CLI) \
+test-library-detailed-sequence: $(BUILDROOT)/debug/xfoil_tests $(BIN_CLI_debug)
+	XFOIL_CLI_PATH=$(BIN_CLI_debug) \
 		$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) unit.LibraryDetailedSequenceG2b
-	XFOIL_CLI_PATH=$(BUILDROOT)/debug/$(XFOIL_CLI) \
+	XFOIL_CLI_PATH=$(BIN_CLI_debug) \
 		$(BUILDROOT)/debug/xfoil_tests$(EXEEXT) integration.LibraryDetailedSequenceG2b
 
 test-library-concurrency: $(BUILDROOT)/debug/xfoil_tests
@@ -877,9 +883,9 @@ install-libraries: $(LIB_STATIC_$(INSTALL_MODE)) $(LIB_SHARED_$(INSTALL_MODE))
 		cp "$(LIB_SHARED_$(INSTALL_MODE))" "$(DESTDIR)$(libdir)/$(LIB_SHARED_NAME)"; \
 	fi
 
-install-cli: $(BUILDROOT)/$(INSTALL_MODE)/$(XFOIL_CLI)
+install-cli: $(BIN_CLI_$(INSTALL_MODE))
 	@mkdir -p "$(DESTDIR)$(bindir)"
-	cp "$(BUILDROOT)/$(INSTALL_MODE)/$(XFOIL_CLI)" "$(DESTDIR)$(bindir)/"
+	cp "$(BIN_CLI_$(INSTALL_MODE))" "$(DESTDIR)$(bindir)/"
 
 install-metadata:
 	@mkdir -p "$(DESTDIR)$(libdir)/pkgconfig" \
@@ -904,7 +910,7 @@ install: install-headers install-libraries install-cli install-metadata
 # Staged install used by the consumer smoke tests. The real system is
 # never touched.
 L6_STAGE_MARKER := $(L6_STAGE)/.installed
-$(L6_STAGE_MARKER): library $(BUILDROOT)/release/$(XFOIL_CLI)
+$(L6_STAGE_MARKER): library $(BIN_CLI_release)
 	rm -rf "$(L6_STAGE)"
 	@mkdir -p "$(L6_STAGE)"
 	$(MAKE) install DESTDIR=$(abspath $(L6_STAGE)) PREFIX=/usr INSTALL_MODE=release
@@ -1080,9 +1086,13 @@ check-dependencies:
 	python3 tools/check-core-dependencies.py --scope=cli
 	python3 tools/check-core-dependencies.py --scope=full
 
-# Release inventory and hygiene gate (non-writing): required files,
-# forbidden root runtime artifacts, cache artifacts, OSMAP selection and SHA,
-# .bl reference visibility, IoTests reference paths and file modes.
+# Canonical product executable layout gate: products below bin/<mode>/, test
+# and library artifacts below build/, old product paths absent.
+check-product-binary-layout: $(BIN_CLI_debug) $(BIN_CLI_release)
+	python3 tools/check-product-binary-layout.py \
+		--root . --binroot "$(BINROOT)" --buildroot "$(BUILDROOT)" \
+		--suffix "$(EXEEXT)"
+
 check-release-inventory:
 	python3 tools/check-release-inventory.py
 
@@ -1187,7 +1197,7 @@ VALGRIND_TEST_FILTERS := \
 	batch.QuietSuppressesStdoutKeepsTranscript \
 	batch.ClarkYNativeBatchMatchesGolden
 
-test-valgrind: $(BUILDROOT)/debug/xfoil_tests $(BUILDROOT)/debug/$(XFOIL_CLI) \
+test-valgrind: $(BUILDROOT)/debug/xfoil_tests $(BIN_CLI_debug) \
 	$(CORE_ROOT)/core-link-check $(CORE_ROOT)/session-link-check
 	@if ! command -v valgrind >/dev/null 2>&1; then \
 		echo "ERROR: valgrind is not installed; test-valgrind cannot run"; \
@@ -1195,7 +1205,7 @@ test-valgrind: $(BUILDROOT)/debug/xfoil_tests $(BUILDROOT)/debug/$(XFOIL_CLI) \
 	fi
 	@for filter in $(VALGRIND_TEST_FILTERS); do \
 		echo "== valgrind: $$filter"; \
-		XFOIL_CLI_PATH=$(CURDIR)/$(BUILDROOT)/debug/$(XFOIL_CLI) \
+		XFOIL_CLI_PATH=$(CURDIR)/$(BIN_CLI_debug) \
 		valgrind $(VALGRIND_FLAGS) $(BUILDROOT)/debug/xfoil_tests "$$filter" || exit 1; \
 	done
 	@echo "== valgrind: core-link-check"
@@ -1211,7 +1221,7 @@ test-valgrind: $(BUILDROOT)/debug/xfoil_tests $(BUILDROOT)/debug/$(XFOIL_CLI) \
 BATCH_GOLDEN_DIR := $(GOLDEN_DIR)/batch
 BATCH_CASES := clark_y naca2312 naca4415 naca0012
 
-update-golden: $(BUILDROOT)/debug/$(XFOIL_CLI)
+update-golden: $(BIN_CLI_debug)
 	@if [ "$(CONFIRM_GOLDEN_UPDATE)" != "yes" ]; then \
 		echo "*** WARNING: golden files are only updated with explicit ***"; \
 		echo "*** confirmation: CONFIRM_GOLDEN_UPDATE=yes              ***"; \
@@ -1228,7 +1238,7 @@ update-golden: $(BUILDROOT)/debug/$(XFOIL_CLI)
 			cp "$(BATCH_GOLDEN_DIR)/$${batch_case}.xfb" "$$run_dir/job.xfb"; \
 			cp sample/CLARK_Y.dat sample/NACA2312.dat "$$run_dir/sample/"; \
 			( cd "$$run_dir" \
-				&& "$(CURDIR)/$(BUILDROOT)/debug/$(XFOIL_CLI)" --batch job.xfb \
+				&& "$(CURDIR)/$(BIN_CLI_debug)" --batch job.xfb \
 					> /dev/null 2> stderr.txt ); \
 			echo $$? > "$$run_dir/exit.txt"; \
 		done; \
@@ -1270,23 +1280,14 @@ update-golden: $(BUILDROOT)/debug/$(XFOIL_CLI)
 # are never removed.
 # ---------------------------------------------------------------------------
 clean:
-	rm -rf $(BUILDROOT)/debug $(BUILDROOT)/debug-clang \
-		$(BUILDROOT)/release $(BUILDROOT)/release-clang \
-		$(BUILDROOT)/sanitize $(BUILDROOT)/clang \
-		$(BUILDROOT)/core $(CAPTURE_DIR) \
-		$(BUILDROOT)/test-data $(BUILDROOT)/test-captures \
-		$(BUILDROOT)/core-*-harness \
-		$(BUILDROOT)/c11a-state-harness-dbl \
-		$(BUILDROOT)/core-xycm-harness-dbl \
-		$(BUILDROOT)/fortran-reference-* \
-		$(PORTABLE_ROOT) \
-		$(L6_STAGE) $(L6_CONSUMER) $(DEMO_BUILD_ROOT)
+	rm -rf $(BUILDROOT) $(BINROOT) $(DEMO_BUILD_ROOT)
 
 help:
 	@echo "Build:"
 	@echo "  make                 - release build (default)"
 	@echo "  make debug           - debug build (-O0 -g3)"
 	@echo "  make release         - release build (-O3 -DNDEBUG)"
+	@echo "  products             - bin/<mode>/xfoil.next(.exe)"
 	@echo "  make sanitize        - ASan+UBSan build (-O1 -g3)"
 	@echo "  make library         - static + shared library (LIB_MODE=release)"
 	@echo "  make library-static  - static library only"
@@ -1340,6 +1341,7 @@ help:
 	@echo "  make check-release-inventory - release inventory / hygiene gate"
 	@echo "  make check-license-headers   - GPL-3.0-or-later source header gate"
 	@echo "  make check-public-docs     - public documentation set gate"
+	@echo "  make check-product-binary-layout - canonical bin/ product paths"
 	@echo "  make check-gui-dependencies - GUI public-header/source/QCP gate"
 	@echo ""
 	@echo "Maintainer:"
@@ -1348,8 +1350,10 @@ help:
 	@echo "Cleanup:"
 	@echo "  make clean"
 	@echo ""
-	@echo "Variables: CXX (default g++), BUILDROOT (default build)."
-	@echo "Example:   make debug CXX=clang++ BUILDROOT=build/clang"
+	@echo "Variables: CXX (default g++), BUILDROOT (default build),"
+	@echo "           BINROOT (default bin)."
+	@echo "Example:   make debug CXX=clang++ \"
+	@echo "             BUILDROOT=build/clang BINROOT=bin/clang"
 	@echo "Note: run make from the repository root; tests resolve sample/ paths"
 	@echo "relative to the root."
 

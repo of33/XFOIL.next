@@ -112,7 +112,7 @@ void removeDataFile(const std::string& fileName) {
 std::string programPathAbsolute() {
   const char* const configuredPath = std::getenv("XFOIL_CLI_PATH");
   const std::string program =
-      configuredPath != nullptr ? configuredPath : "build/debug/xfoil.next";
+      configuredPath != nullptr ? configuredPath : "bin/debug/xfoil.next";
   std::error_code error;
   const std::string absolute =
       std::filesystem::absolute(program, error).string();

@@ -35,6 +35,18 @@ make test-library-demo          demo integration tests
 make install    staged install (DESTDIR/PREFIX)
 ```
 
+Product executables:
+
+```text
+bin/debug/xfoil.next
+bin/release/xfoil.next
+```
+
+On MSYS2/MinGW and native Windows the suffix is `.exe`. Test programs,
+consumer/linkcheck programs, sanitizer programs, harness builds, generated
+files and libraries remain under `build/`. `make clean` removes both generated
+trees (`build/` and the selected `BINROOT`).
+
 Optional GUI skeleton targets:
 
 ```text
@@ -86,7 +98,10 @@ release package or installer is provided. A Windows UCRT64 Qt 6.12.0
 development build is qualified, but not packaged. The product version remains
 1.2.1.
 
-Binaries land under `build/<mode>/`; libraries land under
+Product programs land under `bin/<mode>/`; intermediate objects, tests,
+generated files and libraries remain under `build/<mode>/`. The default
+`BINROOT` is `bin`. Alternative toolchains should use their own root, for
+example `BUILDROOT=build/clang BINROOT=bin/clang`. Libraries land under
 `build/<mode>/lib/`. The library archive contains the core, session and
 pure IO objects, but not `src/main.cpp` or the application/CLI adapters.
 Static and shared objects use separate `libobj-static/` and

@@ -37,6 +37,7 @@ ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$ROOT"
 
 BUILDROOT=${BUILDROOT:-build/portable/windows-x86_64}
+BINROOT=${BINROOT:-$BUILDROOT}
 JOBS=${JOBS:-$(getconf _NPROCESSORS_ONLN 2>/dev/null || printf '1')}
 CXX_FLAGS='g++ -static -static-libgcc -static-libstdc++ -Wl,--no-insert-timestamp'
 
@@ -96,14 +97,14 @@ export XFOIL_SOURCE_COMMIT XFOIL_SOURCE_TREE XFOIL_SOURCE_REF
 export SOURCE_DATE_EPOCH
 
 if [ "${XFOIL_PORTABLE_CLEAN:-1}" = "1" ]; then
-    rm -rf "$BUILDROOT/release" "$BUILDROOT/source-metadata.json"
+    rm -rf "$BUILDROOT/release" "$BINROOT/release" "$BUILDROOT/source-metadata.json"
 fi
 
 mkdir -p "$BUILDROOT"
 python3 packaging/portable/package_portable.py metadata \
     --output "$BUILDROOT/source-metadata.json"
 
-make -j"$JOBS" release BUILDROOT="$BUILDROOT" CXX="$CXX_FLAGS"
+make -j"$JOBS" release BUILDROOT="$BUILDROOT" BINROOT="$BINROOT" CXX="$CXX_FLAGS"
 
 VERSION=$(python3 -c \
     'import json,sys; print(json.load(open(sys.argv[1]))["version"])' \
@@ -111,7 +112,7 @@ VERSION=$(python3 -c \
 
 python3 packaging/portable/check_portable_binary.py \
     --platform windows \
-    --binary "$BUILDROOT/release/xfoil.next.exe" \
+    --binary "$BINROOT/release/xfoil.next.exe" \
     --expected-version "$VERSION" \
     --run-version
 
@@ -119,4 +120,4 @@ printf 'source commit: %s\n' "$XFOIL_SOURCE_COMMIT"
 printf 'source tree:   %s\n' "$XFOIL_SOURCE_TREE"
 printf 'source ref:    %s\n' "$XFOIL_SOURCE_REF"
 printf 'SOURCE_DATE_EPOCH: %s\n' "$SOURCE_DATE_EPOCH"
-printf 'portable binary: %s\n' "$BUILDROOT/release/xfoil.next.exe"
+printf 'portable binary: %s\n' "$BINROOT/release/xfoil.next.exe"

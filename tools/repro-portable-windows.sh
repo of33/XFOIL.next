@@ -38,6 +38,7 @@ case "$WORK" in
     *) WORK="$ROOT/$WORK" ;;
 esac
 BUILDROOT=build/portable/windows-x86_64
+BINROOT=${BINROOT:-$BUILDROOT}
 
 fail() {
     printf 'repro-portable-windows.sh: error: %s\n' "$*" >&2
@@ -85,7 +86,7 @@ copy_tree() {
     destination=$1
     (
         cd "$ROOT"
-        tar --exclude=./build --exclude=./.git --exclude=./.git_custom \
+        tar --exclude=./build --exclude=./bin --exclude=./.git --exclude=./.git_custom \
             --exclude=./.audit-xfoil-next -cf - .
     ) | (
         cd "$destination"
@@ -99,17 +100,17 @@ copy_tree "$WORK/b"
 for side in a b; do
     (
         cd "$WORK/$side"
-        BUILDROOT="$BUILDROOT" tools/build-portable-windows.sh
+        BUILDROOT="$BUILDROOT" BINROOT="$BINROOT" tools/build-portable-windows.sh
         python3 packaging/portable/package_portable.py package \
             --platform windows \
-            --executable "$BUILDROOT/release/xfoil.next.exe" \
+            --executable "$BINROOT/release/xfoil.next.exe" \
             --output-dir "$WORK/dist-$side" \
             --metadata "$WORK/metadata.json"
     )
 done
 
-EXE_A="$WORK/a/$BUILDROOT/release/xfoil.next.exe"
-EXE_B="$WORK/b/$BUILDROOT/release/xfoil.next.exe"
+EXE_A="$WORK/a/$BINROOT/release/xfoil.next.exe"
+EXE_B="$WORK/b/$BINROOT/release/xfoil.next.exe"
 ARCHIVE_A="$WORK/dist-a/XFOIL.next-$VERSION-windows-x86_64.zip"
 ARCHIVE_B="$WORK/dist-b/XFOIL.next-$VERSION-windows-x86_64.zip"
 

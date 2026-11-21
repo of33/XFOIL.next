@@ -20,9 +20,11 @@ jobs:
           - compiler: GCC
             cxx: g++
             buildroot: build/ci-gcc
+            binroot: bin/ci-gcc
           - compiler: Clang
             cxx: clang++
             buildroot: build/ci-clang
+            binroot: bin/ci-clang
     steps:
       - uses: actions/checkout@v5
         with:
@@ -52,30 +54,33 @@ jobs:
             || { echo "FAIL: unexpected GNU libc version"; exit 1; }
 
       - name: Debug build
-        run: make debug CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }}
+        run: make debug CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }} BINROOT=${{ matrix.binroot }}
 
       - name: Release build
-        run: make release CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }}
+        run: make release CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }} BINROOT=${{ matrix.binroot }}
+
+      - name: Product binary layout
+        run: make check-product-binary-layout CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }} BINROOT=${{ matrix.binroot }}
 
       - name: Core tests
-        run: make test-core CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }}
+        run: make test-core CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }} BINROOT=${{ matrix.binroot }}
 
       - name: Unit tests
-        run: make test-unit CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }}
+        run: make test-unit CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }} BINROOT=${{ matrix.binroot }}
 
       - name: Integration tests
         env:
-          XFOIL_CLI_PATH: ${{ matrix.buildroot }}/debug/xfoil.next
-        run: make test-integration CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }}
+          XFOIL_CLI_PATH: ${{ matrix.binroot }}/debug/xfoil.next
+        run: make test-integration CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }} BINROOT=${{ matrix.binroot }}
 
       - name: Regression tests
-        run: make test-regression CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }}
+        run: make test-regression CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }} BINROOT=${{ matrix.binroot }}
 
       - name: Batch tests
-        run: make test-batch CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }}
+        run: make test-batch CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }} BINROOT=${{ matrix.binroot }}
 
       - name: Full test suite
-        run: make test CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }}
+        run: make test CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }} BINROOT=${{ matrix.binroot }}
 
   validation:
     name: Gates, reference, harnesses, sanitizer
@@ -176,9 +181,9 @@ jobs:
 
       - name: Build debug and core targets
         run: |
-          make debug BUILDROOT=build/ci-valgrind
-          make core-link-check BUILDROOT=build/ci-valgrind
-          make session-link-check BUILDROOT=build/ci-valgrind
+          make debug BUILDROOT=build/ci-valgrind BINROOT=bin/ci-valgrind
+          make core-link-check BUILDROOT=build/ci-valgrind BINROOT=bin/ci-valgrind
+          make session-link-check BUILDROOT=build/ci-valgrind BINROOT=bin/ci-valgrind
 
       - name: Valgrind
-        run: make test-valgrind BUILDROOT=build/ci-valgrind
+        run: make test-valgrind BUILDROOT=build/ci-valgrind BINROOT=bin/ci-valgrind
