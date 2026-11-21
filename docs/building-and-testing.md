@@ -53,6 +53,10 @@ Optional GUI skeleton targets:
 make gui                    GUI debug archive
 make gui-debug              GUI debug archive
 make gui-release            GUI release archive
+make gui-app                standalone GUI debug and release binaries
+make gui-app-debug          standalone GUI debug binary
+make gui-app-release        standalone GUI release binary
+make run-gui                run the debug standalone GUI
 make test-gui               offscreen Qt tests
 make gui-qcustomplot-check  QCustomPlot vendor/hash and smoke check
 make gui-link-check         public-header GUI consumer link check
@@ -64,9 +68,16 @@ The GUI targets require Qt 6.12.x. Resolve it with `QT_ROOT`, for example:
 
 ```sh
 QT_ROOT=/path/to/Qt/6.12.0/gcc_64 make gui
+QT_ROOT=/path/to/Qt/6.12.0/gcc_64 make gui-app
 QT_ROOT=/path/to/Qt/6.12.0/gcc_64 QT_QPA_PLATFORM=offscreen make test-gui
 QT_ROOT=/path/to/Qt/6.12.0/gcc_64 QT_QPA_PLATFORM=offscreen make gui-link-check
 ```
+
+The standalone targets write `bin/debug/xfoil.next-gui` and
+`bin/release/xfoil.next-gui` (`.exe` on Windows). The app is a thin shell
+around exactly one `XFoilWidget`: it adds File/Help actions, Open, Save
+Airfoil, DXF export, recent files, QSettings and a cancel-before-close path.
+No solver, session or command-interpreter logic is duplicated in the shell.
 
 Run the GUI targets sequentially. The current analysis surface owns memory,
 NACA or NACS geometry, paneling options, an `AnalysisConfig` and exactly one
@@ -90,12 +101,17 @@ The GUI tests cover the definition model, selection and filtering, exact and
 interpolated summaries, scalar curves including NC markers and source order,
 Cp/Cf detail replacement and the inviscid state, plot interactions and
 independence, worker/job identity, alpha/CL/sequence execution, progress,
-cancellation, busy no-ops, two independent widgets, shutdown and the
-public-header link check.
+cancellation, busy no-ops, two independent widgets, shutdown, the public-header
+link check, the app shell, file adapters, recent/settings persistence and
+deferred close. Open reuses the existing labeled/generic/MSES coordinate
+reader, Save Airfoil reuses the labeled writer, and Export DXF reuses the R12
+encoder. Cp/Cf/polar/BLOU import/export is not part of this increment.
 
-The surface reads and writes no files, uses no `QSettings` and starts no
-standalone application. The Windows UCRT64 Qt 6.12.0/GCC 16.2.0 Rev7
-development build is qualified, but no Windows GUI package is provided.
+The embeddable `XFoilWidget` reads and writes no files, uses no `QSettings`
+and starts no standalone application. The separate `src/gui/app` shell owns
+the file dialogs, QSettings and application entry point. The Windows UCRT64
+Qt 6.12.0/GCC 16.2.0 Rev7 development build is qualified, but no Windows GUI
+package or installer is provided.
 
 The adapter also accepts a kit found through `pkg-config` or `qmake`. The
 build emits generated MOC/UIC files only below `build/gui/`; debug and release
@@ -105,10 +121,9 @@ widget shell, definition model, session backend, geometry preview, generated
 UI/meta-objects and QCustomPlot. Core, session and CLI objects remain in the
 separate public library.
 
-This is an analysis and result surface, not a finished GUI application. No
-standalone application shell, GUI release package or installer is provided. A
-Windows UCRT64 Qt 6.12.0 development build is qualified, but not packaged. The
-product version remains 1.2.1.
+The GUI now includes a thin standalone application shell, but no GUI release
+package or installer is provided. A Windows UCRT64 Qt 6.12.0 development build
+is qualified, but not packaged. The product version remains 1.2.1.
 
 Product programs land under `bin/<mode>/`; intermediate objects, tests,
 generated files and libraries remain under `build/<mode>/`. The default

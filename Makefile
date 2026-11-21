@@ -548,7 +548,8 @@ LIB_SHARED_IMPORT_FLAG := -Wl,--out-implib
 	portable-linux portable-windows portable-package-linux portable-package-windows \
 	portable-check-linux portable-check-windows portable-repro-linux \
 	portable-repro-windows portable-sha256sums \
-	gui gui-debug gui-release test-gui gui-qcustomplot-check gui-link-check \
+	gui gui-debug gui-release gui-app gui-app-debug gui-app-release run-gui \
+	test-gui gui-qcustomplot-check gui-link-check \
 	clean-gui check-gui-dependencies \
 	clean help
 
@@ -566,6 +567,18 @@ gui-debug:
 
 gui-release:
 	$(MAKE) -f Makefile.gui gui-release
+
+gui-app:
+	$(MAKE) -f Makefile.gui gui-app
+
+gui-app-debug:
+	$(MAKE) -f Makefile.gui gui-app-debug
+
+gui-app-release:
+	$(MAKE) -f Makefile.gui gui-app-release
+
+run-gui:
+	$(MAKE) -f Makefile.gui run-gui
 
 test-gui:
 	$(MAKE) -f Makefile.gui test-gui
@@ -1317,6 +1330,10 @@ help:
 	@echo "  make gui                 - build libxfoil_next_gui.a (debug)"
 	@echo "  make gui-debug           - build the debug GUI archive"
 	@echo "  make gui-release         - build the release GUI archive"
+	@echo "  make gui-app             - build debug and release standalone GUI"
+	@echo "  make gui-app-debug       - build the debug standalone GUI"
+	@echo "  make gui-app-release     - build the release standalone GUI"
+	@echo "  make run-gui             - run the debug standalone GUI"
 	@echo "  make test-gui            - offscreen GUI tests"
 	@echo "  make gui-qcustomplot-check - QCustomPlot vendor/hash and smoke check"
 	@echo "  make gui-link-check      - minimal public-header GUI consumer"

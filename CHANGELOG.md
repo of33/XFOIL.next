@@ -32,10 +32,16 @@ keep-a-changelog layout.
   keeps its compact polar row plus its full Cp surface and, for viscous
   points, its Cf distribution and CDF. The compact sequence API remains
   unchanged, and both forms share one sequence/solver path.
+- Added the G5 standalone GUI shell: `xfoil.next-gui` wraps exactly one
+  `XFoilWidget` with File/Help actions, Open, Save Airfoil, DXF export,
+  recent files, QSettings and deferred cancel-before-close. App-only adapters
+  reuse the existing labeled/generic/MSES DAT reader, labeled airfoil writer
+  and DXF R12 encoder; Cp/Cf/polar/BLOU import/export and GUI packaging were
+  not added.
 - Adopted the current 2.0 GUI development baseline: GCC/MinGW 16.2.0 Rev7
   on Windows and Qt 6.12.0 for Linux and Windows GUI qualification. The
   1.2.1 release evidence remains on GCC/MinGW 16.1.0 Rev5.
-- This is not a finished GUI application and does not change the product
+- The GUI remains a development feature and does not change the product
   version, CLI behavior, solver behavior or library API.
 
 ## 1.2.1 — 2026-11-20

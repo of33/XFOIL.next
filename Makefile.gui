@@ -173,6 +173,14 @@ GUI_ARCHIVE_OBJS := \
 	$(GUI_OBJ_DIR)/plots/ScalarPlotView.o \
 	$(GUI_OBJ_DIR)/moc_qcustomplot.o \
 	$(GUI_OBJ_DIR)/qcustomplot.o
+GUI_APP_MAIN_OBJ := $(GUI_OBJ_DIR)/app/main.o
+GUI_APP_COMMON_OBJS := \
+	$(GUI_OBJ_DIR)/app/MainWindow.o \
+	$(GUI_OBJ_DIR)/app/GuiFileAdapters.o \
+	$(GUI_OBJ_DIR)/app/DatFileReader.o \
+	$(GUI_OBJ_DIR)/app/AirfoilWriter.o
+GUI_APP_OBJS := $(GUI_APP_MAIN_OBJ) $(GUI_APP_COMMON_OBJS)
+GUI_APP_EXE := $(if $(filter release,$(GUI_MODE)),$(GUI_RELEASE_EXE),$(GUI_DEBUG_EXE))
 GUI_TEST_BIN := $(GUI_TEST_DIR)/$(GUI_VARIANT)/xfoil_gui_tests$(GUI_EXE_SUFFIX)
 GUI_TEST_OBJS := \
 	$(GUI_OBJ_DIR)/tests/GuiTestMain.o \
@@ -191,7 +199,10 @@ GUI_TEST_OBJS := \
 	$(GUI_OBJ_DIR)/tests/XFoilWidgetG3Tests.o \
 	$(GUI_OBJ_DIR)/tests/XFoilWidgetG4Tests.o \
 	$(GUI_OBJ_DIR)/tests/GuiAnalysisWorkerTests.o \
-	$(GUI_OBJ_DIR)/tests/XFoilWidgetShellTests.o
+	$(GUI_OBJ_DIR)/tests/XFoilWidgetShellTests.o \
+	$(GUI_OBJ_DIR)/tests/app/GuiFileAdaptersTests.o \
+	$(GUI_OBJ_DIR)/tests/app/MainWindowTests.o \
+	$(GUI_APP_COMMON_OBJS)
 GUI_LINKCHECK := $(GUI_TEST_DIR)/$(GUI_VARIANT)/gui-link-check$(GUI_EXE_SUFFIX)
 ifeq ($(GUI_EXE_SUFFIX),.exe)
 CORE_STATIC_NAME := libxfoil_next_static.a
@@ -200,12 +211,29 @@ CORE_STATIC_NAME := libxfoil_next.a
 endif
 CORE_LIBRARY := $(CORE_BUILDROOT)/$(GUI_MODE)/lib/$(CORE_STATIC_NAME)
 
-.PHONY: all gui gui-debug gui-release test-gui gui-qcustomplot-check \
+.PHONY: all gui gui-debug gui-release gui-app gui-app-debug \
+	gui-app-release gui-app-bin run-gui test-gui gui-qcustomplot-check \
 	gui-link-check clean check-gui-dependencies
 
 all: gui
 
 gui: $(GUI_ARCHIVE)
+
+gui-app: gui-app-debug gui-app-release
+
+gui-app-debug:
+	$(MAKE) -f Makefile.gui gui-app-bin GUI_MODE=debug
+
+gui-app-release:
+	$(MAKE) -f Makefile.gui gui-app-bin GUI_MODE=release
+
+gui-app-bin: $(GUI_APP_EXE)
+
+run-gui: gui-app-debug
+	LD_LIBRARY_PATH="$(QT_LIB_DIR):$${LD_LIBRARY_PATH:-}" \
+	QT_PLUGIN_PATH="$(QT_PLUGIN_DIR)" \
+	QT_QPA_PLATFORM_PLUGIN_PATH="$(QT_PLUGIN_DIR)/platforms" \
+	$(GUI_DEBUG_EXE)
 
 gui-debug:
 	$(MAKE) -f Makefile.gui gui GUI_MODE=debug
@@ -240,6 +268,7 @@ check-gui-dependencies:
 
 clean:
 	rm -rf $(GUI_BUILDROOT)
+	rm -f $(GUI_DEBUG_EXE) $(GUI_RELEASE_EXE)
 
 $(GUI_STAMP):
 	@mkdir -p $(dir $@)
@@ -285,6 +314,14 @@ $(GUI_GEN_DIR)/moc_qcustomplot.cpp: $(QCP_DIR)/qcustomplot.h | $(GUI_GEN_DIR) $(
 	$(QT_MOC) $(GUI_MOC_FLAGS) -I$(QCP_DIR) $< -o $@
 
 $(GUI_GEN_DIR)/%.moc: tests/gui/%.cpp | $(GUI_GEN_DIR) $(GUI_STAMP)
+	$(QT_MOC) $(GUI_MOC_FLAGS) $< -o $@
+
+$(GUI_GEN_DIR)/GuiFileAdaptersTests.moc: \
+		tests/gui/app/GuiFileAdaptersTests.cpp | $(GUI_GEN_DIR) $(GUI_STAMP)
+	$(QT_MOC) $(GUI_MOC_FLAGS) $< -o $@
+
+$(GUI_GEN_DIR)/MainWindowTests.moc: tests/gui/app/MainWindowTests.cpp \
+		| $(GUI_GEN_DIR) $(GUI_STAMP)
 	$(QT_MOC) $(GUI_MOC_FLAGS) $< -o $@
 
 $(GUI_OBJ_DIR)/XFoilWidget.o: src/gui/XFoilWidget.cpp \
@@ -470,6 +507,18 @@ $(GUI_OBJ_DIR)/tests/XFoilWidgetShellTests.o: \
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
 
+$(GUI_OBJ_DIR)/tests/app/GuiFileAdaptersTests.o: \
+		tests/gui/app/GuiFileAdaptersTests.cpp \
+		$(GUI_GEN_DIR)/GuiFileAdaptersTests.moc | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/tests/app/MainWindowTests.o: \
+		tests/gui/app/MainWindowTests.cpp \
+		$(GUI_GEN_DIR)/MainWindowTests.moc | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
+
 $(GUI_OBJ_DIR)/tests/GuiLinkCheck.o: tests/gui/GuiLinkCheck.cpp | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
@@ -478,6 +527,36 @@ $(GUI_ARCHIVE): $(GUI_ARCHIVE_OBJS)
 	@mkdir -p $(dir $@)
 	rm -f $@
 	$(AR) rcs $@ $(GUI_ARCHIVE_OBJS)
+
+$(GUI_APP_MAIN_OBJ): src/gui/app/main.cpp src/gui/app/MainWindow.h \
+		src/app/ProductInfo.h | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/app/MainWindow.o: src/gui/app/MainWindow.cpp \
+		src/gui/app/MainWindow.h src/gui/app/GuiFileAdapters.h \
+		include/xfoil/gui/XFoilWidget.h | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/app/GuiFileAdapters.o: src/gui/app/GuiFileAdapters.cpp \
+		src/gui/app/GuiFileAdapters.h | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/app/DatFileReader.o: src/app/DatFileReader.cpp \
+		src/app/DatFileReader.h | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/app/AirfoilWriter.o: src/app/AirfoilWriter.cpp \
+		src/app/AirfoilWriter.h | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_APP_EXE): $(GUI_APP_OBJS) $(GUI_ARCHIVE) $(CORE_LIBRARY)
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXSTD) $(GUI_MODE_FLAGS) $^ $(GUI_QT_LIBS) -o $@
 
 $(GUI_TEST_BIN): $(GUI_TEST_OBJS) $(GUI_ARCHIVE) $(CORE_LIBRARY)
 	@mkdir -p $(dir $@)
@@ -493,6 +572,6 @@ $(GUI_LINKCHECK): $(GUI_OBJ_DIR)/tests/GuiLinkCheck.o $(GUI_ARCHIVE) \
 	$(CXX) $(CXXSTD) $(GUI_MODE_FLAGS) $^ $(GUI_QT_LIBS) -o $@
 
 -include $(GUI_ARCHIVE_OBJS:.o=.d) $(GUI_TEST_OBJS:.o=.d) \
-	$(GUI_OBJ_DIR)/tests/GuiLinkCheck.d
+	$(GUI_APP_OBJS:.o=.d) $(GUI_OBJ_DIR)/tests/GuiLinkCheck.d
 
 # End: Makefile.gui

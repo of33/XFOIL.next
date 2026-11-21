@@ -135,20 +135,24 @@ report:
 Plotting is not available in this build.
 ```
 
-An optional Qt 6.12.x GUI analysis surface now exists, but it is not a
-finished application and does not change the CLI plotting contract. It owns a
-geometry/paneling/operating/target definition, an offscreen-checked interactive
-geometry and panel preview, five scalar sequence plots, selected-point Cp and
-Cf plots and a 4x3 result matrix with diagnostics, progress and cancellation.
-Alpha, CL and detailed alpha-sequence analyses run asynchronously in exactly
-one persistent worker thread and one worker-owned `xfoil::Session`. Point
-selection and activate/deactivate filtering use owning results and never rerun
-the solver. The matrix shows direct values for the selected point and derived
-`CL0`, `alpha0`, `CD0`, `CM0`, `CLmax` and `(CL/CD)max` summaries for enabled
-converged points, using `n/a` and explicit provisional hints where a value is
-not defined. The plots support pan, cursor-centred wheel zoom, fit and sample
-markers. The numerical, textual and file-related parts of mixed commands are
-kept.
+An optional Qt 6.12.x GUI analysis surface and a thin standalone application
+now exist. The widget owns a geometry/paneling/operating/target definition, an
+offscreen-checked interactive geometry and panel preview, five scalar sequence
+plots, selected-point Cp and Cf plots and a 4x3 result matrix with diagnostics,
+progress and cancellation. Alpha, CL and detailed alpha-sequence analyses run
+asynchronously in exactly one persistent worker thread and one worker-owned
+`xfoil::Session`. Point selection and activate/deactivate filtering use owning
+results and never rerun the solver. The matrix shows direct values for the
+selected point and derived `CL0`, `alpha0`, `CD0`, `CM0`, `CLmax` and
+`(CL/CD)max` summaries for enabled converged points, using `n/a` and explicit
+provisional hints where a value is not defined. The plots support pan,
+cursor-centred wheel zoom, fit and sample markers. The standalone shell adds
+File/Help actions, Open, Save Airfoil, DXF export, recent files, settings and a
+cancel-before-close path. Open accepts the existing labeled, generic and MSES
+coordinate files through `DatFileReader`; Save Airfoil uses the existing
+labeled writer; Export DXF uses the existing R12 encoder. Cp/Cf/polar/BLOU
+import/export is not part of this increment. The numerical, textual and
+file-related parts of mixed commands are kept.
 This is a port of XFOIL, not an independent re-derivation of the
 solver, and it is not a bit-identical reproduction of every Fortran build
 variant (see [known differences](docs/known-differences.md)).
@@ -191,13 +195,17 @@ make library-demo                 # standalone staged-library demo
 make test-library-demo            # demo integration tests
 ```
 
-Optional GUI analysis surface build (Qt 6.12.x, Linux):
+Optional GUI analysis surface and standalone app build (Qt 6.12.x, Linux):
 
 ```sh
 QT_ROOT=/path/to/Qt/6.12.0/gcc_64 make gui
+QT_ROOT=/path/to/Qt/6.12.0/gcc_64 make gui-app
 QT_ROOT=/path/to/Qt/6.12.0/gcc_64 make test-gui
 QT_ROOT=/path/to/Qt/6.12.0/gcc_64 make gui-link-check
 ```
+
+`make gui-app` writes `bin/debug/xfoil.next-gui` and
+`bin/release/xfoil.next-gui`; `make run-gui` starts the debug application.
 
 Run the GUI targets sequentially. The embeddable `xfoil::gui::XFoilWidget`
 accepts memory, NACA and NACS geometry, paneling options, an `AnalysisConfig`
@@ -207,9 +215,10 @@ with owning result values, progress, cancellation and structured errors. It
 previews geometry and panel nodes, binds full scalar curves and selected-point
 Cp/Cf distributions with QCustomPlot, and provides source-index point
 selection, activate/deactivate filtering, a result matrix and derived summaries.
-There is still no standalone main window, file dialog, QSettings or
-import/export adapter. It has no GUI release asset. The Windows UCRT64 Qt
-6.12.0 development build is qualified, but no Windows GUI package is provided.
+The embeddable widget itself still has no file dialog, QSettings or import or
+export adapter; those responsibilities belong to the standalone shell. There
+is no GUI release asset or installer. The Windows UCRT64 Qt 6.12.0
+development build is qualified, but no Windows GUI package is provided.
 See [building and testing](docs/building-and-testing.md) for the complete target
 list, compiler requirements, and validation checks.
 

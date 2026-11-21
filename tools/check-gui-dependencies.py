@@ -45,6 +45,7 @@ import sys
 
 PUBLIC_HEADER_DIR = "include/xfoil/gui"
 SOURCE_DIR = "src/gui"
+APP_SOURCE_DIR = "src/gui/app"
 QCP_DIR = "src/gui/3rdparty/qcustomplot-2.1.1"
 
 QCP_REQUIRED = [
@@ -134,6 +135,48 @@ SOURCE_FORBIDDEN_TEXT = (
     "std::ofstream",
 )
 
+APP_ALLOWED_INCLUDE_EXACT = {
+    "qcustomplot.h",
+    "xfoil/AnalysisData.h",
+    "xfoil/Diagnostic.h",
+    "xfoil/Result.h",
+    "xfoil/SkinFriction.h",
+    "xfoil/Types.h",
+}
+APP_ALLOWED_INCLUDE_PREFIXES = (
+    "app/",
+    "xfoil/gui/",
+    "xfoil/io/",
+    "xfoil/geometry/",
+)
+APP_ALLOWED_STANDARD_INCLUDES = {
+    "algorithm",
+    "clocale",
+    "cstddef",
+    "filesystem",
+    "functional",
+    "memory",
+    "optional",
+    "span",
+    "string",
+    "string_view",
+    "system_error",
+    "utility",
+    "vector",
+}
+APP_FORBIDDEN_TEXT = (
+    "AirfoilCenter",
+    "QProcess",
+    "CommandInterpreter",
+    "SessionOps",
+    "xfoil::Session",
+    "xfoil/session/",
+    "xfoil/core/",
+    "xfoil/XFoil.h",
+    "xfoil/XFoilSession.h",
+    "src/app/",
+)
+
 SESSION_ALLOWED_SOURCES = {
     "src/gui/backend/GuiSessionBackend.cpp",
     "src/gui/backend/GuiSessionBackend.h",
@@ -207,6 +250,10 @@ def check_sources(root, failures):
         if rel_dir.startswith(QCP_DIR):
             dirnames[:] = []
             continue
+        if rel_dir == APP_SOURCE_DIR or rel_dir.startswith(
+                APP_SOURCE_DIR + "/"):
+            dirnames[:] = []
+            continue
         dirnames[:] = sorted(
             name for name in dirnames
             if not (rel_dir + "/" + name).startswith(QCP_DIR)
@@ -233,6 +280,45 @@ def check_sources(root, failures):
                                     % (rel, target))
             if INTERNAL_PATH_RE.search(text):
                 failures.append("%s: internal source path in GUI source" % rel)
+
+
+def check_app_sources(root, failures):
+    directory = os.path.join(root, APP_SOURCE_DIR)
+    if not os.path.isdir(directory):
+        failures.append("missing GUI app directory: %s" % APP_SOURCE_DIR)
+        return
+    for dirpath, _dirnames, filenames in os.walk(directory):
+        for name in sorted(filenames):
+            if not name.endswith((".cpp", ".cc", ".h", ".hpp")):
+                continue
+            rel = os.path.relpath(os.path.join(dirpath, name), root)
+            rel = rel.replace(os.sep, "/")
+            text = read_text(os.path.join(root, rel))
+            for token in APP_FORBIDDEN_TEXT:
+                if token in text:
+                    failures.append("%s: forbidden app source token: %s"
+                                    % (rel, token))
+            if "QApplication" in text and not rel.endswith("/main.cpp"):
+                failures.append("%s: QApplication is only allowed in "
+                                "src/gui/app/main.cpp" % rel)
+            for target in includes(text):
+                if ABSOLUTE_INCLUDE_RE.match(target):
+                    failures.append("%s: absolute app include: %s"
+                                    % (rel, target))
+                    continue
+                if target.startswith("Q"):
+                    continue
+                if target.startswith(APP_ALLOWED_INCLUDE_PREFIXES):
+                    continue
+                if target in APP_ALLOWED_INCLUDE_EXACT:
+                    continue
+                if target in APP_ALLOWED_STANDARD_INCLUDES:
+                    continue
+                failures.append("%s: unexpected app include: %s"
+                                % (rel, target))
+            if INTERNAL_PATH_RE.search(text):
+                failures.append("%s: internal source path in app source"
+                                % rel)
 
 
 def check_qcustomplot(root, failures):
@@ -327,6 +413,7 @@ def main(argv):
     failures = []
     check_public_headers(root, failures)
     check_sources(root, failures)
+    check_app_sources(root, failures)
     check_qcustomplot(root, failures)
 
     if failures:

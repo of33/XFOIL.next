@@ -1,0 +1,216 @@
+// XFOIL.next
+//
+// Copyright (C) 2026 Olaf Frommann
+// https://github.com/of33/XFOIL.next
+//
+// XFOIL.next is based on XFOIL 6.99 by Mark Drela and
+// Harold Youngren.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+// File: src/gui/app/GuiFileAdapters.cpp
+// Thin app adapters around existing file contracts. No parser or writer
+// implementation is duplicated here.
+
+#include "app/GuiFileAdapters.h"
+
+#include <clocale>
+#include <string>
+#include <system_error>
+#include <vector>
+
+#include <QIODevice>
+#include <QSaveFile>
+#include <QString>
+
+#include "app/AirfoilWriter.h"
+#include "app/DatFileReader.h"
+#include "xfoil/io/DxfExport.h"
+
+namespace xfoil::gui::app {
+namespace {
+
+// The accepted DAT reader uses strtod(), which follows LC_NUMERIC. Qt may
+// install the user locale in a GUI process; coordinate files always use '.'
+// as the decimal separator. Keep the override scoped to the adapter call.
+class NumericLocaleGuard {
+ public:
+  NumericLocaleGuard() {
+    const char* current = std::setlocale(LC_NUMERIC, nullptr);
+    saved_ = current != nullptr ? current : "C";
+    std::setlocale(LC_NUMERIC, "C");
+  }
+
+  ~NumericLocaleGuard() {
+    std::setlocale(LC_NUMERIC, saved_.c_str());
+  }
+
+  NumericLocaleGuard(const NumericLocaleGuard&) = delete;
+  NumericLocaleGuard& operator=(const NumericLocaleGuard&) = delete;
+
+ private:
+  std::string saved_;
+};
+
+std::string readErrorText(const xfoil::app::DatReadError error,
+                          std::size_t overflowLimit) {
+  switch (error) {
+    case xfoil::app::DatReadError::cannotOpen:
+      return "Cannot open the airfoil file.";
+    case xfoil::app::DatReadError::missingName:
+      return "The airfoil file has no profile name line.";
+    case xfoil::app::DatReadError::invalidCoordinate:
+      return "The airfoil file contains an invalid coordinate line.";
+    case xfoil::app::DatReadError::tooFewCoordinates:
+      return "The airfoil file contains fewer than 3 coordinates.";
+    case xfoil::app::DatReadError::coordinateOverflow:
+      return "The airfoil file exceeds the coordinate limit of " +
+             std::to_string(overflowLimit) + " points.";
+    case xfoil::app::DatReadError::elementNotFound:
+      return "The requested airfoil element was not found.";
+    case xfoil::app::DatReadError::none:
+      break;
+  }
+  return "The airfoil file could not be read.";
+}
+
+FileWriteResult checkTarget(const std::filesystem::path& path,
+                            bool overwriteExisting) {
+  if (path.empty()) {
+    return {false, "No output file was selected."};
+  }
+  std::error_code error;
+  const bool exists = std::filesystem::exists(path, error);
+  if (error) {
+    return {false, "The output path cannot be inspected."};
+  }
+  if (exists && !overwriteExisting) {
+    return {false, "The output file already exists."};
+  }
+  return {true, {}};
+}
+
+}  // namespace
+
+AirfoilFileReadResult readAirfoilFile(
+    const std::filesystem::path& path, int selectedElement,
+    std::string_view suppliedName) {
+  AirfoilFileReadResult result;
+  const NumericLocaleGuard numericLocale;
+  const xfoil::app::CoordinateFileReadResult read =
+      xfoil::app::DatFileReader::readCoordinateFile(path, selectedElement);
+  if (read.elementSelectionRequired) {
+    result.status = AirfoilFileReadStatus::elementSelectionRequired;
+    result.message = "This coordinate file contains multiple elements.";
+    return result;
+  }
+  if (!read.success()) {
+    result.message = readErrorText(read.error, read.overflowLimit);
+    return result;
+  }
+
+  std::string name = read.name;
+  if (read.format == xfoil::app::CoordinateFileFormat::generic && suppliedName.empty()) {
+    result.status = AirfoilFileReadStatus::nameRequired;
+    result.message = "This coordinate file has no profile name.";
+    return result;
+  }
+  if (read.format == xfoil::app::CoordinateFileFormat::generic) {
+    name = std::string(suppliedName);
+  }
+
+  const geometry::GeometryAssignmentResult assigned =
+      result.geometry.assign(name, read.coordinates);
+  if (!assigned.success()) {
+    result.message = assigned.message;
+    return result;
+  }
+  result.status = AirfoilFileReadStatus::success;
+  return result;
+}
+
+FileWriteResult saveAirfoilFile(
+    const std::filesystem::path& path,
+    const geometry::AirfoilGeometry& geometry, bool overwriteExisting) {
+  if (geometry.empty()) {
+    return {false, "No airfoil geometry is available."};
+  }
+  const NumericLocaleGuard numericLocale;
+  const FileWriteResult target = checkTarget(path, overwriteExisting);
+  if (!target.success) {
+    return target;
+  }
+
+  xfoil::app::AirfoilWriteOptions options;
+  options.format = xfoil::app::AirfoilOutputFormat::labeled;
+  options.delimiter = xfoil::app::CoordinateDelimiter::blank;
+  options.name = std::string(geometry.name());
+  options.overwriteExisting = overwriteExisting;
+  const xfoil::app::AirfoilWriteResult written =
+      xfoil::app::writeAirfoil(path, geometry.coordinates(), options);
+  if (!written.success) {
+    return {false, written.diagnostic.empty()
+                       ? "The airfoil file could not be written."
+                       : written.diagnostic};
+  }
+  return {true, {}};
+}
+
+FileWriteResult exportDxfFile(const std::filesystem::path& path,
+                              const SurfaceGeometry& panel,
+                              bool overwriteExisting) {
+  if (panel.points.empty()) {
+    return {false, "No panel geometry is available."};
+  }
+  const FileWriteResult target = checkTarget(path, overwriteExisting);
+  if (!target.success) {
+    return target;
+  }
+
+  const NumericLocaleGuard numericLocale;
+  std::vector<double> x;
+  std::vector<double> y;
+  x.reserve(panel.points.size());
+  y.reserve(panel.points.size());
+  for (const Point2D& point : panel.points) {
+    x.push_back(point.x);
+    y.push_back(point.y);
+  }
+  const core::Result<std::string> encoded =
+      io::dxfR12TextChecked(x, y);
+  if (!encoded.isOk()) {
+    return {false, encoded.error().message};
+  }
+
+  QSaveFile file(QString::fromStdString(path.string()));
+  if (!file.open(QIODevice::WriteOnly)) {
+    return {false, file.errorString().toStdString()};
+  }
+  const std::string& text = encoded.value();
+  if (file.write(text.data(), static_cast<qint64>(text.size())) !=
+      static_cast<qint64>(text.size())) {
+    file.cancelWriting();
+    return {false, file.errorString().toStdString()};
+  }
+  if (!file.commit()) {
+    return {false, file.errorString().toStdString()};
+  }
+  return {true, {}};
+}
+
+}  // namespace xfoil::gui::app
+
+// End: src/gui/app/GuiFileAdapters.cpp
