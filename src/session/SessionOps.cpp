@@ -38,6 +38,8 @@
 
 #include "xfoil/session/SessionOps.h"
 
+#include "xfoil/session/SessionProjections.h"
+
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
@@ -1560,7 +1562,8 @@ bool initializeAnalysis(SessionComposition& session) {
 namespace {
 
 SequencePointRecord makeSequencePointRecord(SessionComposition& session,
-                                            AnalysisResult result) {
+                                            AnalysisResult result,
+                                            bool captureOperatingPoint) {
   SequencePointRecord record;
   record.result = std::move(result);
   if (!record.result.successful) {
@@ -1586,6 +1589,12 @@ SequencePointRecord makeSequencePointRecord(SessionComposition& session,
     record.iterations =
         static_cast<std::size_t>(record.result.iterations);
   }
+  if (captureOperatingPoint) {
+    Result<OperatingPointData> detail = projectLastOperatingPoint(session);
+    if (detail.isOk()) {
+      record.operatingPoint = std::move(detail.value());
+    }
+  }
   return record;
 }
 
@@ -1594,7 +1603,7 @@ SequencePointRecord makeSequencePointRecord(SessionComposition& session,
 std::vector<SequencePointRecord> runAlphaSequenceDetailed(
     SessionComposition& session, Degrees start, Degrees endExclusive,
     Degrees step, const CancellationToken* cancellation,
-    ProgressObserver* progress) {
+    ProgressObserver* progress, bool captureOperatingPoint) {
   std::vector<SequencePointRecord> records;
 
   const auto makeRangeError = [](const char* message) {
@@ -1680,7 +1689,8 @@ std::vector<SequencePointRecord> runAlphaSequenceDetailed(
         runSpecifiedPoint(session, Degrees{alpha}, 0.0,
                           PointSpecificationPolicy::specifiedAlpha,
                           cancellation, PointExecutionPolicy::coldStart,
-                          std::nullopt, progress, sequenceIndex)));
+                          std::nullopt, progress, sequenceIndex),
+        captureOperatingPoint));
 
     if (records.back().result.status ==
         AnalysisStatus::progressCallbackFailure) {

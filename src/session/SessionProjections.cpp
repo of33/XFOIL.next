@@ -393,15 +393,27 @@ Result<SequenceResult> projectActivePolar(
 
 namespace {
 
-PolarPoint makePolarPoint(const AnalysisResult& result) {
+PolarPoint makePolarPoint(const SequencePointRecord& record) {
   PolarPoint point;
-  point.alpha = result.alpha;
-  point.liftCoefficient = result.liftCoefficient;
-  point.dragCoefficient = result.dragCoefficient;
-  point.momentCoefficient = result.momentCoefficient;
-  point.convergence = convergenceFromStatus(result.status);
-  point.diagnostics = diagnosticsFromResult(result);
+  point.alpha = record.result.alpha;
+  point.liftCoefficient = record.result.liftCoefficient;
+  point.dragCoefficient = record.result.dragCoefficient;
+  point.momentCoefficient = record.result.momentCoefficient;
+  point.convergence = convergenceFromStatus(record.result.status);
+  point.diagnostics = diagnosticsFromResult(record.result);
+  point.dragCoefficientPressure = record.dragCoefficientPressure;
+  point.dragCoefficientFriction = record.dragCoefficientFriction;
+  point.dragCoefficientViscous = record.dragCoefficientViscous;
+  point.iterations = record.iterations;
   return point;
+}
+
+SequenceStopReason normalizedStopReason(std::span<const SequencePointRecord> records,
+                                        SequenceStopReason stopReason) {
+  if (records.empty() && stopReason == SequenceStopReason::completed) {
+    return SequenceStopReason::notRun;
+  }
+  return stopReason;
 }
 
 SequenceResult projectSequenceRecords(
@@ -409,19 +421,11 @@ SequenceResult projectSequenceRecords(
     SequenceStopReason stopReason,
     std::optional<std::size_t> stoppedAtIndex) {
   SequenceResult sequence;
-  sequence.stopReason = stopReason;
+  sequence.stopReason = normalizedStopReason(records, stopReason);
   sequence.stoppedAtIndex = stoppedAtIndex;
   sequence.points.reserve(records.size());
   for (const SequencePointRecord& record : records) {
-    PolarPoint point = makePolarPoint(record.result);
-    point.dragCoefficientPressure = record.dragCoefficientPressure;
-    point.dragCoefficientFriction = record.dragCoefficientFriction;
-    point.dragCoefficientViscous = record.dragCoefficientViscous;
-    point.iterations = record.iterations;
-    sequence.points.push_back(std::move(point));
-  }
-  if (records.empty() && sequence.stopReason == SequenceStopReason::completed) {
-    sequence.stopReason = SequenceStopReason::notRun;
+    sequence.points.push_back(makePolarPoint(record));
   }
   return sequence;
 }
@@ -445,6 +449,25 @@ SequenceResult projectSequence(std::span<const AnalysisResult> results,
     records.push_back(std::move(record));
   }
   return projectSequenceRecords(records, stopReason, stoppedAtIndex);
+}
+
+DetailedSequenceResult projectDetailedSequence(
+    std::span<const SequencePointRecord> records,
+    SequenceStopReason stopReason,
+    std::optional<std::size_t> stoppedAtIndex) {
+  DetailedSequenceResult sequence;
+  sequence.stopReason = normalizedStopReason(records, stopReason);
+  sequence.stoppedAtIndex = stoppedAtIndex;
+  sequence.points.reserve(records.size());
+  for (const SequencePointRecord& record : records) {
+    DetailedSequencePoint point;
+    point.polar = makePolarPoint(record);
+    if (record.operatingPoint.has_value()) {
+      point.operatingPoint = record.operatingPoint;
+    }
+    sequence.points.push_back(std::move(point));
+  }
+  return sequence;
 }
 
 }  // namespace xfoil::session

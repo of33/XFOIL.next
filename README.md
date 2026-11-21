@@ -80,6 +80,9 @@ See [NOTICE](NOTICE) for full attribution and provenance details.
   `CDv`;
 - complete scalar sequence-point results with `CD`, `CDp`, `CDF`, `CDv` and
   the executed iteration count;
+- an optional owning detailed alpha sequence with the full Cp surface and,
+  for viscous points, the Cf distribution and CDF per executed point,
+  without a second solver run or interpolation;
 - installable static and shared C++ libraries with public headers and
   pkg-config metadata;
 - a memory-only library contract with isolated sessions, no application
@@ -102,7 +105,10 @@ Results are owning value types. `OperatingPointData` carries the scalar
 coefficients, convergence data, an optional panel-node Cp distribution and
 an optional boundary-layer-station Cf distribution. A live
 `xfoil::PolarPoint` carries the compact sequence scalars and status without
-Cp or Cf containers.
+Cp or Cf containers. `Session::solveDetailedAlphaSequence` optionally keeps
+the complete owning `OperatingPointData` for every executed sequence point,
+including Cp and valid viscous Cf, while the compact
+`Session::solveAlphaSequence` remains available.
 
 The drag fields are distinct:
 

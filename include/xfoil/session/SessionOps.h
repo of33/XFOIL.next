@@ -203,7 +203,8 @@ AnalysisResult continueViscousPoint(SessionComposition& session,
 std::vector<SequencePointRecord> runAlphaSequenceDetailed(
     SessionComposition& session, Degrees start, Degrees endExclusive,
     Degrees step, const CancellationToken* cancellation,
-    ProgressObserver* progress = nullptr);
+    ProgressObserver* progress = nullptr,
+    bool captureOperatingPoint = false);
 
 // Compatibility wrapper around runAlphaSequenceDetailed() for callers that
 // only need the existing AnalysisResult sequence contract.

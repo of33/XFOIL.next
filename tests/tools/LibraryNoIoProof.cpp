@@ -114,6 +114,13 @@ bool runApiWorkflow(const xfoil::geometry::AirfoilGeometry& memoryGeometry) {
   if (first.solveAlphaSequence(sequence, nullptr, progress).isErr()) {
     return false;
   }
+  const auto detailed = first.solveDetailedAlphaSequence(sequence, nullptr,
+                                                          progress);
+  if (detailed.isErr() || detailed.value().points.empty() ||
+      !detailed.value().points.front().operatingPoint.has_value() ||
+      !detailed.value().points.front().operatingPoint->surface.has_value()) {
+    return false;
+  }
   if (first.currentPanel().isErr() ||
       first.currentSurfaceDistribution().isErr() ||
       first.lastOperatingPoint().isErr()) {
@@ -248,6 +255,19 @@ bool runApiWorkflow(const xfoil::geometry::AirfoilGeometry& memoryGeometry) {
       cfSession.solveAlphaSequence(cfSequence, nullptr, progress);
   if (cfSequenceResult.isErr() || cfSequenceResult.value().points.empty()) {
     return false;
+  }
+  const auto detailedCf =
+      cfSession.solveDetailedAlphaSequence(cfSequence, nullptr, progress);
+  if (detailedCf.isErr() || detailedCf.value().points.empty()) {
+    return false;
+  }
+  for (const auto& detailedPoint : detailedCf.value().points) {
+    if (!detailedPoint.operatingPoint.has_value() ||
+        !detailedPoint.operatingPoint->surface.has_value() ||
+        !detailedPoint.operatingPoint->skinFriction.has_value() ||
+        !detailedPoint.operatingPoint->dragCoefficientFriction.has_value()) {
+      return false;
+    }
   }
   for (const auto& sequencePoint : cfSequenceResult.value().points) {
     if (!sequencePoint.dragCoefficientPressure.has_value() ||

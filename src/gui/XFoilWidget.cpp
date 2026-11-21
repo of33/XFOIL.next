@@ -620,10 +620,10 @@ class XFoilWidget::Impl {
     ui.cmClPlot->setAxisTitles(QStringLiteral("CL"), QStringLiteral("CM"));
     ui.efficiencyClPlot->setAxisTitles(QStringLiteral("CL"),
                                        QStringLiteral("CL/CD"));
-    ui.cpAlphaPlot->setAxisTitles(QStringLiteral("α [deg]"),
-                                  QStringLiteral("Cp (contract open)"));
-    ui.cfAlphaPlot->setAxisTitles(QStringLiteral("α [deg]"),
-                                  QStringLiteral("Cf (contract open)"));
+    ui.cpAlphaPlot->setAxisTitles(QStringLiteral("x/c"),
+                                  QStringLiteral("-Cp"));
+    ui.cfAlphaPlot->setAxisTitles(QStringLiteral("x/c or s"),
+                                  QStringLiteral("Cf"));
   }
 
   void updateResultMatrix() {

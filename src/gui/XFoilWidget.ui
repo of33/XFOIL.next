@@ -648,6 +648,12 @@
               <property name="accessibleName">
                <string>Cp plot</string>
               </property>
+              <property name="xfoilPlotRole" stdset="0">
+               <string>distribution-cp</string>
+              </property>
+              <property name="toolTip">
+               <string>Cp distribution of the selected operating point.</string>
+              </property>
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                 <horstretch>1</horstretch>
@@ -683,8 +689,11 @@
               <property name="accessibleName">
                <string>Airfoil geometry and panel preview</string>
               </property>
+              <property name="xfoilPlotRole" stdset="0">
+               <string>geometry</string>
+              </property>
               <property name="toolTip">
-               <string>Geometry contour and optional panel nodes in x/c and y/c.</string>
+               <string>Airfoil contour and optional panel nodes; Ctrl+right-click toggles markers.</string>
               </property>
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -721,6 +730,15 @@
             <property name="accessibleName">
              <string>CL(α) plot</string>
             </property>
+            <property name="xfoilPlotRole" stdset="0">
+             <string>scalar-sequence</string>
+            </property>
+            <property name="xfoilPointSelectable" stdset="0">
+             <bool>true</bool>
+            </property>
+            <property name="toolTip">
+             <string>Scalar sequence plot. Click a point or use the alpha dropdown to select it.</string>
+            </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
               <horstretch>1</horstretch>
@@ -740,6 +758,15 @@
            <widget class="xfoil::gui::ResultPlotView" name="clCdPlot">
             <property name="accessibleName">
              <string>CL(CD) plot</string>
+            </property>
+            <property name="xfoilPlotRole" stdset="0">
+             <string>scalar-sequence</string>
+            </property>
+            <property name="xfoilPointSelectable" stdset="0">
+             <bool>true</bool>
+            </property>
+            <property name="toolTip">
+             <string>Scalar sequence plot. Click a point or use the alpha dropdown to select it.</string>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -761,6 +788,15 @@
             <property name="accessibleName">
              <string>CM(α) plot</string>
             </property>
+            <property name="xfoilPlotRole" stdset="0">
+             <string>scalar-sequence</string>
+            </property>
+            <property name="xfoilPointSelectable" stdset="0">
+             <bool>true</bool>
+            </property>
+            <property name="toolTip">
+             <string>Scalar sequence plot. Click a point or use the alpha dropdown to select it.</string>
+            </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
               <horstretch>1</horstretch>
@@ -780,6 +816,15 @@
            <widget class="xfoil::gui::ResultPlotView" name="cmClPlot">
             <property name="accessibleName">
              <string>CM(CL) plot</string>
+            </property>
+            <property name="xfoilPlotRole" stdset="0">
+             <string>scalar-sequence</string>
+            </property>
+            <property name="xfoilPointSelectable" stdset="0">
+             <bool>true</bool>
+            </property>
+            <property name="toolTip">
+             <string>Scalar sequence plot. Click a point or use the alpha dropdown to select it.</string>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -801,6 +846,15 @@
             <property name="accessibleName">
              <string>CL/CD(CL) plot</string>
             </property>
+            <property name="xfoilPlotRole" stdset="0">
+             <string>scalar-sequence</string>
+            </property>
+            <property name="xfoilPointSelectable" stdset="0">
+             <bool>true</bool>
+            </property>
+            <property name="toolTip">
+             <string>Scalar sequence plot. Click a point or use the alpha dropdown to select it.</string>
+            </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
               <horstretch>1</horstretch>
@@ -821,6 +875,12 @@
             <property name="accessibleName">
              <string>Cp(α) plot</string>
             </property>
+            <property name="xfoilPlotRole" stdset="0">
+             <string>distribution-cp</string>
+            </property>
+            <property name="toolTip">
+             <string>Cp distribution of the selected operating point.</string>
+            </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
               <horstretch>1</horstretch>
@@ -840,6 +900,12 @@
            <widget class="xfoil::gui::ResultPlotView" name="cfAlphaPlot">
             <property name="accessibleName">
              <string>Cf(α) plot</string>
+            </property>
+            <property name="xfoilPlotRole" stdset="0">
+             <string>distribution-cf</string>
+            </property>
+            <property name="toolTip">
+             <string>Cf distribution of the selected operating point; empty for an inviscid point.</string>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">

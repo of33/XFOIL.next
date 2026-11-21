@@ -19,7 +19,7 @@ xfoil/AnalysisResult.h            per-point result and status
 xfoil/AnalysisData.h              owning operating-point and surface data
 xfoil/Result.h                    Error, ErrorCategory, Result<T>
 xfoil/Diagnostic.h                structured diagnostic record
-xfoil/SequenceResult.h            owning sequence/polar result
+xfoil/SequenceResult.h            owning compact/detailed sequence result
 xfoil/SessionOptions.h            PanelingOptions
 xfoil/Session.h                   stateful in-memory xfoil::Session
 xfoil/AnalysisRequest.h           one-shot request and Alpha/CL targets
@@ -148,8 +148,9 @@ session.activePolar();
 ```
 
 `Session` is move-only and not thread-safe. Separate sessions have
-isolated state. Sequences remain available through
-`Session::solveAlphaSequence`.
+isolated state. Compact scalar sequences remain available through
+`Session::solveAlphaSequence`. A detailed owning alpha sequence is
+available through `Session::solveDetailedAlphaSequence`.
 
 ## Operating-point drag results
 
@@ -181,13 +182,14 @@ available after the temporary one-shot session has been destroyed.
 `Session::currentSkinFriction()` remains available for stateful callers
 and uses the same projection as `OperatingPointData::skinFriction`.
 
-Sequence and polar points remain compact scalar rows. They carry `CD`,
+Compact sequence and polar points remain scalar rows. They carry `CD`,
 optional `CDp`, optional friction-only `CDF`, optional XFOIL `CDv`, the
 canonical iteration count when available, and the convergence status.
-They do not carry Cp or Cf distributions, boundary-layer station arrays
-or wake data. The full Cp/Cf detail remains in `OperatingPointData` and in
-the session projections `currentSurfaceDistribution()` and
-`currentSkinFriction()`.
+`SequenceResult` and `PolarPoint` do not carry Cp or Cf distributions,
+boundary-layer station arrays or wake data. The full Cp/Cf detail remains
+in `OperatingPointData`, in the session projections
+`currentSurfaceDistribution()` and `currentSkinFriction()`, and in the
+detailed sequence result described below.
 
 For a live `Session::solveAlphaSequence` point, `PolarPoint` fills these
 scalars from the point's completed solver state:
@@ -216,6 +218,76 @@ The legacy `AnalysisResult` compatibility type remains unchanged and does
 not gain the optional detail fields. The legacy `analyzePolar` path returns
 `AnalysisResult` values as before; callers that need the compact complete
 point should use `Session::solveAlphaSequence`.
+
+## Detailed alpha sequence
+
+`Session::solveDetailedAlphaSequence` runs the same alpha sequence path as
+`solveAlphaSequence` and additionally keeps the full owning detail of every
+executed point:
+
+```cpp
+struct DetailedSequencePoint {
+  PolarPoint polar;
+  std::optional<OperatingPointData> operatingPoint;
+};
+
+struct DetailedSequenceResult {
+  std::vector<DetailedSequencePoint> points;
+  SequenceStopReason stopReason{SequenceStopReason::notRun};
+  std::optional<std::size_t> stoppedAtIndex;
+  std::vector<Diagnostic> diagnostics;
+};
+
+xfoil::Result<xfoil::DetailedSequenceResult> result =
+    session.solveDetailedAlphaSequence(sequence, nullptr, progress);
+```
+
+The two overloads match the compact method:
+
+```cpp
+Result<DetailedSequenceResult> solveDetailedAlphaSequence(
+    const AlphaSequence& sequence,
+    const CancellationToken* cancellation = nullptr);
+Result<DetailedSequenceResult> solveDetailedAlphaSequence(
+    const AlphaSequence& sequence,
+    const CancellationToken* cancellation,
+    const ProgressCallback& progress);
+```
+
+`points` follows the requested sequence order. `stoppedAtIndex` is the
+zero-based index of the point that ended the sequence. The stop reasons are
+the same as for `SequenceResult`; there is no separate stop contract.
+
+For every point that was actually executed, `polar` contains the same
+compact scalar values, diagnostics and status as the compact result. The
+optional `operatingPoint` owns the full Cp surface and, for a valid viscous
+point, the Cf distribution and friction coefficient `CDF`. It is present
+for a successful point, including a successful but unconverged point with a
+consistent final state. It is absent for a point cancelled before a valid
+result, for a failed point without a consistent result, and for a point
+that was not executed. No detail value is carried over from a previous
+point.
+
+An inviscid detail point has `surface` but no `skinFriction` and no
+`dragCoefficientFriction`. A viscous detail point with a valid final VISCAL
+state has `surface`, `skinFriction` and `dragCoefficientFriction`. The Cf
+data uses boundary-layer stations, excludes wake stations, preserves the
+sign and is never interpolated onto Cp/panel nodes. Cp and Cf remain
+separate owning vector sets.
+
+The detailed result is deliberately more memory-intensive than the compact
+result. It is intended for GUI distribution views and detailed host
+evaluation. It has no lower point limit than the existing sequence limit
+and no hidden compression, decimation or interpolation. All data remains
+valid after the session is changed or destroyed. The compact
+`SequenceResult` remains the normal choice for scalar polar work; the
+library does not choose between the two forms automatically.
+
+The detailed method performs no second solver run, no re-solve of a
+selected point, no warm-start duplication and no text/CLI parsing. It
+shares the canonical sequence loop, warm start, end-point handling,
+cancellation and progress events with the compact method. The callback
+receives the same sequence events.
 
 ## Skin-friction distribution
 

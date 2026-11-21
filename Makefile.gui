@@ -142,6 +142,7 @@ GUI_TEST_OBJS := \
 	$(GUI_OBJ_DIR)/tests/GuiDefinitionModelTests.o \
 	$(GUI_OBJ_DIR)/tests/GuiResultSelectionModelTests.o \
 	$(GUI_OBJ_DIR)/tests/GuiResultWorkspaceTests.o \
+	$(GUI_OBJ_DIR)/tests/GuiDetailedSequenceContractTests.o \
 	$(GUI_OBJ_DIR)/tests/GuiSessionBackendTests.o \
 	$(GUI_OBJ_DIR)/tests/XFoilWidgetG2Tests.o \
 	$(GUI_OBJ_DIR)/tests/XFoilWidgetShellTests.o
@@ -322,6 +323,12 @@ $(GUI_OBJ_DIR)/tests/GuiResultWorkspaceTests.o: \
 		$(GUI_GEN_DIR)/GuiResultWorkspaceTests.moc | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/tests/GuiDetailedSequenceContractTests.o: \
+		tests/gui/GuiDetailedSequenceContractTests.cpp \
+		$(GUI_GEN_DIR)/GuiDetailedSequenceContractTests.moc | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
 
 $(GUI_OBJ_DIR)/tests/GuiSessionBackendTests.o: \
 		tests/gui/GuiSessionBackendTests.cpp \

@@ -148,6 +148,21 @@ int main() {
     }
   }
 
+  const xfoil::Result<xfoil::DetailedSequenceResult> detailed =
+      cfSession.solveDetailedAlphaSequence(cfSequence, nullptr, progress);
+  if (detailed.isErr() || detailed.value().points.empty()) {
+    return 1;
+  }
+  for (const xfoil::DetailedSequencePoint& detailedPoint :
+       detailed.value().points) {
+    if (!detailedPoint.operatingPoint.has_value() ||
+        !detailedPoint.operatingPoint->surface.has_value() ||
+        !detailedPoint.operatingPoint->skinFriction.has_value() ||
+        !detailedPoint.operatingPoint->dragCoefficientFriction.has_value()) {
+      return 1;
+    }
+  }
+
   std::cout << "LibraryConsumer PASS\n";
   return 0;
 }

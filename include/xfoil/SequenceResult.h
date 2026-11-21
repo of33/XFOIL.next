@@ -96,6 +96,27 @@ struct SequenceResult {
   std::vector<Diagnostic> diagnostics;
 };
 
+// One detailed sequence point. polar is the same compact scalar row that
+// SequenceResult carries. operatingPoint is the owning full detail of the
+// executed point: Cp surface data and, for a valid viscous point, Cf and
+// CDF. It is absent when no consistent operating point was produced.
+struct DetailedSequencePoint {
+  PolarPoint polar;
+  std::optional<OperatingPointData> operatingPoint;
+};
+
+// Detailed result of an alpha sequence. points follow the requested
+// sequence order. The stop metadata is the same as SequenceResult; this
+// type is deliberately more memory-intensive because every executed point
+// owns its full Cp/Cf distributions. The compact SequenceResult remains
+// available for scalar polar work.
+struct DetailedSequenceResult {
+  std::vector<DetailedSequencePoint> points;
+  SequenceStopReason stopReason{SequenceStopReason::notRun};
+  std::optional<std::size_t> stoppedAtIndex;
+  std::vector<Diagnostic> diagnostics;
+};
+
 }  // namespace xfoil
 
 // End: include/xfoil/SequenceResult.h

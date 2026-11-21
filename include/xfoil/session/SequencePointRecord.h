@@ -32,6 +32,7 @@
 #include <cstddef>
 #include <optional>
 
+#include "xfoil/AnalysisData.h"
 #include "xfoil/AnalysisResult.h"
 
 namespace xfoil::session {
@@ -39,13 +40,16 @@ namespace xfoil::session {
 // One executed or attempted sequence point. The optional detail values are
 // present only when the result is successful and the corresponding
 // canonical point value exists. Cancelled, failed and not-run records leave
-// them empty; no value is carried over from a previous point.
+// them empty; no value is carried over from a previous point. The optional
+// operatingPoint is captured only when a detailed sequence explicitly asks
+// for it, from the point's own completed session state.
 struct SequencePointRecord {
   AnalysisResult result;
   std::optional<double> dragCoefficientPressure;
   std::optional<double> dragCoefficientFriction;
   std::optional<double> dragCoefficientViscous;
   std::optional<std::size_t> iterations;
+  std::optional<OperatingPointData> operatingPoint;
 };
 
 }  // namespace xfoil::session

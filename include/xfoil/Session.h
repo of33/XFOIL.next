@@ -150,6 +150,22 @@ class XFOIL_API Session {
       const CancellationToken* cancellation,
       const ProgressCallback& progress);
 
+  // Runs the same canonical alpha sequence and additionally owns the full
+  // OperatingPointData of every executed point. The compact scalar rows are
+  // available through DetailedSequencePoint::polar. This path is intended
+  // for GUI distributions and detailed host evaluation and is deliberately
+  // more memory-intensive. It performs no second solver run and no
+  // interpolation or file/console I/O.
+  [[nodiscard]]
+  Result<DetailedSequenceResult> solveDetailedAlphaSequence(
+      const AlphaSequence& sequence,
+      const CancellationToken* cancellation = nullptr);
+  [[nodiscard]]
+  Result<DetailedSequenceResult> solveDetailedAlphaSequence(
+      const AlphaSequence& sequence,
+      const CancellationToken* cancellation,
+      const ProgressCallback& progress);
+
   [[nodiscard]]
   Result<SurfaceGeometry> currentPanel() const;
   [[nodiscard]]

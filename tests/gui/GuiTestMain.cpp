@@ -32,6 +32,7 @@ int runGeometryPlotViewTests(int argc, char** argv);
 int runGuiDefinitionModelTests(int argc, char** argv);
 int runGuiResultSelectionModelTests(int argc, char** argv);
 int runGuiResultWorkspaceTests(int argc, char** argv);
+int runGuiDetailedSequenceContractTests(int argc, char** argv);
 int runGuiSessionBackendTests(int argc, char** argv);
 int runXFoilWidgetG2Tests(int argc, char** argv);
 int runXFoilWidgetShellTests(int argc, char** argv);
@@ -45,6 +46,7 @@ int main(int argc, char** argv) {
   failures += runGuiDefinitionModelTests(argc, argv);
   failures += runGuiResultSelectionModelTests(argc, argv);
   failures += runGuiResultWorkspaceTests(argc, argv);
+  failures += runGuiDetailedSequenceContractTests(argc, argv);
   failures += runGuiSessionBackendTests(argc, argv);
   failures += runXFoilWidgetG2Tests(argc, argv);
   failures += runXFoilWidgetShellTests(argc, argv);

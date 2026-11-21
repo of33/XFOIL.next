@@ -94,6 +94,15 @@ SequenceResult projectSequence(
     SequenceStopReason stopReason = SequenceStopReason::completed,
     std::optional<std::size_t> stoppedAtIndex = std::nullopt);
 
+// Pure mapping of an internal detailed sequence. The compact polar row is
+// built by the same scalar projection as projectSequence(); operatingPoint
+// is copied only when it was captured for that point. No solver is called.
+[[nodiscard]]
+DetailedSequenceResult projectDetailedSequence(
+    std::span<const SequencePointRecord> records,
+    SequenceStopReason stopReason = SequenceStopReason::completed,
+    std::optional<std::size_t> stoppedAtIndex = std::nullopt);
+
 }  // namespace xfoil::session
 
 // End: include/xfoil/session/SessionProjections.h
