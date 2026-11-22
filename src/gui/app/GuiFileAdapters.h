@@ -32,6 +32,8 @@
 #include <string_view>
 
 #include "xfoil/AnalysisData.h"
+#include "xfoil/PolarData.h"
+#include "xfoil/Result.h"
 #include "xfoil/geometry/AirfoilGeometry.h"
 
 namespace xfoil::gui::app {
@@ -76,6 +78,18 @@ FileWriteResult saveAirfoilFile(
 FileWriteResult exportDxfFile(const std::filesystem::path& path,
                                const SurfaceGeometry& panel,
                                bool overwriteExisting);
+
+// Reads one accepted PolarText file into an owning value. File and path
+// handling stays in the application adapter.
+[[nodiscard]]
+Result<PolarData> readPolarFile(const std::filesystem::path& path);
+
+// Writes the owning polar through the existing PolarText contract. No
+// extension is appended and the caller owns the overwrite decision.
+[[nodiscard]]
+FileWriteResult savePolarFile(const std::filesystem::path& path,
+                              const PolarData& polar,
+                              bool overwriteExisting);
 
 }  // namespace xfoil::gui::app
 

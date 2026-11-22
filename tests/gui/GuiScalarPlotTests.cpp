@@ -43,6 +43,7 @@ namespace {
 
 using xfoil::gui::GuiPointEntry;
 using xfoil::gui::GuiScalarPlotKind;
+using xfoil::gui::ScalarComparisonSeries;
 using xfoil::gui::ScalarPlotView;
 
 GuiPointEntry point(std::size_t sourceIndex, double alpha, double cl,
@@ -340,6 +341,34 @@ class GuiScalarPlotTests : public QObject {
     sendMouse(plot, QEvent::MouseButtonRelease, target + QPoint(40, 25),
               Qt::LeftButton, Qt::NoButton);
     QVERIFY(!selected);
+  }
+
+  void comparisonCurvesAreIndependentAndLazilyAllocated() {
+    ScalarPlotView view;
+    view.setKind(GuiScalarPlotKind::clAlpha);
+    QCustomPlot* plot = canvas(view);
+    QCOMPARE(plot->plottableCount(), 5);
+    QCOMPARE(view.comparisonCurveCount(), std::size_t{0});
+
+    const std::vector<ScalarComparisonSeries> comparisons = {
+        ScalarComparisonSeries{"First", {{0.0, 0.0}, {1.0, 0.4}, {2.0, 0.8}}},
+        ScalarComparisonSeries{"Second", {{0.0, 0.1}, {2.0, 0.5}}}};
+    view.setComparisons(comparisons, true);
+    QCOMPARE(view.comparisonCurveCount(), std::size_t{2});
+    QCOMPARE(view.comparisonPointCount(), std::size_t{5});
+    QCOMPARE(plot->plottableCount(), 7);
+    QCOMPARE(view.visiblePointCount(), std::size_t{0});
+    QCOMPARE(view.unselectedMarkerCount(), std::size_t{0});
+
+    view.setComparisons({comparisons.front()}, false);
+    QCOMPARE(view.comparisonCurveCount(), std::size_t{1});
+    QCOMPARE(view.comparisonPointCount(), std::size_t{3});
+    QCOMPARE(plot->plottableCount(), 6);
+
+    view.setComparisons({}, false);
+    QCOMPARE(view.comparisonCurveCount(), std::size_t{0});
+    QCOMPARE(view.comparisonPointCount(), std::size_t{0});
+    QCOMPARE(plot->plottableCount(), 5);
   }
 
   void disabledAndUnselectedNcMarkersAreNotClickable() {

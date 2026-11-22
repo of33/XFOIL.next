@@ -192,7 +192,8 @@ class GuiResultWorkspaceTests : public QObject {
     }
     QVERIFY(widgetItems ==
             (QStringList{"pointSelectionGroup", "resultMatrixGroup",
-                         "setupDiagnosticsGroup", "analyzeButton"}));
+                         "setupDiagnosticsGroup", "polarManagerGroup",
+                         "analyzeButton"}));
     QVERIFY(analyzeIndex == layout->count() - 1);
   }
 

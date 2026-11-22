@@ -30,6 +30,7 @@
 int runQCustomPlotSmoke(int argc, char** argv);
 int runGeometryPlotViewTests(int argc, char** argv);
 int runGuiDefinitionModelTests(int argc, char** argv);
+int runGuiPolarManagerTests(int argc, char** argv);
 int runGuiResultSelectionModelTests(int argc, char** argv);
 int runGuiResultSummaryTests(int argc, char** argv);
 int runGuiResultWorkspaceTests(int argc, char** argv);
@@ -43,6 +44,7 @@ int runXFoilWidgetG3Tests(int argc, char** argv);
 int runXFoilWidgetG4Tests(int argc, char** argv);
 int runGuiAnalysisWorkerTests(int argc, char** argv);
 int runXFoilWidgetG6bTests(int argc, char** argv);
+int runXFoilWidgetG6cTests(int argc, char** argv);
 int runXFoilWidgetShellTests(int argc, char** argv);
 int runGuiFileAdaptersTests(int argc, char** argv);
 int runMainWindowTests(int argc, char** argv);
@@ -54,6 +56,7 @@ int main(int argc, char** argv) {
   failures += runQCustomPlotSmoke(argc, argv);
   failures += runGeometryPlotViewTests(argc, argv);
   failures += runGuiDefinitionModelTests(argc, argv);
+  failures += runGuiPolarManagerTests(argc, argv);
   failures += runGuiResultSelectionModelTests(argc, argv);
   failures += runGuiResultSummaryTests(argc, argv);
   failures += runGuiResultWorkspaceTests(argc, argv);
@@ -67,6 +70,7 @@ int main(int argc, char** argv) {
   failures += runXFoilWidgetG4Tests(argc, argv);
   failures += runGuiAnalysisWorkerTests(argc, argv);
   failures += runXFoilWidgetG6bTests(argc, argv);
+  failures += runXFoilWidgetG6cTests(argc, argv);
   failures += runXFoilWidgetShellTests(argc, argv);
   failures += runGuiFileAdaptersTests(argc, argv);
   failures += runMainWindowTests(argc, argv);

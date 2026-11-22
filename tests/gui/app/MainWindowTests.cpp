@@ -28,6 +28,7 @@
 #include <QAction>
 #include <QFile>
 #include <QFileInfo>
+#include <QListWidget>
 #include <QMenu>
 #include <QSignalSpy>
 #include <QTemporaryDir>
@@ -169,6 +170,36 @@ class MainWindowTests : public QObject {
     QVERIFY(window.windowTitle().contains(QString::fromLatin1(
         xfoil::app::product::version.data(),
         static_cast<int>(xfoil::app::product::version.size()))));
+    QVERIFY(window.close());
+  }
+
+  void polarImportAndComparisonExportUseAppAdapter() {
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    Harness harness;
+    harness.settingsFile = directory.filePath(QStringLiteral("settings.ini"));
+    harness.openPath =
+        QFileInfo(QStringLiteral(
+                      "tests/data/xfoil-6.996/s11/canonical-base.pol"))
+            .absoluteFilePath();
+    harness.savePath = directory.filePath(QStringLiteral("output.pol"));
+    MainWindow window(harness.dependencies());
+    auto* widget = qobject_cast<XFoilWidget*>(window.centralWidget());
+    QVERIFY(widget != nullptr);
+
+    QVERIFY(!window.findChild<QAction*>("exportCurrentPolarAction")->isEnabled());
+    QVERIFY(!window.findChild<QAction*>("exportComparisonPolarAction")->isEnabled());
+    window.findChild<QAction*>("importPolarAction")->trigger();
+    QVERIFY2(harness.errors.empty(),
+             harness.errors.join(QStringLiteral("; ")).toUtf8().constData());
+    QCOMPARE(widget->findChild<QListWidget*>("polarListView")->count(), 1);
+    QVERIFY(window.findChild<QAction*>("exportComparisonPolarAction")->isEnabled());
+
+    window.findChild<QAction*>("exportComparisonPolarAction")->trigger();
+    QVERIFY2(harness.errors.empty(),
+             harness.errors.join(QStringLiteral("; ")).toUtf8().constData());
+    const QString saved = readText(harness.savePath);
+    QVERIFY(saved.contains(QStringLiteral("Calculated polar for: NACA 0012")));
     QVERIFY(window.close());
   }
 

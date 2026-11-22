@@ -36,7 +36,9 @@ namespace {
 using xfoil::gui::app::AirfoilFileReadStatus;
 using xfoil::gui::app::exportDxfFile;
 using xfoil::gui::app::readAirfoilFile;
+using xfoil::gui::app::readPolarFile;
 using xfoil::gui::app::saveAirfoilFile;
+using xfoil::gui::app::savePolarFile;
 
 bool writeText(const std::filesystem::path& path, const char* text) {
   QFile file(QString::fromStdString(path.string()));
@@ -181,6 +183,31 @@ class GuiFileAdaptersTests : public QObject {
     QVERIFY(!refused.success);
     QVERIFY(exportDxfFile(path, panel, true).success);
     QCOMPARE(readText(path), text);
+  }
+
+  void readsAndWritesPolarTextThroughOwningValues() {
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const auto fixture = std::filesystem::path(
+        "tests/data/xfoil-6.996/s11/canonical-base.pol");
+    const auto read = readPolarFile(fixture);
+    QVERIFY2(read.isOk(), read.isErr() ? read.error().message.c_str() : "");
+    QCOMPARE(read.value().metadata.name, std::string{"NACA 0012"});
+    QCOMPARE(read.value().points.size(), std::size_t{2});
+
+    const auto savedPath = pathIn(directory, "output.pol");
+    const auto written = savePolarFile(savedPath, read.value(), false);
+    QVERIFY2(written.success, written.message.c_str());
+    const auto roundtrip = readPolarFile(savedPath);
+    QVERIFY2(roundtrip.isOk(),
+             roundtrip.isErr() ? roundtrip.error().message.c_str() : "");
+    QCOMPARE(roundtrip.value().metadata.name, read.value().metadata.name);
+    QCOMPARE(roundtrip.value().points.size(), std::size_t{2});
+    QCOMPARE(roundtrip.value().points.front().liftCoefficient, 0.1);
+    QVERIFY(!savePolarFile(savedPath, read.value(), false).success);
+    QVERIFY(savePolarFile(savedPath, read.value(), true).success);
+    QVERIFY(!readPolarFile(pathIn(directory, "missing.pol")).isOk());
+    QVERIFY(!savePolarFile({}, read.value(), true).success);
   }
 
   void emptyTargetsAreRejected() {

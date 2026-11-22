@@ -48,6 +48,7 @@
 
 #include "app/GuiFileAdapters.h"
 #include "app/ProductInfo.h"
+#include "xfoil/PolarData.h"
 #include "qcustomplot.h"
 #include "xfoil/gui/XFoilWidget.h"
 
@@ -88,6 +89,14 @@ QString airfoilSaveFilter() {
 
 QString dxfSaveFilter() {
   return QStringLiteral("DXF R12 (*.dxf);;All files (*)");
+}
+
+QString polarOpenFilter() {
+  return QStringLiteral("Polar files (*.pol);;All files (*)");
+}
+
+QString polarSaveFilter() {
+  return QStringLiteral("Polar files (*.pol);;All files (*)");
 }
 
 std::filesystem::path toPath(const QString& path) {
@@ -190,6 +199,12 @@ MainWindow::MainWindow(Dependencies dependencies, QWidget* parent)
           [this]() { updateAppActions(); });
   connect(widget_, &XFoilWidget::panelingChanged, this,
           [this]() { updateAppActions(); });
+  connect(widget_, &XFoilWidget::operatingPointReady, this,
+          [this](const OperatingPointData&) { updateAppActions(); });
+  connect(widget_, &XFoilWidget::sequenceReady, this,
+          [this](const DetailedSequenceResult&) { updateAppActions(); });
+  connect(widget_, &XFoilWidget::comparisonPolarsChanged, this,
+          [this]() { updateAppActions(); });
   connect(widget_, &XFoilWidget::stateChanged, this,
           [this](XFoilGuiState) {
             updateAppActions();
@@ -235,6 +250,25 @@ void MainWindow::createActions() {
   connect(exportDxfAction_, &QAction::triggered, this,
           [this](bool) { exportDxfDialog(); });
 
+  importPolarAction_ = new QAction(QStringLiteral("&Import Polar..."), this);
+  importPolarAction_->setObjectName(QStringLiteral("importPolarAction"));
+  connect(importPolarAction_, &QAction::triggered, this,
+          [this](bool) { importPolarDialog(); });
+
+  exportCurrentPolarAction_ =
+      new QAction(QStringLiteral("Export &Current Polar..."), this);
+  exportCurrentPolarAction_->setObjectName(
+      QStringLiteral("exportCurrentPolarAction"));
+  connect(exportCurrentPolarAction_, &QAction::triggered, this,
+          [this](bool) { exportCurrentPolarDialog(); });
+
+  exportComparisonPolarAction_ =
+      new QAction(QStringLiteral("Export &Comparison Polar..."), this);
+  exportComparisonPolarAction_->setObjectName(
+      QStringLiteral("exportComparisonPolarAction"));
+  connect(exportComparisonPolarAction_, &QAction::triggered, this,
+          [this](bool) { exportComparisonPolarDialog(); });
+
   exitAction_ = new QAction(QStringLiteral("E&xit"), this);
   exitAction_->setObjectName(QStringLiteral("exitAction"));
   exitAction_->setShortcut(QKeySequence::Quit);
@@ -253,6 +287,10 @@ void MainWindow::createMenusAndToolBar() {
   fileMenu_->addAction(openAction_);
   fileMenu_->addAction(saveAirfoilAction_);
   fileMenu_->addAction(exportDxfAction_);
+  fileMenu_->addSeparator();
+  fileMenu_->addAction(importPolarAction_);
+  fileMenu_->addAction(exportCurrentPolarAction_);
+  fileMenu_->addAction(exportComparisonPolarAction_);
   recentFilesMenu_ = fileMenu_->addMenu(QStringLiteral("Recent Files"));
   recentFilesMenu_->setObjectName(QStringLiteral("recentFilesMenu"));
   fileMenu_->addSeparator();
@@ -314,6 +352,11 @@ void MainWindow::updateAppActions() {
                                  widget_->geometry().has_value());
   exportDxfAction_->setEnabled(widget_ != nullptr &&
                                widget_->panelGeometry().has_value());
+  importPolarAction_->setEnabled(widget_ != nullptr);
+  exportCurrentPolarAction_->setEnabled(
+      widget_ != nullptr && widget_->currentPolar().has_value());
+  exportComparisonPolarAction_->setEnabled(
+      widget_ != nullptr && widget_->selectedComparisonPolar().has_value());
 }
 
 void MainWindow::updateRecentMenu() {
@@ -488,6 +531,87 @@ void MainWindow::exportDxfDialog() {
       exportDxfFile(toPath(*path), *panel, true);
   if (!written.success) {
     showError(QStringLiteral("Export DXF"),
+              QString::fromStdString(written.message));
+    return;
+  }
+  statusBar()->showMessage(
+      QStringLiteral("Exported %1").arg(QFileInfo(*path).fileName()));
+}
+
+void MainWindow::importPolarDialog() {
+  const std::optional<QString> path =
+      chooseFile(FileDialogMode::open, QStringLiteral("Import Polar"),
+                 polarOpenFilter(), QString());
+  if (!path.has_value()) {
+    return;
+  }
+  const Result<PolarData> polar = readPolarFile(toPath(*path));
+  if (polar.isErr()) {
+    showError(QStringLiteral("Import Polar"),
+              QString::fromStdString(polar.error().message));
+    return;
+  }
+  const Result<std::uint64_t> added =
+      widget_->addComparisonPolar(polar.value());
+  if (added.isErr()) {
+    showError(QStringLiteral("Import Polar"),
+              QString::fromStdString(added.error().message));
+    return;
+  }
+  statusBar()->showMessage(
+      QStringLiteral("Imported %1").arg(QFileInfo(*path).fileName()));
+  updateAppActions();
+}
+
+void MainWindow::exportCurrentPolarDialog() {
+  const std::optional<PolarData> polar = widget_->currentPolar();
+  if (!polar.has_value()) {
+    showError(QStringLiteral("Export Current Polar"),
+              QStringLiteral("No current polar is available."));
+    return;
+  }
+  QString suggested = QString::fromStdString(polar->metadata.name);
+  if (suggested.isEmpty()) {
+    suggested = QStringLiteral("polar");
+  }
+  const std::optional<QString> path = chooseFile(
+      FileDialogMode::save, QStringLiteral("Export Current Polar"),
+      polarSaveFilter(), suggested);
+  if (!path.has_value()) {
+    return;
+  }
+  const FileWriteResult written =
+      savePolarFile(toPath(*path), *polar, true);
+  if (!written.success) {
+    showError(QStringLiteral("Export Current Polar"),
+              QString::fromStdString(written.message));
+    return;
+  }
+  statusBar()->showMessage(
+      QStringLiteral("Exported %1").arg(QFileInfo(*path).fileName()));
+}
+
+void MainWindow::exportComparisonPolarDialog() {
+  const std::optional<PolarData> polar = widget_->selectedComparisonPolar();
+  if (!polar.has_value()) {
+    showError(QStringLiteral("Export Comparison Polar"),
+              QStringLiteral("No comparison polar is selected."));
+    return;
+  }
+  QString suggested = QString::fromStdString(polar->metadata.name);
+  if (suggested.isEmpty()) {
+    suggested = QStringLiteral("polar");
+  }
+  const std::optional<QString> path = chooseFile(
+      FileDialogMode::save, QStringLiteral("Export Comparison Polar"),
+      polarSaveFilter(), suggested);
+  if (!path.has_value()) {
+    return;
+  }
+  const FileWriteResult written =
+      savePolarFile(toPath(*path), *polar, true);
+  if (!written.success) {
+    showError(QStringLiteral("Export Comparison Polar"),
               QString::fromStdString(written.message));
     return;
   }

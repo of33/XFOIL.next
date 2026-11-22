@@ -45,6 +45,8 @@
 #include <QDoubleSpinBox>
 #include <QLabel>
 #include <QLineEdit>
+#include <QListWidget>
+#include <QListWidgetItem>
 #include <QMetaObject>
 #include <QProgressBar>
 #include <QPushButton>
@@ -54,6 +56,7 @@
 #include <QThread>
 
 #include "model/GuiDefinitionModel.h"
+#include "model/GuiPolarManager.h"
 #include "model/GuiResultSelectionModel.h"
 #include "model/GuiResultSummary.h"
 #include "plots/GeometryPlotView.h"
@@ -329,6 +332,7 @@ class XFoilWidget::Impl {
       (void)owner_->setConfiguration(configurationFromControls(ui));
     }
     refreshPointSelection();
+    refreshPolarManager();
     refreshUi();
   }
 
@@ -597,6 +601,9 @@ class XFoilWidget::Impl {
     invalidateAnalysis();
     setupError_.reset();
     model_.reset();
+    polarManager_.clear();
+    polarManagerMessage_.clear();
+    refreshPolarManager();
     ui.airfoilPlot->clear();
     updateGeometryControls();
     updatePanelingControls(model_.panelingOptions());
@@ -667,6 +674,299 @@ class XFoilWidget::Impl {
         break;
     }
     return setup;
+  }
+
+  [[nodiscard]]
+  std::optional<PolarData> currentPolar() const {
+    PolarData polar;
+    const AnalysisConfig& configuration = model_.configuration();
+    polar.metadata.name =
+        model_.geometry().has_value() &&
+                !model_.geometry()->name().empty()
+            ? std::string(model_.geometry()->name())
+            : (model_.designation().empty()
+                   ? std::string("Current")
+                   : model_.designation());
+    polar.metadata.reynoldsDependency = configuration.reynoldsDependency;
+    polar.metadata.machDependency = configuration.machDependency;
+    polar.metadata.referenceReynoldsNumber =
+        configuration.reynoldsNumber;
+    polar.metadata.referenceMachNumber = configuration.machNumber;
+    polar.metadata.nCritical = {configuration.transition.nCritical,
+                                configuration.transition.nCritical};
+    polar.metadata.tripX = {configuration.transition.topTripX,
+                            configuration.transition.bottomTripX};
+    polar.metadata.elementCount = 1;
+    polar.layout.baseColumns = {
+        PolarColumn::alpha, PolarColumn::liftCoefficient,
+        PolarColumn::dragCoefficient, PolarColumn::dragCoefficientPressure,
+        PolarColumn::momentCoefficient};
+
+    if (currentSequence_.has_value()) {
+      polar.points.reserve(currentSequence_->points.size());
+      for (const DetailedSequencePoint& point : currentSequence_->points) {
+        polar.points.push_back(point.polar);
+      }
+    } else if (currentOperatingPoint_.has_value()) {
+      const OperatingPointData& point = *currentOperatingPoint_;
+      PolarPoint row;
+      row.alpha = point.alpha;
+      row.liftCoefficient = point.liftCoefficient;
+      row.dragCoefficient = point.dragCoefficient;
+      row.momentCoefficient = point.momentCoefficient;
+      row.dragCoefficientPressure = point.dragCoefficientPressure;
+      row.dragCoefficientFriction = point.dragCoefficientFriction;
+      row.convergence = point.convergence;
+      row.diagnostics = point.diagnostics;
+      polar.points.push_back(std::move(row));
+    } else {
+      return std::nullopt;
+    }
+
+    for (PolarPoint& point : polar.points) {
+      if (!point.dragCoefficientPressure.has_value()) {
+        point.dragCoefficientPressure = 0.0;
+      }
+    }
+    return polar;
+  }
+
+  [[nodiscard]]
+  std::vector<ScalarComparisonSeries> comparisonSeriesFor(
+      GuiScalarPlotKind kind) const {
+    std::vector<ScalarComparisonSeries> result;
+    for (const GuiStoredPolar& entry : polarManager_.entries()) {
+      if (!entry.visible) {
+        continue;
+      }
+      ScalarComparisonSeries series;
+      series.name = entry.name;
+      series.points.reserve(entry.polar.points.size());
+      for (const PolarPoint& point : entry.polar.points) {
+        if (point.convergence != ConvergenceStatus::converged) {
+          continue;
+        }
+        const double alpha = point.alpha.value;
+        const double cl = point.liftCoefficient;
+        const double cd = point.dragCoefficient;
+        const double cm = point.momentCoefficient;
+        double x = 0.0;
+        double y = 0.0;
+        switch (kind) {
+          case GuiScalarPlotKind::clAlpha:
+            x = alpha;
+            y = cl;
+            break;
+          case GuiScalarPlotKind::clCd:
+            x = cd;
+            y = cl;
+            break;
+          case GuiScalarPlotKind::cmAlpha:
+            x = alpha;
+            y = cm;
+            break;
+          case GuiScalarPlotKind::cmCl:
+            x = cl;
+            y = cm;
+            break;
+          case GuiScalarPlotKind::efficiencyCl:
+            if (std::abs(cd) <= 1.0e-30) {
+              continue;
+            }
+            x = cl;
+            y = cl / cd;
+            break;
+        }
+        if (std::isfinite(x) && std::isfinite(y)) {
+          series.points.emplace_back(x, y);
+        }
+      }
+      if (!series.points.empty()) {
+        result.push_back(std::move(series));
+      }
+    }
+    return result;
+  }
+
+  void refreshComparisonPlots(bool fitData) {
+    for (ScalarPlotView* view :
+         {ui.clAlphaPlot, ui.clCdPlot, ui.cmAlphaPlot, ui.cmClPlot,
+          ui.efficiencyClPlot}) {
+      view->setComparisons(comparisonSeriesFor(view->kind()), fitData);
+    }
+  }
+
+  void refreshPolarManager() {
+    updatingPolarList_ = true;
+    {
+      const QSignalBlocker blocker(ui.polarListView);
+      ui.polarListView->clear();
+      for (const GuiStoredPolar& entry : polarManager_.entries()) {
+        auto* item = new QListWidgetItem(
+            QString::fromStdString(entry.name), ui.polarListView);
+        item->setData(Qt::UserRole,
+                      QVariant::fromValue<qulonglong>(entry.id));
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+        item->setCheckState(entry.visible ? Qt::Checked : Qt::Unchecked);
+      }
+      const std::optional<std::uint64_t> selected =
+          polarManager_.selectedId();
+      if (selected.has_value()) {
+        for (int row = 0; row < ui.polarListView->count(); ++row) {
+          if (ui.polarListView->item(row)->data(Qt::UserRole)
+                  .toULongLong() == *selected) {
+            ui.polarListView->setCurrentRow(row);
+            break;
+          }
+        }
+      }
+    }
+    const GuiStoredPolar* selected = polarManager_.selected();
+    {
+      const QSignalBlocker blocker(ui.polarNameEdit);
+      ui.polarNameEdit->setText(
+          selected == nullptr ? QString()
+                              : QString::fromStdString(selected->name));
+    }
+    {
+      const QSignalBlocker blocker(ui.polarVisibilityCheckBox);
+      ui.polarVisibilityCheckBox->setChecked(
+          selected != nullptr && selected->visible);
+    }
+    const bool enabled = selected != nullptr;
+    ui.polarNameEdit->setEnabled(enabled);
+    ui.renamePolarButton->setEnabled(enabled);
+    ui.removePolarButton->setEnabled(enabled);
+    ui.polarVisibilityCheckBox->setEnabled(enabled);
+    ui.movePolarUpButton->setEnabled(enabled);
+    ui.movePolarDownButton->setEnabled(enabled);
+    ui.clearPolarsButton->setEnabled(!polarManager_.entries().empty());
+    updatingPolarList_ = false;
+
+    QString status = QStringLiteral("%1 / %2 comparisons")
+                         .arg(static_cast<qulonglong>(
+                             polarManager_.entries().size()))
+                         .arg(static_cast<qulonglong>(
+                             GuiPolarManager::maxComparisons));
+    if (!polarManagerMessage_.isEmpty()) {
+      status = polarManagerMessage_;
+    }
+    ui.polarManagerStatusLabel->setText(status);
+    ui.addCurrentPolarButton->setEnabled(
+        !tracker_.isRunning() &&
+        (currentOperatingPoint_.has_value() ||
+         currentSequence_.has_value()));
+    polarManagerMessage_.clear();
+    refreshComparisonPlots(false);
+    Q_EMIT owner_->comparisonPolarsChanged();
+  }
+
+  void selectedPolarChanged(QListWidgetItem* current) {
+    if (updatingPolarList_ || current == nullptr) {
+      return;
+    }
+    const std::uint64_t id = current->data(Qt::UserRole).toULongLong();
+    if (polarManager_.select(id).isErr()) {
+      return;
+    }
+    refreshPolarManager();
+  }
+
+  void polarItemChanged(QListWidgetItem* item) {
+    if (updatingPolarList_ || item == nullptr ||
+        !(item->flags() & Qt::ItemIsUserCheckable)) {
+      return;
+    }
+    const std::uint64_t id = item->data(Qt::UserRole).toULongLong();
+    (void)polarManager_.setVisible(id, item->checkState() == Qt::Checked);
+    refreshPolarManager();
+  }
+
+  void renameSelectedPolar() {
+    const GuiStoredPolar* selected = polarManager_.selected();
+    if (selected == nullptr) {
+      return;
+    }
+    const std::string name =
+        ui.polarNameEdit->text().trimmed().toStdString();
+    const Result<void> renamed =
+        polarManager_.rename(selected->id, name);
+    if (renamed.isErr()) {
+      polarManagerMessage_ = QString::fromStdString(renamed.error().message);
+    } else {
+      polarManagerMessage_.clear();
+    }
+    refreshPolarManager();
+  }
+
+  void setSelectedPolarVisibility(bool visible) {
+    const GuiStoredPolar* selected = polarManager_.selected();
+    if (selected == nullptr) {
+      return;
+    }
+    (void)polarManager_.setVisible(selected->id, visible);
+    refreshPolarManager();
+  }
+
+  void moveSelectedPolar(bool up) {
+    const GuiStoredPolar* selected = polarManager_.selected();
+    if (selected == nullptr) {
+      return;
+    }
+    (void)(up ? polarManager_.moveUp(selected->id)
+              : polarManager_.moveDown(selected->id));
+    refreshPolarManager();
+  }
+
+  void removeSelectedPolar() {
+    const GuiStoredPolar* selected = polarManager_.selected();
+    if (selected == nullptr) {
+      return;
+    }
+    (void)polarManager_.remove(selected->id);
+    refreshPolarManager();
+  }
+
+  void clearComparisons() {
+    polarManager_.clear();
+    polarManagerMessage_.clear();
+    refreshPolarManager();
+  }
+
+  [[nodiscard]]
+  Result<std::uint64_t> addComparisonPolar(PolarData polar,
+                                           GuiPolarOrigin origin) {
+    if (QThread::currentThread() != owner_->thread()) {
+      return Result<std::uint64_t>::fail(wrongThreadError());
+    }
+    Result<std::uint64_t> added =
+        polarManager_.add(std::move(polar), origin);
+    if (added.isErr()) {
+      polarManagerMessage_ = QString::fromStdString(added.error().message);
+      refreshPolarManager();
+      return added;
+    }
+    polarManagerMessage_.clear();
+    refreshPolarManager();
+    return added;
+  }
+
+  [[nodiscard]]
+  Result<std::uint64_t> addCurrentAsComparison() {
+    const std::optional<PolarData> current = currentPolar();
+    if (!current.has_value()) {
+      return Result<std::uint64_t>::fail(Error::make(
+          ErrorCategory::invalidState, "gui.noCurrentPolar",
+          "No current analysis result is available", "polar.manager"));
+    }
+    return addComparisonPolar(*current, GuiPolarOrigin::currentSnapshot);
+  }
+
+  [[nodiscard]]
+  std::optional<PolarData> selectedComparisonPolar() const {
+    const GuiStoredPolar* selected = polarManager_.selected();
+    return selected == nullptr ? std::nullopt
+                               : std::optional<PolarData>{selected->polar};
   }
 
   void analyze() {
@@ -1341,6 +1641,33 @@ class XFoilWidget::Impl {
       connect(spin, &QDoubleSpinBox::valueChanged, owner_,
               [this](double) { targetFieldsChanged(); });
     }
+    QObject::connect(ui.polarListView, &QListWidget::currentItemChanged,
+            owner_, [this](QListWidgetItem* current, QListWidgetItem*) {
+              selectedPolarChanged(current);
+            });
+    QObject::connect(ui.polarListView, &QListWidget::itemChanged, owner_,
+            [this](QListWidgetItem* item) { polarItemChanged(item); });
+    QObject::connect(ui.addCurrentPolarButton, &QPushButton::clicked, owner_,
+            [this]() {
+              const Result<std::uint64_t> added = addCurrentAsComparison();
+              if (added.isErr()) {
+                polarManagerMessage_ =
+                    QString::fromStdString(added.error().message);
+                refreshPolarManager();
+              }
+            });
+    QObject::connect(ui.renamePolarButton, &QPushButton::clicked, owner_,
+            [this]() { renameSelectedPolar(); });
+    QObject::connect(ui.removePolarButton, &QPushButton::clicked, owner_,
+            [this]() { removeSelectedPolar(); });
+    QObject::connect(ui.polarVisibilityCheckBox, &QCheckBox::toggled, owner_,
+            [this](bool checked) { setSelectedPolarVisibility(checked); });
+    QObject::connect(ui.movePolarUpButton, &QPushButton::clicked, owner_,
+            [this]() { moveSelectedPolar(true); });
+    QObject::connect(ui.movePolarDownButton, &QPushButton::clicked, owner_,
+            [this]() { moveSelectedPolar(false); });
+    QObject::connect(ui.clearPolarsButton, &QPushButton::clicked, owner_,
+            [this]() { clearComparisons(); });
     QObject::connect(ui.analyzeButton, &QPushButton::clicked, owner_,
             [this]() { analyze(); });
     QObject::connect(ui.cancelButton, &QPushButton::clicked, owner_,
@@ -1745,6 +2072,7 @@ class XFoilWidget::Impl {
     ui.cpPlot->clear();
     ui.cpAlphaPlot->clear();
     ui.cfAlphaPlot->clear();
+    refreshComparisonPlots(false);
   }
 
   void refreshResultPresentation(bool fitPlots) {
@@ -1788,6 +2116,7 @@ class XFoilWidget::Impl {
       ui.cpAlphaPlot->clear();
       ui.cfAlphaPlot->clear();
     }
+    refreshComparisonPlots(false);
     refreshUi();
   }
 
@@ -1887,6 +2216,9 @@ class XFoilWidget::Impl {
 
     ui.analyzeButton->setEnabled(ready && !running);
     ui.cancelButton->setEnabled(running);
+    ui.addCurrentPolarButton->setEnabled(
+        !running && (currentOperatingPoint_.has_value() ||
+                     currentSequence_.has_value()));
     ui.definitionsScrollArea->setEnabled(!running);
     if (analyzeAction_ != nullptr) {
       analyzeAction_->setEnabled(ready && !running);
@@ -1954,6 +2286,9 @@ class XFoilWidget::Impl {
   std::optional<double> progressFraction_;
   std::optional<Error> setupError_;
   AnalysisWorkflowViewOptions viewOptions_;
+  GuiPolarManager polarManager_;
+  QString polarManagerMessage_;
+  bool updatingPolarList_{false};
   AnalysisOutcome analysisOutcome_{AnalysisOutcome::none};
   QString analysisStatusText_{QStringLiteral("Idle")};
   bool updatingControls_{false};
@@ -2028,6 +2363,23 @@ AnalysisWorkflowViewOptions XFoilWidget::viewOptions() const {
 
 std::optional<AnalysisWorkflowSetup> XFoilWidget::currentSetup() const {
   return impl_->currentSetup();
+}
+
+Result<std::uint64_t> XFoilWidget::addComparisonPolar(
+    const PolarData& polar) {
+  return impl_->addComparisonPolar(polar, GuiPolarOrigin::imported);
+}
+
+Result<std::uint64_t> XFoilWidget::addCurrentComparisonPolar() {
+  return impl_->addCurrentAsComparison();
+}
+
+std::optional<PolarData> XFoilWidget::currentPolar() const {
+  return impl_->currentPolar();
+}
+
+std::optional<PolarData> XFoilWidget::selectedComparisonPolar() const {
+  return impl_->selectedComparisonPolar();
 }
 
 std::optional<geometry::AirfoilGeometry> XFoilWidget::geometry() const {

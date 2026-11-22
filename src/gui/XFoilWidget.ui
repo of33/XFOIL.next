@@ -1807,6 +1807,143 @@
            </layout>
           </widget>
          </item>
+      <item>
+       <widget class="QGroupBox" name="polarManagerGroup">
+        <property name="title">
+         <string>Comparison Polars</string>
+        </property>
+        <property name="accessibleName">
+         <string>Comparison polar manager</string>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>1</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>210</width>
+          <height>0</height>
+         </size>
+        </property>
+        <layout class="QVBoxLayout" name="polarManagerLayout">
+         <item>
+          <widget class="QListWidget" name="polarListView">
+           <property name="selectionMode">
+            <enum>QAbstractItemView::SingleSelection</enum>
+           </property>
+           <property name="accessibleName">
+            <string>Stored comparison polars</string>
+           </property>
+           <property name="toolTip">
+            <string>Select the comparison polar to rename, reorder, hide or remove.</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="addCurrentPolarButton">
+           <property name="text">
+            <string>Add Current as Comparison</string>
+           </property>
+           <property name="toolTip">
+            <string>Stores an independent scalar snapshot of the current result.</string>
+           </property>
+           <property name="accessibleName">
+            <string>Add current as comparison</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="polarNameEdit">
+           <property name="placeholderText">
+            <string>Comparison name</string>
+           </property>
+           <property name="accessibleName">
+            <string>Comparison polar name</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="polarVisibilityCheckBox">
+           <property name="text">
+            <string>Visible</string>
+           </property>
+           <property name="toolTip">
+            <string>Show or hide the selected comparison polar in the five scalar plots.</string>
+           </property>
+           <property name="accessibleName">
+            <string>Comparison polar visible</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="renamePolarButton">
+           <property name="text">
+            <string>Rename</string>
+           </property>
+           <property name="accessibleName">
+            <string>Rename comparison polar</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="removePolarButton">
+           <property name="text">
+            <string>Remove</string>
+           </property>
+           <property name="accessibleName">
+            <string>Remove comparison polar</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="polarOrderLayout">
+           <item>
+            <widget class="QPushButton" name="movePolarUpButton">
+             <property name="text">
+              <string>Move Up</string>
+             </property>
+             <property name="accessibleName">
+              <string>Move comparison polar up</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="movePolarDownButton">
+             <property name="text">
+              <string>Move Down</string>
+             </property>
+             <property name="accessibleName">
+              <string>Move comparison polar down</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QPushButton" name="clearPolarsButton">
+           <property name="text">
+            <string>Clear Comparisons</string>
+           </property>
+           <property name="accessibleName">
+            <string>Clear comparison polars</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="polarManagerStatusLabel">
+           <property name="text">
+            <string>0 / 8 comparisons</string>
+           </property>
+           <property name="accessibleName">
+            <string>Comparison polar status</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
          <item>
           <spacer name="resultsColumnSpacer">
            <property name="orientation">

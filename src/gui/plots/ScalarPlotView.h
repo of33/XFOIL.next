@@ -27,9 +27,12 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <functional>
 #include <optional>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include <QWidget>
@@ -52,6 +55,11 @@ enum class GuiScalarPlotKind {
   efficiencyCl
 };
 
+struct ScalarComparisonSeries {
+  std::string name;
+  std::vector<std::pair<double, double>> points;
+};
+
 class ScalarPlotView : public QWidget {
  public:
   explicit ScalarPlotView(QWidget* parent = nullptr);
@@ -69,11 +77,17 @@ class ScalarPlotView : public QWidget {
   void setPoints(const std::vector<GuiPointEntry>& points,
                  std::optional<std::size_t> selectedSourceIndex,
                  bool fitData = false);
+  void setComparisons(const std::vector<ScalarComparisonSeries>& series,
+                      bool fitData = false);
   void setSelectionCallback(std::function<void(std::size_t)> callback);
   void fitVisibleData();
 
   [[nodiscard]]
   std::size_t visiblePointCount() const noexcept;
+  [[nodiscard]]
+  std::size_t comparisonCurveCount() const noexcept;
+  [[nodiscard]]
+  std::size_t comparisonPointCount() const noexcept;
   [[nodiscard]]
   std::size_t solidPointCount() const noexcept;
   [[nodiscard]]
@@ -110,6 +124,8 @@ class ScalarPlotView : public QWidget {
   QCPGraph* selectedMarker_{};
   InteractivePlotController* interaction_{};
   GuiScalarPlotKind kind_{GuiScalarPlotKind::clAlpha};
+  std::array<QCPCurve*, 8> comparisonCurves_{};
+  std::array<std::size_t, 8> comparisonPointCounts_{};
   std::vector<DisplayPoint> visiblePoints_;
   std::optional<std::size_t> selectedSourceIndex_;
   std::function<void(std::size_t)> selectionCallback_;

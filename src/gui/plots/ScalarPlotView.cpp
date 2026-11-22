@@ -48,6 +48,22 @@ const QColor kMarkerColor(34, 93, 148);
 const QColor kSelectedColor(205, 45, 45);
 const QColor kDashedColor(128, 72, 130);
 
+constexpr std::array<QColor, 8> kComparisonColors = {
+    QColor(0, 114, 178),    // blue
+    QColor(213, 94, 0),     // vermillion
+    QColor(0, 158, 115),    // bluish green
+    QColor(204, 121, 167),  // reddish purple
+    QColor(86, 180, 233),   // sky blue
+    QColor(230, 159, 0),    // orange
+    QColor(0, 0, 0),        // black
+    QColor(240, 228, 68),   // yellow
+};
+
+constexpr std::array<Qt::PenStyle, 8> kComparisonStyles = {
+    Qt::SolidLine, Qt::DashLine, Qt::DotLine, Qt::DashDotLine,
+    Qt::DashDotDotLine, Qt::SolidLine, Qt::DashLine, Qt::DashDotLine,
+};
+
 QCPScatterStyle openCircle() {
   return QCPScatterStyle(QCPScatterStyle::ssCircle,
                          QPen(kMarkerColor, 1.1), Qt::NoBrush, 5.5);
@@ -145,6 +161,7 @@ ScalarPlotView::ScalarPlotView(QWidget* parent) : QWidget(parent) {
 
   applyAxisTitles();
   setPoints({}, std::nullopt, true);
+  setComparisons({}, false);
 }
 
 ScalarPlotView::~ScalarPlotView() = default;
@@ -184,24 +201,105 @@ void ScalarPlotView::setPoints(
   }
 }
 
+void ScalarPlotView::setComparisons(
+    const std::vector<ScalarComparisonSeries>& series, bool fitData) {
+  bool any = false;
+  for (std::size_t index = 0; index < comparisonCurves_.size(); ++index) {
+    QVector<double> t;
+    QVector<double> x;
+    QVector<double> y;
+    std::size_t count = 0;
+    if (index < series.size() && !series[index].points.empty()) {
+      const ScalarComparisonSeries& source = series[index];
+      t.reserve(static_cast<int>(source.points.size()));
+      x.reserve(static_cast<int>(source.points.size()));
+      y.reserve(static_cast<int>(source.points.size()));
+      for (const auto& [pointX, pointY] : source.points) {
+        if (!std::isfinite(pointX) || !std::isfinite(pointY)) {
+          continue;
+        }
+        t.push_back(static_cast<double>(count));
+        x.push_back(pointX);
+        y.push_back(pointY);
+        ++count;
+      }
+      if (count == 0) {
+        if (comparisonCurves_[index] != nullptr) {
+          plot_->removePlottable(comparisonCurves_[index]);
+          comparisonCurves_[index] = nullptr;
+        }
+        comparisonPointCounts_[index] = 0;
+        continue;
+      }
+      QCPCurve*& curve = comparisonCurves_[index];
+      if (curve == nullptr) {
+        curve = new QCPCurve(plot_->xAxis, plot_->yAxis);
+        curve->setObjectName(QStringLiteral("comparisonCurve%1")
+                                 .arg(static_cast<qulonglong>(index)));
+        QPen pen(kComparisonColors[index], 1.4);
+        pen.setStyle(kComparisonStyles[index]);
+        curve->setPen(pen);
+        curve->setLineStyle(QCPCurve::lsLine);
+        curve->setScatterStyle(QCPScatterStyle::ssNone);
+      }
+      curve->setData(t, x, y, true);
+      curve->setName(QString::fromStdString(source.name));
+      curve->setVisible(true);
+      any = true;
+    } else if (comparisonCurves_[index] != nullptr) {
+      plot_->removePlottable(comparisonCurves_[index]);
+      comparisonCurves_[index] = nullptr;
+    }
+    comparisonPointCounts_[index] = count;
+  }
+  plot_->legend->setVisible(any);
+  plot_->replot();
+  if (fitData) {
+    fitVisibleData();
+  }
+}
+
 void ScalarPlotView::setSelectionCallback(
     std::function<void(std::size_t)> callback) {
   selectionCallback_ = std::move(callback);
 }
 
 void ScalarPlotView::fitVisibleData() {
-  if (visiblePoints_.empty()) {
-    return;
-  }
-  double xMin = visiblePoints_.front().x;
-  double xMax = xMin;
-  double yMin = visiblePoints_.front().y;
-  double yMax = yMin;
+  bool haveData = false;
+  double xMin = 0.0;
+  double xMax = 0.0;
+  double yMin = 0.0;
+  double yMax = 0.0;
+  const auto include = [&](double x, double y) {
+    if (!std::isfinite(x) || !std::isfinite(y)) {
+      return;
+    }
+    if (!haveData) {
+      xMin = xMax = x;
+      yMin = yMax = y;
+      haveData = true;
+      return;
+    }
+    xMin = std::min(xMin, x);
+    xMax = std::max(xMax, x);
+    yMin = std::min(yMin, y);
+    yMax = std::max(yMax, y);
+  };
   for (const DisplayPoint& point : visiblePoints_) {
-    xMin = std::min(xMin, point.x);
-    xMax = std::max(xMax, point.x);
-    yMin = std::min(yMin, point.y);
-    yMax = std::max(yMax, point.y);
+    include(point.x, point.y);
+  }
+  for (QCPCurve* curve : comparisonCurves_) {
+    if (curve == nullptr || !curve->visible()) {
+      continue;
+    }
+    const auto data = curve->data();
+    for (auto iterator = data->constBegin(); iterator != data->constEnd();
+         ++iterator) {
+      include(iterator->key, iterator->value);
+    }
+  }
+  if (!haveData) {
+    return;
   }
   const double xSpan = std::max(xMax - xMin, 1.0e-6);
   const double ySpan = std::max(yMax - yMin, 1.0e-6);
@@ -214,6 +312,24 @@ void ScalarPlotView::fitVisibleData() {
 
 std::size_t ScalarPlotView::visiblePointCount() const noexcept {
   return visiblePoints_.size();
+}
+
+std::size_t ScalarPlotView::comparisonCurveCount() const noexcept {
+  std::size_t count = 0;
+  for (QCPCurve* curve : comparisonCurves_) {
+    if (curve != nullptr && curve->visible()) {
+      ++count;
+    }
+  }
+  return count;
+}
+
+std::size_t ScalarPlotView::comparisonPointCount() const noexcept {
+  std::size_t count = 0;
+  for (const std::size_t value : comparisonPointCounts_) {
+    count += value;
+  }
+  return count;
 }
 
 std::size_t ScalarPlotView::solidPointCount() const noexcept {

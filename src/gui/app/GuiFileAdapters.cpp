@@ -32,12 +32,14 @@
 #include <system_error>
 #include <vector>
 
+#include <QFile>
 #include <QIODevice>
 #include <QSaveFile>
 #include <QString>
 
 #include "app/AirfoilWriter.h"
 #include "app/DatFileReader.h"
+#include "xfoil/PolarText.h"
 #include "xfoil/io/DxfExport.h"
 
 namespace xfoil::gui::app {
@@ -195,6 +197,59 @@ FileWriteResult exportDxfFile(const std::filesystem::path& path,
     return {false, encoded.error().message};
   }
 
+  QSaveFile file(QString::fromStdString(path.string()));
+  if (!file.open(QIODevice::WriteOnly)) {
+    return {false, file.errorString().toStdString()};
+  }
+  const std::string& text = encoded.value();
+  if (file.write(text.data(), static_cast<qint64>(text.size())) !=
+      static_cast<qint64>(text.size())) {
+    file.cancelWriting();
+    return {false, file.errorString().toStdString()};
+  }
+  if (!file.commit()) {
+    return {false, file.errorString().toStdString()};
+  }
+  return {true, {}};
+}
+
+
+Result<PolarData> readPolarFile(const std::filesystem::path& path) {
+  if (path.empty()) {
+    return Result<PolarData>::fail(Error::make(
+        ErrorCategory::invalidArgument, "polar.path",
+        "No polar file was selected", "app.polar"));
+  }
+  QFile file(QString::fromStdString(path.string()));
+  if (!file.open(QIODevice::ReadOnly)) {
+    return Result<PolarData>::fail(Error::make(
+        ErrorCategory::invalidArgument, "polar.read",
+        file.errorString().toStdString(), "app.polar"));
+  }
+  const QByteArray bytes = file.readAll();
+  if (file.error() != QFileDevice::NoError) {
+    return Result<PolarData>::fail(Error::make(
+        ErrorCategory::invalidArgument, "polar.read",
+        file.errorString().toStdString(), "app.polar"));
+  }
+  const NumericLocaleGuard numericLocale;
+  return xfoil::decodePolarText(
+      std::string_view(bytes.constData(),
+                       static_cast<std::size_t>(bytes.size())));
+}
+
+FileWriteResult savePolarFile(const std::filesystem::path& path,
+                              const PolarData& polar,
+                              bool overwriteExisting) {
+  const FileWriteResult target = checkTarget(path, overwriteExisting);
+  if (!target.success) {
+    return target;
+  }
+  const NumericLocaleGuard numericLocale;
+  const Result<std::string> encoded = xfoil::encodePolarText(polar);
+  if (encoded.isErr()) {
+    return {false, encoded.error().message};
+  }
   QSaveFile file(QString::fromStdString(path.string()));
   if (!file.open(QIODevice::WriteOnly)) {
     return {false, file.errorString().toStdString()};

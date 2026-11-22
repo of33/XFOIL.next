@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <memory>
 #include <optional>
 #include <string_view>
@@ -40,6 +41,7 @@
 #include "xfoil/AnalysisConfig.h"
 #include "xfoil/AnalysisData.h"
 #include "xfoil/AnalysisRequest.h"
+#include "xfoil/PolarData.h"
 #include "xfoil/Progress.h"
 #include "xfoil/Result.h"
 #include "xfoil/SequenceResult.h"
@@ -101,6 +103,17 @@ class XFOIL_GUI_API XFoilWidget : public QWidget {
   [[nodiscard]]
   std::optional<AnalysisWorkflowSetup> currentSetup() const;
 
+  // Explicit comparison-polar operations. The current result is not stored
+  // automatically. At most eight comparison polars are kept per widget.
+  [[nodiscard]]
+  Result<std::uint64_t> addComparisonPolar(const PolarData& polar);
+  [[nodiscard]]
+  Result<std::uint64_t> addCurrentComparisonPolar();
+  [[nodiscard]]
+  std::optional<PolarData> currentPolar() const;
+  [[nodiscard]]
+  std::optional<PolarData> selectedComparisonPolar() const;
+
   [[nodiscard]]
   std::optional<geometry::AirfoilGeometry> geometry() const;
   [[nodiscard]]
@@ -150,6 +163,7 @@ class XFOIL_GUI_API XFoilWidget : public QWidget {
   void targetChanged();
   void setupApplied();
   void setupFailed(xfoil::Error error);
+  void comparisonPolarsChanged();
   void stateChanged(XFoilGuiState state);
   void validationChanged(bool valid);
   void analysisStarted();

@@ -161,6 +161,7 @@ GUI_ARCHIVE_OBJS := \
 	$(GUI_OBJ_DIR)/XFoilWidget.o \
 	$(GUI_OBJ_DIR)/moc_XFoilWidget.o \
 	$(GUI_OBJ_DIR)/model/GuiDefinitionModel.o \
+	$(GUI_OBJ_DIR)/model/GuiPolarManager.o \
 	$(GUI_OBJ_DIR)/model/GuiResultSelectionModel.o \
 	$(GUI_OBJ_DIR)/model/GuiResultSummary.o \
 	$(GUI_OBJ_DIR)/backend/GuiSessionBackend.o \
@@ -187,6 +188,7 @@ GUI_TEST_OBJS := \
 	$(GUI_OBJ_DIR)/tests/QCustomPlotSmoke.o \
 	$(GUI_OBJ_DIR)/tests/GeometryPlotViewTests.o \
 	$(GUI_OBJ_DIR)/tests/GuiDefinitionModelTests.o \
+	$(GUI_OBJ_DIR)/tests/GuiPolarManagerTests.o \
 	$(GUI_OBJ_DIR)/tests/GuiResultSelectionModelTests.o \
 	$(GUI_OBJ_DIR)/tests/GuiResultSummaryTests.o \
 	$(GUI_OBJ_DIR)/tests/GuiResultWorkspaceTests.o \
@@ -200,6 +202,7 @@ GUI_TEST_OBJS := \
 	$(GUI_OBJ_DIR)/tests/XFoilWidgetG4Tests.o \
 	$(GUI_OBJ_DIR)/tests/GuiAnalysisWorkerTests.o \
 	$(GUI_OBJ_DIR)/tests/XFoilWidgetG6bTests.o \
+	$(GUI_OBJ_DIR)/tests/XFoilWidgetG6cTests.o \
 	$(GUI_OBJ_DIR)/tests/XFoilWidgetShellTests.o \
 	$(GUI_OBJ_DIR)/tests/app/GuiFileAdaptersTests.o \
 	$(GUI_OBJ_DIR)/tests/app/MainWindowTests.o \
@@ -329,6 +332,7 @@ $(GUI_OBJ_DIR)/XFoilWidget.o: src/gui/XFoilWidget.cpp \
 		include/xfoil/gui/XFoilWidget.h \
 		include/xfoil/gui/AnalysisWorkflowSetup.h \
 		src/gui/model/GuiDefinitionModel.h \
+		src/gui/model/GuiPolarManager.h \
 		src/gui/worker/GuiAnalysisWorker.h \
 		$(GUI_GEN_DIR)/ui_XFoilWidget.h | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
@@ -338,6 +342,14 @@ $(GUI_OBJ_DIR)/model/GuiDefinitionModel.o: \
 		src/gui/model/GuiDefinitionModel.cpp \
 		src/gui/model/GuiDefinitionModel.h \
 		src/gui/model/GuiRunSpec.h | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/model/GuiPolarManager.o: \
+		src/gui/model/GuiPolarManager.cpp \
+		src/gui/model/GuiPolarManager.h \
+		include/xfoil/PolarData.h \
+		include/xfoil/Result.h | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
 
@@ -434,6 +446,12 @@ $(GUI_OBJ_DIR)/tests/GuiDefinitionModelTests.o: \
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
 
+$(GUI_OBJ_DIR)/tests/GuiPolarManagerTests.o: \
+		tests/gui/GuiPolarManagerTests.cpp \
+		$(GUI_GEN_DIR)/GuiPolarManagerTests.moc | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
 $(GUI_OBJ_DIR)/tests/GuiResultSelectionModelTests.o: \
 		tests/gui/GuiResultSelectionModelTests.cpp \
 		$(GUI_GEN_DIR)/GuiResultSelectionModelTests.moc | $(GUI_STAMP)
@@ -509,6 +527,12 @@ $(GUI_OBJ_DIR)/tests/GuiAnalysisWorkerTests.o: \
 $(GUI_OBJ_DIR)/tests/XFoilWidgetG6bTests.o: \
 		tests/gui/XFoilWidgetG6bTests.cpp \
 		$(GUI_GEN_DIR)/XFoilWidgetG6bTests.moc | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/tests/XFoilWidgetG6cTests.o: \
+		tests/gui/XFoilWidgetG6cTests.cpp \
+		$(GUI_GEN_DIR)/XFoilWidgetG6cTests.moc | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
 
