@@ -25,6 +25,8 @@
 // App-only adapter tests: existing DAT reader, labeled writer and DXF R12
 // encoder contracts, including prompts represented as statuses.
 
+#include <clocale>
+
 #include <QFile>
 #include <QTemporaryDir>
 #include <QtTest/QTest>
@@ -148,6 +150,8 @@ class GuiFileAdaptersTests : public QObject {
   }
 
   void savesLabeledAirfoilAndHonorsOverwrite() {
+    const char* const locale = std::setlocale(LC_NUMERIC, nullptr);
+    const std::string savedLocale = locale != nullptr ? locale : "C";
     QTemporaryDir directory;
     QVERIFY(directory.isValid());
     const auto path = pathIn(directory, "saved.dat");
@@ -157,6 +161,7 @@ class GuiFileAdaptersTests : public QObject {
     const QString text = readText(path);
     QVERIFY(text.startsWith(QStringLiteral("diamond\n")));
     QCOMPARE(text.count(QLatin1Char('\n')), 6);
+    QVERIFY(!text.contains(QLatin1Char(',')));
 
     const auto refused = saveAirfoilFile(path, geometry, false);
     QVERIFY(!refused.success);
@@ -164,6 +169,9 @@ class GuiFileAdaptersTests : public QObject {
 
     QVERIFY(saveAirfoilFile(path, geometry, true).success);
     QCOMPARE(readText(path), text);
+    const char* const after = std::setlocale(LC_NUMERIC, nullptr);
+    QCOMPARE(after != nullptr ? std::string(after) : std::string{"C"},
+             savedLocale);
   }
 
   void exportsDxfAndHonorsOverwrite() {
@@ -188,6 +196,8 @@ class GuiFileAdaptersTests : public QObject {
   void readsAndWritesPolarTextThroughOwningValues() {
     QTemporaryDir directory;
     QVERIFY(directory.isValid());
+    const char* const locale = std::setlocale(LC_NUMERIC, nullptr);
+    const std::string savedLocale = locale != nullptr ? locale : "C";
     const auto fixture = std::filesystem::path(
         "tests/data/xfoil-6.996/s11/canonical-base.pol");
     const auto read = readPolarFile(fixture);
@@ -204,6 +214,10 @@ class GuiFileAdaptersTests : public QObject {
     QCOMPARE(roundtrip.value().metadata.name, read.value().metadata.name);
     QCOMPARE(roundtrip.value().points.size(), std::size_t{2});
     QCOMPARE(roundtrip.value().points.front().liftCoefficient, 0.1);
+    QVERIFY(!readText(savedPath).contains(QLatin1Char(',')));
+    const char* const after = std::setlocale(LC_NUMERIC, nullptr);
+    QCOMPARE(after != nullptr ? std::string(after) : std::string{"C"},
+             savedLocale);
     QVERIFY(!savePolarFile(savedPath, read.value(), false).success);
     QVERIFY(savePolarFile(savedPath, read.value(), true).success);
     QVERIFY(!readPolarFile(pathIn(directory, "missing.pol")).isOk());

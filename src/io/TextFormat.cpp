@@ -25,6 +25,7 @@
 
 #include "xfoil/io/TextFormat.h"
 
+#include "io/NumericText.h"
 #include "xfoil/core/polar/PolarOps.h"
 
 #include <algorithm>
@@ -54,9 +55,7 @@ std::string fortranF(int width, int decimals, double value) {
   (void)decimals;
   if (std::isnan(value)) return padLeft("NaN", width);
   if (std::isinf(value)) return padLeft(value > 0 ? "Infinity" : "-Infinity", width);
-  char buf[64];
-  std::snprintf(buf, sizeof(buf), "%.*f", decimals, value);
-  std::string text(buf);
+  std::string text = formatFixed(value, decimals);
   // Fortran Fw.0 writes the trailing decimal point.
   if (decimals == 0 && text.find('.') == std::string::npos) {
     text += '.';
@@ -93,9 +92,7 @@ std::string fortranE(int width, int decimals, double value) {
     exponent = static_cast<int>(std::floor(std::log10(magnitude))) + 1;
     mantissa = magnitude / std::pow(10.0, exponent);
   }
-  char buf[64];
-  std::snprintf(buf, sizeof(buf), "%.*f", decimals, mantissa);
-  std::string mantissaText(buf);
+  std::string mantissaText = formatFixed(mantissa, decimals);
   // Rounding to 1.00..0 leads to reduction to 0.10..0 with exponent+1
   // (canonical, e.g. E10.4 of 0.99996 -> 0.1000E+01).
   if (mantissaText == std::string("1.") + std::string(static_cast<std::size_t>(decimals), '0')) {
@@ -130,40 +127,42 @@ std::string fortranG(int width, int digits, double value) {
 
   const bool negative = std::signbit(value);
   const double magnitude = std::fabs(value);
-  char buffer[64];
 
   if (magnitude == 0.0) {
-    std::snprintf(buffer, sizeof buffer, "%.*f", digits - 1, 0.0);
-    std::string text = negative ? "-" + std::string(buffer) : std::string(buffer);
+    std::string text = formatFixed(0.0, digits - 1);
+    if (negative) text.insert(text.begin(), '-');
     if (static_cast<int>(text.size()) > width - 4) return stars(width);
     return padLeft(text, width - 4) + "    ";
   }
 
-  std::snprintf(buffer, sizeof buffer, "%.*e", digits - 1, magnitude);
-  const std::string normalized(buffer);
+  const std::string normalized = formatScientific(magnitude, digits - 1);
   const std::size_t exponentPosition = normalized.find('e');
-  const double mantissa =
-      std::strtod(normalized.substr(0, exponentPosition).c_str(), nullptr);
-  const int baseExponent =
-      std::atoi(normalized.substr(exponentPosition + 1).c_str());
-  const int ee = baseExponent + 1;
+  double mantissa = 0.0;
+  long baseExponent = 0;
+  if (exponentPosition == std::string::npos ||
+      !parseReal(normalized.substr(0, exponentPosition), mantissa) ||
+      !parseInteger(normalized.substr(exponentPosition + 1), baseExponent)) {
+    return stars(width);
+  }
+  const int ee = static_cast<int>(baseExponent) + 1;
 
   std::string sign = negative ? "-" : "";
   if (ee >= 0 && ee <= digits) {
     const int fractionDigits = digits - ee;
-    if (fractionDigits > 0) {
-      std::snprintf(buffer, sizeof buffer, "%.*f", fractionDigits, magnitude);
-    } else {
-      std::snprintf(buffer, sizeof buffer, "%.0f.", magnitude);
-    }
-    const std::string text = sign + buffer;
+    std::string text = sign + formatFixed(
+        magnitude, fractionDigits > 0 ? fractionDigits : 0);
+    if (fractionDigits == 0) text += '.';
     if (static_cast<int>(text.size()) > width - 4) return stars(width);
     return padLeft(text, width - 4) + "    ";
   }
 
-  std::snprintf(buffer, sizeof buffer, "%.*fE%c%02d", digits, mantissa / 10.0,
-                ee >= 0 ? '+' : '-', ee >= 0 ? ee : -ee);
-  const std::string text = sign + buffer;
+  std::string text = sign + formatFixed(mantissa / 10.0, digits);
+  text += 'E';
+  text += ee >= 0 ? '+' : '-';
+  const int absExponent = ee >= 0 ? ee : -ee;
+  char expBuf[16];
+  std::snprintf(expBuf, sizeof expBuf, "%02d", absExponent);
+  text += expBuf;
   if (static_cast<int>(text.size()) > width) return stars(width);
   return padLeft(text, width);
 }
@@ -247,9 +246,8 @@ FloatParseResult parseFloatList(std::string_view line, std::size_t maxCount) {
     std::transform(normalized.begin(), normalized.end(), normalized.begin(),
                    [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     std::replace(normalized.begin(), normalized.end(), 'd', 'e');
-    char* stop = nullptr;
-    const double value = std::strtod(normalized.c_str(), &stop);
-    if (stop == normalized.c_str() || *stop != '\0') {
+    double value = 0.0;
+    if (!parseReal(normalized, value)) {
       result.error = true;
       break;
     }

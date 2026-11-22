@@ -406,7 +406,10 @@ Result<std::string> encodePolarText(const PolarData& polar);
 
 The functions use the existing canonical PolarText columns and layout, preserve
 the imported column order and element selection on roundtrip, return structured
-errors without partial values, and never access the filesystem.
+errors without partial values, and never access the filesystem. Numeric parsing
+and formatting are locale-independent: decimal points and Fortran D exponents
+are handled explicitly and no process-global `LC_NUMERIC`/locale mutation is
+performed.
 
 ## Skin-friction distribution
 

@@ -28,6 +28,8 @@
 
 #include "xfoil/io/AddedCamberCodec.h"
 
+#include "io/NumericText.h"
+
 #include <cctype>
 #include <cstdlib>
 #include <istream>
@@ -59,23 +61,7 @@ std::vector<std::string> splitTokens(const std::string& line) {
 
 // Fortran list-directed real, including D-exponent notation.
 bool parseReal(const std::string& token, double& value) {
-  if (token.empty()) {
-    return false;
-  }
-  std::string normalized = token;
-  for (char& c : normalized) {
-    if (c == 'D' || c == 'd') {
-      c = 'e';
-    }
-  }
-  const char* begin = normalized.c_str();
-  char* end = nullptr;
-  const double parsed = std::strtod(begin, &end);
-  if (end == begin || *end != '\0') {
-    return false;
-  }
-  value = parsed;
-  return true;
+  return io::parseReal(token, value);
 }
 
 // Fetches the next token; empty records are skipped.

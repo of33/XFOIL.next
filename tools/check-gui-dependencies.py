@@ -69,6 +69,7 @@ QCP_EXPECTED = {
 }
 
 PUBLIC_ALLOWED_EXACT = {
+    "cstdint",
     "memory",
     "utility",
     "QWidget",
@@ -90,6 +91,7 @@ PUBLIC_ALLOWED_EXACT = {
     "xfoil/AnalysisConfig.h",
     "xfoil/AnalysisData.h",
     "xfoil/AnalysisRequest.h",
+    "xfoil/PolarData.h",
     "xfoil/Progress.h",
     "xfoil/Result.h",
     "xfoil/SequenceResult.h",
@@ -141,6 +143,8 @@ APP_ALLOWED_INCLUDE_EXACT = {
     "qcustomplot.h",
     "xfoil/AnalysisData.h",
     "xfoil/Diagnostic.h",
+    "xfoil/PolarData.h",
+    "xfoil/PolarText.h",
     "xfoil/Result.h",
     "xfoil/SkinFriction.h",
     "xfoil/Types.h",

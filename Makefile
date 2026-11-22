@@ -224,6 +224,7 @@ EXPORT_DATA_SRCS := \
 # Non-core IO layer: parser, serializer, codecs and adapters.
 # Depends only on xfoil::core, never on app, CLI or tests.
 IO_SRCS := \
+	src/io/NumericText.cpp \
 	src/io/TextFormat.cpp \
 	src/io/PolarText.cpp \
 	src/io/PolarDataText.cpp \
@@ -356,6 +357,7 @@ TEST_SRCS := \
 	tests/unit/GeometryAlgorithmsTests.cpp \
 	tests/unit/InviscidAnalysisTests.cpp \
 	tests/unit/DatFileReaderTests.cpp \
+	tests/unit/LocaleIndependenceTests.cpp \
 	tests/unit/AirfoilWriterTests.cpp \
 	tests/unit/MsesMultielementCodecTests.cpp \
 	tests/unit/OutputPathPolicyTests.cpp \

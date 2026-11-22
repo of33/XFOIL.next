@@ -32,6 +32,7 @@
 #include <string_view>
 #include <utility>
 
+#include "io/NumericText.h"
 #include "xfoil/io/TextFormat.h"
 
 namespace xfoil::io {
@@ -164,9 +165,8 @@ bool parsePolarNumbers(std::string_view line, std::vector<double>& values) {
     std::string token(line.substr(begin, i - begin));
     std::replace(token.begin(), token.end(), 'D', 'E');
     std::replace(token.begin(), token.end(), 'd', 'e');
-    char* end = nullptr;
-    const double value = std::strtod(token.c_str(), &end);
-    if (end == token.c_str() || *end != '\0') return false;
+    double value = 0.0;
+    if (!io::parseReal(token, value)) return false;
     values.push_back(value);
   }
   return true;
@@ -354,14 +354,14 @@ ParsedPolar readPolarText(std::string_view text, int maxPoints,
         const std::size_t k1 = raw.find_first_not_of(' ');
         if (k1 != std::string_view::npos && k1 + 1 < kVersion) {
           result.code = trimRight(raw.substr(k1, kVersion - k1 - 1));
-          double version = 0.0;
           const std::vector<std::string_view> parts =
               tokens(raw.substr(kVersion + 7));
           if (!parts.empty()) {
             std::string v(parts.front());
-            char* end = nullptr;
-            version = std::strtod(v.c_str(), &end);
-            if (end != v.c_str() && *end == '\0') result.version = version;
+            double parsedVersion = 0.0;
+            if (io::parseReal(v, parsedVersion)) {
+              result.version = parsedVersion;
+            }
           }
         }
         continue;
@@ -382,9 +382,8 @@ ParsedPolar readPolarText(std::string_view text, int maxPoints,
             tokens(raw.substr(ke > 4 ? ke - 4 : 0));
         if (!parts.empty()) {
           std::string number(parts.front());
-          char* end = nullptr;
-          const long value = std::strtol(number.c_str(), &end, 10);
-          if (end != number.c_str() && *end == '\0' && value >= 1) {
+          long value = 0;
+          if (io::parseInteger(number, value) && value >= 1) {
             nbl = static_cast<int>(value);
           }
         }
@@ -439,9 +438,8 @@ ParsedPolar readPolarText(std::string_view text, int maxPoints,
                 tokens(raw.substr(kx + 7, kt - kx - 7));
             if (!parts.empty()) {
               std::string v(parts.front());
-              char* end = nullptr;
-              const double value = std::strtod(v.c_str(), &end);
-              if (end != v.c_str() && *end == '\0') result.xtrip[0] = value;
+              double value = 0.0;
+              if (io::parseReal(v, value)) result.xtrip[0] = value;
             }
           }
           if (kb != std::string_view::npos && kb > kt + 4) {
@@ -449,9 +447,8 @@ ParsedPolar readPolarText(std::string_view text, int maxPoints,
                 tokens(raw.substr(kt + 4, kb - kt - 4));
             if (!parts.empty()) {
               std::string v(parts.front());
-              char* end = nullptr;
-              const double value = std::strtod(v.c_str(), &end);
-              if (end != v.c_str() && *end == '\0') result.xtrip[1] = value;
+              double value = 0.0;
+              if (io::parseReal(v, value)) result.xtrip[1] = value;
             }
           }
           xtripSeen = true;
@@ -465,9 +462,8 @@ ParsedPolar readPolarText(std::string_view text, int maxPoints,
             tokens(raw.substr(kmach + 6));
         if (!parts.empty()) {
           std::string v(parts.front());
-          char* end = nullptr;
-          const double value = std::strtod(v.c_str(), &end);
-          if (end != v.c_str() && *end == '\0') result.mach1 = value;
+          double value = 0.0;
+          if (io::parseReal(v, value)) result.mach1 = value;
         }
         matched = true;
       }
@@ -477,9 +473,8 @@ ParsedPolar readPolarText(std::string_view text, int maxPoints,
             tokens(raw.substr(kre + 4));
         if (!parts.empty()) {
           std::string v(parts.front());
-          char* end = nullptr;
-          const double value = std::strtod(v.c_str(), &end);
-          if (end != v.c_str() && *end == '\0') result.reyn1 = value * 1.0e6;
+          double value = 0.0;
+          if (io::parseReal(v, value)) result.reyn1 = value * 1.0e6;
         }
         matched = true;
       }
@@ -489,16 +484,14 @@ ParsedPolar readPolarText(std::string_view text, int maxPoints,
             tokens(raw.substr(kn + 7));
         if (!parts.empty()) {
           std::string v(parts[0]);
-          char* end = nullptr;
-          const double first = std::strtod(v.c_str(), &end);
-          if (end != v.c_str() && *end == '\0') {
+          double first = 0.0;
+          if (io::parseReal(v, first)) {
             result.acrit[0] = first;
             result.acrit[1] = first;
             if (parts.size() > 1) {
               v = std::string(parts[1]);
-              end = nullptr;
-              const double second = std::strtod(v.c_str(), &end);
-              if (end != v.c_str() && *end == '\0') result.acrit[1] = second;
+              double second = 0.0;
+              if (io::parseReal(v, second)) result.acrit[1] = second;
             }
           }
         }
@@ -510,9 +503,8 @@ ParsedPolar readPolarText(std::string_view text, int maxPoints,
             tokens(raw.substr(kpi + 6));
         if (!parts.empty()) {
           std::string v(parts.front());
-          char* end = nullptr;
-          const double value = std::strtod(v.c_str(), &end);
-          if (end != v.c_str() && *end == '\0') result.ptrat = value;
+          double value = 0.0;
+          if (io::parseReal(v, value)) result.ptrat = value;
         }
         matched = true;
       }
@@ -522,9 +514,8 @@ ParsedPolar readPolarText(std::string_view text, int maxPoints,
             tokens(raw.substr(ket + 7));
         if (!parts.empty()) {
           std::string v(parts.front());
-          char* end = nullptr;
-          const double value = std::strtod(v.c_str(), &end);
-          if (end != v.c_str() && *end == '\0') result.etap = value;
+          double value = 0.0;
+          if (io::parseReal(v, value)) result.etap = value;
         }
         matched = true;
       }

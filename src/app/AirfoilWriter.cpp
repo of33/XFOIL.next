@@ -36,12 +36,15 @@
 
 #include "app/AirfoilWriter.h"
 
+#include "io/NumericText.h"
+
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
+#include <locale>
 #include <sstream>
 #include <string>
 #include <atomic>
@@ -59,14 +62,12 @@ std::string formatFortranF(int width, int decimals, double value) {
   if (!std::isfinite(value)) {
     return std::string(static_cast<std::size_t>(width), '*');
   }
-  std::ostringstream stream;
-  stream << std::fixed << std::setprecision(decimals) << std::setw(width)
-         << value;
-  std::string text = stream.str();
+  std::string text = io::formatFixed(value, decimals);
   if (static_cast<int>(text.size()) > width) {
     return std::string(static_cast<std::size_t>(width), '*');
   }
-  return text;
+  return std::string(static_cast<std::size_t>(width) - text.size(), ' ') +
+         text;
 }
 
 // Fortran Gw.d following the behavior verified against gfortran: after
@@ -88,49 +89,58 @@ std::string formatFortranG(int width, int digits, double value) {
   }
 
   const double magnitude = std::fabs(value);
-  char buffer[64];
 
   if (magnitude == 0.0) {
-    std::snprintf(buffer, sizeof buffer, "%.*f", digits - 1, 0.0);
-    std::ostringstream stream;
-    stream << std::setw(width - 4) << std::right << buffer << "    ";
-    return stream.str();
+    const std::string body = io::formatFixed(0.0, digits - 1);
+    if (body.size() > static_cast<std::size_t>(width - 4)) {
+      return std::string(static_cast<std::size_t>(width), '*');
+    }
+    return std::string(static_cast<std::size_t>(width - 4) - body.size(), ' ') +
+           body + "    ";
   }
 
   // Normalization m x 10^E with 1 <= m < 10 and d-1 digits after the decimal
-  // point; rounding to d significant digits is done by %.e.
-  std::snprintf(buffer, sizeof buffer, "%.*e", digits - 1, magnitude);
-  const std::string normalized(buffer);
+  // point; rounding to d significant digits is done by the scientific form.
+  const std::string normalized =
+      io::formatScientific(magnitude, digits - 1);
   const std::size_t exponentPosition = normalized.find('e');
-  const double mantissa =
-      std::strtod(normalized.substr(0, exponentPosition).c_str(), nullptr);
-  const int baseExponent =
-      std::atoi(normalized.substr(exponentPosition + 1).c_str());
-  const int ee = baseExponent + 1;
-
-  std::ostringstream stream;
-  if (ee >= 0 && ee <= digits) {
-    const int fractionDigits = digits - ee;
-    if (fractionDigits > 0) {
-      std::snprintf(buffer, sizeof buffer, "%.*f", fractionDigits, magnitude);
-    } else {
-      std::snprintf(buffer, sizeof buffer, "%.0f.", magnitude);
-    }
-    stream << std::setw(width - 4) << std::right
-           << (value < 0.0 ? "-" + std::string(buffer) : std::string(buffer))
-           << "    ";
-  } else {
-    std::snprintf(buffer, sizeof buffer, "%.*fE%c%02d", digits, mantissa / 10.0,
-                  ee >= 0 ? '+' : '-', ee >= 0 ? ee : -ee);
-    stream << std::setw(width) << std::right
-           << (value < 0.0 ? "-" + std::string(buffer) : std::string(buffer));
-  }
-
-  std::string text = stream.str();
-  if (static_cast<int>(text.size()) > width) {
+  double mantissa = 0.0;
+  long baseExponent = 0;
+  if (exponentPosition == std::string::npos ||
+      !io::parseReal(normalized.substr(0, exponentPosition), mantissa) ||
+      !io::parseInteger(normalized.substr(exponentPosition + 1),
+                        baseExponent)) {
     return std::string(static_cast<std::size_t>(width), '*');
   }
-  return text;
+  const int ee = static_cast<int>(baseExponent) + 1;
+
+  const std::string sign = value < 0.0 ? "-" : "";
+  std::string body;
+  std::size_t fieldWidth = static_cast<std::size_t>(width);
+  std::string suffix;
+  if (ee >= 0 && ee <= digits) {
+    const int fractionDigits = digits - ee;
+    body = io::formatFixed(magnitude,
+                           fractionDigits > 0 ? fractionDigits : 0);
+    if (fractionDigits == 0) {
+      body += '.';
+    }
+    fieldWidth = static_cast<std::size_t>(width - 4);
+    suffix = "    ";
+  } else {
+    body = io::formatFixed(mantissa / 10.0, digits);
+    char expBuf[16];
+    std::snprintf(expBuf, sizeof expBuf, "%c%02d", ee >= 0 ? '+' : '-',
+                  ee >= 0 ? ee : -ee);
+    body += 'E';
+    body += expBuf;
+  }
+
+  const std::string text = sign + body;
+  if (text.size() > fieldWidth) {
+    return std::string(static_cast<std::size_t>(width), '*');
+  }
+  return std::string(fieldWidth - text.size(), ' ') + text + suffix;
 }
 
 // Removes all spaces as BSTRIP from fortran-src/userio.f.
@@ -176,6 +186,7 @@ std::string formatIntegerField(double value) {
     return std::string(12, '*');
   }
   std::ostringstream stream;
+  stream.imbue(std::locale::classic());
   stream << std::setw(12) << std::right
          << static_cast<long long>(truncated);
   return stream.str();

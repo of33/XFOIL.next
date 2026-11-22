@@ -27,7 +27,6 @@
 
 #include "app/GuiFileAdapters.h"
 
-#include <clocale>
 #include <string>
 #include <system_error>
 #include <vector>
@@ -44,28 +43,6 @@
 
 namespace xfoil::gui::app {
 namespace {
-
-// The accepted DAT reader uses strtod(), which follows LC_NUMERIC. Qt may
-// install the user locale in a GUI process; coordinate files always use '.'
-// as the decimal separator. Keep the override scoped to the adapter call.
-class NumericLocaleGuard {
- public:
-  NumericLocaleGuard() {
-    const char* current = std::setlocale(LC_NUMERIC, nullptr);
-    saved_ = current != nullptr ? current : "C";
-    std::setlocale(LC_NUMERIC, "C");
-  }
-
-  ~NumericLocaleGuard() {
-    std::setlocale(LC_NUMERIC, saved_.c_str());
-  }
-
-  NumericLocaleGuard(const NumericLocaleGuard&) = delete;
-  NumericLocaleGuard& operator=(const NumericLocaleGuard&) = delete;
-
- private:
-  std::string saved_;
-};
 
 std::string readErrorText(const xfoil::app::DatReadError error,
                           std::size_t overflowLimit) {
@@ -111,7 +88,6 @@ AirfoilFileReadResult readAirfoilFile(
     const std::filesystem::path& path, int selectedElement,
     std::string_view suppliedName) {
   AirfoilFileReadResult result;
-  const NumericLocaleGuard numericLocale;
   const xfoil::app::CoordinateFileReadResult read =
       xfoil::app::DatFileReader::readCoordinateFile(path, selectedElement);
   if (read.elementSelectionRequired) {
@@ -150,7 +126,6 @@ FileWriteResult saveAirfoilFile(
   if (geometry.empty()) {
     return {false, "No airfoil geometry is available."};
   }
-  const NumericLocaleGuard numericLocale;
   const FileWriteResult target = checkTarget(path, overwriteExisting);
   if (!target.success) {
     return target;
@@ -182,7 +157,6 @@ FileWriteResult exportDxfFile(const std::filesystem::path& path,
     return target;
   }
 
-  const NumericLocaleGuard numericLocale;
   std::vector<double> x;
   std::vector<double> y;
   x.reserve(panel.points.size());
@@ -232,7 +206,6 @@ Result<PolarData> readPolarFile(const std::filesystem::path& path) {
         ErrorCategory::invalidArgument, "polar.read",
         file.errorString().toStdString(), "app.polar"));
   }
-  const NumericLocaleGuard numericLocale;
   return xfoil::decodePolarText(
       std::string_view(bytes.constData(),
                        static_cast<std::size_t>(bytes.size())));
@@ -245,7 +218,6 @@ FileWriteResult savePolarFile(const std::filesystem::path& path,
   if (!target.success) {
     return target;
   }
-  const NumericLocaleGuard numericLocale;
   const Result<std::string> encoded = xfoil::encodePolarText(polar);
   if (encoded.isErr()) {
     return {false, encoded.error().message};

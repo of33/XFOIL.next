@@ -27,6 +27,7 @@
 #include <cmath>
 #include <cstddef>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -47,8 +48,11 @@ std::string readFixture(const char* name) {
   std::ifstream stream(std::string("tests/data/xfoil-6.996/s11/") + name,
                        std::ios::binary);
   CHECK(stream.good());
-  return std::string(std::istreambuf_iterator<char>(stream),
-                     std::istreambuf_iterator<char>());
+  // No istreambuf_iterator: GCC -O3 (-Wnull-dereference) cannot prove
+  // the buffer pointer of a failed stream to be non-zero.
+  std::ostringstream buffer;
+  buffer << stream.rdbuf();
+  return buffer.str();
 }
 
 const char* kMinimalPolar =

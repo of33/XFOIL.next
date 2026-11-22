@@ -8,8 +8,11 @@ include/xfoil/io/DefaultsCodec.h
 include/xfoil/io/DxfExport.h
 include/xfoil/io/ExportFormats.h
 include/xfoil/io/OrrSommerfeldCodec.h
+src/io/NumericText.cpp
+src/io/NumericText.h
 src/io/TextFormat.cpp
 src/io/PolarText.cpp
+src/io/PolarDataText.cpp
 src/io/DumpCodec.cpp
 src/io/DefaultsCodec.cpp
 src/io/DxfExport.cpp

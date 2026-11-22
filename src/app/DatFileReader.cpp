@@ -38,75 +38,61 @@
 #include <cstdlib>
 #include <fstream>
 #include <string>
+#include <string_view>
 
+#include "io/NumericText.h"
 #include "xfoil/Limits.h"
 
 namespace xfoil::app {
 namespace {
 
-// Reads exactly two finite numbers in strtod format. Leading
+// Reads exactly two finite numbers in canonical decimal format. Leading
 // whitespace characters are allowed; after the second number only whitespace.
-// (Adopted from src/main.cpp; logic unchanged.)
-  bool parseTwoNumbers(const std::string& line,
-                       double& first,
-                       double& second) {
-    const char* cursor = line.c_str();
+// Parsing is locale-independent and keeps the historical strtod token set
+// (no Fortran D exponent on this path).
+bool parseTwoNumbers(const std::string& line, double& first, double& second) {
+  const std::string_view text(line);
+  std::size_t position = 0;
+  const auto skipSpace = [&text, &position]() {
+    while (position < text.size() &&
+           std::isspace(static_cast<unsigned char>(text[position])) != 0) {
+      ++position;
+    }
+  };
 
-    while (*cursor != '\0' &&
-      std::isspace(static_cast<unsigned char>(*cursor)) != 0) {
-      ++cursor;
-      }
-
-      if (*cursor == '\0') {
-        return false;
-      }
-
-      char* endOfFirst = nullptr;
-    errno = 0;
-    const double parsedFirst = std::strtod(cursor, &endOfFirst);
-
-    if (endOfFirst == cursor || errno == ERANGE ||
-      !std::isfinite(parsedFirst)) {
-      return false;
-      }
-
-      if (*endOfFirst == '\0' ||
-        std::isspace(static_cast<unsigned char>(*endOfFirst)) == 0) {
-        return false;
-        }
-
-        const char* secondStart = endOfFirst;
-      while (*secondStart != '\0' &&
-        std::isspace(static_cast<unsigned char>(*secondStart)) != 0) {
-        ++secondStart;
-        }
-
-        if (*secondStart == '\0') {
-          return false;
-        }
-
-        char* endOfSecond = nullptr;
-      errno = 0;
-      const double parsedSecond = std::strtod(secondStart, &endOfSecond);
-
-      if (endOfSecond == secondStart || errno == ERANGE ||
-        !std::isfinite(parsedSecond)) {
-        return false;
-        }
-
-        const char* rest = endOfSecond;
-      while (*rest != '\0' &&
-        std::isspace(static_cast<unsigned char>(*rest)) != 0) {
-        ++rest;
-        }
-
-        if (*rest != '\0') {
-          return false;
-        }
-
-        first = parsedFirst;
-      second = parsedSecond;
-      return true;
+  skipSpace();
+  if (position == text.size()) {
+    return false;
+  }
+  const io::RealPrefix firstValue =
+      io::parseRealPrefix(text.substr(position), false);
+  if (firstValue.consumed == 0 || firstValue.rangeError ||
+      !std::isfinite(firstValue.value)) {
+    return false;
+  }
+  position += firstValue.consumed;
+  if (position == text.size() ||
+      std::isspace(static_cast<unsigned char>(text[position])) == 0) {
+    return false;
+  }
+  skipSpace();
+  if (position == text.size()) {
+    return false;
+  }
+  const io::RealPrefix secondValue =
+      io::parseRealPrefix(text.substr(position), false);
+  if (secondValue.consumed == 0 || secondValue.rangeError ||
+      !std::isfinite(secondValue.value)) {
+    return false;
+  }
+  position += secondValue.consumed;
+  skipSpace();
+  if (position != text.size()) {
+    return false;
+  }
+  first = firstValue.value;
+  second = secondValue.value;
+  return true;
 }
 
 // True if the line is empty or contains only whitespace.
@@ -314,15 +300,8 @@ bool listReadValues(const std::string& record, int count, double* values) {
     if (!isRealToken(token)) {
       return false;
     }
-    std::string normalized = token;
-    for (char& character : normalized) {
-      if (character == 'd' || character == 'D') {
-        character = 'e';
-      }
-    }
-    char* end = nullptr;
-    const double value = std::strtod(normalized.c_str(), &end);
-    if (end != normalized.c_str() + normalized.size() || !std::isfinite(value)) {
+    double value = 0.0;
+    if (!io::parseReal(token, value) || !std::isfinite(value)) {
       return false;
     }
     values[index] = value;

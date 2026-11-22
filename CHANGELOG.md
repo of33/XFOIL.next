@@ -8,7 +8,9 @@ keep-a-changelog layout.
 
 - Added the owning public `xfoil::PolarData` value and pure in-memory
   `decodePolarText`/`encodePolarText` conversion for the existing PolarText
-  contract, including side data, element data and column layout.
+  contract, including side data, element data and column layout. PolarText and
+  the GUI DAT/profile adapters now parse and format decimal text without
+  process-global numeric locale changes.
 - Added the owning `xfoil::gui::AnalysisWorkflowSetup` host contract and
   atomic `XFoilWidget::applySetup`/`resetWorkflow` transactions, complete
   Basic/Expert paneling and analysis controls, a public CL-sequence analysis

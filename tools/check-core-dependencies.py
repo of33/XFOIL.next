@@ -494,7 +494,10 @@ def classify_io_include(target):
     first = normalized.split("/")[0]
     if first == "xfoil":
         second = normalized.split("/")[1] if "/" in normalized else ""
-        if second not in ("io", "core"):
+        # The public PolarText facade is the owning wrapper over this layer;
+        # its implementation legitimately includes its own public header.
+        public_io_facade = normalized == "xfoil/PolarText.h"
+        if second not in ("io", "core") and not public_io_facade:
             reasons.append(
                 "xfoil::io may only include xfoil/io and xfoil core: %s"
                 % normalized)

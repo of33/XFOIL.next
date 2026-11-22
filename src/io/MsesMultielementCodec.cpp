@@ -39,6 +39,8 @@
 
 #include "xfoil/io/MsesMultielementCodec.h"
 
+#include "io/NumericText.h"
+
 #include "xfoil/core/Limits.h"
 #include "xfoil/io/TextFormat.h"
 
@@ -116,9 +118,8 @@ class PairReader {
       // A READ call consumes only the values needed for its item
       // list; the rest of the line is skipped.
       const std::string token = tokens_[tokenIndex_++];
-      char* end = nullptr;
-      const double value = std::strtod(token.c_str(), &end);
-      if (end == token.c_str() || *end != '\0') {
+      double value = 0.0;
+      if (!io::parseReal(token, value)) {
         badData = true;
         return true;
       }
