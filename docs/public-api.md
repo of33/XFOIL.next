@@ -20,6 +20,8 @@ xfoil/AnalysisData.h              owning operating-point and surface data
 xfoil/Result.h                    Error, ErrorCategory, Result<T>
 xfoil/Diagnostic.h                structured diagnostic record
 xfoil/SequenceResult.h            owning compact/detailed sequence result
+xfoil/PolarData.h                 owning in-memory polar value
+xfoil/PolarText.h                 pure PolarText encode/decode
 xfoil/SessionOptions.h            PanelingOptions
 xfoil/Session.h                   stateful in-memory xfoil::Session
 xfoil/AnalysisRequest.h           one-shot request and Alpha/CL targets
@@ -359,6 +361,52 @@ CDF or iteration value. The session remains reusable after cancellation. A
 progress callback failure stops the run with
 `progress.callbackFailure`. Non-converged but executed points remain present
 and continue the run, as in the public alpha sequence.
+
+## In-memory polar data
+
+`xfoil/PolarData.h` defines the owning scalar polar value used by the GUI
+comparison store and the application PolarText adapters:
+
+```cpp
+struct PolarMetadata {
+  std::string name;
+  std::string code;
+  double version;
+  ReynoldsDependency reynoldsDependency;
+  MachDependency machDependency;
+  double referenceReynoldsNumber;
+  double referenceMachNumber;
+  std::array<double, 2> nCritical;
+  std::array<double, 2> tripX;
+  double pressureParameter;
+  double etaParameter;
+  std::size_t elementCount;
+};
+
+struct PolarData {
+  PolarMetadata metadata;
+  std::vector<PolarPoint> points;
+  std::vector<std::array<PolarSideData, 2>> sideData;
+  std::vector<std::array<PolarElementData, 5>> elementData;
+  PolarColumnLayout layout;
+};
+```
+
+`PolarData` owns all values and contains no session, file, path, Qt or Cp/Cf
+data. `PolarText` has no separate convergence column; points decoded from
+PolarText are the accepted stored points and are marked converged, matching
+the existing stored-polar projection. Side and element data are retained.
+
+`xfoil/PolarText.h` provides pure in-memory conversion:
+
+```cpp
+Result<PolarData> decodePolarText(std::string_view text);
+Result<std::string> encodePolarText(const PolarData& polar);
+```
+
+The functions use the existing canonical PolarText columns and layout, preserve
+the imported column order and element selection on roundtrip, return structured
+errors without partial values, and never access the filesystem.
 
 ## Skin-friction distribution
 

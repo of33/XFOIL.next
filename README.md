@@ -83,6 +83,8 @@ See [NOTICE](NOTICE) for full attribution and provenance details.
 - optional owning detailed alpha and CL sequences with the full Cp surface
   and, for viscous points, the Cf distribution and CDF per executed point,
   without a second solver run or interpolation;
+- an owning in-memory polar value and pure PolarText encode/decode adapter
+  for imported and comparison polars, without file or session references;
 - installable static and shared C++ libraries with public headers and
   pkg-config metadata;
 - a memory-only library contract with isolated sessions, no application

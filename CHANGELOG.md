@@ -6,6 +6,9 @@ keep-a-changelog layout.
 
 ## Unreleased
 
+- Added the owning public `xfoil::PolarData` value and pure in-memory
+  `decodePolarText`/`encodePolarText` conversion for the existing PolarText
+  contract, including side data, element data and column layout.
 - Added the owning `xfoil::gui::AnalysisWorkflowSetup` host contract and
   atomic `XFoilWidget::applySetup`/`resetWorkflow` transactions, complete
   Basic/Expert paneling and analysis controls, a public CL-sequence analysis

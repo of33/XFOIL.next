@@ -226,6 +226,7 @@ EXPORT_DATA_SRCS := \
 IO_SRCS := \
 	src/io/TextFormat.cpp \
 	src/io/PolarText.cpp \
+	src/io/PolarDataText.cpp \
 	src/io/DumpCodec.cpp \
 	src/io/DefaultsCodec.cpp \
 	src/io/DxfExport.cpp \
@@ -399,6 +400,7 @@ TEST_SRCS := \
 	tests/unit/LibrarySequencePointCompletenessTests.cpp \
 	tests/unit/LibraryDetailedSequenceG2bTests.cpp \
 	tests/unit/LibraryClSequenceG6aTests.cpp \
+	tests/unit/LibraryPolarDataG6cTests.cpp \
 	tests/unit/LibraryIsolationL7Tests.cpp \
 	tests/unit/LibraryConcurrencyL7Tests.cpp \
 	tests/unit/LibraryDemoL9Tests.cpp \
@@ -480,6 +482,7 @@ TEST_SRCS := \
 	tests/integration/LibrarySequencePointCompletenessTests.cpp \
 	tests/integration/LibraryDetailedSequenceG2bTests.cpp \
 	tests/integration/LibraryClSequenceG6aTests.cpp \
+	tests/integration/LibraryPolarTextG6cTests.cpp \
 	tests/regression/ClarkYGoldenTests.cpp \
 	tests/regression/PaccDumpByteParityTests.cpp \
 	tests/regression/PaccInviscidDumpParityTests.cpp \
