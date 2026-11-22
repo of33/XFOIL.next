@@ -289,6 +289,76 @@ shares the canonical sequence loop, warm start, end-point handling,
 cancellation and progress events with the compact method. The callback
 receives the same sequence events.
 
+## CL sequence
+
+`xfoil::LiftSequence` is the public lift-coefficient sequence request:
+
+```cpp
+struct LiftSequence {
+  double start{};
+  double endExclusive{};
+  double step{};
+};
+```
+
+`start` and `endExclusive` are dimensionless lift coefficients. `step` must
+be non-zero and its sign must agree with `start -> endExclusive`. The end is
+exclusive, matching the public alpha sequence and `analyzePolar`; an interval
+with fewer than one step still executes its start point. At most 100000 points
+are run. The request is an owning value type and has no file, GUI or CLI
+dependency.
+
+```cpp
+xfoil::LiftSequence lift;
+lift.start = 0.4;
+lift.endExclusive = 0.8;
+lift.step = 0.2;
+
+auto compact = session.solveClSequence(lift, nullptr, progress);
+auto detailed = session.solveDetailedClSequence(lift, nullptr, progress);
+```
+
+The corresponding signatures are:
+
+```cpp
+Result<SequenceResult> solveClSequence(
+    const LiftSequence& sequence,
+    const CancellationToken* cancellation = nullptr);
+Result<SequenceResult> solveClSequence(
+    const LiftSequence& sequence,
+    const CancellationToken* cancellation,
+    const ProgressCallback& progress);
+Result<DetailedSequenceResult> solveDetailedClSequence(
+    const LiftSequence& sequence,
+    const CancellationToken* cancellation = nullptr);
+Result<DetailedSequenceResult> solveDetailedClSequence(
+    const LiftSequence& sequence,
+    const CancellationToken* cancellation,
+    const ProgressCallback& progress);
+```
+
+Both forms use the same canonical specified-CL point path as `solveCl()` and
+the established public Session sequence policy. The first point starts its
+SPECCL at alpha 0.0; the alpha reached by a successful point is carried to the
+next point within the run. This is the library sequence policy, not the
+separate CLI CSEQ OPER policy. CLI CSEQ output, warm start, NSEQEX behavior and
+rounding are unchanged.
+
+The compact result contains scalar `PolarPoint` rows. The detailed result
+additionally owns `OperatingPointData` for every executed point, including the
+Cp surface and, for a valid viscous point, the Cf distribution and CDF. Both
+forms share the same internal sequence run; the detailed form does not run a
+second solver and does not call the CLI. The two forms emit the same progress
+events.
+
+Cancellation may occur before the first point, between points or at a safe
+VISCAL iteration boundary. Partial owning results are returned with
+`SequenceStopReason::cancelled`; a cancelled point carries no stale Cp, Cf,
+CDF or iteration value. The session remains reusable after cancellation. A
+progress callback failure stops the run with
+`progress.callbackFailure`. Non-converged but executed points remain present
+and continue the run, as in the public alpha sequence.
+
 ## Skin-friction distribution
 
 `xfoil/SkinFriction.h` provides owning upper/lower boundary-layer station

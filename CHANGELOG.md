@@ -6,6 +6,11 @@ keep-a-changelog layout.
 
 ## Unreleased
 
+- Added the public compact and detailed CL sequence API
+  (`Session::solveClSequence`, `Session::solveDetailedClSequence`) with an
+  exclusive end boundary, one shared specified-CL sequence path, progress,
+  cancellation, owning Cp/Cf/CDF/iteration data and partial results. CLI CSEQ
+  behavior is unchanged.
 - Added an optional Qt 6.12.x GUI build skeleton with the embeddable
   `xfoil::gui::XFoilWidget` shell, vendored QCustomPlot 2.1.1, offscreen Qt
   tests, a public-header link check and GUI dependency/vendoring gates.

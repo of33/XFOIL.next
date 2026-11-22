@@ -1134,6 +1134,19 @@ std::vector<AnalysisResult> runClSequence(
     SessionComposition& session, double startCl, double endCl, double stepCl,
     Degrees startAlpha, const CancellationToken* cancellation);
 
+// Public API cold-path CL sequence with an exclusive end boundary. It uses
+// the same specified-CL point kernel as runSpecCl and the same sequence
+// policy as runAlphaSequenceDetailed: one SequencePointRecord per attempted
+// point, optional owning OperatingPointData, sequence progress, and partial
+// records on cancellation/failure. Compact and detailed public projections
+// share exactly this run. CLI CSEQ continues to use the separate OPER path.
+[[nodiscard]]
+std::vector<SequencePointRecord> runClSequenceDetailed(
+    SessionComposition& session, double startCl, double endExclusive,
+    double stepCl, const CancellationToken* cancellation,
+    ProgressObserver* progress = nullptr,
+    bool captureOperatingPoint = false);
+
 // Fortran OPER ASEQ/CSEQ with canonical warm-start semantics
 // (xoper.f 545-760). Point count from the NPOINT formula, step sign from
 // start/end enforced. In contrast to runAlphaSequence/runClSequence

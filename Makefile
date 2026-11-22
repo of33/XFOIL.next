@@ -398,6 +398,7 @@ TEST_SRCS := \
 	tests/unit/LibraryOperatingPointCompletenessTests.cpp \
 	tests/unit/LibrarySequencePointCompletenessTests.cpp \
 	tests/unit/LibraryDetailedSequenceG2bTests.cpp \
+	tests/unit/LibraryClSequenceG6aTests.cpp \
 	tests/unit/LibraryIsolationL7Tests.cpp \
 	tests/unit/LibraryConcurrencyL7Tests.cpp \
 	tests/unit/LibraryDemoL9Tests.cpp \
@@ -478,6 +479,7 @@ TEST_SRCS := \
 	tests/integration/LibraryOperatingPointCompletenessTests.cpp \
 	tests/integration/LibrarySequencePointCompletenessTests.cpp \
 	tests/integration/LibraryDetailedSequenceG2bTests.cpp \
+	tests/integration/LibraryClSequenceG6aTests.cpp \
 	tests/regression/ClarkYGoldenTests.cpp \
 	tests/regression/PaccDumpByteParityTests.cpp \
 	tests/regression/PaccInviscidDumpParityTests.cpp \

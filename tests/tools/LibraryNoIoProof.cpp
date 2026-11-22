@@ -121,6 +121,19 @@ bool runApiWorkflow(const xfoil::geometry::AirfoilGeometry& memoryGeometry) {
       !detailed.value().points.front().operatingPoint->surface.has_value()) {
     return false;
   }
+  const xfoil::LiftSequence liftSequence{0.0, 1.0, 0.5};
+  const auto liftCompact =
+      first.solveClSequence(liftSequence, nullptr, progress);
+  if (liftCompact.isErr() || liftCompact.value().points.empty()) {
+    return false;
+  }
+  const auto liftDetailed =
+      first.solveDetailedClSequence(liftSequence, nullptr, progress);
+  if (liftDetailed.isErr() || liftDetailed.value().points.empty() ||
+      !liftDetailed.value().points.front().operatingPoint.has_value() ||
+      !liftDetailed.value().points.front().operatingPoint->surface.has_value()) {
+    return false;
+  }
   if (first.currentPanel().isErr() ||
       first.currentSurfaceDistribution().isErr() ||
       first.lastOperatingPoint().isErr()) {
@@ -206,6 +219,17 @@ bool runApiWorkflow(const xfoil::geometry::AirfoilGeometry& memoryGeometry) {
   if (!errors.solveCl(std::nan("")).isErr()) {
     return false;
   }
+  const ProgressCallback clThrowing = [](const ProgressEvent& event) {
+    if (event.phase == xfoil::ProgressPhase::sequence) {
+      throw 1;
+    }
+  };
+  const auto clCallbackFailure = errors.solveClSequence(
+      xfoil::LiftSequence{0.0, 1.0, 0.5}, nullptr, clThrowing);
+  if (!clCallbackFailure.isErr() ||
+      clCallbackFailure.error().code != "progress.callbackFailure") {
+    return false;
+  }
   AlphaSequence zeroStep;
   zeroStep.start = Degrees{0.0};
   zeroStep.endExclusive = Degrees{2.0};
@@ -277,12 +301,32 @@ bool runApiWorkflow(const xfoil::geometry::AirfoilGeometry& memoryGeometry) {
       return false;
     }
   }
+  const auto cfLiftSequence = cfSession.solveDetailedClSequence(
+      xfoil::LiftSequence{0.4, 0.6, 0.2}, nullptr, progress);
+  if (cfLiftSequence.isErr() || cfLiftSequence.value().points.empty()) {
+    return false;
+  }
+  for (const auto& point : cfLiftSequence.value().points) {
+    if (!point.operatingPoint.has_value() ||
+        !point.operatingPoint->surface.has_value() ||
+        !point.operatingPoint->skinFriction.has_value() ||
+        !point.operatingPoint->dragCoefficientFriction.has_value()) {
+      return false;
+    }
+  }
 
   xfoil::CancellationToken token;
   token.requestCancellation();
   const auto cancelled = first.solveAlphaSequence(sequence, &token);
   if (cancelled.isErr() ||
       cancelled.value().stopReason !=
+          xfoil::SequenceStopReason::cancelled) {
+    return false;
+  }
+  const auto cancelledCl = first.solveClSequence(
+      xfoil::LiftSequence{0.0, 1.0, 0.5}, &token);
+  if (cancelledCl.isErr() ||
+      cancelledCl.value().stopReason !=
           xfoil::SequenceStopReason::cancelled) {
     return false;
   }

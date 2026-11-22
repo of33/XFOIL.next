@@ -163,6 +163,41 @@ int main() {
     }
   }
 
+  const xfoil::LiftSequence liftSequence{0.4, 0.8, 0.2};
+  const xfoil::Result<xfoil::SequenceResult> liftCompact =
+      cfSession.solveClSequence(liftSequence, nullptr, progress);
+  if (liftCompact.isErr() || liftCompact.value().points.empty()) {
+    return 1;
+  }
+  for (const xfoil::PolarPoint& point : liftCompact.value().points) {
+    if (!point.dragCoefficientFriction.has_value() ||
+        !point.iterations.has_value()) {
+      return 1;
+    }
+  }
+  const xfoil::Result<xfoil::DetailedSequenceResult> liftDetailed =
+      cfSession.solveDetailedClSequence(liftSequence, nullptr, progress);
+  if (liftDetailed.isErr() || liftDetailed.value().points.empty()) {
+    return 1;
+  }
+  for (const xfoil::DetailedSequencePoint& point :
+       liftDetailed.value().points) {
+    if (!point.operatingPoint.has_value() ||
+        !point.operatingPoint->surface.has_value() ||
+        !point.operatingPoint->skinFriction.has_value()) {
+      return 1;
+    }
+  }
+  xfoil::CancellationToken liftToken;
+  liftToken.requestCancellation();
+  const xfoil::Result<xfoil::SequenceResult> liftCancelled =
+      cfSession.solveClSequence(liftSequence, &liftToken);
+  if (liftCancelled.isErr() ||
+      liftCancelled.value().stopReason !=
+          xfoil::SequenceStopReason::cancelled) {
+    return 1;
+  }
+
   std::cout << "LibraryConsumer PASS\n";
   return 0;
 }

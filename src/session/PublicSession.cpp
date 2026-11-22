@@ -73,6 +73,12 @@ static Result<SequenceResult> solveAlphaSequenceImpl(
 static Result<DetailedSequenceResult> solveDetailedAlphaSequenceImpl(
     session::SessionComposition& composition, const AlphaSequence& sequence,
     const CancellationToken* cancellation, const ProgressCallback* progress);
+static Result<SequenceResult> solveClSequenceImpl(
+    session::SessionComposition& composition, const LiftSequence& sequence,
+    const CancellationToken* cancellation, const ProgressCallback* progress);
+static Result<DetailedSequenceResult> solveDetailedClSequenceImpl(
+    session::SessionComposition& composition, const LiftSequence& sequence,
+    const CancellationToken* cancellation, const ProgressCallback* progress);
 
 struct AlphaSequenceRun {
   std::vector<session::SequencePointRecord> records;
@@ -80,8 +86,18 @@ struct AlphaSequenceRun {
   std::optional<std::size_t> stoppedAtIndex;
 };
 
+struct ClSequenceRun {
+  std::vector<session::SequencePointRecord> records;
+  SequenceStopReason stopReason{SequenceStopReason::completed};
+  std::optional<std::size_t> stoppedAtIndex;
+};
+
 static Result<AlphaSequenceRun> runAlphaSequenceImpl(
     session::SessionComposition& composition, const AlphaSequence& sequence,
+    const CancellationToken* cancellation, const ProgressCallback* progress,
+    bool captureOperatingPoint);
+static Result<ClSequenceRun> runClSequenceImpl(
+    session::SessionComposition& composition, const LiftSequence& sequence,
     const CancellationToken* cancellation, const ProgressCallback* progress,
     bool captureOperatingPoint);
 
@@ -521,6 +537,31 @@ Result<DetailedSequenceResult> Session::solveDetailedAlphaSequence(
                                         &progress);
 }
 
+Result<SequenceResult> Session::solveClSequence(
+    const LiftSequence& sequence, const CancellationToken* cancellation) {
+  return solveClSequenceImpl(impl_->session, sequence, cancellation, nullptr);
+}
+
+Result<SequenceResult> Session::solveClSequence(
+    const LiftSequence& sequence, const CancellationToken* cancellation,
+    const ProgressCallback& progress) {
+  return solveClSequenceImpl(impl_->session, sequence, cancellation,
+                             &progress);
+}
+
+Result<DetailedSequenceResult> Session::solveDetailedClSequence(
+    const LiftSequence& sequence, const CancellationToken* cancellation) {
+  return solveDetailedClSequenceImpl(impl_->session, sequence, cancellation,
+                                     nullptr);
+}
+
+Result<DetailedSequenceResult> Session::solveDetailedClSequence(
+    const LiftSequence& sequence, const CancellationToken* cancellation,
+    const ProgressCallback& progress) {
+  return solveDetailedClSequenceImpl(impl_->session, sequence, cancellation,
+                                     &progress);
+}
+
 static Result<AlphaSequenceRun> runAlphaSequenceImpl(
     session::SessionComposition& composition, const AlphaSequence& sequence,
     const CancellationToken* cancellation, const ProgressCallback* progress,
@@ -630,6 +671,129 @@ static Result<AlphaSequenceRun> runAlphaSequenceImpl(
   results.resize(includedCount);
   run.records = std::move(results);
   return Result<AlphaSequenceRun>::ok(std::move(run));
+}
+
+static Result<ClSequenceRun> runClSequenceImpl(
+    session::SessionComposition& composition, const LiftSequence& sequence,
+    const CancellationToken* cancellation, const ProgressCallback* progress,
+    bool captureOperatingPoint) {
+  const double start = sequence.start;
+  const double end = sequence.endExclusive;
+  const double step = sequence.step;
+  if (!std::isfinite(start) || !std::isfinite(end) ||
+      !std::isfinite(step)) {
+    return Result<ClSequenceRun>::fail(
+        sequenceError(ErrorCategory::invalidArgument, "sequence.invalidRange",
+                      "Sequence values must be finite"));
+  }
+  if (step == 0.0) {
+    return Result<ClSequenceRun>::fail(
+        sequenceError(ErrorCategory::invalidArgument, "sequence.zeroStep",
+                      "Sequence step must be non-zero"));
+  }
+  if (!((step > 0.0 && start < end) || (step < 0.0 && start > end))) {
+    return Result<ClSequenceRun>::fail(
+        sequenceError(ErrorCategory::invalidArgument,
+                      "sequence.direction",
+                      "Sequence step direction does not match start and end"));
+  }
+  const long double span =
+      (static_cast<long double>(end) - static_cast<long double>(start)) /
+      static_cast<long double>(step);
+  if (span <= 0.0L) {
+    return Result<ClSequenceRun>::fail(
+        sequenceError(ErrorCategory::invalidArgument, "sequence.invalidRange",
+                      "Sequence range is empty"));
+  }
+  const long double expectedCount = std::ceil(span);
+  if (expectedCount >
+      static_cast<long double>(kMaximumSequencePoints)) {
+    return Result<ClSequenceRun>::fail(
+        sequenceError(ErrorCategory::capacityExceeded,
+                      "sequence.pointLimit",
+                      "Sequence exceeds the point limit"));
+  }
+  if (!composition.geometry.valid ||
+      !composition.paneling.panelingValid) {
+    return Result<ClSequenceRun>::fail(
+        Error::make(ErrorCategory::invalidState, "analysis.missingGeometry",
+                    "No valid panel geometry is available", "analysis"));
+  }
+  if (!composition.operating.configured) {
+    return Result<ClSequenceRun>::fail(
+        Error::make(ErrorCategory::invalidState,
+                    "analysis.missingConfiguration",
+                    "No validated analysis configuration is available",
+                    "analysis"));
+  }
+
+  CallbackProgressObserver observer(progress);
+  std::vector<session::SequencePointRecord> results =
+      session::runClSequenceDetailed(
+          composition, start, end, step, cancellation,
+          observerFor(progress, observer), captureOperatingPoint);
+  if (results.empty()) {
+    return Result<ClSequenceRun>::fail(
+        sequenceError(ErrorCategory::internal, "sequence.empty",
+                      "Sequence produced no result"));
+  }
+
+  ClSequenceRun run;
+  run.stopReason = SequenceStopReason::completed;
+  std::size_t includedCount = results.size();
+  for (std::size_t index = 0; index < results.size(); ++index) {
+    if (results[index].result.status ==
+        AnalysisStatus::progressCallbackFailure) {
+      return Result<ClSequenceRun>::fail(
+          session::progressCallbackFailureError());
+    }
+    if (results[index].result.status == AnalysisStatus::cancelled) {
+      run.stopReason = SequenceStopReason::cancelled;
+      run.stoppedAtIndex = index;
+      includedCount = index + 1;
+      break;
+    }
+    if (!results[index].result.successful) {
+      if (index == 0) {
+        return Result<ClSequenceRun>::fail(
+            session::analysisStatusError(results[index].result.status));
+      }
+      run.stopReason = SequenceStopReason::failure;
+      run.stoppedAtIndex = index;
+      includedCount = index + 1;
+      break;
+    }
+  }
+
+  results.resize(includedCount);
+  run.records = std::move(results);
+  return Result<ClSequenceRun>::ok(std::move(run));
+}
+
+static Result<SequenceResult> solveClSequenceImpl(
+    session::SessionComposition& composition, const LiftSequence& sequence,
+    const CancellationToken* cancellation, const ProgressCallback* progress) {
+  Result<ClSequenceRun> run = runClSequenceImpl(
+      composition, sequence, cancellation, progress, false);
+  if (run.isErr()) {
+    return Result<SequenceResult>::fail(run.error());
+  }
+  return Result<SequenceResult>::ok(
+      session::projectSequence(run.value().records, run.value().stopReason,
+                               run.value().stoppedAtIndex));
+}
+
+static Result<DetailedSequenceResult> solveDetailedClSequenceImpl(
+    session::SessionComposition& composition, const LiftSequence& sequence,
+    const CancellationToken* cancellation, const ProgressCallback* progress) {
+  Result<ClSequenceRun> run = runClSequenceImpl(
+      composition, sequence, cancellation, progress, true);
+  if (run.isErr()) {
+    return Result<DetailedSequenceResult>::fail(run.error());
+  }
+  return Result<DetailedSequenceResult>::ok(session::projectDetailedSequence(
+      run.value().records, run.value().stopReason,
+      run.value().stoppedAtIndex));
 }
 
 static Result<SequenceResult> solveAlphaSequenceImpl(

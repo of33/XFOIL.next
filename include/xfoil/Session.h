@@ -56,6 +56,17 @@ struct AlphaSequence {
   Degrees step{};
 };
 
+// Lift-coefficient sequence with an exclusive end boundary. Coefficients
+// are dimensionless. step must be non-zero and its direction must match
+// start -> endExclusive. At most 100000 points are run. The sequence uses
+// the existing specified-CL point kernel and the established Session
+// sequence policy; CLI CSEQ keeps its separate OPER policy.
+struct LiftSequence {
+  double start{};
+  double endExclusive{};
+  double step{};
+};
+
 class XFOIL_API Session {
  public:
   Session();
@@ -163,6 +174,33 @@ class XFOIL_API Session {
   [[nodiscard]]
   Result<DetailedSequenceResult> solveDetailedAlphaSequence(
       const AlphaSequence& sequence,
+      const CancellationToken* cancellation,
+      const ProgressCallback& progress);
+
+  // Runs a lift-coefficient sequence through the same canonical specified-CL
+  // point path as solveCl(). The compact result owns scalar PolarPoint rows.
+  // The detailed result owns the full OperatingPointData for every executed
+  // point. Both share one internal sequence run and emit identical progress
+  // events. Partial results are returned for cancellation or a later point
+  // failure. The sequence starts its first SPECCL at alpha 0.0, matching
+  // solveCl(), and carries the reached alpha forward within the sequence.
+  [[nodiscard]]
+  Result<SequenceResult> solveClSequence(
+      const LiftSequence& sequence,
+      const CancellationToken* cancellation = nullptr);
+  [[nodiscard]]
+  Result<SequenceResult> solveClSequence(
+      const LiftSequence& sequence,
+      const CancellationToken* cancellation,
+      const ProgressCallback& progress);
+
+  [[nodiscard]]
+  Result<DetailedSequenceResult> solveDetailedClSequence(
+      const LiftSequence& sequence,
+      const CancellationToken* cancellation = nullptr);
+  [[nodiscard]]
+  Result<DetailedSequenceResult> solveDetailedClSequence(
+      const LiftSequence& sequence,
       const CancellationToken* cancellation,
       const ProgressCallback& progress);
 

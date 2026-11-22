@@ -80,8 +80,8 @@ See [NOTICE](NOTICE) for full attribution and provenance details.
   `CDv`;
 - complete scalar sequence-point results with `CD`, `CDp`, `CDF`, `CDv` and
   the executed iteration count;
-- an optional owning detailed alpha sequence with the full Cp surface and,
-  for viscous points, the Cf distribution and CDF per executed point,
+- optional owning detailed alpha and CL sequences with the full Cp surface
+  and, for viscous points, the Cf distribution and CDF per executed point,
   without a second solver run or interpolation;
 - installable static and shared C++ libraries with public headers and
   pkg-config metadata;
@@ -97,8 +97,8 @@ See [NOTICE](NOTICE) for full attribution and provenance details.
 
 `xfoil::Session` is the stateful in-memory API. The host loads or generates
 geometry, configures paneling and analysis, then runs alpha or CL points and
-alpha sequences in the same session. `xfoil::analyze()` runs one point on a
-temporary session for one-shot use. The compatibility facades
+alpha or CL sequences in the same session. `xfoil::analyze()` runs one point on
+a temporary session for one-shot use. The compatibility facades
 `xfoil::XFoil` and `xfoil::XFoilSession` remain available.
 
 Results are owning value types. `OperatingPointData` carries the scalar

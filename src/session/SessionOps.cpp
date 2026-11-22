@@ -3686,6 +3686,125 @@ std::vector<AnalysisResult> runClSequence(
   return results;
 }
 
+std::vector<SequencePointRecord> runClSequenceDetailed(
+    SessionComposition& session, double startCl, double endExclusive,
+    double stepCl, const CancellationToken* cancellation,
+    ProgressObserver* progress, bool captureOperatingPoint) {
+  std::vector<SequencePointRecord> records;
+
+  const auto makeRangeError = [](const char* message) {
+    SequencePointRecord record;
+    record.result.status = AnalysisStatus::invalidConfiguration;
+    record.result.successful = false;
+    record.result.diagnostic = message;
+    return record;
+  };
+  const auto makeRecord = [](AnalysisResult result) {
+    SequencePointRecord record;
+    record.result = std::move(result);
+    return record;
+  };
+
+  const bool validSequence =
+      std::isfinite(startCl) && std::isfinite(endExclusive) &&
+      std::isfinite(stepCl) && stepCl != 0.0 &&
+      ((stepCl > 0.0 && startCl < endExclusive) ||
+       (stepCl < 0.0 && startCl > endExclusive));
+  if (!validSequence) {
+    session.result.lastResult = makeRangeError("Invalid lift sequence").result;
+    session.result.lastResult.alpha = Degrees{0.0};
+    records.push_back(makeRecord(session.result.lastResult));
+    return records;
+  }
+
+  const long double span =
+      (static_cast<long double>(endExclusive) -
+       static_cast<long double>(startCl)) /
+      static_cast<long double>(stepCl);
+  if (span <= 0.0L) {
+    session.result.lastResult = makeRangeError("Invalid lift sequence").result;
+    records.push_back(makeRecord(session.result.lastResult));
+    return records;
+  }
+  const long double expectedCount = std::ceil(span);
+  if (expectedCount > static_cast<long double>(kMaximumPolarPoints)) {
+    session.result.lastResult =
+        makeRangeError("Lift sequence point limit exceeded").result;
+    records.push_back(makeRecord(session.result.lastResult));
+    return records;
+  }
+  const std::size_t total = static_cast<std::size_t>(expectedCount);
+
+  auto reportSequence = [&](std::size_t completed,
+                            std::size_t sequenceIndex) {
+    if (progress == nullptr) {
+      return false;
+    }
+    const ProgressControl control = progress->report(
+        makeProgressEvent(ProgressPhase::sequence, completed, total,
+                          sequenceIndex));
+    if (control == ProgressControl::callbackFailed) {
+      AnalysisResult failed;
+      failed.status = AnalysisStatus::progressCallbackFailure;
+      failed.successful = false;
+      failed.diagnostic = "Progress callback failed";
+      session.result.lastResult = failed;
+      records.push_back(makeRecord(std::move(failed)));
+      return true;
+    }
+    return false;
+  };
+
+  if (reportSequence(0, 0)) {
+    return records;
+  }
+
+  Degrees alpha{0.0};
+  for (std::size_t index = 0; index < total; ++index) {
+    if (records.size() >= kMaximumPolarPoints) {
+      session.result.lastResult =
+          makeRangeError("Lift sequence point limit exceeded").result;
+      records.push_back(makeRecord(session.result.lastResult));
+      break;
+    }
+    const double cl = startCl + stepCl * static_cast<double>(index);
+    if (cancellation != nullptr && cancellation->isCancellationRequested()) {
+      AnalysisResult cancelled;
+      cancelled.alpha = alpha;
+      cancelled.status = AnalysisStatus::cancelled;
+      cancelled.successful = false;
+      session.result.lastResult = cancelled;
+      records.push_back(makeSequencePointRecord(
+          session, std::move(cancelled), captureOperatingPoint));
+      reportSequence(records.size(), records.size() - 1);
+      break;
+    }
+
+    const std::size_t sequenceIndex = records.size();
+    records.push_back(makeSequencePointRecord(
+        session,
+        runSpecCl(session, cl, alpha, cancellation, progress, sequenceIndex),
+        captureOperatingPoint));
+
+    if (records.back().result.status ==
+        AnalysisStatus::progressCallbackFailure) {
+      break;
+    }
+    if (reportSequence(records.size(), sequenceIndex)) {
+      break;
+    }
+    if (records.back().result.status == AnalysisStatus::cancelled) {
+      break;
+    }
+    if (!records.back().result.successful) {
+      break;
+    }
+    alpha = records.back().result.alpha;
+  }
+
+  return records;
+}
+
 namespace {
 
 // Fortran ASEQ/CSEQ point count (xoper.f 576-580/596-600):
