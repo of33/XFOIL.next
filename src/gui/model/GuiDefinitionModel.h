@@ -53,7 +53,8 @@ enum class GeometrySource {
 enum class AnalysisMode {
   alphaPoint,
   clPoint,
-  alphaSequence
+  alphaSequence,
+  clSequence
 };
 
 class GuiDefinitionModel {
@@ -111,6 +112,11 @@ class GuiDefinitionModel {
   }
 
   [[nodiscard]]
+  const LiftSequence& clSequence() const noexcept {
+    return clSequence_;
+  }
+
+  [[nodiscard]]
   XFoilGuiState state() const noexcept {
     return state_;
   }
@@ -143,6 +149,10 @@ class GuiDefinitionModel {
   Result<void> setTarget(const AnalysisTarget& target);
   [[nodiscard]]
   Result<void> setSequence(const AlphaSequence& sequence);
+  [[nodiscard]]
+  Result<void> setClSequence(const LiftSequence& sequence);
+
+  void reset();
 
  private:
   [[nodiscard]]
@@ -160,6 +170,7 @@ class GuiDefinitionModel {
   AnalysisMode mode_{AnalysisMode::alphaPoint};
   AnalysisTarget target_{AlphaTarget{Degrees{0.0}}};
   AlphaSequence sequence_{Degrees{0.0}, Degrees{5.0}, Degrees{1.0}};
+  LiftSequence clSequence_{0.0, 1.0, 0.1};
   std::optional<Error> error_;
   XFoilGuiState state_{XFoilGuiState::empty};
 };

@@ -139,10 +139,12 @@ An optional Qt 6.12.x GUI analysis surface and a thin standalone application
 now exist. The widget owns a geometry/paneling/operating/target definition, an
 offscreen-checked interactive geometry and panel preview, five scalar sequence
 plots, selected-point Cp and Cf plots and a 4x3 result matrix with diagnostics,
-progress and cancellation. Alpha, CL and detailed alpha-sequence analyses run
-asynchronously in exactly one persistent worker thread and one worker-owned
-`xfoil::Session`. Point selection and activate/deactivate filtering use owning
-results and never rerun the solver. The matrix shows direct values for the
+progress and cancellation. Alpha, CL, alpha-sequence and CL-sequence analyses
+run asynchronously in exactly one persistent worker thread and one worker-owned
+`xfoil::Session`. The widget exposes an owning `AnalysisWorkflowSetup` host
+contract with atomic validation and repeated reinitialization, plus
+`resetWorkflow()` and instance-local view options. Point selection and
+activate/deactivate filtering use owning results and never rerun the solver. The matrix shows direct values for the
 selected point and derived `CL0`, `alpha0`, `CD0`, `CM0`, `CLmax` and
 `(CL/CD)max` summaries for enabled converged points, using `n/a` and explicit
 provisional hints where a value is not defined. The plots support pan,
@@ -208,13 +210,14 @@ QT_ROOT=/path/to/Qt/6.12.0/gcc_64 make gui-link-check
 `bin/release/xfoil.next-gui`; `make run-gui` starts the debug application.
 
 Run the GUI targets sequentially. The embeddable `xfoil::gui::XFoilWidget`
-accepts memory, NACA and NACS geometry, paneling options, an `AnalysisConfig`
-and an alpha/CL/alpha-sequence target. It validates setup through the public
+accepts memory, NACA and NACS geometry, complete Basic/Expert paneling and
+condition controls, and an alpha/CL/alpha-sequence/CL-sequence target. It validates setup through the public
 `xfoil::Session` API and runs analysis in one persistent worker-owned session
 with owning result values, progress, cancellation and structured errors. It
-previews geometry and panel nodes, binds full scalar curves and selected-point
-Cp/Cf distributions with QCustomPlot, and provides source-index point
-selection, activate/deactivate filtering, a result matrix and derived summaries.
+previews geometry and an optional red panel overlay with XFOIL-style node
+ticks, binds full scalar curves and selected-point Cp/Cf distributions with
+QCustomPlot, and provides source-index point selection, activate/deactivate
+filtering, a result matrix and derived summaries.
 The embeddable widget itself still has no file dialog, QSettings or import or
 export adapter; those responsibilities belong to the standalone shell. There
 is no GUI release asset or installer. The Windows UCRT64 Qt 6.12.0

@@ -28,6 +28,7 @@
 
 #include "worker/GuiAnalysisWorker.h"
 
+#include <cmath>
 #include <exception>
 #include <string>
 #include <utility>
@@ -49,6 +50,78 @@ Error unexpectedWorkerError() {
   return Error::make(ErrorCategory::internal, "gui.workerException",
                      "The analysis worker caught an unexpected exception",
                      "worker");
+}
+
+Error setupRequestError(ErrorCategory category, std::string code,
+                        std::string message) {
+  return Error::make(category, std::move(code), std::move(message),
+                     "setup");
+}
+
+Result<void> validateSetupSequence(double start, double endExclusive,
+                                   double step) {
+  if (!std::isfinite(start) || !std::isfinite(endExclusive) ||
+      !std::isfinite(step)) {
+    return Result<void>::fail(setupRequestError(
+        ErrorCategory::invalidArgument, "sequence.invalidRange",
+        "Sequence values must be finite"));
+  }
+  if (step == 0.0) {
+    return Result<void>::fail(setupRequestError(
+        ErrorCategory::invalidArgument, "sequence.zeroStep",
+        "Sequence step must be non-zero"));
+  }
+  if (!((step > 0.0 && start < endExclusive) ||
+        (step < 0.0 && start > endExclusive))) {
+    return Result<void>::fail(setupRequestError(
+        ErrorCategory::invalidArgument, "sequence.direction",
+        "Sequence step direction does not match start and end"));
+  }
+  const long double span =
+      (static_cast<long double>(endExclusive) -
+       static_cast<long double>(start)) /
+      static_cast<long double>(step);
+  if (span <= 0.0L ||
+      std::ceil(span) > 100000.0L) {
+    return Result<void>::fail(setupRequestError(
+        span <= 0.0L ? ErrorCategory::invalidArgument
+                     : ErrorCategory::capacityExceeded,
+        span <= 0.0L ? "sequence.invalidRange" : "sequence.pointLimit",
+        span <= 0.0L ? "Sequence range is empty"
+                     : "Sequence exceeds the point limit"));
+  }
+  return Result<void>::ok();
+}
+
+Result<void> validateSetupRequest(const AnalysisWorkflowRequest& request) {
+  if (const auto* alpha = std::get_if<AlphaTarget>(&request)) {
+    if (!std::isfinite(alpha->alpha.value)) {
+      return Result<void>::fail(setupRequestError(
+          ErrorCategory::invalidArgument, "target.nonFiniteAlpha",
+          "Alpha target must be finite"));
+    }
+    return Result<void>::ok();
+  }
+  if (const auto* lift = std::get_if<LiftTarget>(&request)) {
+    if (!std::isfinite(lift->cl)) {
+      return Result<void>::fail(setupRequestError(
+          ErrorCategory::invalidArgument, "target.nonFiniteLift",
+          "Lift target must be finite"));
+    }
+    return Result<void>::ok();
+  }
+  if (const auto* sequence = std::get_if<AlphaSequence>(&request)) {
+    return validateSetupSequence(sequence->start.value,
+                                 sequence->endExclusive.value,
+                                 sequence->step.value);
+  }
+  if (const auto* sequence = std::get_if<LiftSequence>(&request)) {
+    return validateSetupSequence(sequence->start, sequence->endExclusive,
+                                 sequence->step);
+  }
+  return Result<void>::fail(setupRequestError(
+      ErrorCategory::invalidState, "gui.invalidSetupRequest",
+      "The setup request has no supported analysis target"));
 }
 
 }  // namespace
@@ -104,6 +177,67 @@ Result<void> GuiAnalysisWorker::setConfiguration(
     return session;
   }
   return session_->configure(configuration);
+}
+
+Result<GuiAppliedSetup> GuiAnalysisWorker::applySetup(
+    const AnalysisWorkflowSetup& setup) {
+  if (const Result<void> session = requireSession(); session.isErr()) {
+    return Result<GuiAppliedSetup>::fail(session.error());
+  }
+
+  auto candidate = std::make_unique<Session>();
+  geometry::AirfoilGeometry geometry;
+  if (const auto* memory =
+          std::get_if<MemoryGeometrySetup>(&setup.geometry)) {
+    const Result<void> assigned = candidate->setGeometry(memory->geometry);
+    if (assigned.isErr()) {
+      return Result<GuiAppliedSetup>::fail(assigned.error());
+    }
+    geometry = memory->geometry;
+  } else if (const auto* naca =
+                 std::get_if<NacaGeometrySetup>(&setup.geometry)) {
+    const Result<geometry::AirfoilGeometry> generated =
+        candidate->setNaca(naca->designation);
+    if (generated.isErr()) {
+      return Result<GuiAppliedSetup>::fail(generated.error());
+    }
+    geometry = generated.value();
+  } else if (const auto* nacs =
+                 std::get_if<NacsGeometrySetup>(&setup.geometry)) {
+    const Result<geometry::AirfoilGeometry> generated =
+        candidate->setNacs(nacs->designation);
+    if (generated.isErr()) {
+      return Result<GuiAppliedSetup>::fail(generated.error());
+    }
+    geometry = generated.value();
+  } else {
+    return Result<GuiAppliedSetup>::fail(setupRequestError(
+        ErrorCategory::invalidArgument, "gui.geometrySource",
+        "The setup has no supported geometry source"));
+  }
+
+  const Result<SurfaceGeometry> panel =
+      candidate->generatePanel(setup.paneling);
+  if (panel.isErr()) {
+    return Result<GuiAppliedSetup>::fail(panel.error());
+  }
+  const Result<void> configured = candidate->configure(setup.configuration);
+  if (configured.isErr()) {
+    return Result<GuiAppliedSetup>::fail(configured.error());
+  }
+  const Result<void> request = validateSetupRequest(setup.request);
+  if (request.isErr()) {
+    return Result<GuiAppliedSetup>::fail(request.error());
+  }
+
+  session_ = std::move(candidate);
+  return Result<GuiAppliedSetup>::ok(
+      GuiAppliedSetup{std::move(geometry), panel.value()});
+}
+
+Result<void> GuiAnalysisWorker::resetSession() {
+  session_ = std::make_unique<Session>();
+  return Result<void>::ok();
 }
 
 void GuiAnalysisWorker::run(GuiAnalysisJob job) {
@@ -174,6 +308,37 @@ void GuiAnalysisWorker::run(GuiAnalysisJob job) {
           outcome = Error::make(ErrorCategory::numericalFailure,
                                 "sequence.partialFailure",
                                 "The alpha sequence stopped before completion",
+                                "analysis");
+          finish = GuiAnalysisFinish::failed;
+        } else {
+          outcome = Error{};
+        }
+      } else {
+        outcome = result.error();
+        finish = outcome.category == ErrorCategory::cancelled
+                     ? GuiAnalysisFinish::cancelled
+                     : GuiAnalysisFinish::failed;
+      }
+    } else if (const auto* sequence =
+                   std::get_if<LiftSequence>(&job.spec.target())) {
+      const Result<DetailedSequenceResult> result =
+          session_->solveDetailedClSequence(*sequence, cancellation,
+                                            progress);
+      if (result.isOk()) {
+        const DetailedSequenceResult& detailed = result.value();
+        if (!detailed.points.empty()) {
+          Q_EMIT sequenceReady(jobId, generationId, detailed);
+        }
+        if (detailed.stopReason == SequenceStopReason::cancelled) {
+          outcome = Error::make(ErrorCategory::cancelled,
+                                "analysis.cancelled",
+                                "The analysis was cancelled", "analysis");
+          finish = GuiAnalysisFinish::cancelled;
+        } else if (detailed.stopReason == SequenceStopReason::failure ||
+                   detailed.stopReason == SequenceStopReason::nonConvergence) {
+          outcome = Error::make(ErrorCategory::numericalFailure,
+                                "sequence.partialFailure",
+                                "The CL sequence stopped before completion",
                                 "analysis");
           finish = GuiAnalysisFinish::failed;
         } else {

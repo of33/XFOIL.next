@@ -106,6 +106,9 @@ class GuiDefinitionModelTests : public QObject {
     QCOMPARE(model.sequence().start.value, 0.0);
     QCOMPARE(model.sequence().endExclusive.value, 5.0);
     QCOMPARE(model.sequence().step.value, 1.0);
+    QCOMPARE(model.clSequence().start, 0.0);
+    QCOMPARE(model.clSequence().endExclusive, 1.0);
+    QCOMPARE(model.clSequence().step, 0.1);
     QVERIFY(model.makeRunSpec().isErr());
   }
 
@@ -217,6 +220,28 @@ class GuiDefinitionModelTests : public QObject {
     QVERIFY(model.setTarget(LiftTarget{0.5}).isOk());
     QCOMPARE(model.mode(), AnalysisMode::clPoint);
     QCOMPARE(std::get<LiftTarget>(model.target()).cl, 0.5);
+  }
+
+  void clSequenceValidationAndRunSpec() {
+    GuiDefinitionModel model;
+    model.acceptGeometry(diamond());
+    model.acceptConfiguration(AnalysisConfig{});
+    model.acceptPanel(panelFor(diamond()), PanelingOptions{});
+
+    QVERIFY(model.setClSequence(xfoil::LiftSequence{0.0, 1.0, 0.0}).isErr());
+    QCOMPARE(model.state(), XFoilGuiState::error);
+    QVERIFY(!model.isReady());
+
+    QVERIFY(model.setClSequence(xfoil::LiftSequence{1.0, 0.0, 1.0}).isErr());
+    QVERIFY(model.setClSequence(xfoil::LiftSequence{0.0, 1.0, 0.1}).isOk());
+    QCOMPARE(model.mode(), AnalysisMode::clSequence);
+    QCOMPARE(model.state(), XFoilGuiState::configured);
+    QVERIFY(model.isReady());
+    const auto spec = model.makeRunSpec();
+    QVERIFY(spec.isOk());
+    const auto& sequence = std::get<xfoil::LiftSequence>(spec.value().target());
+    QCOMPARE(sequence.endExclusive, 1.0);
+    QCOMPARE(sequence.step, 0.1);
   }
 
   void runSpecIsCopyableMovableAndStable() {

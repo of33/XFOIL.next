@@ -6,6 +6,10 @@ keep-a-changelog layout.
 
 ## Unreleased
 
+- Added the owning `xfoil::gui::AnalysisWorkflowSetup` host contract and
+  atomic `XFoilWidget::applySetup`/`resetWorkflow` transactions, complete
+  Basic/Expert paneling and analysis controls, a public CL-sequence analysis
+  mode and a view-only red paneling overlay with XFOIL-style node ticks.
 - Added the public compact and detailed CL sequence API
   (`Session::solveClSequence`, `Session::solveDetailedClSequence`) with an
   exclusive end boundary, one shared specified-CL sequence path, progress,

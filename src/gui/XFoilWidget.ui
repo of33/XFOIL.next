@@ -44,7 +44,7 @@
          <enum>Qt::ScrollBarAsNeeded</enum>
         </property>
         <property name="verticalScrollBarPolicy">
-         <enum>Qt::ScrollBarAlwaysOff</enum>
+         <enum>Qt::ScrollBarAsNeeded</enum>
         </property>
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
@@ -60,6 +60,21 @@
           </sizepolicy>
          </property>
          <layout class="QHBoxLayout" name="definitionsRowLayout">
+          <property name="leftMargin">
+           <number>2</number>
+          </property>
+          <property name="topMargin">
+           <number>2</number>
+          </property>
+          <property name="rightMargin">
+           <number>2</number>
+          </property>
+          <property name="bottomMargin">
+           <number>2</number>
+          </property>
+          <property name="spacing">
+           <number>4</number>
+          </property>
           <item>
            <widget class="QGroupBox" name="geometryGroup">
             <property name="sizePolicy">
@@ -72,6 +87,9 @@
              <string>Geometry</string>
             </property>
             <layout class="QFormLayout" name="geometryForm">
+                 <property name="rowWrapPolicy">
+                  <enum>QFormLayout::WrapLongRows</enum>
+                 </property>
              <item row="0" column="0">
               <widget class="QLabel" name="geometrySourceLabel">
                <property name="text">
@@ -164,96 +182,218 @@
             <property name="title">
              <string>Paneling</string>
             </property>
-            <layout class="QFormLayout" name="panelingForm">
-             <item row="0" column="0">
-              <widget class="QLabel" name="panelCountLabel">
-               <property name="text">
-                <string>Panel count</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QSpinBox" name="panelCountSpin">
-               <property name="toolTip">
-                <string>Panel-node count; public library range 2 to 595.</string>
-               </property>
+            <layout class="QVBoxLayout" name="panelingGroupLayout">
+             <item>
+              <widget class="QTabWidget" name="panelingSettingsTabs">
                <property name="accessibleName">
-                <string>Panel count</string>
+                <string>Paneling settings pages</string>
                </property>
+               <widget class="QWidget" name="panelingBasicPage">
+                <attribute name="title">
+                 <string>Basic</string>
+                </attribute>
+                <layout class="QFormLayout" name="panelingBasicForm">
+                 <property name="rowWrapPolicy">
+                  <enum>QFormLayout::WrapLongRows</enum>
+                 </property>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="panelCountLabel">
+                   <property name="text">
+                    <string>Panel count</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QSpinBox" name="panelCountSpin">
+                   <property name="toolTip">
+                    <string>Panel-node count; public library range 2 to 595.</string>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Panel count</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="bunchingLabel">
+                   <property name="text">
+                    <string>Bunching parameter</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QDoubleSpinBox" name="bunchingSpin">
+                   <property name="toolTip">
+                    <string>Dimensionless PANGEN bunching parameter.</string>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Bunching parameter</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QLabel" name="teToLeLabel">
+                   <property name="text">
+                    <string>TE/LE density ratio</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QDoubleSpinBox" name="teToLeSpin">
+                   <property name="toolTip">
+                    <string>Dimensionless trailing-edge to leading-edge density ratio.</string>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Trailing-edge to leading-edge density ratio</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+               <widget class="QWidget" name="panelingExpertPage">
+                <attribute name="title">
+                 <string>Expert</string>
+                </attribute>
+                <layout class="QFormLayout" name="panelingExpertForm">
+                 <property name="rowWrapPolicy">
+                  <enum>QFormLayout::WrapLongRows</enum>
+                 </property>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="refinementLabel">
+                   <property name="text">
+                    <string>Refinement density</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QDoubleSpinBox" name="refinementSpin">
+                   <property name="toolTip">
+                    <string>Dimensionless refined-area to leading-edge density ratio.</string>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Refinement density ratio</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="upperRefinementStartLabel">
+                   <property name="text">
+                    <string>Upper refine start</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QDoubleSpinBox" name="upperRefinementStartSpin">
+                   <property name="toolTip">
+                    <string>Upper-side refined-area start x/c.</string>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Upper refinement start x over c</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QLabel" name="upperRefinementEndLabel">
+                   <property name="text">
+                    <string>Upper refine end</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QDoubleSpinBox" name="upperRefinementEndSpin">
+                   <property name="toolTip">
+                    <string>Upper-side refined-area end x/c.</string>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Upper refinement end x over c</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="0">
+                  <widget class="QLabel" name="lowerRefinementStartLabel">
+                   <property name="text">
+                    <string>Lower refine start</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="1">
+                  <widget class="QDoubleSpinBox" name="lowerRefinementStartSpin">
+                   <property name="toolTip">
+                    <string>Lower-side refined-area start x/c.</string>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Lower refinement start x over c</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="0">
+                  <widget class="QLabel" name="lowerRefinementEndLabel">
+                   <property name="text">
+                    <string>Lower refine end</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="1">
+                  <widget class="QDoubleSpinBox" name="lowerRefinementEndSpin">
+                   <property name="toolTip">
+                    <string>Lower-side refined-area end x/c.</string>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Lower refinement end x over c</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
               </widget>
              </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="bunchingLabel">
-               <property name="text">
-                <string>Bunching parameter</string>
-               </property>
-              </widget>
+             <item>
+              <layout class="QFormLayout" name="panelingPreviewForm">
+                 <property name="rowWrapPolicy">
+                  <enum>QFormLayout::WrapLongRows</enum>
+                 </property>
+               <item row="0" column="0">
+                <widget class="QLabel" name="showPanelingLabel">
+                 <property name="text">
+                  <string>Overlay</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QCheckBox" name="showPanelingCheckBox">
+                 <property name="text">
+                  <string>Show paneling</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>Show the red panel contour and panel-node ticks. View only.</string>
+                 </property>
+                 <property name="accessibleName">
+                  <string>Show paneling overlay</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="showPanelNodesLabel">
+                 <property name="text">
+                  <string>Markers</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QCheckBox" name="showPanelNodesCheck">
+                 <property name="text">
+                  <string>Show panel nodes</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>Show panel node markers independently of the paneling overlay.</string>
+                 </property>
+                 <property name="accessibleName">
+                  <string>Show panel nodes</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
-             <item row="1" column="1">
-              <widget class="QDoubleSpinBox" name="bunchingSpin">
-               <property name="toolTip">
-                <string>Dimensionless PANGEN bunching parameter.</string>
-               </property>
-               <property name="accessibleName">
-                <string>Bunching parameter</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="0">
-              <widget class="QLabel" name="teToLeLabel">
-               <property name="text">
-                <string>TE/LE density ratio</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="QDoubleSpinBox" name="teToLeSpin">
-               <property name="toolTip">
-                <string>Dimensionless trailing-edge to leading-edge density ratio.</string>
-               </property>
-               <property name="accessibleName">
-                <string>Trailing-edge to leading-edge density ratio</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="0">
-              <widget class="QLabel" name="refinementLabel">
-               <property name="text">
-                <string>Refinement density ratio</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="1">
-              <widget class="QDoubleSpinBox" name="refinementSpin">
-               <property name="toolTip">
-                <string>Dimensionless refinement density ratio.</string>
-               </property>
-               <property name="accessibleName">
-                <string>Refinement density ratio</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="0">
-              <widget class="QLabel" name="showPanelNodesLabel">
-               <property name="text">
-                <string>Preview</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="1">
-              <widget class="QCheckBox" name="showPanelNodesCheck">
-               <property name="text">
-                <string>Show panel nodes</string>
-               </property>
-               <property name="toolTip">
-                <string>Show panel nodes on the geometry preview.</string>
-               </property>
-               <property name="accessibleName">
-                <string>Show panel nodes</string>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="1">
+             <item>
               <widget class="QPushButton" name="generatePanelButton">
                <property name="text">
                 <string>Generate Panel</string>
@@ -266,19 +406,26 @@
                </property>
               </widget>
              </item>
-             <item row="6" column="0">
-              <widget class="QLabel" name="panelStatusCaption">
-               <property name="text">
-                <string>Status</string>
-               </property>
-              </widget>
-             </item>
-             <item row="6" column="1">
-              <widget class="QLabel" name="panelStatusLabel">
-               <property name="text">
-                <string>Not generated</string>
-               </property>
-              </widget>
+             <item>
+              <layout class="QFormLayout" name="panelingStatusForm">
+                 <property name="rowWrapPolicy">
+                  <enum>QFormLayout::WrapLongRows</enum>
+                 </property>
+               <item row="0" column="0">
+                <widget class="QLabel" name="panelStatusCaption">
+                 <property name="text">
+                  <string>Status</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLabel" name="panelStatusLabel">
+                 <property name="text">
+                  <string>Not generated</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
             </layout>
            </widget>
@@ -294,127 +441,225 @@
             <property name="title">
              <string>Operating conditions</string>
             </property>
-            <layout class="QFormLayout" name="operatingForm">
-             <item row="0" column="0">
-              <widget class="QLabel" name="reynoldsLabel">
-               <property name="text">
-                <string>Reynolds number</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QDoubleSpinBox" name="reynoldsSpin">
-               <property name="toolTip">
-                <string>Dimensionless Reynolds number. Viscous analysis requires a positive value.</string>
-               </property>
+            <layout class="QVBoxLayout" name="operatingGroupLayout">
+             <item>
+              <widget class="QTabWidget" name="conditionSettingsTabs">
                <property name="accessibleName">
-                <string>Reynolds number</string>
+                <string>Condition settings pages</string>
                </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="machLabel">
-               <property name="text">
-                <string>Mach number</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QDoubleSpinBox" name="machSpin">
-               <property name="toolTip">
-                <string>Dimensionless Mach number in [0, 1).</string>
-               </property>
-               <property name="accessibleName">
-                <string>Mach number</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="0">
-              <widget class="QLabel" name="viscousLabel">
-               <property name="text">
-                <string>Viscous</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="QCheckBox" name="viscousCheck">
-               <property name="text">
-                <string>Boundary layer enabled</string>
-               </property>
-               <property name="toolTip">
-                <string>Enable the boundary-layer calculation for the configured run.</string>
-               </property>
-               <property name="accessibleName">
-                <string>Viscous boundary layer enabled</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="0">
-              <widget class="QLabel" name="iterationsLabel">
-               <property name="text">
-                <string>Iteration limit</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="1">
-              <widget class="QSpinBox" name="iterationsSpin">
-               <property name="toolTip">
-                <string>Positive maximum iteration count.</string>
-               </property>
-               <property name="accessibleName">
-                <string>Maximum iterations</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="0">
-              <widget class="QLabel" name="ncritLabel">
-               <property name="text">
-                <string>Ncrit</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="1">
-              <widget class="QDoubleSpinBox" name="ncritSpin">
-               <property name="toolTip">
-                <string>Critical amplification exponent; must be positive.</string>
-               </property>
-               <property name="accessibleName">
-                <string>Ncrit</string>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="0">
-              <widget class="QLabel" name="xtrUpperLabel">
-               <property name="text">
-                <string>Xtr upper (x/c)</string>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="1">
-              <widget class="QDoubleSpinBox" name="xtrUpperSpin">
-               <property name="toolTip">
-                <string>Upper transition trip position x/c in [0, 1].</string>
-               </property>
-               <property name="accessibleName">
-                <string>Upper transition position x over c</string>
-               </property>
-              </widget>
-             </item>
-             <item row="6" column="0">
-              <widget class="QLabel" name="xtrLowerLabel">
-               <property name="text">
-                <string>Xtr lower (x/c)</string>
-               </property>
-              </widget>
-             </item>
-             <item row="6" column="1">
-              <widget class="QDoubleSpinBox" name="xtrLowerSpin">
-               <property name="toolTip">
-                <string>Lower transition trip position x/c in [0, 1].</string>
-               </property>
-               <property name="accessibleName">
-                <string>Lower transition position x over c</string>
-               </property>
+               <widget class="QWidget" name="conditionBasicPage">
+                <attribute name="title">
+                 <string>Basic</string>
+                </attribute>
+                <layout class="QFormLayout" name="conditionBasicForm">
+                 <property name="rowWrapPolicy">
+                  <enum>QFormLayout::WrapLongRows</enum>
+                 </property>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="reynoldsLabel">
+                   <property name="text">
+                    <string>Reynolds number</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QDoubleSpinBox" name="reynoldsSpin">
+                   <property name="toolTip">
+                    <string>Dimensionless Reynolds number. Viscous analysis requires a positive value.</string>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Reynolds number</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="machLabel">
+                   <property name="text">
+                    <string>Mach number</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QDoubleSpinBox" name="machSpin">
+                   <property name="toolTip">
+                    <string>Dimensionless Mach number in [0, 1).</string>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Mach number</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QLabel" name="viscousLabel">
+                   <property name="text">
+                    <string>Viscous</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QCheckBox" name="viscousCheck">
+                   <property name="text">
+                    <string>Boundary layer enabled</string>
+                   </property>
+                   <property name="toolTip">
+                    <string>Enable the boundary-layer calculation for the configured run.</string>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Viscous boundary layer enabled</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="0">
+                  <widget class="QLabel" name="iterationsLabel">
+                   <property name="text">
+                    <string>Iteration limit</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="1">
+                  <widget class="QSpinBox" name="iterationsSpin">
+                   <property name="toolTip">
+                    <string>Positive maximum iteration count.</string>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Maximum iterations</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="0">
+                  <widget class="QLabel" name="ncritLabel">
+                   <property name="text">
+                    <string>Ncrit</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="1">
+                  <widget class="QDoubleSpinBox" name="ncritSpin">
+                   <property name="toolTip">
+                    <string>Critical amplification exponent; must be positive.</string>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Ncrit</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="5" column="0">
+                  <widget class="QLabel" name="xtrUpperLabel">
+                   <property name="text">
+                    <string>Xtr upper (x/c)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="5" column="1">
+                  <widget class="QDoubleSpinBox" name="xtrUpperSpin">
+                   <property name="toolTip">
+                    <string>Upper transition trip position x/c in [0, 1].</string>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Upper transition position x over c</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="6" column="0">
+                  <widget class="QLabel" name="xtrLowerLabel">
+                   <property name="text">
+                    <string>Xtr lower (x/c)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="6" column="1">
+                  <widget class="QDoubleSpinBox" name="xtrLowerSpin">
+                   <property name="toolTip">
+                    <string>Lower transition trip position x/c in [0, 1].</string>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Lower transition position x over c</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+               <widget class="QWidget" name="conditionExpertPage">
+                <attribute name="title">
+                 <string>Expert</string>
+                </attribute>
+                <layout class="QFormLayout" name="conditionExpertForm">
+                 <property name="rowWrapPolicy">
+                  <enum>QFormLayout::WrapLongRows</enum>
+                 </property>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="reynoldsDependencyLabel">
+                   <property name="text">
+                    <string>Re dependency</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QComboBox" name="reynoldsDependencyCombo">
+                   <property name="toolTip">
+                    <string>Reynolds-number scaling with lift used by the library.</string>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Reynolds dependency</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="machDependencyLabel">
+                   <property name="text">
+                    <string>Mach dependency</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QComboBox" name="machDependencyCombo">
+                   <property name="toolTip">
+                    <string>Mach-number scaling with lift used by the library.</string>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Mach dependency</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QLabel" name="autoInitializeLabel">
+                   <property name="text">
+                    <string>BL auto-initialize</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QCheckBox" name="autoInitializeBoundaryLayerCheck">
+                   <property name="text">
+                    <string>Auto-initialize boundary layer</string>
+                   </property>
+                   <property name="toolTip">
+                    <string>Let the library initialize the boundary layer for each solve.</string>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Auto-initialize boundary layer</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="0">
+                  <widget class="QLabel" name="viscousAccelerationLabel">
+                   <property name="text">
+                    <string>Viscous acceleration</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="1">
+                  <widget class="QDoubleSpinBox" name="viscousAccelerationSpin">
+                   <property name="toolTip">
+                    <string>Dimensionless viscous acceleration parameter; must be positive.</string>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Viscous acceleration</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
               </widget>
              </item>
             </layout>
@@ -432,6 +677,9 @@
              <string>Analysis target</string>
             </property>
             <layout class="QFormLayout" name="targetForm">
+                 <property name="rowWrapPolicy">
+                  <enum>QFormLayout::WrapLongRows</enum>
+                 </property>
              <item row="0" column="0">
               <widget class="QLabel" name="targetModeLabel">
                <property name="text">
@@ -442,7 +690,7 @@
              <item row="0" column="1">
               <widget class="QComboBox" name="targetModeCombo">
                <property name="toolTip">
-                <string>Choose alpha point, CL point or alpha sequence.</string>
+                <string>Choose alpha point, CL point, alpha sequence or CL sequence.</string>
                </property>
                <property name="accessibleName">
                 <string>Analysis target mode</string>
@@ -486,6 +734,9 @@
              <item row="3" column="0" colspan="2">
               <widget class="QWidget" name="sequenceFields" native="true">
                <layout class="QFormLayout" name="sequenceForm">
+                 <property name="rowWrapPolicy">
+                  <enum>QFormLayout::WrapLongRows</enum>
+                 </property>
                 <item row="0" column="0">
                  <widget class="QLabel" name="sequenceStartLabel">
                   <property name="text">
@@ -540,14 +791,74 @@
                </layout>
               </widget>
              </item>
-             <item row="4" column="0">
+             <item row="4" column="0" colspan="2">
+              <widget class="QWidget" name="clSequenceFields" native="true">
+               <layout class="QFormLayout" name="clSequenceForm">
+                 <property name="rowWrapPolicy">
+                  <enum>QFormLayout::WrapLongRows</enum>
+                 </property>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="clSequenceStartLabel">
+                  <property name="text">
+                   <string>CL sequence start</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QDoubleSpinBox" name="clSequenceStartSpin">
+                  <property name="toolTip">
+                   <string>First lift coefficient in the sequence.</string>
+                  </property>
+                  <property name="accessibleName">
+                   <string>CL sequence start</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="clSequenceEndLabel">
+                  <property name="text">
+                   <string>CL end, exclusive</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QDoubleSpinBox" name="clSequenceEndSpin">
+                  <property name="toolTip">
+                   <string>Exclusive end: the end lift coefficient is not run.</string>
+                  </property>
+                  <property name="accessibleName">
+                   <string>CL sequence exclusive end</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="clSequenceStepLabel">
+                  <property name="text">
+                   <string>CL sequence step</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QDoubleSpinBox" name="clSequenceStepSpin">
+                  <property name="toolTip">
+                   <string>Lift-coefficient step. Zero is rejected.</string>
+                  </property>
+                  <property name="accessibleName">
+                   <string>CL sequence step</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item row="5" column="0">
               <widget class="QLabel" name="targetStatusCaption">
                <property name="text">
                 <string>Status</string>
                </property>
               </widget>
              </item>
-             <item row="4" column="1">
+             <item row="5" column="1">
               <widget class="QLabel" name="targetStatusLabel">
                <property name="text">
                 <string>Alpha point</string>
@@ -1633,6 +1944,11 @@
   <tabstop>bunchingSpin</tabstop>
   <tabstop>teToLeSpin</tabstop>
   <tabstop>refinementSpin</tabstop>
+  <tabstop>upperRefinementStartSpin</tabstop>
+  <tabstop>upperRefinementEndSpin</tabstop>
+  <tabstop>lowerRefinementStartSpin</tabstop>
+  <tabstop>lowerRefinementEndSpin</tabstop>
+  <tabstop>showPanelingCheckBox</tabstop>
   <tabstop>showPanelNodesCheck</tabstop>
   <tabstop>generatePanelButton</tabstop>
   <tabstop>reynoldsSpin</tabstop>
@@ -1642,12 +1958,19 @@
   <tabstop>ncritSpin</tabstop>
   <tabstop>xtrUpperSpin</tabstop>
   <tabstop>xtrLowerSpin</tabstop>
+  <tabstop>reynoldsDependencyCombo</tabstop>
+  <tabstop>machDependencyCombo</tabstop>
+  <tabstop>autoInitializeBoundaryLayerCheck</tabstop>
+  <tabstop>viscousAccelerationSpin</tabstop>
   <tabstop>targetModeCombo</tabstop>
   <tabstop>alphaTargetSpin</tabstop>
   <tabstop>clTargetSpin</tabstop>
   <tabstop>sequenceStartSpin</tabstop>
   <tabstop>sequenceEndSpin</tabstop>
   <tabstop>sequenceStepSpin</tabstop>
+  <tabstop>clSequenceStartSpin</tabstop>
+  <tabstop>clSequenceEndSpin</tabstop>
+  <tabstop>clSequenceStepSpin</tabstop>
   <tabstop>resultPlotTabs</tabstop>
   <tabstop>operatingPointCombo</tabstop>
   <tabstop>deactivatePointCombo</tabstop>

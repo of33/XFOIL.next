@@ -199,6 +199,7 @@ GUI_TEST_OBJS := \
 	$(GUI_OBJ_DIR)/tests/XFoilWidgetG3Tests.o \
 	$(GUI_OBJ_DIR)/tests/XFoilWidgetG4Tests.o \
 	$(GUI_OBJ_DIR)/tests/GuiAnalysisWorkerTests.o \
+	$(GUI_OBJ_DIR)/tests/XFoilWidgetG6bTests.o \
 	$(GUI_OBJ_DIR)/tests/XFoilWidgetShellTests.o \
 	$(GUI_OBJ_DIR)/tests/app/GuiFileAdaptersTests.o \
 	$(GUI_OBJ_DIR)/tests/app/MainWindowTests.o \
@@ -326,6 +327,9 @@ $(GUI_GEN_DIR)/MainWindowTests.moc: tests/gui/app/MainWindowTests.cpp \
 
 $(GUI_OBJ_DIR)/XFoilWidget.o: src/gui/XFoilWidget.cpp \
 		include/xfoil/gui/XFoilWidget.h \
+		include/xfoil/gui/AnalysisWorkflowSetup.h \
+		src/gui/model/GuiDefinitionModel.h \
+		src/gui/worker/GuiAnalysisWorker.h \
 		$(GUI_GEN_DIR)/ui_XFoilWidget.h | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
@@ -358,7 +362,8 @@ $(GUI_OBJ_DIR)/backend/GuiSessionBackend.o: \
 $(GUI_OBJ_DIR)/worker/GuiAnalysisWorker.o: \
 		src/gui/worker/GuiAnalysisWorker.cpp \
 		src/gui/worker/GuiAnalysisWorker.h \
-		src/gui/worker/GuiJobTracker.h | $(GUI_STAMP)
+		src/gui/worker/GuiJobTracker.h \
+		include/xfoil/gui/AnalysisWorkflowSetup.h | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
 
@@ -500,6 +505,12 @@ $(GUI_OBJ_DIR)/tests/GuiAnalysisWorkerTests.o: \
 		$(GUI_GEN_DIR)/GuiAnalysisWorkerTests.moc | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/tests/XFoilWidgetG6bTests.o: \
+		tests/gui/XFoilWidgetG6bTests.cpp \
+		$(GUI_GEN_DIR)/XFoilWidgetG6bTests.moc | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
 
 $(GUI_OBJ_DIR)/tests/XFoilWidgetShellTests.o: \
 		tests/gui/XFoilWidgetShellTests.cpp \

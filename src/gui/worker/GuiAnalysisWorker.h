@@ -38,6 +38,7 @@
 #include "model/GuiRunSpec.h"
 #include "xfoil/AnalysisData.h"
 #include "xfoil/CancellationToken.h"
+#include "xfoil/gui/AnalysisWorkflowSetup.h"
 #include "xfoil/Progress.h"
 #include "xfoil/Result.h"
 #include "xfoil/SequenceResult.h"
@@ -54,6 +55,11 @@ enum class GuiAnalysisFinish {
   completed,
   cancelled,
   failed
+};
+
+struct GuiAppliedSetup {
+  geometry::AirfoilGeometry geometry;
+  SurfaceGeometry panel;
 };
 
 struct GuiAnalysisJob {
@@ -88,6 +94,15 @@ class GuiAnalysisWorker : public QObject {
   [[nodiscard]]
   Result<void> setConfiguration(
       const AnalysisConfig& configuration);
+
+  // Builds and validates a transient candidate session, then replaces the
+  // active worker session only after complete success. The candidate is
+  // never analyzed. The returned geometry and panel are owning previews.
+  [[nodiscard]]
+  Result<GuiAppliedSetup> applySetup(
+      const AnalysisWorkflowSetup& setup);
+  [[nodiscard]]
+  Result<void> resetSession();
 
  public slots:
   void run(GuiAnalysisJob job);

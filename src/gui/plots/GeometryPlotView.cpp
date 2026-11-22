@@ -27,6 +27,7 @@
 #include "plots/GeometryPlotView.h"
 
 #include <algorithm>
+#include <cmath>
 #include <utility>
 #include <vector>
 
@@ -147,16 +148,23 @@ GeometryPlotView::GeometryPlotView(QWidget* parent) : QWidget(parent) {
   panelContour_ = new QCPCurve(plot_->xAxis, plot_->yAxis);
   panelContour_->setObjectName(QStringLiteral("panelContour"));
   panelContour_->setName(QStringLiteral("Panel contour"));
-  panelContour_->setPen(QPen(QColor(198, 93, 27), 1.5));
+  panelContour_->setPen(QPen(QColor(200, 30, 30), 1.5));
   panelContour_->setLineStyle(QCPCurve::lsLine);
   panelContour_->setScatterStyle(QCPScatterStyle::ssNone);
+
+  panelTicks_ = new QCPCurve(plot_->xAxis, plot_->yAxis);
+  panelTicks_->setObjectName(QStringLiteral("panelTicks"));
+  panelTicks_->setName(QStringLiteral("Panel node ticks"));
+  panelTicks_->setPen(QPen(QColor(200, 30, 30), 1.0));
+  panelTicks_->setLineStyle(QCPCurve::lsLine);
+  panelTicks_->setScatterStyle(QCPScatterStyle::ssNone);
 
   panelNodes_ = plot_->addGraph();
   panelNodes_->setObjectName(QStringLiteral("panelNodes"));
   panelNodes_->setName(QStringLiteral("Panel nodes"));
   panelNodes_->setLineStyle(QCPGraph::lsNone);
   panelNodes_->setScatterStyle(
-      QCPScatterStyle(QCPScatterStyle::ssDisc, QColor(198, 93, 27), 3.0));
+      QCPScatterStyle(QCPScatterStyle::ssDisc, QColor(200, 30, 30), 3.0));
 
   interaction_ = new InteractivePlotController(plot_, true, true, this);
   interaction_->setFitCallback([this]() { fitVisibleData(); });
@@ -186,9 +194,69 @@ void GeometryPlotView::setPanelGeometry(const SurfaceGeometry& panel) {
   hasPanel_ = !panel.points.empty();
   setCurveData(panelContour_, closedX(panel.points), closedY(panel.points));
   panelNodes_->setData(nodeX(panel.points), nodeY(panel.points));
-  panelContour_->setVisible(hasPanel_);
-  panelNodes_->setVisible(hasPanel_ && panelNodesVisible_);
+
+  QVector<double> tickT;
+  QVector<double> tickX;
+  QVector<double> tickY;
+  panelTickCount_ = 0;
+  if (panel.points.size() >= 2) {
+    double xMinimum = panel.points.front().x;
+    double xMaximum = panel.points.front().x;
+    for (const Point2D& point : panel.points) {
+      xMinimum = std::min(xMinimum, point.x);
+      xMaximum = std::max(xMaximum, point.x);
+    }
+    const double chord = xMaximum - xMinimum;
+    const double tickLength =
+        0.01 * (std::isfinite(chord) && chord > 1.0e-12 ? chord : 1.0);
+    constexpr double kDegenerate = 1.0e-14;
+    const auto distance = [](const Point2D& a, const Point2D& b) {
+      return std::hypot(b.x - a.x, b.y - a.y);
+    };
+    for (std::size_t index = 0; index < panel.points.size(); ++index) {
+      const Point2D& current = panel.points[index];
+      const bool hasPrevious = index > 0;
+      const bool hasNext = index + 1 < panel.points.size();
+      const Point2D& previous =
+          hasPrevious ? panel.points[index - 1] : current;
+      const Point2D& next = hasNext ? panel.points[index + 1] : current;
+      if ((hasPrevious && distance(previous, current) <= kDegenerate) ||
+          (hasNext && distance(current, next) <= kDegenerate)) {
+        continue;
+      }
+      const double dx = next.x - previous.x;
+      const double dy = next.y - previous.y;
+      const double tangentLength = std::hypot(dx, dy);
+      if (!std::isfinite(tangentLength) || tangentLength <= kDegenerate) {
+        continue;
+      }
+      // XFOIL NCALC uses the spline tangent and the averaged normal at
+      // duplicated corner nodes. For the panel nodes this is the outward
+      // normal of the local chord bisector.
+      const double normalX = dy / tangentLength;
+      const double normalY = -dx / tangentLength;
+      const double endX = current.x + tickLength * normalX;
+      const double endY = current.y + tickLength * normalY;
+      if (!std::isfinite(endX) || !std::isfinite(endY)) {
+        continue;
+      }
+      const double t = static_cast<double>(tickT.size());
+      tickT << t << t + 1.0 << t + 2.0;
+      tickX << current.x << endX << current.x;
+      tickY << current.y << endY << current.y;
+      ++panelTickCount_;
+    }
+  }
+  panelTicks_->setData(tickT, tickX, tickY, true);
+
+  updatePanelVisibility();
   updateAxes();
+}
+
+void GeometryPlotView::setShowPaneling(bool visible) {
+  showPaneling_ = visible;
+  updatePanelVisibility();
+  plot_->replot();
 }
 
 void GeometryPlotView::showPanelNodes(bool visible) {
@@ -197,12 +265,22 @@ void GeometryPlotView::showPanelNodes(bool visible) {
   plot_->replot();
 }
 
+void GeometryPlotView::updatePanelVisibility() {
+  panelContour_->setVisible(hasPanel_ && showPaneling_);
+  panelTicks_->setVisible(hasPanel_ && showPaneling_ &&
+                          panelTickCount_ > 0);
+  panelNodes_->setVisible(hasPanel_ && panelNodesVisible_);
+}
+
 void GeometryPlotView::clearPanel() {
   panelPointCount_ = 0;
+  panelTickCount_ = 0;
   hasPanel_ = false;
   panelContour_->data()->clear();
+  panelTicks_->data()->clear();
   panelNodes_->data()->clear();
   panelContour_->setVisible(false);
+  panelTicks_->setVisible(false);
   panelNodes_->setVisible(false);
   updateAxes();
 }
@@ -210,13 +288,16 @@ void GeometryPlotView::clearPanel() {
 void GeometryPlotView::clear() {
   geometryPointCount_ = 0;
   panelPointCount_ = 0;
+  panelTickCount_ = 0;
   hasGeometry_ = false;
   hasPanel_ = false;
   geometryContour_->data()->clear();
   panelContour_->data()->clear();
+  panelTicks_->data()->clear();
   panelNodes_->data()->clear();
   geometryContour_->setVisible(false);
   panelContour_->setVisible(false);
+  panelTicks_->setVisible(false);
   panelNodes_->setVisible(false);
   updateAxes();
 }

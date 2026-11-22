@@ -34,6 +34,7 @@
 #include <QSignalSpy>
 #include <QtTest/QTest>
 
+#include "xfoil/gui/AnalysisWorkflowSetup.h"
 #include "xfoil/gui/XFoilWidget.h"
 #include "model/GuiDefinitionModel.h"
 #include "worker/GuiAnalysisWorker.h"
@@ -51,7 +52,9 @@ using xfoil::ProgressEvent;
 using xfoil::ProgressPhase;
 using xfoil::gui::GuiAnalysisFinish;
 using xfoil::gui::GuiAnalysisJob;
+using xfoil::gui::AnalysisWorkflowSetup;
 using xfoil::gui::GuiAnalysisWorker;
+using xfoil::gui::NacaGeometrySetup;
 using xfoil::gui::GuiDefinitionModel;
 using xfoil::gui::GuiJobTracker;
 using xfoil::gui::GuiRunSpec;
@@ -194,6 +197,48 @@ class GuiAnalysisWorkerTests : public QObject {
     const auto error = qvariant_cast<xfoil::Error>(args.at(3));
     QCOMPARE(QString::fromStdString(error.code),
              QStringLiteral("analysis.cancelled"));
+  }
+
+  void applySetupCommitsPreviewWithoutAnalysis() {
+    GuiAnalysisWorker worker;
+    QVERIFY(worker.initialize().isOk());
+    AnalysisWorkflowSetup setup;
+    setup.geometry = NacaGeometrySetup{"2412"};
+    setup.paneling = PanelingOptions{};
+    setup.configuration = AnalysisConfig{};
+    setup.request = xfoil::LiftSequence{0.2, 0.8, 0.2};
+    QSignalSpy pointSpy(&worker, &GuiAnalysisWorker::operatingPointReady);
+    QSignalSpy sequenceSpy(&worker, &GuiAnalysisWorker::sequenceReady);
+    const auto applied = worker.applySetup(setup);
+    QVERIFY(applied.isOk());
+    QVERIFY(!applied.value().geometry.empty());
+    QVERIFY(!applied.value().panel.points.empty());
+    QCOMPARE(pointSpy.count(), 0);
+    QCOMPARE(sequenceSpy.count(), 0);
+  }
+
+  void failedApplySetupKeepsPreviousSession() {
+    GuiAnalysisWorker worker;
+    QVERIFY(worker.initialize().isOk());
+    AnalysisWorkflowSetup valid;
+    valid.geometry = NacaGeometrySetup{"0012"};
+    valid.paneling = PanelingOptions{};
+    valid.configuration = AnalysisConfig{};
+    valid.request = xfoil::LiftTarget{0.4};
+    QVERIFY(worker.applySetup(valid).isOk());
+
+    AnalysisWorkflowSetup invalid = valid;
+    invalid.configuration.reynoldsNumber = -1.0;
+    QVERIFY(worker.applySetup(invalid).isErr());
+
+    GuiAnalysisJob job{pointSpec(), 123, 4,
+                       std::make_shared<CancellationToken>(), {}};
+    QSignalSpy finished(&worker, &GuiAnalysisWorker::finished);
+    worker.run(std::move(job));
+    QCOMPARE(finished.count(), 1);
+    const QList<QVariant> args = finished.takeFirst();
+    QVERIFY(args.at(2).value<GuiAnalysisFinish>() ==
+            GuiAnalysisFinish::completed);
   }
 
   void trackerRejectsOldJobAndGeneration() {

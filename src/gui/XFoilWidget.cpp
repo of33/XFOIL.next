@@ -196,6 +196,13 @@ QString targetSummary(const GuiDefinitionModel& model) {
         .arg(sequence.endExclusive.value, 0, 'g', 8)
         .arg(sequence.step.value, 0, 'g', 8);
   }
+  if (model.mode() == AnalysisMode::clSequence) {
+    const LiftSequence& sequence = model.clSequence();
+    return QStringLiteral("CL sequence %1 -> %2, step %3 (end exclusive)")
+        .arg(sequence.start, 0, 'g', 8)
+        .arg(sequence.endExclusive, 0, 'g', 8)
+        .arg(sequence.step, 0, 'g', 8);
+  }
   if (model.mode() == AnalysisMode::clPoint) {
     return QStringLiteral("CL point %1")
         .arg(std::get<LiftTarget>(model.target()).cl, 0, 'g', 8);
@@ -211,6 +218,10 @@ PanelingOptions panelingFromControls(const Ui::XFoilWidget& ui) {
   options.bunchingParameter = ui.bunchingSpin->value();
   options.teToLeDensityRatio = ui.teToLeSpin->value();
   options.refinementDensityRatio = ui.refinementSpin->value();
+  options.upperRefinementStart = ui.upperRefinementStartSpin->value();
+  options.upperRefinementEnd = ui.upperRefinementEndSpin->value();
+  options.lowerRefinementStart = ui.lowerRefinementStartSpin->value();
+  options.lowerRefinementEnd = ui.lowerRefinementEndSpin->value();
   return options;
 }
 
@@ -223,6 +234,13 @@ AnalysisConfig configurationFromControls(const Ui::XFoilWidget& ui) {
   configuration.transition.nCritical = ui.ncritSpin->value();
   configuration.transition.topTripX = ui.xtrUpperSpin->value();
   configuration.transition.bottomTripX = ui.xtrLowerSpin->value();
+  configuration.reynoldsDependency = static_cast<ReynoldsDependency>(
+      ui.reynoldsDependencyCombo->currentData().toInt());
+  configuration.machDependency = static_cast<MachDependency>(
+      ui.machDependencyCombo->currentData().toInt());
+  configuration.autoInitializeBoundaryLayer =
+      ui.autoInitializeBoundaryLayerCheck->isChecked();
+  configuration.viscousAcceleration = ui.viscousAccelerationSpin->value();
   return configuration;
 }
 
@@ -230,6 +248,12 @@ AlphaSequence sequenceFromControls(const Ui::XFoilWidget& ui) {
   return AlphaSequence{Degrees{ui.sequenceStartSpin->value()},
                        Degrees{ui.sequenceEndSpin->value()},
                        Degrees{ui.sequenceStepSpin->value()}};
+}
+
+LiftSequence clSequenceFromControls(const Ui::XFoilWidget& ui) {
+  return LiftSequence{ui.clSequenceStartSpin->value(),
+                      ui.clSequenceEndSpin->value(),
+                      ui.clSequenceStepSpin->value()};
 }
 
 AnalysisTarget targetFromControls(const Ui::XFoilWidget& ui,
@@ -242,6 +266,12 @@ AnalysisTarget targetFromControls(const Ui::XFoilWidget& ui,
 
 void setComboIndex(QComboBox* combo, int index) {
   const QSignalBlocker blocker(combo);
+  combo->setCurrentIndex(index);
+}
+
+void setComboData(QComboBox* combo, int data) {
+  const QSignalBlocker blocker(combo);
+  const int index = combo->findData(data);
   combo->setCurrentIndex(index);
 }
 
@@ -293,6 +323,8 @@ class XFoilWidget::Impl {
   void initialize() {
     configureResultViews();
     updateResultMatrix();
+    ui.airfoilPlot->setShowPaneling(viewOptions_.showPaneling);
+    ui.airfoilPlot->showPanelNodes(viewOptions_.showPanelNodes);
     if (workerReady_) {
       (void)owner_->setConfiguration(configurationFromControls(ui));
     }
@@ -468,6 +500,175 @@ class XFoilWidget::Impl {
     Q_EMIT owner_->targetChanged();
   }
 
+  void setClSequence(const LiftSequence& sequence) {
+    if (validateSetupCall().isErr()) {
+      return;
+    }
+    invalidateAnalysis();
+    const Result<void> result = model_.setClSequence(sequence);
+    if (result.isOk()) {
+      updateTargetControls();
+    }
+    refreshUi();
+    Q_EMIT owner_->targetChanged();
+  }
+
+  [[nodiscard]]
+  Result<void> applySetup(const AnalysisWorkflowSetup& setup) {
+    if (const Result<void> validation = validateSetupCall();
+        validation.isErr()) {
+      return validation;
+    }
+    const std::optional<Result<GuiAppliedSetup>> invoked =
+        invokeWorker([this, &setup]() {
+          return worker_->applySetup(setup);
+        });
+    if (!invoked.has_value()) {
+      return failUnavailable(workerUnavailableError());
+    }
+    const Result<GuiAppliedSetup> applied = *invoked;
+    if (applied.isErr()) {
+      setupError_ = applied.error();
+      refreshUi();
+      Q_EMIT owner_->setupFailed(applied.error());
+      return Result<void>::fail(applied.error());
+    }
+
+    invalidateAnalysis();
+    setupError_.reset();
+    model_.reset();
+    if (const auto* memory =
+            std::get_if<MemoryGeometrySetup>(&setup.geometry)) {
+      model_.acceptGeometry(memory->geometry);
+    } else if (const auto* naca =
+                   std::get_if<NacaGeometrySetup>(&setup.geometry)) {
+      model_.acceptNaca(applied.value().geometry, naca->designation, false);
+    } else if (const auto* nacs =
+                   std::get_if<NacsGeometrySetup>(&setup.geometry)) {
+      model_.acceptNaca(applied.value().geometry, nacs->designation, true);
+    }
+    model_.acceptPanel(applied.value().panel, setup.paneling);
+    model_.acceptConfiguration(setup.configuration);
+    if (const auto* alpha = std::get_if<AlphaTarget>(&setup.request)) {
+      (void)model_.setTarget(*alpha);
+    } else if (const auto* lift = std::get_if<LiftTarget>(&setup.request)) {
+      (void)model_.setTarget(*lift);
+    } else if (const auto* sequence =
+                   std::get_if<AlphaSequence>(&setup.request)) {
+      (void)model_.setSequence(*sequence);
+    } else if (const auto* sequence =
+                   std::get_if<LiftSequence>(&setup.request)) {
+      (void)model_.setClSequence(*sequence);
+    }
+
+    updateGeometryControls();
+    updatePanelingControls(setup.paneling);
+    updateConfigurationControls(setup.configuration);
+    updateTargetControls();
+    ui.airfoilPlot->setGeometry(applied.value().geometry);
+    ui.airfoilPlot->setPanelGeometry(applied.value().panel);
+    ui.airfoilPlot->setShowPaneling(viewOptions_.showPaneling);
+    ui.airfoilPlot->showPanelNodes(viewOptions_.showPanelNodes);
+
+    Q_EMIT owner_->geometryChanged();
+    Q_EMIT owner_->panelingChanged();
+    Q_EMIT owner_->configurationChanged();
+    Q_EMIT owner_->targetChanged();
+    Q_EMIT owner_->setupApplied();
+    refreshUi();
+    return Result<void>::ok();
+  }
+
+  [[nodiscard]]
+  Result<void> resetWorkflow() {
+    if (const Result<void> validation = validateSetupCall();
+        validation.isErr()) {
+      return validation;
+    }
+    const std::optional<Result<void>> invoked =
+        invokeWorker([this]() { return worker_->resetSession(); });
+    if (!invoked.has_value()) {
+      return failUnavailable(workerUnavailableError());
+    }
+    if (invoked->isErr()) {
+      return *invoked;
+    }
+
+    invalidateAnalysis();
+    setupError_.reset();
+    model_.reset();
+    ui.airfoilPlot->clear();
+    updateGeometryControls();
+    updatePanelingControls(model_.panelingOptions());
+    updateConfigurationControls(model_.configuration());
+    updateTargetControls();
+    ui.airfoilPlot->setShowPaneling(viewOptions_.showPaneling);
+    ui.airfoilPlot->showPanelNodes(viewOptions_.showPanelNodes);
+
+    Q_EMIT owner_->geometryChanged();
+    Q_EMIT owner_->panelingChanged();
+    Q_EMIT owner_->configurationChanged();
+    Q_EMIT owner_->targetChanged();
+    refreshUi();
+    return Result<void>::ok();
+  }
+
+  void setViewOptions(const AnalysisWorkflowViewOptions& options) {
+    if (QThread::currentThread() != owner_->thread()) {
+      return;
+    }
+    viewOptions_ = options;
+    updatingControls_ = true;
+    setCheckState(ui.showPanelingCheckBox, options.showPaneling);
+    setCheckState(ui.showPanelNodesCheck, options.showPanelNodes);
+    updatingControls_ = false;
+    ui.airfoilPlot->setShowPaneling(options.showPaneling);
+    ui.airfoilPlot->showPanelNodes(options.showPanelNodes);
+  }
+
+  [[nodiscard]]
+  AnalysisWorkflowViewOptions viewOptions() const {
+    return viewOptions_;
+  }
+
+  [[nodiscard]]
+  std::optional<AnalysisWorkflowSetup> currentSetup() const {
+    if (!model_.isReady() || !model_.geometry().has_value()) {
+      return std::nullopt;
+    }
+    AnalysisWorkflowSetup setup;
+    switch (model_.geometrySource()) {
+      case GeometrySource::memory:
+        setup.geometry = MemoryGeometrySetup{*model_.geometry()};
+        break;
+      case GeometrySource::naca:
+        setup.geometry = NacaGeometrySetup{model_.designation()};
+        break;
+      case GeometrySource::nacs:
+        setup.geometry = NacsGeometrySetup{model_.designation()};
+        break;
+      case GeometrySource::none:
+        return std::nullopt;
+    }
+    setup.paneling = model_.panelingOptions();
+    setup.configuration = model_.configuration();
+    switch (model_.mode()) {
+      case AnalysisMode::alphaPoint:
+        setup.request = std::get<AlphaTarget>(model_.target());
+        break;
+      case AnalysisMode::clPoint:
+        setup.request = std::get<LiftTarget>(model_.target());
+        break;
+      case AnalysisMode::alphaSequence:
+        setup.request = model_.sequence();
+        break;
+      case AnalysisMode::clSequence:
+        setup.request = model_.clSequence();
+        break;
+    }
+    return setup;
+  }
+
   void analyze() {
     if (QThread::currentThread() != owner_->thread() ||
         !workerReady_ || worker_ == nullptr || thread_ == nullptr ||
@@ -560,6 +761,11 @@ class XFoilWidget::Impl {
   [[nodiscard]]
   AlphaSequence sequence() const {
     return model_.sequence();
+  }
+
+  [[nodiscard]]
+  LiftSequence clSequence() const {
+    return model_.clSequence();
   }
 
   [[nodiscard]]
@@ -695,6 +901,7 @@ class XFoilWidget::Impl {
 
   void invalidateAnalysis() {
     tracker_.invalidate();
+    setupError_.reset();
     analysisOutcome_ = AnalysisOutcome::none;
     currentOperatingPoint_.reset();
     currentSequence_.reset();
@@ -925,6 +1132,28 @@ class XFoilWidget::Impl {
     ui.targetModeCombo->addItem(
         QStringLiteral("Alpha sequence"),
         static_cast<int>(AnalysisMode::alphaSequence));
+    ui.targetModeCombo->addItem(
+        QStringLiteral("CL sequence"),
+        static_cast<int>(AnalysisMode::clSequence));
+
+    ui.reynoldsDependencyCombo->addItem(
+        QStringLiteral("Constant"),
+        static_cast<int>(ReynoldsDependency::constant));
+    ui.reynoldsDependencyCombo->addItem(
+        QStringLiteral("Inverse sqrt(CL)"),
+        static_cast<int>(ReynoldsDependency::inverseSquareRootLift));
+    ui.reynoldsDependencyCombo->addItem(
+        QStringLiteral("Inverse CL"),
+        static_cast<int>(ReynoldsDependency::inverseLift));
+    ui.machDependencyCombo->addItem(
+        QStringLiteral("Constant"),
+        static_cast<int>(MachDependency::constant));
+    ui.machDependencyCombo->addItem(
+        QStringLiteral("Inverse sqrt(CL)"),
+        static_cast<int>(MachDependency::inverseSquareRootLift));
+    ui.machDependencyCombo->addItem(
+        QStringLiteral("Inverse CL"),
+        static_cast<int>(MachDependency::inverseLift));
   }
 
   void initializeControlValues() {
@@ -941,11 +1170,25 @@ class XFoilWidget::Impl {
     ui.refinementSpin->setRange(0.0, 1000.0);
     ui.refinementSpin->setDecimals(4);
     ui.refinementSpin->setKeyboardTracking(false);
+    for (QDoubleSpinBox* spin :
+         {ui.upperRefinementStartSpin, ui.upperRefinementEndSpin,
+          ui.lowerRefinementStartSpin, ui.lowerRefinementEndSpin}) {
+      spin->setRange(0.0, 1.0);
+      spin->setDecimals(4);
+      spin->setSingleStep(0.05);
+      spin->setKeyboardTracking(false);
+    }
     setIntegerValue(ui.panelCountSpin,
                     static_cast<int>(paneling.panelCount));
     setDoubleValue(ui.bunchingSpin, paneling.bunchingParameter);
     setDoubleValue(ui.teToLeSpin, paneling.teToLeDensityRatio);
     setDoubleValue(ui.refinementSpin, paneling.refinementDensityRatio);
+    setDoubleValue(ui.upperRefinementStartSpin,
+                   paneling.upperRefinementStart);
+    setDoubleValue(ui.upperRefinementEndSpin, paneling.upperRefinementEnd);
+    setDoubleValue(ui.lowerRefinementStartSpin,
+                   paneling.lowerRefinementStart);
+    setDoubleValue(ui.lowerRefinementEndSpin, paneling.lowerRefinementEnd);
 
     const AnalysisConfig configuration;
     ui.reynoldsSpin->setRange(0.0, 1.0e12);
@@ -970,6 +1213,10 @@ class XFoilWidget::Impl {
     ui.xtrLowerSpin->setDecimals(6);
     ui.xtrLowerSpin->setSingleStep(0.05);
     ui.xtrLowerSpin->setKeyboardTracking(false);
+    ui.viscousAccelerationSpin->setRange(0.0, 100.0);
+    ui.viscousAccelerationSpin->setDecimals(6);
+    ui.viscousAccelerationSpin->setSingleStep(0.01);
+    ui.viscousAccelerationSpin->setKeyboardTracking(false);
     setDoubleValue(ui.reynoldsSpin, configuration.reynoldsNumber);
     setDoubleValue(ui.machSpin, configuration.machNumber);
     setCheckState(ui.viscousCheck, configuration.viscous);
@@ -977,6 +1224,14 @@ class XFoilWidget::Impl {
     setDoubleValue(ui.ncritSpin, configuration.transition.nCritical);
     setDoubleValue(ui.xtrUpperSpin, configuration.transition.topTripX);
     setDoubleValue(ui.xtrLowerSpin, configuration.transition.bottomTripX);
+    setDoubleValue(ui.viscousAccelerationSpin,
+                   configuration.viscousAcceleration);
+    setCheckState(ui.autoInitializeBoundaryLayerCheck,
+                  configuration.autoInitializeBoundaryLayer);
+    setComboData(ui.reynoldsDependencyCombo,
+                 static_cast<int>(configuration.reynoldsDependency));
+    setComboData(ui.machDependencyCombo,
+                 static_cast<int>(configuration.machDependency));
 
     ui.alphaTargetSpin->setRange(-360.0, 360.0);
     ui.alphaTargetSpin->setDecimals(6);
@@ -999,12 +1254,26 @@ class XFoilWidget::Impl {
     ui.sequenceStepSpin->setSingleStep(0.5);
     ui.sequenceStepSpin->setKeyboardTracking(false);
 
+    for (QDoubleSpinBox* spin :
+         {ui.clSequenceStartSpin, ui.clSequenceEndSpin,
+          ui.clSequenceStepSpin}) {
+      spin->setRange(-100.0, 100.0);
+      spin->setDecimals(6);
+      spin->setSingleStep(0.1);
+      spin->setKeyboardTracking(false);
+    }
+
     const AlphaSequence& sequence = model_.sequence();
+    const LiftSequence& clSequence = model_.clSequence();
     setDoubleValue(ui.alphaTargetSpin, 0.0);
     setDoubleValue(ui.clTargetSpin, 0.0);
     setDoubleValue(ui.sequenceStartSpin, sequence.start.value);
     setDoubleValue(ui.sequenceEndSpin, sequence.endExclusive.value);
     setDoubleValue(ui.sequenceStepSpin, sequence.step.value);
+    setDoubleValue(ui.clSequenceStartSpin, clSequence.start);
+    setDoubleValue(ui.clSequenceEndSpin, clSequence.endExclusive);
+    setDoubleValue(ui.clSequenceStepSpin, clSequence.step);
+    setCheckState(ui.showPanelingCheckBox, false);
     setCheckState(ui.showPanelNodesCheck, true);
 
     setComboIndex(ui.geometrySourceCombo, 0);
@@ -1021,7 +1290,9 @@ class XFoilWidget::Impl {
             [this]() { applyGeometryFromControls(); });
 
     for (QDoubleSpinBox* spin :
-         {ui.bunchingSpin, ui.teToLeSpin, ui.refinementSpin}) {
+         {ui.bunchingSpin, ui.teToLeSpin, ui.refinementSpin,
+          ui.upperRefinementStartSpin, ui.upperRefinementEndSpin,
+          ui.lowerRefinementStartSpin, ui.lowerRefinementEndSpin}) {
       connect(spin, &QDoubleSpinBox::valueChanged, owner_,
               [this](double) { panelingControlsChanged(); });
     }
@@ -1029,14 +1300,22 @@ class XFoilWidget::Impl {
             [this](int) { panelingControlsChanged(); });
     QObject::connect(ui.generatePanelButton, &QPushButton::clicked, owner_,
             [this]() { generatePanelFromControls(); });
+    QObject::connect(ui.showPanelingCheckBox, &QCheckBox::toggled, owner_,
+            [this](bool checked) {
+              AnalysisWorkflowViewOptions options = viewOptions_;
+              options.showPaneling = checked;
+              owner_->setViewOptions(options);
+            });
     QObject::connect(ui.showPanelNodesCheck, &QCheckBox::toggled, owner_,
             [this](bool checked) {
-              ui.airfoilPlot->showPanelNodes(checked);
+              AnalysisWorkflowViewOptions options = viewOptions_;
+              options.showPanelNodes = checked;
+              owner_->setViewOptions(options);
             });
 
     for (QDoubleSpinBox* spin :
          {ui.reynoldsSpin, ui.machSpin, ui.ncritSpin, ui.xtrUpperSpin,
-          ui.xtrLowerSpin}) {
+          ui.xtrLowerSpin, ui.viscousAccelerationSpin}) {
       connect(spin, &QDoubleSpinBox::valueChanged, owner_,
               [this](double) { configurationControlsChanged(); });
     }
@@ -1044,12 +1323,21 @@ class XFoilWidget::Impl {
             [this](int) { configurationControlsChanged(); });
     QObject::connect(ui.viscousCheck, &QCheckBox::toggled, owner_,
             [this](bool) { configurationControlsChanged(); });
+    QObject::connect(ui.autoInitializeBoundaryLayerCheck,
+            &QCheckBox::toggled, owner_,
+            [this](bool) { configurationControlsChanged(); });
+    for (QComboBox* combo :
+         {ui.reynoldsDependencyCombo, ui.machDependencyCombo}) {
+      QObject::connect(combo, &QComboBox::currentIndexChanged, owner_,
+              [this](int) { configurationControlsChanged(); });
+    }
 
     QObject::connect(ui.targetModeCombo, &QComboBox::currentIndexChanged, owner_,
             [this](int) { targetModeChanged(); });
     for (QDoubleSpinBox* spin :
          {ui.alphaTargetSpin, ui.clTargetSpin, ui.sequenceStartSpin,
-          ui.sequenceEndSpin, ui.sequenceStepSpin}) {
+          ui.sequenceEndSpin, ui.sequenceStepSpin, ui.clSequenceStartSpin,
+          ui.clSequenceEndSpin, ui.clSequenceStepSpin}) {
       connect(spin, &QDoubleSpinBox::valueChanged, owner_,
               [this](double) { targetFieldsChanged(); });
     }
@@ -1110,6 +1398,10 @@ class XFoilWidget::Impl {
       owner_->setSequence(sequenceFromControls(ui));
       return;
     }
+    if (mode == AnalysisMode::clSequence) {
+      owner_->setClSequence(clSequenceFromControls(ui));
+      return;
+    }
     owner_->setTarget(targetFromControls(ui, mode));
   }
 
@@ -1121,6 +1413,10 @@ class XFoilWidget::Impl {
         ui.targetModeCombo->currentData().toInt());
     if (mode == AnalysisMode::alphaSequence) {
       owner_->setSequence(sequenceFromControls(ui));
+      return;
+    }
+    if (mode == AnalysisMode::clSequence) {
+      owner_->setClSequence(clSequenceFromControls(ui));
       return;
     }
     owner_->setTarget(targetFromControls(ui, mode));
@@ -1141,6 +1437,7 @@ class XFoilWidget::Impl {
     ui.alphaTargetSpin->setEnabled(mode == AnalysisMode::alphaPoint);
     ui.clTargetSpin->setEnabled(mode == AnalysisMode::clPoint);
     ui.sequenceFields->setEnabled(mode == AnalysisMode::alphaSequence);
+    ui.clSequenceFields->setEnabled(mode == AnalysisMode::clSequence);
     setComboIndex(ui.targetModeCombo, static_cast<int>(mode));
   }
 
@@ -1164,6 +1461,12 @@ class XFoilWidget::Impl {
     setDoubleValue(ui.bunchingSpin, options.bunchingParameter);
     setDoubleValue(ui.teToLeSpin, options.teToLeDensityRatio);
     setDoubleValue(ui.refinementSpin, options.refinementDensityRatio);
+    setDoubleValue(ui.upperRefinementStartSpin,
+                   options.upperRefinementStart);
+    setDoubleValue(ui.upperRefinementEndSpin, options.upperRefinementEnd);
+    setDoubleValue(ui.lowerRefinementStartSpin,
+                   options.lowerRefinementStart);
+    setDoubleValue(ui.lowerRefinementEndSpin, options.lowerRefinementEnd);
     updatingControls_ = false;
   }
 
@@ -1180,6 +1483,14 @@ class XFoilWidget::Impl {
                    configuration.transition.topTripX);
     setDoubleValue(ui.xtrLowerSpin,
                    configuration.transition.bottomTripX);
+    setDoubleValue(ui.viscousAccelerationSpin,
+                   configuration.viscousAcceleration);
+    setCheckState(ui.autoInitializeBoundaryLayerCheck,
+                  configuration.autoInitializeBoundaryLayer);
+    setComboData(ui.reynoldsDependencyCombo,
+                 static_cast<int>(configuration.reynoldsDependency));
+    setComboData(ui.machDependencyCombo,
+                 static_cast<int>(configuration.machDependency));
     updatingControls_ = false;
   }
 
@@ -1199,6 +1510,10 @@ class XFoilWidget::Impl {
     setDoubleValue(ui.sequenceStartSpin, sequence.start.value);
     setDoubleValue(ui.sequenceEndSpin, sequence.endExclusive.value);
     setDoubleValue(ui.sequenceStepSpin, sequence.step.value);
+    const LiftSequence& clSequence = model_.clSequence();
+    setDoubleValue(ui.clSequenceStartSpin, clSequence.start);
+    setDoubleValue(ui.clSequenceEndSpin, clSequence.endExclusive);
+    setDoubleValue(ui.clSequenceStepSpin, clSequence.step);
     updatingControls_ = false;
     updateTargetControlState();
   }
@@ -1533,7 +1848,9 @@ class XFoilWidget::Impl {
     ui.analysisStatusLabel->setText(analysisStatusText_);
 
     QString diagnostics;
-    if (model_.error().has_value()) {
+    if (setupError_.has_value()) {
+      diagnostics = formatError(*setupError_);
+    } else if (model_.error().has_value()) {
       diagnostics = formatError(*model_.error());
     }
     const auto appendDiagnostic = [&diagnostics](const QString& line) {
@@ -1635,6 +1952,8 @@ class XFoilWidget::Impl {
   std::optional<DetailedSequenceResult> currentSequence_;
   std::vector<QString> analysisDiagnostics_;
   std::optional<double> progressFraction_;
+  std::optional<Error> setupError_;
+  AnalysisWorkflowViewOptions viewOptions_;
   AnalysisOutcome analysisOutcome_{AnalysisOutcome::none};
   QString analysisStatusText_{QStringLiteral("Idle")};
   bool updatingControls_{false};
@@ -1686,6 +2005,31 @@ void XFoilWidget::setSequence(const AlphaSequence& sequence) {
   impl_->setSequence(sequence);
 }
 
+void XFoilWidget::setClSequence(const LiftSequence& sequence) {
+  impl_->setClSequence(sequence);
+}
+
+Result<void> XFoilWidget::applySetup(const AnalysisWorkflowSetup& setup) {
+  return impl_->applySetup(setup);
+}
+
+Result<void> XFoilWidget::resetWorkflow() {
+  return impl_->resetWorkflow();
+}
+
+void XFoilWidget::setViewOptions(
+    const AnalysisWorkflowViewOptions& options) {
+  impl_->setViewOptions(options);
+}
+
+AnalysisWorkflowViewOptions XFoilWidget::viewOptions() const {
+  return impl_->viewOptions();
+}
+
+std::optional<AnalysisWorkflowSetup> XFoilWidget::currentSetup() const {
+  return impl_->currentSetup();
+}
+
 std::optional<geometry::AirfoilGeometry> XFoilWidget::geometry() const {
   return impl_->geometry();
 }
@@ -1708,6 +2052,10 @@ AnalysisTarget XFoilWidget::target() const {
 
 AlphaSequence XFoilWidget::sequence() const {
   return impl_->sequence();
+}
+
+LiftSequence XFoilWidget::clSequence() const {
+  return impl_->clSequence();
 }
 
 XFoilGuiState XFoilWidget::state() const {

@@ -76,6 +76,26 @@ int main(int argc, char** argv) {
     return 8;
   }
 
+  xfoil::gui::AnalysisWorkflowSetup setup;
+  setup.geometry = xfoil::gui::NacaGeometrySetup{"0012"};
+  setup.paneling = xfoil::PanelingOptions{};
+  setup.configuration = xfoil::AnalysisConfig{};
+  setup.request = xfoil::LiftSequence{0.2, 0.8, 0.2};
+  if (!widget->applySetup(setup).isOk()) {
+    return 9;
+  }
+  if (!widget->currentSetup().has_value() ||
+      !std::holds_alternative<xfoil::LiftSequence>(
+          widget->currentSetup()->request)) {
+    return 10;
+  }
+  xfoil::gui::AnalysisWorkflowViewOptions viewOptions;
+  viewOptions.showPaneling = true;
+  widget->setViewOptions(viewOptions);
+  if (!widget->viewOptions().showPaneling) {
+    return 11;
+  }
+
   QCoreApplication::processEvents();
   return 0;
 }

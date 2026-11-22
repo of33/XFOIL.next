@@ -46,6 +46,7 @@
 #include "xfoil/Session.h"
 #include "xfoil/SessionOptions.h"
 #include "xfoil/geometry/AirfoilGeometry.h"
+#include "xfoil/gui/AnalysisWorkflowSetup.h"
 #include "xfoil/gui/Export.h"
 #include "xfoil/gui/GuiState.h"
 
@@ -80,6 +81,25 @@ class XFOIL_GUI_API XFoilWidget : public QWidget {
 
   void setTarget(const AnalysisTarget& target);
   void setSequence(const AlphaSequence& sequence);
+  void setClSequence(const LiftSequence& sequence);
+
+  // Applies one complete owning setup transaction in the worker. The
+  // active session is replaced only after geometry, paneling, configuration
+  // and request all validate. The call is synchronous and works before
+  // show() or any event-loop iteration. It never starts an analysis.
+  [[nodiscard]]
+  Result<void> applySetup(const AnalysisWorkflowSetup& setup);
+  // Replaces the active worker session with an empty session and clears the
+  // workflow to the empty state. Host defaults are not applied.
+  [[nodiscard]]
+  Result<void> resetWorkflow();
+  // View-only options are instance-local and may change during analysis.
+  void setViewOptions(const AnalysisWorkflowViewOptions& options);
+  [[nodiscard]]
+  AnalysisWorkflowViewOptions viewOptions() const;
+
+  [[nodiscard]]
+  std::optional<AnalysisWorkflowSetup> currentSetup() const;
 
   [[nodiscard]]
   std::optional<geometry::AirfoilGeometry> geometry() const;
@@ -94,12 +114,14 @@ class XFOIL_GUI_API XFoilWidget : public QWidget {
   [[nodiscard]]
   AlphaSequence sequence() const;
   [[nodiscard]]
+  LiftSequence clSequence() const;
+  [[nodiscard]]
   XFoilGuiState state() const;
   [[nodiscard]]
   bool isReadyToAnalyze() const;
 
-  // Starts one alpha, CL or detailed alpha-sequence analysis in the
-  // widget-owned worker. A call while not ready or while another analysis
+  // Starts one alpha, CL, detailed alpha-sequence or detailed CL-sequence
+  // analysis in the widget-owned worker. A call while not ready or while another analysis
   // is active is a deterministic no-op.
   void analyze();
   // Requests cancellation of the active job through its atomic token. A
@@ -126,6 +148,8 @@ class XFOIL_GUI_API XFoilWidget : public QWidget {
   void panelingChanged();
   void configurationChanged();
   void targetChanged();
+  void setupApplied();
+  void setupFailed(xfoil::Error error);
   void stateChanged(XFoilGuiState state);
   void validationChanged(bool valid);
   void analysisStarted();

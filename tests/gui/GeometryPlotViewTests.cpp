@@ -25,6 +25,7 @@
 // Offscreen contour, panel-node, clear, aspect and instance tests.
 
 #include <cmath>
+#include <limits>
 #include <vector>
 
 #include <QApplication>
@@ -106,7 +107,7 @@ class GeometryPlotViewTests : public QObject {
 
     QCustomPlot* plot = plotOf(view);
     QCOMPARE(plot->graphCount(), 1);
-    QCOMPARE(plot->plottableCount(), 3);
+    QCOMPARE(plot->plottableCount(), 4);
     QCPCurve* geometryCurve = curveOf(plot, "geometryContour");
     QCPCurve* panelContour = curveOf(plot, "panelContour");
     QCPGraph* nodes = graphOf(plot, "panelNodes");
@@ -164,6 +165,110 @@ class GeometryPlotViewTests : public QObject {
     QCOMPARE(view.panelPointCount(), std::size_t{0});
     QCOMPARE(geometryCurve->dataCount(), 0);
     QVERIFY(!geometryCurve->visible());
+  }
+
+  void panelingOverlayDefaultAndToggle() {
+    GeometryPlotView view;
+    view.resize(480, 320);
+    view.show();
+    QCoreApplication::processEvents();
+
+    QVERIFY(view.showPaneling());
+    const AirfoilGeometry geometry = diamond();
+    view.setGeometry(geometry);
+    view.setPanelGeometry(panelFor(geometry));
+    QCustomPlot* plot = plotOf(view);
+    QCPCurve* panelContour = curveOf(plot, "panelContour");
+    QCPCurve* ticks = curveOf(plot, "panelTicks");
+    QCPGraph* nodes = graphOf(plot, "panelNodes");
+    QVERIFY(panelContour->visible());
+    QVERIFY(ticks->visible());
+    QVERIFY(nodes->visible());
+    QVERIFY(view.panelTickCount() > 0);
+    QCOMPARE(ticks->dataCount(),
+             static_cast<int>(view.panelTickCount() * 3));
+
+    view.setShowPaneling(false);
+    QVERIFY(!view.showPaneling());
+    QVERIFY(!panelContour->visible());
+    QVERIFY(!ticks->visible());
+    QVERIFY(nodes->visible());
+    view.showPanelNodes(false);
+    QVERIFY(!nodes->visible());
+    view.setShowPaneling(true);
+    QVERIFY(panelContour->visible());
+    QVERIFY(ticks->visible());
+    QVERIFY(!nodes->visible());
+    QVERIFY(view.panelTickCount() > 0);
+  }
+
+  void panelingOverlayUsesRedAndOutwardTicks() {
+    GeometryPlotView view;
+    view.resize(480, 320);
+    view.show();
+    QCoreApplication::processEvents();
+
+    const AirfoilGeometry geometry = diamond();
+    view.setGeometry(geometry);
+    view.setPanelGeometry(panelFor(geometry));
+    view.setShowPaneling(true);
+
+    QCustomPlot* plot = plotOf(view);
+    QCPCurve* panelContour = curveOf(plot, "panelContour");
+    QCPCurve* ticks = curveOf(plot, "panelTicks");
+    const QColor contourColor = panelContour->pen().color();
+    const QColor tickColor = ticks->pen().color();
+    QVERIFY(contourColor.red() > 180);
+    QVERIFY(contourColor.green() < 80);
+    QVERIFY(contourColor.blue() < 80);
+    QVERIFY(tickColor.red() > 180);
+    QVERIFY(tickColor.green() < 80);
+    QVERIFY(tickColor.blue() < 80);
+
+    bool sawUpperOutward = false;
+    bool sawLowerOutward = false;
+    bool sawLeadingEdgeOutward = false;
+    const auto data = ticks->data();
+    for (int index = 0; index + 1 < data->size(); index += 3) {
+      const double startX = data->at(index)->key;
+      const double startY = data->at(index)->value;
+      const double endX = data->at(index + 1)->key;
+      const double endY = data->at(index + 1)->value;
+      const double length =
+          std::hypot(endX - startX, endY - startY);
+      QVERIFY(std::abs(length - 0.01) <= 1.0e-12);
+      if (startY > 0.0 && endY > startY) {
+        sawUpperOutward = true;
+      }
+      if (startY < 0.0 && endY < startY) {
+        sawLowerOutward = true;
+      }
+      if (std::abs(startX) <= 1.0e-12 && endX < startX) {
+        sawLeadingEdgeOutward = true;
+      }
+    }
+    QVERIFY(sawUpperOutward);
+    QVERIFY(sawLowerOutward);
+    QVERIFY(sawLeadingEdgeOutward);
+  }
+
+  void degeneratePanelNodesProduceNoTicks() {
+    GeometryPlotView view;
+    view.resize(480, 320);
+    view.show();
+    QCoreApplication::processEvents();
+
+    SurfaceGeometry panel;
+    panel.points = {
+        {1.0, 0.0}, {1.0, 0.0}, {0.5, 0.08}, {0.0, 0.0},
+        {0.5, -0.08}, {1.0, 0.0}};
+    view.setPanelGeometry(panel);
+    view.setShowPaneling(true);
+    QCustomPlot* plot = plotOf(view);
+    QCPCurve* ticks = curveOf(plot, "panelTicks");
+    QVERIFY(view.panelTickCount() < panel.points.size());
+    QCOMPARE(ticks->dataCount(),
+             static_cast<int>(view.panelTickCount() * 3));
   }
 
   void equalAxisScaleIsMaintained() {

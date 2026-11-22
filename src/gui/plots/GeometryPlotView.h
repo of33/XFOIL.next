@@ -53,6 +53,7 @@ class GeometryPlotView : public QWidget {
 
   void setGeometry(const geometry::AirfoilGeometry& geometry);
   void setPanelGeometry(const SurfaceGeometry& panel);
+  void setShowPaneling(bool visible);
   void showPanelNodes(bool visible);
   void clearPanel();
   void clear();
@@ -79,6 +80,16 @@ class GeometryPlotView : public QWidget {
     return panelNodesVisible_;
   }
 
+  [[nodiscard]]
+  bool showPaneling() const noexcept {
+    return showPaneling_;
+  }
+
+  [[nodiscard]]
+  std::size_t panelTickCount() const noexcept {
+    return panelTickCount_;
+  }
+
  protected:
   void resizeEvent(QResizeEvent* event) override;
 
@@ -86,15 +97,19 @@ class GeometryPlotView : public QWidget {
   void updateAxes();
   void applySampleMarkers();
   void applyEqualAspect();
+  void updatePanelVisibility();
 
   QCustomPlot* plot_{};
   QCPCurve* geometryContour_{};
   QCPCurve* panelContour_{};
+  QCPCurve* panelTicks_{};
   QCPGraph* panelNodes_{};
   InteractivePlotController* interaction_{};
   std::size_t geometryPointCount_{0};
   std::size_t panelPointCount_{0};
+  std::size_t panelTickCount_{0};
   bool panelNodesVisible_{true};
+  bool showPaneling_{true};
   bool sampleMarkersEnabled_{false};
   bool hasGeometry_{false};
   bool hasPanel_{false};

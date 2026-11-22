@@ -56,10 +56,8 @@ bool GuiDefinitionModel::isReady() const noexcept {
 }
 
 std::optional<Error> GuiDefinitionModel::targetError() const {
-  if (mode_ == AnalysisMode::alphaSequence) {
-    const double start = sequence_.start.value;
-    const double end = sequence_.endExclusive.value;
-    const double step = sequence_.step.value;
+  const auto validateSequence = [](double start, double end,
+                                   double step) -> std::optional<Error> {
     if (!std::isfinite(start) || !std::isfinite(end) ||
         !std::isfinite(step)) {
       return sequenceRangeError();
@@ -88,6 +86,16 @@ std::optional<Error> GuiDefinitionModel::targetError() const {
                        "Sequence exceeds the point limit", "target");
     }
     return std::nullopt;
+  };
+
+  if (mode_ == AnalysisMode::alphaSequence) {
+    return validateSequence(sequence_.start.value,
+                            sequence_.endExclusive.value,
+                            sequence_.step.value);
+  }
+  if (mode_ == AnalysisMode::clSequence) {
+    return validateSequence(clSequence_.start, clSequence_.endExclusive,
+                            clSequence_.step);
   }
 
   if (std::holds_alternative<AlphaTarget>(target_)) {
@@ -263,6 +271,23 @@ Result<void> GuiDefinitionModel::setSequence(
   return Result<void>::ok();
 }
 
+Result<void> GuiDefinitionModel::setClSequence(
+    const LiftSequence& sequence) {
+  clSequence_ = sequence;
+  mode_ = AnalysisMode::clSequence;
+  const std::optional<Error> validation = targetError();
+  if (validation.has_value()) {
+    error_ = *validation;
+    refreshState();
+    return Result<void>::fail(*validation);
+  }
+  error_.reset();
+  refreshState();
+  return Result<void>::ok();
+}
+
+void GuiDefinitionModel::reset() { *this = GuiDefinitionModel{}; }
+
 Result<GuiRunSpec> GuiDefinitionModel::makeRunSpec() const {
   if (!isReady()) {
     return Result<GuiRunSpec>::fail(
@@ -281,6 +306,9 @@ Result<GuiRunSpec> GuiDefinitionModel::makeRunSpec() const {
   GuiAnalysisRequest analysisRequest = [&]() -> GuiAnalysisRequest {
     if (mode_ == AnalysisMode::alphaSequence) {
       return sequence_;
+    }
+    if (mode_ == AnalysisMode::clSequence) {
+      return clSequence_;
     }
     if (mode_ == AnalysisMode::clPoint) {
       return std::get<LiftTarget>(target_);
@@ -323,6 +351,8 @@ const char* toString(AnalysisMode mode) noexcept {
       return "CL";
     case AnalysisMode::alphaSequence:
       return "Alpha sequence";
+    case AnalysisMode::clSequence:
+      return "CL sequence";
   }
   return "Unknown";
 }

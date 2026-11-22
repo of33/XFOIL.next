@@ -30,6 +30,7 @@ xfoil/SkinFriction.h              owning upper/lower skin-friction distribution
 xfoil/SessionTypes.h              GeometrySetResult / GeometrySetError
 xfoil/Types.h                     Point2D, Vector2D, Degrees, Radians
 xfoil/geometry/AirfoilGeometry.h  owning unpanelled coordinate value type
+xfoil/gui/AnalysisWorkflowSetup.h owning GUI host setup/view value types
 xfoil/Limits.h                    canonical capacity constants (no API surface)
 ```
 
@@ -561,6 +562,34 @@ from another thread.
 `AnalysisResult` is a value type and stays valid after further calls on the
 same session. `lastResult()` returns the most recent result held by the
 session.
+
+## GUI analysis workflow setup
+
+`xfoil/gui/AnalysisWorkflowSetup.h` defines the owning host setup contract for
+the optional Qt surface. It contains no Qt, widget, session, file or callback
+object:
+
+```cpp
+xfoil::gui::AnalysisWorkflowSetup setup;
+setup.geometry = xfoil::gui::NacaGeometrySetup{"2412"};
+setup.paneling = xfoil::PanelingOptions{};
+setup.configuration = xfoil::AnalysisConfig{};
+setup.request = xfoil::LiftSequence{0.2, 0.8, 0.2};
+
+xfoil::gui::XFoilWidget widget;
+if (!widget.applySetup(setup).isOk()) {
+  // The previous workflow, if any, is unchanged.
+}
+```
+
+`AnalysisWorkflowSetup` has one geometry source (memory, NACA or NACS), one
+complete `PanelingOptions`, one `AnalysisConfig` and one request (`AlphaTarget`,
+`LiftTarget`, `AlphaSequence` or `LiftSequence`). `XFoilWidget::applySetup`
+validates a transient candidate session in the worker and atomically replaces
+the active session only after complete success. It never starts an analysis.
+`resetWorkflow()` returns the widget to its empty state, and
+`AnalysisWorkflowViewOptions` controls only the instance-local paneling overlay
+and panel-node markers.
 
 ## Minimal example
 

@@ -47,7 +47,7 @@ struct GuiNacaRequest {
 using GuiGeometryRequest =
     std::variant<geometry::AirfoilGeometry, GuiNacaRequest>;
 using GuiAnalysisRequest =
-    std::variant<AlphaTarget, LiftTarget, AlphaSequence>;
+    std::variant<AlphaTarget, LiftTarget, AlphaSequence, LiftSequence>;
 
 class GuiRunSpec {
  public:
