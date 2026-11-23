@@ -34,6 +34,8 @@
 #include <QtTest/QTest>
 
 #include "app/GuiFileAdapters.h"
+#include "plots/ResultPlotView.h"
+#include "qcustomplot.h"
 #include "xfoil/gui/XFoilWidget.h"
 
 namespace {
@@ -128,6 +130,25 @@ class XFoilWidgetG6dTests : public QObject {
     tabs->setCurrentWidget(widget.findChild<QWidget*>("cpAlphaPage"));
     QCOMPARE(changed.count(), 1);
 
+    auto* viewWidget = widget.findChild<QWidget*>("cpAlphaPlot");
+    QVERIFY(viewWidget != nullptr);
+    auto* view = dynamic_cast<xfoil::gui::ResultPlotView*>(viewWidget);
+    QVERIFY(view != nullptr);
+    auto* plot = view->findChild<QCustomPlot*>();
+    QVERIFY(plot != nullptr);
+    view->setSampleMarkersEnabled(true);
+    plot->xAxis->setRange(0.05, 0.55);
+    plot->yAxis->setRange(-1.20, 0.20);
+    plot->graph(0)->setSelection(QCPDataSelection(QCPDataRange(0, 1)));
+    const QCPRange xRange = plot->xAxis->range();
+    const QCPRange yRange = plot->yAxis->range();
+    const int graphCount = plot->graphCount();
+    const int graphDataCount = plot->graph(0)->dataCount();
+    const int tabIndex = tabs->currentIndex();
+    const auto stateBefore = widget.state();
+    const std::size_t polarPointsBefore = widget.currentPolar()->points.size();
+    const bool markersBefore = view->sampleMarkersEnabled();
+
     const auto png = widget.activePlotPng();
     QVERIFY(png.isOk());
     const QByteArray pngBytes = QByteArray::fromStdString(png.value());
@@ -147,7 +168,20 @@ class XFoilWidgetG6dTests : public QObject {
     QVERIFY(svg.value().find("<image") == std::string::npos);
     QVERIFY(svg.value().find("XFOIL.next analysis plot") !=
             std::string::npos);
+    QCOMPARE(tabs->currentIndex(), tabIndex);
     QCOMPARE(tabs->currentWidget()->objectName(), QStringLiteral("cpAlphaPage"));
+    QCOMPARE(plot->xAxis->range().lower, xRange.lower);
+    QCOMPARE(plot->xAxis->range().upper, xRange.upper);
+    QCOMPARE(plot->yAxis->range().lower, yRange.lower);
+    QCOMPARE(plot->yAxis->range().upper, yRange.upper);
+    QCOMPARE(plot->graphCount(), graphCount);
+    QCOMPARE(plot->graph(0)->dataCount(), graphDataCount);
+    QCOMPARE(plot->selectedPlottables().size(), 1);
+    QCOMPARE(plot->graph(0)->selection().dataRange(0),
+             QCPDataRange(0, 1));
+    QCOMPARE(widget.state(), stateBefore);
+    QCOMPARE(widget.currentPolar()->points.size(), polarPointsBefore);
+    QCOMPARE(view->sampleMarkersEnabled(), markersBefore);
   }
 };
 
