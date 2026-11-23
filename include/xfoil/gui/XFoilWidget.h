@@ -33,7 +33,9 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <string>
 #include <string_view>
+
 
 #include <QMetaType>
 #include <QWidget>
@@ -114,6 +116,21 @@ class XFOIL_GUI_API XFoilWidget : public QWidget {
   [[nodiscard]]
   std::optional<PolarData> selectedComparisonPolar() const;
 
+  // Memory-only report/export projections. Paths, dialogs and file writes
+  // belong to the application host.
+  [[nodiscard]]
+  std::optional<PressureExportData> selectedPressureExport() const;
+  [[nodiscard]]
+  bool hasCurrentCp() const noexcept;
+  [[nodiscard]]
+  bool hasActivePlot() const noexcept;
+  [[nodiscard]]
+  Result<std::string> activePlotPng() const;
+  [[nodiscard]]
+  Result<std::string> activePlotPdf() const;
+  [[nodiscard]]
+  Result<std::string> activePlotSvg() const;
+
   [[nodiscard]]
   std::optional<geometry::AirfoilGeometry> geometry() const;
   [[nodiscard]]
@@ -164,6 +181,8 @@ class XFOIL_GUI_API XFoilWidget : public QWidget {
   void setupApplied();
   void setupFailed(xfoil::Error error);
   void comparisonPolarsChanged();
+  void activePlotChanged();
+  void resultSelectionChanged();
   void stateChanged(XFoilGuiState state);
   void validationChanged(bool valid);
   void analysisStarted();

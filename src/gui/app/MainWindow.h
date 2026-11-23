@@ -94,6 +94,10 @@ class MainWindow : public QMainWindow {
   void importPolarDialog();
   void exportCurrentPolarDialog();
   void exportComparisonPolarDialog();
+  void exportCpDialog();
+  void exportPlotPngDialog();
+  void exportPlotPdfDialog();
+  void exportPlotSvgDialog();
   void addRecentFile(const QString& path);
   void removeRecentFile(const QString& path);
   void showAbout();
@@ -123,6 +127,10 @@ class MainWindow : public QMainWindow {
   QAction* importPolarAction_{};
   QAction* exportCurrentPolarAction_{};
   QAction* exportComparisonPolarAction_{};
+  QAction* exportCpAction_{};
+  QAction* exportPlotPngAction_{};
+  QAction* exportPlotPdfAction_{};
+  QAction* exportPlotSvgAction_{};
   QAction* exitAction_{};
   QAction* aboutAction_{};
   QMenu* recentFilesMenu_{};

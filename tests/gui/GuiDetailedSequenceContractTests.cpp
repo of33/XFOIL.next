@@ -30,6 +30,7 @@
 #include <utility>
 
 #include <QApplication>
+#include <QPlainTextEdit>
 #include <QString>
 #include <QStringList>
 #include <QTabWidget>
@@ -110,7 +111,7 @@ class GuiDetailedSequenceContractTests : public QObject {
     xfoil::gui::XFoilWidget widget;
     auto* tabs = widget.findChild<QTabWidget*>("resultPlotTabs");
     QVERIFY(tabs != nullptr);
-    QCOMPARE(tabs->count(), 7);
+    QCOMPARE(tabs->count(), 8);
 
     const QStringList scalarPlots = {
         QStringLiteral("clAlphaPlot"), QStringLiteral("clCdPlot"),
@@ -136,6 +137,10 @@ class GuiDetailedSequenceContractTests : public QObject {
              QStringLiteral("distribution-cf"));
     QVERIFY(!cf->property("xfoilPointSelectable").toBool());
     QVERIFY(cf->toolTip().contains(QStringLiteral("inviscid")));
+
+    auto* report = widget.findChild<QPlainTextEdit*>("reportView");
+    QVERIFY(report != nullptr);
+    QVERIFY(report->isReadOnly());
   }
 
   void leftCpAndAirfoilHaveExplicitRoles() {

@@ -40,7 +40,9 @@ using xfoil::gui::app::exportDxfFile;
 using xfoil::gui::app::readAirfoilFile;
 using xfoil::gui::app::readPolarFile;
 using xfoil::gui::app::saveAirfoilFile;
+using xfoil::gui::app::saveBinaryFile;
 using xfoil::gui::app::savePolarFile;
+using xfoil::gui::app::saveTextFile;
 
 bool writeText(const std::filesystem::path& path, const char* text) {
   QFile file(QString::fromStdString(path.string()));
@@ -222,6 +224,27 @@ class GuiFileAdaptersTests : public QObject {
     QVERIFY(savePolarFile(savedPath, read.value(), true).success);
     QVERIFY(!readPolarFile(pathIn(directory, "missing.pol")).isOk());
     QVERIFY(!savePolarFile({}, read.value(), true).success);
+  }
+
+  void writesTextAndOpaqueBytesWithoutExtensionChanges() {
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const auto textPath = pathIn(directory, "report.out");
+    const std::string text = "line one\nline two\n";
+    QVERIFY(saveTextFile(textPath, text, false).success);
+    QCOMPARE(readText(textPath), QString::fromStdString(text));
+    QVERIFY(!saveTextFile(textPath, "changed", false).success);
+    QVERIFY(saveTextFile(textPath, "changed", true).success);
+    QCOMPARE(readText(textPath), QStringLiteral("changed"));
+
+    const auto binaryPath = pathIn(directory, "plot.bin");
+    const std::string bytes("\x00\x01\x7f\x80payload", 11);
+    QVERIFY(saveBinaryFile(binaryPath, bytes, false).success);
+    QFile file(QString::fromStdString(binaryPath.string()));
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    QCOMPARE(file.readAll(), QByteArray(bytes.data(),
+                                        static_cast<qsizetype>(bytes.size())));
+    QVERIFY(!saveBinaryFile({}, bytes, true).success);
   }
 
   void emptyTargetsAreRejected() {

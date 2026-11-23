@@ -140,7 +140,8 @@ class XFoilWidgetShellTests : public QObject {
 
     QTabWidget* tabs = widget.findChild<QTabWidget*>("resultPlotTabs");
     QVERIFY(tabs != nullptr);
-    QCOMPARE(tabs->count(), 7);
+    QCOMPARE(tabs->count(), 8);
+    QVERIFY(widget.findChild<QPlainTextEdit*>("reportView") != nullptr);
   }
 
   void g2StructureUsesSemanticNamesAndPromotedPlot() {

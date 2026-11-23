@@ -229,25 +229,27 @@ class GuiResultWorkspaceTests : public QObject {
     XFoilWidget widget;
     auto* tabs = widget.findChild<QTabWidget*>("resultPlotTabs");
     QVERIFY(tabs != nullptr);
-    QCOMPARE(tabs->count(), 7);
+    QCOMPARE(tabs->count(), 8);
     const QStringList titles = {
         QStringLiteral("CL(α)"), QStringLiteral("CL(CD)"),
         QStringLiteral("CM(α)"), QStringLiteral("CM(CL)"),
         QStringLiteral("CL/CD(CL)"), QStringLiteral("Cp"),
-        QStringLiteral("Cf")};
+        QStringLiteral("Cf"), QStringLiteral("Report")};
     const QStringList pages = {
         QStringLiteral("clAlphaPage"), QStringLiteral("clCdPage"),
         QStringLiteral("cmAlphaPage"), QStringLiteral("cmClPage"),
         QStringLiteral("efficiencyClPage"), QStringLiteral("cpAlphaPage"),
-        QStringLiteral("cfAlphaPage")};
+        QStringLiteral("cfAlphaPage"), QStringLiteral("reportPage")};
     const QStringList plots = {
         QStringLiteral("clAlphaPlot"), QStringLiteral("clCdPlot"),
         QStringLiteral("cmAlphaPlot"), QStringLiteral("cmClPlot"),
         QStringLiteral("efficiencyClPlot"), QStringLiteral("cpAlphaPlot"),
         QStringLiteral("cfAlphaPlot")};
-    for (int index = 0; index < 7; ++index) {
+    for (int index = 0; index < 8; ++index) {
       QCOMPARE(tabs->tabText(index), titles.at(index));
       QCOMPARE(tabs->widget(index)->objectName(), pages.at(index));
+    }
+    for (int index = 0; index < 7; ++index) {
       QWidget* view = widget.findChild<QWidget*>(plots.at(index));
       QVERIFY(view != nullptr);
       QCustomPlot* plot = canvas(*view);
@@ -267,6 +269,10 @@ class GuiResultWorkspaceTests : public QObject {
         QCOMPARE(plot->graphCount(), 2);
       }
     }
+    auto* report = widget.findChild<QPlainTextEdit*>("reportView");
+    QVERIFY(report != nullptr);
+    QVERIFY(report->isReadOnly());
+    QVERIFY(report->toPlainText().contains("OPERATING POINT"));
   }
 
   void resultMatrixIsFourByThreeAndStartsUnavailable() {

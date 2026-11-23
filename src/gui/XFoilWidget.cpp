@@ -40,20 +40,28 @@
 #include <vector>
 
 #include <QAction>
+#include <QBuffer>
+#include <QByteArray>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QLabel>
+#include <QImage>
 #include <QLineEdit>
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QMetaObject>
+#include <QMarginsF>
+#include <QPageSize>
+#include <QPdfWriter>
 #include <QProgressBar>
 #include <QPushButton>
 #include <QSignalBlocker>
 #include <QSpinBox>
 #include <QString>
+#include <QTabWidget>
 #include <QThread>
+#include <QSvgGenerator>
 
 #include "model/GuiDefinitionModel.h"
 #include "model/GuiPolarManager.h"
@@ -63,6 +71,7 @@
 #include "plots/GuiPointPresentation.h"
 #include "plots/ResultPlotView.h"
 #include "plots/ScalarPlotView.h"
+#include "3rdparty/qcustomplot-2.1.1/qcustomplot.h"
 #include "ui_XFoilWidget.h"
 #include "worker/GuiAnalysisWorker.h"
 #include "worker/GuiJobTracker.h"
@@ -325,6 +334,9 @@ class XFoilWidget::Impl {
 
   void initialize() {
     configureResultViews();
+    QObject::connect(
+        ui.resultPlotTabs, &QTabWidget::currentChanged, owner_,
+        [this](int) { Q_EMIT owner_->activePlotChanged(); });
     updateResultMatrix();
     ui.airfoilPlot->setShowPaneling(viewOptions_.showPaneling);
     ui.airfoilPlot->showPanelNodes(viewOptions_.showPanelNodes);
@@ -858,6 +870,7 @@ class XFoilWidget::Impl {
          currentSequence_.has_value()));
     polarManagerMessage_.clear();
     refreshComparisonPlots(false);
+    refreshReportView();
     Q_EMIT owner_->comparisonPolarsChanged();
   }
 
@@ -2042,6 +2055,280 @@ class XFoilWidget::Impl {
     return entry;
   }
 
+ public:
+  [[nodiscard]]
+  QCustomPlot* activePlot() const {
+    QWidget* page = ui.resultPlotTabs->currentWidget();
+    return page != nullptr ? page->findChild<QCustomPlot*>() : nullptr;
+  }
+
+  [[nodiscard]]
+  std::optional<PressureExportData> selectedPressureExport() const {
+    const std::optional<GuiPointEntry> selected =
+        selectionModel_.currentPoint();
+    if (!selected.has_value() || !selected->operatingPoint.has_value() ||
+        !selected->operatingPoint->pressureExport.has_value()) {
+      return std::nullopt;
+    }
+    return selected->operatingPoint->pressureExport;
+  }
+
+  [[nodiscard]]
+  bool pressureExportUsable(const PressureExportData& data) const {
+    if (data.x.empty() || data.x.size() != data.gam.size() ||
+        !std::isfinite(data.machNumber) || !std::isfinite(data.qinf) ||
+        data.qinf == 0.0) {
+      return false;
+    }
+    for (std::size_t i = 0; i < data.x.size(); ++i) {
+      if (!std::isfinite(data.x[i]) || !std::isfinite(data.gam[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  [[nodiscard]]
+  bool hasCurrentCp() const noexcept {
+    const std::optional<PressureExportData> data = selectedPressureExport();
+    return data.has_value() && pressureExportUsable(*data);
+  }
+
+  [[nodiscard]]
+  bool hasActivePlot() const noexcept { return activePlot() != nullptr; }
+
+  [[nodiscard]]
+  Result<std::string> activePlotPng() const {
+    QCustomPlot* plot = activePlot();
+    if (plot == nullptr) {
+      return Result<std::string>::fail(Error::make(
+          ErrorCategory::invalidState, "gui.export.plot.none",
+          "No active result plot is available", "export"));
+    }
+    constexpr int width = 1200;
+    constexpr int height = 800;
+    QImage image(width, height, QImage::Format_ARGB32_Premultiplied);
+    image.fill(Qt::white);
+    QCPPainter painter(&image);
+    plot->toPainter(&painter, width, height);
+    painter.end();
+    QBuffer buffer;
+    if (!buffer.open(QIODevice::WriteOnly) ||
+        !image.save(&buffer, "PNG")) {
+      return Result<std::string>::fail(Error::make(
+          ErrorCategory::internal, "gui.export.png.failed",
+          "PNG rendering failed", "export"));
+    }
+    QByteArray bytes = buffer.data();
+    if (!bytes.startsWith("\x89PNG\r\n\x1a\n")) {
+      return Result<std::string>::fail(Error::make(
+          ErrorCategory::internal, "gui.export.png.invalid",
+          "PNG encoder produced an invalid image", "export"));
+    }
+    return Result<std::string>::ok(
+        std::string(bytes.constData(), static_cast<std::size_t>(bytes.size())));
+  }
+
+  [[nodiscard]]
+  Result<std::string> activePlotPdf() const {
+    QCustomPlot* plot = activePlot();
+    if (plot == nullptr) {
+      return Result<std::string>::fail(Error::make(
+          ErrorCategory::invalidState, "gui.export.plot.none",
+          "No active result plot is available", "export"));
+    }
+    constexpr int width = 1200;
+    constexpr int height = 800;
+    QByteArray bytes;
+    {
+      QBuffer buffer(&bytes);
+      if (!buffer.open(QIODevice::WriteOnly)) {
+        return Result<std::string>::fail(Error::make(
+            ErrorCategory::internal, "gui.export.pdf.failed",
+            "PDF buffer could not be opened", "export"));
+      }
+      QPdfWriter writer(&buffer);
+      writer.setResolution(96);
+      writer.setPageSize(QPageSize(QPageSize::A4));
+      writer.setPageMargins(QMarginsF(0.0, 0.0, 0.0, 0.0));
+      QCPPainter painter(&writer);
+      plot->toPainter(&painter, width, height);
+      painter.end();
+    }
+    if (!bytes.startsWith("%PDF")) {
+      return Result<std::string>::fail(Error::make(
+          ErrorCategory::internal, "gui.export.pdf.invalid",
+          "PDF encoder produced an invalid document", "export"));
+    }
+    return Result<std::string>::ok(
+        std::string(bytes.constData(), static_cast<std::size_t>(bytes.size())));
+  }
+
+  [[nodiscard]]
+  Result<std::string> activePlotSvg() const {
+    QCustomPlot* plot = activePlot();
+    if (plot == nullptr) {
+      return Result<std::string>::fail(Error::make(
+          ErrorCategory::invalidState, "gui.export.plot.none",
+          "No active result plot is available", "export"));
+    }
+    constexpr int width = 1200;
+    constexpr int height = 800;
+    QByteArray bytes;
+    {
+      QBuffer buffer(&bytes);
+      if (!buffer.open(QIODevice::WriteOnly)) {
+        return Result<std::string>::fail(Error::make(
+            ErrorCategory::internal, "gui.export.svg.failed",
+            "SVG buffer could not be opened", "export"));
+      }
+      QSvgGenerator generator;
+      generator.setOutputDevice(&buffer);
+      generator.setSize(QSize(width, height));
+      generator.setViewBox(QRect(0, 0, width, height));
+      generator.setTitle(QStringLiteral("XFOIL.next analysis plot"));
+      generator.setDescription(
+          QStringLiteral("Vector export of the active result plot"));
+      QCPPainter painter(&generator);
+      plot->toPainter(&painter, width, height);
+      painter.end();
+    }
+    if (!bytes.contains("<svg") || bytes.contains("<image")) {
+      return Result<std::string>::fail(Error::make(
+          ErrorCategory::internal, "gui.export.svg.invalid",
+          "SVG encoder did not produce a vector document", "export"));
+    }
+    return Result<std::string>::ok(
+        std::string(bytes.constData(), static_cast<std::size_t>(bytes.size())));
+  }
+
+ private:
+  void refreshReportView() {
+    if (ui.reportView == nullptr) {
+      return;
+    }
+    QString text;
+    text += QStringLiteral("XFOIL.next ANALYSIS REPORT\n");
+    text += QStringLiteral("=========================\n");
+    text += QStringLiteral("Read-only view; this report is not a file format.\n\n");
+
+    const std::optional<GuiPointEntry> selected =
+        selectionModel_.currentPoint();
+    text += QStringLiteral("OPERATING POINT\n");
+    if (!selected.has_value()) {
+      text += QStringLiteral("No operating point selected.\n");
+    } else {
+      const GuiPointEntry& point = *selected;
+      text += QStringLiteral("Alpha: %1 deg\n")
+                  .arg(QString::number(point.alpha, 'f', 4));
+      if (point.operatingPoint.has_value()) {
+        const OperatingPointData& op = *point.operatingPoint;
+        text += QStringLiteral("CL: %1\n")
+                    .arg(QString::fromStdString(
+                        formatResultValue(op.liftCoefficient)));
+        text += QStringLiteral("CD: %1\n")
+                    .arg(QString::fromStdString(
+                        formatResultValue(op.dragCoefficient)));
+        text += QStringLiteral("CDF: %1\n")
+                    .arg(QString::fromStdString(
+                        formatResultValue(op.dragCoefficientFriction)));
+        text += QStringLiteral("CDP: %1\n")
+                    .arg(QString::fromStdString(
+                        formatResultValue(op.dragCoefficientPressure)));
+        text += QStringLiteral("CM: %1\n")
+                    .arg(QString::fromStdString(
+                        formatResultValue(op.momentCoefficient)));
+        text += QStringLiteral("Convergence: %1\n")
+                    .arg(QString::fromLatin1(
+                        convergenceLabel(op.convergence).data()));
+        text += QStringLiteral("Cf distribution: %1\n")
+                    .arg(op.skinFriction.has_value() ? QStringLiteral("available")
+                                                    : QStringLiteral("unavailable"));
+        text += QStringLiteral("Pressure (Cp) export: %1\n")
+                    .arg(op.pressureExport.has_value()
+                             ? QStringLiteral("available")
+                             : QStringLiteral("unavailable"));
+        text += QStringLiteral("Diagnostics:\n");
+        if (op.diagnostics.empty()) {
+          text += QStringLiteral("  none\n");
+        } else {
+          for (const Diagnostic& diagnostic : op.diagnostics) {
+            text += QStringLiteral("  %1\n")
+                        .arg(QString::fromStdString(diagnostic.message));
+          }
+        }
+      } else {
+        text += QStringLiteral("No owning operating-point data.\n");
+      }
+    }
+
+    text += QStringLiteral("\nSEQUENCE / POLAR\n");
+    if (selectionModel_.empty()) {
+      text += QStringLiteral("No sequence result.\n");
+    } else {
+      const auto& points = selectionModel_.points();
+      std::size_t converged = 0;
+      double alphaMin = points.front().alpha;
+      double alphaMax = points.front().alpha;
+      for (const GuiPointEntry& point : points) {
+        if (point.convergenceStatus == ConvergenceStatus::converged) {
+          ++converged;
+        }
+        alphaMin = std::min(alphaMin, point.alpha);
+        alphaMax = std::max(alphaMax, point.alpha);
+      }
+      text += QStringLiteral("Points: %1 (enabled: %2, converged: %3)\n")
+                  .arg(points.size())
+                  .arg(selectionModel_.enabledPoints().size())
+                  .arg(converged);
+      text += QStringLiteral("Alpha range: %1 to %2 deg\n")
+                  .arg(QString::number(alphaMin, 'f', 4))
+                  .arg(QString::number(alphaMax, 'f', 4));
+      text += QStringLiteral("CL max: %1%2\n")
+                  .arg(QString::fromStdString(
+                      formatResultValue(summary_.clMaximum)))
+                  .arg(summary_.clMaximumProvisional
+                           ? QStringLiteral(" (provisional)")
+                           : QString());
+      text += QStringLiteral("CL/CD max: %1%2\n")
+                  .arg(QString::fromStdString(
+                      formatResultValue(summary_.efficiencyMaximum)))
+                  .arg(summary_.efficiencyMaximumProvisional
+                           ? QStringLiteral(" (provisional)")
+                           : QString());
+    }
+
+    text += QStringLiteral("\nCOMPARISON POLARS\n");
+    const auto& comparisons = polarManager_.entries();
+    text += QStringLiteral("Stored: %1\n").arg(comparisons.size());
+    for (const GuiStoredPolar& entry : comparisons) {
+      text += QStringLiteral("  %1: %2 points, %3\n")
+                  .arg(QString::fromStdString(entry.name))
+                  .arg(entry.polar.points.size())
+                  .arg(entry.visible ? QStringLiteral("visible")
+                                     : QStringLiteral("hidden"));
+    }
+
+    ui.reportView->setPlainText(text);
+  }
+
+  [[nodiscard]]
+  static std::string_view convergenceLabel(ConvergenceStatus status) {
+    switch (status) {
+      case ConvergenceStatus::converged:
+        return "converged";
+      case ConvergenceStatus::unconverged:
+        return "not converged";
+      case ConvergenceStatus::notRun:
+        return "not run";
+      case ConvergenceStatus::cancelled:
+        return "cancelled";
+      case ConvergenceStatus::failed:
+        return "failed";
+    }
+    return "unknown";
+  }
+
   void populateResultsFromCurrent() {
     std::vector<GuiPointEntry> points;
     if (currentOperatingPoint_.has_value()) {
@@ -2073,6 +2360,8 @@ class XFoilWidget::Impl {
     ui.cpAlphaPlot->clear();
     ui.cfAlphaPlot->clear();
     refreshComparisonPlots(false);
+    refreshReportView();
+    Q_EMIT owner_->resultSelectionChanged();
   }
 
   void refreshResultPresentation(bool fitPlots) {
@@ -2117,7 +2406,9 @@ class XFoilWidget::Impl {
       ui.cfAlphaPlot->clear();
     }
     refreshComparisonPlots(false);
+    refreshReportView();
     refreshUi();
+    Q_EMIT owner_->resultSelectionChanged();
   }
 
   void selectPointFromPlot(std::size_t sourceIndex) {
@@ -2380,6 +2671,30 @@ std::optional<PolarData> XFoilWidget::currentPolar() const {
 
 std::optional<PolarData> XFoilWidget::selectedComparisonPolar() const {
   return impl_->selectedComparisonPolar();
+}
+
+std::optional<PressureExportData> XFoilWidget::selectedPressureExport() const {
+  return impl_->selectedPressureExport();
+}
+
+bool XFoilWidget::hasCurrentCp() const noexcept {
+  return impl_->hasCurrentCp();
+}
+
+bool XFoilWidget::hasActivePlot() const noexcept {
+  return impl_->hasActivePlot();
+}
+
+Result<std::string> XFoilWidget::activePlotPng() const {
+  return impl_->activePlotPng();
+}
+
+Result<std::string> XFoilWidget::activePlotPdf() const {
+  return impl_->activePlotPdf();
+}
+
+Result<std::string> XFoilWidget::activePlotSvg() const {
+  return impl_->activePlotSvg();
 }
 
 std::optional<geometry::AirfoilGeometry> XFoilWidget::geometry() const {

@@ -157,6 +157,10 @@ class MainWindowTests : public QObject {
     QCOMPARE(window.findChild<QAction*>("openAction") != nullptr, true);
     QCOMPARE(window.findChild<QAction*>("saveAirfoilAction") != nullptr, true);
     QCOMPARE(window.findChild<QAction*>("exportDxfAction") != nullptr, true);
+    QCOMPARE(window.findChild<QAction*>("exportCpAction") != nullptr, true);
+    QCOMPARE(window.findChild<QAction*>("exportPlotPngAction") != nullptr, true);
+    QCOMPARE(window.findChild<QAction*>("exportPlotPdfAction") != nullptr, true);
+    QCOMPARE(window.findChild<QAction*>("exportPlotSvgAction") != nullptr, true);
     QCOMPARE(window.findChild<QAction*>("exitAction") != nullptr, true);
     QCOMPARE(window.findChild<QAction*>("aboutAction") != nullptr, true);
     QVERIFY(window.findChild<QMenu*>("fileMenu") != nullptr);
@@ -166,6 +170,10 @@ class MainWindowTests : public QObject {
 
     QVERIFY(!window.findChild<QAction*>("saveAirfoilAction")->isEnabled());
     QVERIFY(!window.findChild<QAction*>("exportDxfAction")->isEnabled());
+    QVERIFY(!window.findChild<QAction*>("exportCpAction")->isEnabled());
+    QVERIFY(window.findChild<QAction*>("exportPlotPngAction")->isEnabled());
+    QVERIFY(window.findChild<QAction*>("exportPlotPdfAction")->isEnabled());
+    QVERIFY(window.findChild<QAction*>("exportPlotSvgAction")->isEnabled());
     QVERIFY(window.windowTitle().startsWith(QStringLiteral("XFOIL.next ")));
     QVERIFY(window.windowTitle().contains(QString::fromLatin1(
         xfoil::app::product::version.data(),
@@ -200,6 +208,61 @@ class MainWindowTests : public QObject {
              harness.errors.join(QStringLiteral("; ")).toUtf8().constData());
     const QString saved = readText(harness.savePath);
     QVERIFY(saved.contains(QStringLiteral("Calculated polar for: NACA 0012")));
+    QVERIFY(window.close());
+  }
+
+  void cpAndPlotExportsWriteOwningBytes() {
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    Harness harness;
+    harness.settingsFile = directory.filePath(QStringLiteral("settings.ini"));
+    MainWindow window(harness.dependencies());
+    auto* widget = qobject_cast<XFoilWidget*>(window.centralWidget());
+    QVERIFY(widget != nullptr);
+    QVERIFY(widget->setNaca("0012").isOk());
+    xfoil::PanelingOptions paneling;
+    paneling.panelCount = 80;
+    QVERIFY(widget->generatePanel(paneling).isOk());
+    xfoil::AnalysisConfig config;
+    config.viscous = false;
+    config.maximumIterations = 50;
+    QVERIFY(widget->setConfiguration(config).isOk());
+    widget->setTarget(xfoil::LiftTarget{0.5});
+    widget->analyze();
+    QTRY_VERIFY_WITH_TIMEOUT(!widget->isRunning(), 30000);
+    QTRY_VERIFY_WITH_TIMEOUT(
+        window.findChild<QAction*>("exportCpAction")->isEnabled(), 5000);
+
+    harness.savePath = directory.filePath(QStringLiteral("out_cp.txt"));
+    window.findChild<QAction*>("exportCpAction")->trigger();
+    QVERIFY2(harness.errors.empty(),
+             harness.errors.join(QStringLiteral("; ")).toUtf8().constData());
+    const QString cp = readText(harness.savePath);
+    QVERIFY(cp.startsWith(QStringLiteral("#      x          Cp")));
+
+    harness.savePath = directory.filePath(QStringLiteral("plot.png"));
+    window.findChild<QAction*>("exportPlotPngAction")->trigger();
+    QVERIFY2(harness.errors.empty(),
+             harness.errors.join(QStringLiteral("; ")).toUtf8().constData());
+    QFile png(harness.savePath);
+    QVERIFY(png.open(QIODevice::ReadOnly));
+    QVERIFY(png.readAll().startsWith("\x89PNG\r\n\x1a\n"));
+
+    harness.savePath = directory.filePath(QStringLiteral("plot.pdf"));
+    window.findChild<QAction*>("exportPlotPdfAction")->trigger();
+    QVERIFY2(harness.errors.empty(),
+             harness.errors.join(QStringLiteral("; ")).toUtf8().constData());
+    QFile pdf(harness.savePath);
+    QVERIFY(pdf.open(QIODevice::ReadOnly));
+    QVERIFY(pdf.readAll().startsWith("%PDF"));
+
+    harness.savePath = directory.filePath(QStringLiteral("plot.svg"));
+    window.findChild<QAction*>("exportPlotSvgAction")->trigger();
+    QVERIFY2(harness.errors.empty(),
+             harness.errors.join(QStringLiteral("; ")).toUtf8().constData());
+    const QString svg = readText(harness.savePath);
+    QVERIFY(svg.contains(QStringLiteral("<svg")));
+    QVERIFY(!svg.contains(QStringLiteral("<image")));
     QVERIFY(window.close());
   }
 

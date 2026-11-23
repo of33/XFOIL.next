@@ -40,6 +40,7 @@
 #include "app/DatFileReader.h"
 #include "xfoil/PolarText.h"
 #include "xfoil/io/DxfExport.h"
+#include "xfoil/io/ExportFormats.h"
 
 namespace xfoil::gui::app {
 namespace {
@@ -78,6 +79,28 @@ FileWriteResult checkTarget(const std::filesystem::path& path,
   }
   if (exists && !overwriteExisting) {
     return {false, "The output file already exists."};
+  }
+  return {true, {}};
+}
+
+FileWriteResult writeBytes(const std::filesystem::path& path,
+                           std::string_view bytes,
+                           bool overwriteExisting) {
+  const FileWriteResult target = checkTarget(path, overwriteExisting);
+  if (!target.success) {
+    return target;
+  }
+  QSaveFile file(QString::fromStdString(path.string()));
+  if (!file.open(QIODevice::WriteOnly)) {
+    return {false, file.errorString().toStdString()};
+  }
+  if (file.write(bytes.data(), static_cast<qint64>(bytes.size())) !=
+      static_cast<qint64>(bytes.size())) {
+    file.cancelWriting();
+    return {false, file.errorString().toStdString()};
+  }
+  if (!file.commit()) {
+    return {false, file.errorString().toStdString()};
   }
   return {true, {}};
 }
@@ -211,31 +234,43 @@ Result<PolarData> readPolarFile(const std::filesystem::path& path) {
                        static_cast<std::size_t>(bytes.size())));
 }
 
+Result<std::string> encodePressureDumpText(
+    const PressureExportData& data) {
+  if (data.x.empty() || data.x.size() != data.gam.size()) {
+    return Result<std::string>::fail(Error::make(
+        ErrorCategory::invalidState, "pressure.export.incomplete",
+        "Pressure export data is incomplete", "app.export"));
+  }
+  io::PressureDumpInput input;
+  input.n = data.x.size();
+  input.delimiter = io::DumpDelimiter::kBlank;
+  input.minf = data.machNumber;
+  input.qinf = data.qinf;
+  input.x = data.x;
+  input.gam = data.gam;
+  return Result<std::string>::ok(io::pressureDumpText(input));
+}
+
 FileWriteResult savePolarFile(const std::filesystem::path& path,
                               const PolarData& polar,
                               bool overwriteExisting) {
-  const FileWriteResult target = checkTarget(path, overwriteExisting);
-  if (!target.success) {
-    return target;
-  }
   const Result<std::string> encoded = xfoil::encodePolarText(polar);
   if (encoded.isErr()) {
     return {false, encoded.error().message};
   }
-  QSaveFile file(QString::fromStdString(path.string()));
-  if (!file.open(QIODevice::WriteOnly)) {
-    return {false, file.errorString().toStdString()};
-  }
-  const std::string& text = encoded.value();
-  if (file.write(text.data(), static_cast<qint64>(text.size())) !=
-      static_cast<qint64>(text.size())) {
-    file.cancelWriting();
-    return {false, file.errorString().toStdString()};
-  }
-  if (!file.commit()) {
-    return {false, file.errorString().toStdString()};
-  }
-  return {true, {}};
+  return writeBytes(path, encoded.value(), overwriteExisting);
+}
+
+FileWriteResult saveTextFile(const std::filesystem::path& path,
+                             std::string_view text,
+                             bool overwriteExisting) {
+  return writeBytes(path, text, overwriteExisting);
+}
+
+FileWriteResult saveBinaryFile(const std::filesystem::path& path,
+                               std::string_view bytes,
+                               bool overwriteExisting) {
+  return writeBytes(path, bytes, overwriteExisting);
 }
 
 }  // namespace xfoil::gui::app

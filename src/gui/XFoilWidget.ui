@@ -1228,6 +1228,35 @@
           </item>
          </layout>
         </widget>
+        <widget class="QWidget" name="reportPage">
+         <attribute name="title">
+          <string>Report</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="reportLayout">
+          <item>
+           <widget class="QPlainTextEdit" name="reportView">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+            <property name="placeholderText">
+             <string>No analysis result</string>
+            </property>
+            <property name="accessibleName">
+             <string>Analysis report</string>
+            </property>
+            <property name="toolTip">
+             <string>Structured operating-point and sequence report. This view is not a file format.</string>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>1</horstretch>
+              <verstretch>1</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
        </widget>
       </item>
       <item>

@@ -91,6 +91,23 @@ FileWriteResult savePolarFile(const std::filesystem::path& path,
                               const PolarData& polar,
                               bool overwriteExisting);
 
+// Encodes the owning pressure projection through the existing CPDUMP text
+// encoder. No file is touched and no interpolation is performed.
+[[nodiscard]]
+Result<std::string> encodePressureDumpText(const PressureExportData& data);
+
+// Writes app-owned text/binary bytes without interpreting the format.
+// The widget produced these bytes in memory; no extension is appended.
+[[nodiscard]]
+FileWriteResult saveTextFile(const std::filesystem::path& path,
+                             std::string_view text,
+                             bool overwriteExisting);
+
+[[nodiscard]]
+FileWriteResult saveBinaryFile(const std::filesystem::path& path,
+                               std::string_view bytes,
+                               bool overwriteExisting);
+
 }  // namespace xfoil::gui::app
 
 // End: src/gui/app/GuiFileAdapters.h

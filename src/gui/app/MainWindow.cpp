@@ -99,6 +99,22 @@ QString polarSaveFilter() {
   return QStringLiteral("Polar files (*.pol);;All files (*)");
 }
 
+QString cpSaveFilter() {
+  return QStringLiteral("Pressure text (*.txt);;All files (*)");
+}
+
+QString pngSaveFilter() {
+  return QStringLiteral("PNG image (*.png);;All files (*)");
+}
+
+QString pdfSaveFilter() {
+  return QStringLiteral("PDF document (*.pdf);;All files (*)");
+}
+
+QString svgSaveFilter() {
+  return QStringLiteral("SVG vector image (*.svg);;All files (*)");
+}
+
 std::filesystem::path toPath(const QString& path) {
   return std::filesystem::path(path.toStdString());
 }
@@ -205,6 +221,10 @@ MainWindow::MainWindow(Dependencies dependencies, QWidget* parent)
           [this](const DetailedSequenceResult&) { updateAppActions(); });
   connect(widget_, &XFoilWidget::comparisonPolarsChanged, this,
           [this]() { updateAppActions(); });
+  connect(widget_, &XFoilWidget::activePlotChanged, this,
+          [this]() { updateAppActions(); });
+  connect(widget_, &XFoilWidget::resultSelectionChanged, this,
+          [this]() { updateAppActions(); });
   connect(widget_, &XFoilWidget::stateChanged, this,
           [this](XFoilGuiState) {
             updateAppActions();
@@ -269,6 +289,29 @@ void MainWindow::createActions() {
   connect(exportComparisonPolarAction_, &QAction::triggered, this,
           [this](bool) { exportComparisonPolarDialog(); });
 
+  exportCpAction_ = new QAction(QStringLiteral("Export &Pressure (Cp)..."), this);
+  exportCpAction_->setObjectName(QStringLiteral("exportCpAction"));
+  connect(exportCpAction_, &QAction::triggered, this,
+          [this](bool) { exportCpDialog(); });
+
+  exportPlotPngAction_ =
+      new QAction(QStringLiteral("Export Active Plot as &PNG..."), this);
+  exportPlotPngAction_->setObjectName(QStringLiteral("exportPlotPngAction"));
+  connect(exportPlotPngAction_, &QAction::triggered, this,
+          [this](bool) { exportPlotPngDialog(); });
+
+  exportPlotPdfAction_ =
+      new QAction(QStringLiteral("Export Active Plot as P&DF..."), this);
+  exportPlotPdfAction_->setObjectName(QStringLiteral("exportPlotPdfAction"));
+  connect(exportPlotPdfAction_, &QAction::triggered, this,
+          [this](bool) { exportPlotPdfDialog(); });
+
+  exportPlotSvgAction_ =
+      new QAction(QStringLiteral("Export Active Plot as S&VG..."), this);
+  exportPlotSvgAction_->setObjectName(QStringLiteral("exportPlotSvgAction"));
+  connect(exportPlotSvgAction_, &QAction::triggered, this,
+          [this](bool) { exportPlotSvgDialog(); });
+
   exitAction_ = new QAction(QStringLiteral("E&xit"), this);
   exitAction_->setObjectName(QStringLiteral("exitAction"));
   exitAction_->setShortcut(QKeySequence::Quit);
@@ -291,6 +334,11 @@ void MainWindow::createMenusAndToolBar() {
   fileMenu_->addAction(importPolarAction_);
   fileMenu_->addAction(exportCurrentPolarAction_);
   fileMenu_->addAction(exportComparisonPolarAction_);
+  fileMenu_->addSeparator();
+  fileMenu_->addAction(exportCpAction_);
+  fileMenu_->addAction(exportPlotPngAction_);
+  fileMenu_->addAction(exportPlotPdfAction_);
+  fileMenu_->addAction(exportPlotSvgAction_);
   recentFilesMenu_ = fileMenu_->addMenu(QStringLiteral("Recent Files"));
   recentFilesMenu_->setObjectName(QStringLiteral("recentFilesMenu"));
   fileMenu_->addSeparator();
@@ -357,6 +405,12 @@ void MainWindow::updateAppActions() {
       widget_ != nullptr && widget_->currentPolar().has_value());
   exportComparisonPolarAction_->setEnabled(
       widget_ != nullptr && widget_->selectedComparisonPolar().has_value());
+  exportCpAction_->setEnabled(widget_ != nullptr &&
+                              widget_->hasCurrentCp());
+  const bool activePlot = widget_ != nullptr && widget_->hasActivePlot();
+  exportPlotPngAction_->setEnabled(activePlot);
+  exportPlotPdfAction_->setEnabled(activePlot);
+  exportPlotSvgAction_->setEnabled(activePlot);
 }
 
 void MainWindow::updateRecentMenu() {
@@ -612,6 +666,121 @@ void MainWindow::exportComparisonPolarDialog() {
       savePolarFile(toPath(*path), *polar, true);
   if (!written.success) {
     showError(QStringLiteral("Export Comparison Polar"),
+              QString::fromStdString(written.message));
+    return;
+  }
+  statusBar()->showMessage(
+      QStringLiteral("Exported %1").arg(QFileInfo(*path).fileName()));
+}
+
+void MainWindow::exportCpDialog() {
+  const std::optional<PressureExportData> data =
+      widget_->selectedPressureExport();
+  if (!data.has_value()) {
+    showError(QStringLiteral("Export Pressure (Cp)"),
+              QStringLiteral("No selected operating point has pressure "
+                             "export data."));
+    return;
+  }
+  const Result<std::string> encoded = encodePressureDumpText(*data);
+  if (encoded.isErr()) {
+    showError(QStringLiteral("Export Pressure (Cp)"),
+              QString::fromStdString(encoded.error().message));
+    return;
+  }
+  QString suggested = QString::fromStdString(
+      std::string(widget_->geometry().has_value()
+                      ? widget_->geometry()->name()
+                      : std::string_view{}));
+  if (suggested.isEmpty()) {
+    suggested = QStringLiteral("xfoil");
+  }
+  suggested += QStringLiteral("_cp.txt");
+  const std::optional<QString> path = chooseFile(
+      FileDialogMode::save, QStringLiteral("Export Pressure (Cp)"),
+      cpSaveFilter(), suggested);
+  if (!path.has_value()) {
+    return;
+  }
+  const FileWriteResult written =
+      saveTextFile(toPath(*path), encoded.value(), true);
+  if (!written.success) {
+    showError(QStringLiteral("Export Pressure (Cp)"),
+              QString::fromStdString(written.message));
+    return;
+  }
+  statusBar()->showMessage(
+      QStringLiteral("Exported %1").arg(QFileInfo(*path).fileName()));
+}
+
+void MainWindow::exportPlotPngDialog() {
+  const Result<std::string> encoded = widget_->activePlotPng();
+  if (encoded.isErr()) {
+    showError(QStringLiteral("Export PNG"),
+              QString::fromStdString(encoded.error().message));
+    return;
+  }
+  QString suggested = QStringLiteral("xfoil_plot.png");
+  const std::optional<QString> path = chooseFile(
+      FileDialogMode::save, QStringLiteral("Export Active Plot as PNG"),
+      pngSaveFilter(), suggested);
+  if (!path.has_value()) {
+    return;
+  }
+  const FileWriteResult written =
+      saveBinaryFile(toPath(*path), encoded.value(), true);
+  if (!written.success) {
+    showError(QStringLiteral("Export PNG"),
+              QString::fromStdString(written.message));
+    return;
+  }
+  statusBar()->showMessage(
+      QStringLiteral("Exported %1").arg(QFileInfo(*path).fileName()));
+}
+
+void MainWindow::exportPlotPdfDialog() {
+  const Result<std::string> encoded = widget_->activePlotPdf();
+  if (encoded.isErr()) {
+    showError(QStringLiteral("Export PDF"),
+              QString::fromStdString(encoded.error().message));
+    return;
+  }
+  QString suggested = QStringLiteral("xfoil_plot.pdf");
+  const std::optional<QString> path = chooseFile(
+      FileDialogMode::save, QStringLiteral("Export Active Plot as PDF"),
+      pdfSaveFilter(), suggested);
+  if (!path.has_value()) {
+    return;
+  }
+  const FileWriteResult written =
+      saveBinaryFile(toPath(*path), encoded.value(), true);
+  if (!written.success) {
+    showError(QStringLiteral("Export PDF"),
+              QString::fromStdString(written.message));
+    return;
+  }
+  statusBar()->showMessage(
+      QStringLiteral("Exported %1").arg(QFileInfo(*path).fileName()));
+}
+
+void MainWindow::exportPlotSvgDialog() {
+  const Result<std::string> encoded = widget_->activePlotSvg();
+  if (encoded.isErr()) {
+    showError(QStringLiteral("Export SVG"),
+              QString::fromStdString(encoded.error().message));
+    return;
+  }
+  QString suggested = QStringLiteral("xfoil_plot.svg");
+  const std::optional<QString> path = chooseFile(
+      FileDialogMode::save, QStringLiteral("Export Active Plot as SVG"),
+      svgSaveFilter(), suggested);
+  if (!path.has_value()) {
+    return;
+  }
+  const FileWriteResult written =
+      saveBinaryFile(toPath(*path), encoded.value(), true);
+  if (!written.success) {
+    showError(QStringLiteral("Export SVG"),
               QString::fromStdString(written.message));
     return;
   }

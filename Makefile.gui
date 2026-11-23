@@ -128,6 +128,7 @@ QT_SYSTEM_INCLUDES := \
 	-isystem $(QT_INCLUDE_DIR)/QtGui \
 	-isystem $(QT_INCLUDE_DIR)/QtWidgets \
 	-isystem $(QT_INCLUDE_DIR)/QtPrintSupport \
+	-isystem $(QT_INCLUDE_DIR)/QtSvg \
 	-isystem $(QT_INCLUDE_DIR)/QtTest
 QT_MOC_INCLUDES := \
 	-I$(QT_INCLUDE_DIR) \
@@ -135,19 +136,21 @@ QT_MOC_INCLUDES := \
 	-I$(QT_INCLUDE_DIR)/QtGui \
 	-I$(QT_INCLUDE_DIR)/QtWidgets \
 	-I$(QT_INCLUDE_DIR)/QtPrintSupport \
+	-I$(QT_INCLUDE_DIR)/QtSvg \
 	-I$(QT_INCLUDE_DIR)/QtTest
 QT_DEFINES := \
 	-DQT_CORE_LIB \
 	-DQT_GUI_LIB \
 	-DQT_WIDGETS_LIB \
 	-DQT_PRINTSUPPORT_LIB \
+	-DQT_SVG_LIB \
 	-DQT_TESTLIB_LIB
 GUI_INCLUDES := -I. -Iinclude -Isrc -Isrc/gui -I$(GUI_GEN_DIR) $(QT_SYSTEM_INCLUDES)
 GUI_FLAGS := $(CXXSTD) $(GUI_INCLUDES) $(QT_DEFINES) $(GUI_WARNINGS) \
 	$(GUI_MODE_FLAGS) -fPIC
 GUI_MOC_FLAGS := $(QT_DEFINES) -Iinclude -Isrc -Isrc/gui $(QT_MOC_INCLUDES)
 GUI_QT_LIBS := -L$(QT_LIB_DIR) -lQt6Widgets -lQt6Gui -lQt6Core \
-	-lQt6PrintSupport
+	-lQt6PrintSupport -lQt6Svg
 GUI_TEST_LIBS := $(GUI_QT_LIBS) -lQt6Test
 
 QCP_DIR := src/gui/3rdparty/qcustomplot-2.1.1
@@ -203,6 +206,7 @@ GUI_TEST_OBJS := \
 	$(GUI_OBJ_DIR)/tests/GuiAnalysisWorkerTests.o \
 	$(GUI_OBJ_DIR)/tests/XFoilWidgetG6bTests.o \
 	$(GUI_OBJ_DIR)/tests/XFoilWidgetG6cTests.o \
+	$(GUI_OBJ_DIR)/tests/XFoilWidgetG6dTests.o \
 	$(GUI_OBJ_DIR)/tests/XFoilWidgetShellTests.o \
 	$(GUI_OBJ_DIR)/tests/app/GuiFileAdaptersTests.o \
 	$(GUI_OBJ_DIR)/tests/app/MainWindowTests.o \
@@ -336,7 +340,7 @@ $(GUI_OBJ_DIR)/XFoilWidget.o: src/gui/XFoilWidget.cpp \
 		src/gui/worker/GuiAnalysisWorker.h \
 		$(GUI_GEN_DIR)/ui_XFoilWidget.h | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
-	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
 
 $(GUI_OBJ_DIR)/model/GuiDefinitionModel.o: \
 		src/gui/model/GuiDefinitionModel.cpp \
@@ -533,6 +537,12 @@ $(GUI_OBJ_DIR)/tests/XFoilWidgetG6bTests.o: \
 $(GUI_OBJ_DIR)/tests/XFoilWidgetG6cTests.o: \
 		tests/gui/XFoilWidgetG6cTests.cpp \
 		$(GUI_GEN_DIR)/XFoilWidgetG6cTests.moc | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/tests/XFoilWidgetG6dTests.o: \
+		tests/gui/XFoilWidgetG6dTests.cpp \
+		$(GUI_GEN_DIR)/XFoilWidgetG6dTests.moc | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
 
