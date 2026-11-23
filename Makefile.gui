@@ -104,7 +104,7 @@ GUI_TEST_DIR := $(GUI_MODE_DIR)/tests
 GUI_STAMP := $(GUI_MODE_DIR)/.qt-$(GUI_VARIANT).stamp
 
 ifeq ($(GUI_MODE),release)
-GUI_MODE_FLAGS := -O3 -DNDEBUG
+GUI_MODE_FLAGS := -O3 -DNDEBUG -DQT_NO_DEBUG
 else
 GUI_MODE_FLAGS := -O0 -g3
 endif
