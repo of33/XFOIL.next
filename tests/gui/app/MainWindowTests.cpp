@@ -254,7 +254,11 @@ class MainWindowTests : public QObject {
              harness.errors.join(QStringLiteral("; ")).toUtf8().constData());
     QFile pdf(harness.savePath);
     QVERIFY(pdf.open(QIODevice::ReadOnly));
-    QVERIFY(pdf.readAll().startsWith("%PDF"));
+    const QByteArray pdfBytes = pdf.readAll();
+    QVERIFY(pdfBytes.startsWith("%PDF"));
+    QVERIFY(!pdfBytes.contains("C:\\Users"));
+    QVERIFY(!pdfBytes.contains("/local/"));
+    QVERIFY(!pdfBytes.contains("g6d-accept"));
 
     harness.savePath = directory.filePath(QStringLiteral("plot.svg"));
     window.findChild<QAction*>("exportPlotSvgAction")->trigger();
@@ -263,6 +267,9 @@ class MainWindowTests : public QObject {
     const QString svg = readText(harness.savePath);
     QVERIFY(svg.contains(QStringLiteral("<svg")));
     QVERIFY(!svg.contains(QStringLiteral("<image")));
+    QVERIFY(!svg.contains(QStringLiteral("C:\\Users")));
+    QVERIFY(!svg.contains(QStringLiteral("/local/")));
+    QVERIFY(!svg.contains(QStringLiteral("g6d-accept")));
     QVERIFY(window.close());
   }
 
