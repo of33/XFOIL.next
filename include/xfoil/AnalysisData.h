@@ -72,6 +72,17 @@ struct SurfaceDistribution {
   std::vector<double> cp;
 };
 
+// Owning projection of the canonical CPDUMP input for this point.
+// x and gam are aligned panel arrays; machNumber/qinf are the existing
+// CPDUMP flow values. The GUI and app adapters feed this value directly to
+// the existing pressureDumpText encoder without recomputation.
+struct PressureExportData {
+  double machNumber{0.0};
+  double qinf{0.0};
+  std::vector<double> x;
+  std::vector<double> gam;
+};
+
 // Detailed result of one analysis point. This is an additive detail type;
 // the existing lightweight xfoil::AnalysisResult remains source-compatible.
 // Angles are degrees, coefficients are dimensionless, x positions are
@@ -101,6 +112,8 @@ struct OperatingPointData {
   // separate BL-station data set from the panel-node Cp distribution.
   // Present iff dragCoefficientFriction is present.
   std::optional<SkinFrictionDistribution> skinFriction;
+  // Present when the session has a complete panel/GAM state for CPDUMP.
+  std::optional<PressureExportData> pressureExport;
 };
 
 }  // namespace xfoil

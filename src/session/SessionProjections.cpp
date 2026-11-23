@@ -348,6 +348,17 @@ Result<OperatingPointData> projectLastOperatingPoint(
   }
   point.surface = surface.value();
   point.diagnostics = diagnosticsFromResult(result);
+
+  const auto& panel = session.paneling.panel;
+  const auto& gam = session.viscous.viscals.gam;
+  if (!panel.x.empty() && gam.size() == panel.x.size()) {
+    PressureExportData exportData;
+    exportData.machNumber = session.viscous.viscals.minf;
+    exportData.qinf = session.operating.qinf;
+    exportData.x = panel.x;
+    exportData.gam = gam;
+    point.pressureExport = std::move(exportData);
+  }
   return Result<OperatingPointData>::ok(std::move(point));
 }
 

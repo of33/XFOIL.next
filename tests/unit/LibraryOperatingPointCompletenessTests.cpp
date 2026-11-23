@@ -33,6 +33,7 @@
 #include "xfoil/AnalysisResult.h"
 #include "xfoil/Result.h"
 #include "xfoil/SkinFriction.h"
+#include "xfoil/io/ExportFormats.h"
 #include "xfoil/session/SessionProjections.h"
 #include "xfoil/session/SessionState.h"
 
@@ -82,6 +83,9 @@ void setSuccessfulPoint(xfoil::session::SessionComposition& session,
   session.result.lastDiagnostics.viscalRan = viscous;
   session.viscous.cpi = {1.0, 0.9, 0.8, 0.7};
   session.viscous.cpv = {1.1, 1.0, 0.9, 0.8};
+  session.viscous.viscals.gam = {-0.1, 0.4, -0.2, 0.3};
+  session.viscous.viscals.minf = 0.12;
+  session.operating.qinf = 1.0;
   if (!viscous) {
     return;
   }
@@ -136,7 +140,13 @@ TEST(unit, LibraryOperatingPointCompletenessDefaultsAndOwnership) {
   OperatingPointData point;
   CHECK(!point.dragCoefficientFriction.has_value());
   CHECK(!point.skinFriction.has_value());
+  CHECK(!point.pressureExport.has_value());
 
+  point.pressureExport.emplace();
+  point.pressureExport->machNumber = 0.12;
+  point.pressureExport->qinf = 1.0;
+  point.pressureExport->x = {0.0, 1.0};
+  point.pressureExport->gam = {0.2, -0.2};
   point.dragCoefficientFriction = 0.004;
   point.skinFriction.emplace();
   point.skinFriction->upper.side = SurfaceSide::upper;
@@ -149,13 +159,18 @@ TEST(unit, LibraryOperatingPointCompletenessDefaultsAndOwnership) {
   OperatingPointData copy = point;
   CHECK(copy.dragCoefficientFriction.has_value());
   CHECK(copy.skinFriction.has_value());
+  CHECK(copy.pressureExport.has_value());
+  CHECK_EQ(copy.pressureExport->x.size(), std::size_t{2});
   CHECK_EQ(copy.skinFriction->upper.cf.size(), std::size_t{2});
   point.skinFriction->upper.cf[0] = 99.0;
+  point.pressureExport->x[0] = 99.0;
   CHECK_NEAR(copy.skinFriction->upper.cf[0], 0.1, 0.0, 0.0);
+  CHECK_NEAR(copy.pressureExport->x[0], 0.0, 0.0, 0.0);
 
   OperatingPointData moved = std::move(copy);
   CHECK(moved.dragCoefficientFriction.has_value());
   CHECK(moved.skinFriction.has_value());
+  CHECK(moved.pressureExport.has_value());
 }
 
 TEST(unit, LibraryOperatingPointCompletenessViscousProjection) {
@@ -170,6 +185,21 @@ TEST(unit, LibraryOperatingPointCompletenessViscousProjection) {
   CHECK(projected.isOk());
   CHECK(projected.value().dragCoefficientFriction.has_value());
   CHECK(projected.value().skinFriction.has_value());
+  CHECK(projected.value().pressureExport.has_value());
+  CHECK_EQ(projected.value().pressureExport->x.size(), std::size_t{4});
+  CHECK_EQ(projected.value().pressureExport->gam.size(), std::size_t{4});
+  CHECK_NEAR(projected.value().pressureExport->machNumber, 0.12, 0.0, 0.0);
+  CHECK_NEAR(projected.value().pressureExport->qinf, 1.0, 0.0, 0.0);
+  const auto cpText = xfoil::io::pressureDumpText(
+      xfoil::io::PressureDumpInput{4,
+          xfoil::io::DumpDelimiter::kBlank,
+          projected.value().pressureExport->machNumber,
+          projected.value().pressureExport->qinf,
+          projected.value().pressureExport->x,
+          projected.value().pressureExport->gam});
+  CHECK(cpText.find("#      x          Cp") == 0);
+  CHECK_EQ(cpText.find('\n', cpText.find('\n') + 1) != std::string::npos,
+           true);
   CHECK_NEAR(projected.value().dragCoefficientFriction.value(),
              session.viscous.viscals.cdf, 0.0, 0.0);
   expectSameDistribution(projected.value().skinFriction.value(),
@@ -194,6 +224,7 @@ TEST(unit, LibraryOperatingPointCompletenessInviscidHasNoDragDetails) {
   CHECK(!projected.value().dragCoefficientPressure.has_value());
   CHECK(!projected.value().dragCoefficientFriction.has_value());
   CHECK(!projected.value().skinFriction.has_value());
+  CHECK(projected.value().pressureExport.has_value());
 }
 
 TEST(unit, LibraryOperatingPointCompletenessRejectsInvalidCdf) {
