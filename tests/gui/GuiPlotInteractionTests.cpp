@@ -47,6 +47,7 @@
 
 namespace {
 
+using xfoil::SurfaceGeometry;
 using xfoil::gui::GeometryPlotView;
 using xfoil::gui::GuiPointEntry;
 using xfoil::gui::GuiScalarPlotKind;
@@ -332,34 +333,48 @@ class GuiPlotInteractionTests : public QObject {
     QCOMPARE(bar->value(), before);
   }
 
-  void geometryCtrlRightTogglesSampleMarkersOnly() {
+  void geometryCtrlRightTogglesPanelTicksOnly() {
     GeometryPlotView view;
     view.resize(640, 480);
     view.show();
     QCoreApplication::processEvents();
-    view.setGeometry(diamond());
+    const xfoil::geometry::AirfoilGeometry geometry = diamond();
+    view.setGeometry(geometry);
+    SurfaceGeometry panel;
+    for (const xfoil::Point2D& point : geometry.coordinates()) {
+      panel.points.push_back(point);
+    }
+    view.setPanelGeometry(panel);
+    view.setShowPaneling(true);
     QCustomPlot* plot = canvas(view);
     const QCPRange beforeX = plot->xAxis->range();
     const QPoint center = centerOf(plot);
-    sendMouse(plot, QEvent::MouseButtonPress, center, Qt::RightButton,
-              Qt::RightButton, Qt::ControlModifier);
-    sendMouse(plot, QEvent::MouseButtonRelease, center, Qt::RightButton,
-              Qt::NoButton, Qt::ControlModifier);
-    QVERIFY(view.sampleMarkersEnabled());
     QCPCurve* contour =
         plot->findChild<QCPCurve*>(QStringLiteral("geometryContour"));
+    QCPCurve* ticks =
+        plot->findChild<QCPCurve*>(QStringLiteral("panelTicks"));
     QVERIFY(contour != nullptr);
-    QCOMPARE(contour->scatterStyle().shape(),
-             QCPScatterStyle::ssCircle);
-    QCOMPARE(plot->xAxis->range().lower, beforeX.lower);
-    QCOMPARE(plot->xAxis->range().upper, beforeX.upper);
+    QVERIFY(ticks != nullptr);
+    QCOMPARE(contour->scatterStyle().shape(), QCPScatterStyle::ssNone);
+    QVERIFY(ticks->visible());
+
     sendMouse(plot, QEvent::MouseButtonPress, center, Qt::RightButton,
               Qt::RightButton, Qt::ControlModifier);
     sendMouse(plot, QEvent::MouseButtonRelease, center, Qt::RightButton,
               Qt::NoButton, Qt::ControlModifier);
-    QVERIFY(!view.sampleMarkersEnabled());
-    QCOMPARE(contour->scatterStyle().shape(),
-             QCPScatterStyle::ssNone);
+    QVERIFY(!view.panelNodesVisible());
+    QVERIFY(!ticks->visible());
+    QCOMPARE(contour->scatterStyle().shape(), QCPScatterStyle::ssNone);
+    QCOMPARE(plot->xAxis->range().lower, beforeX.lower);
+    QCOMPARE(plot->xAxis->range().upper, beforeX.upper);
+
+    sendMouse(plot, QEvent::MouseButtonPress, center, Qt::RightButton,
+              Qt::RightButton, Qt::ControlModifier);
+    sendMouse(plot, QEvent::MouseButtonRelease, center, Qt::RightButton,
+              Qt::NoButton, Qt::ControlModifier);
+    QVERIFY(view.panelNodesVisible());
+    QVERIFY(ticks->visible());
+    QCOMPARE(contour->scatterStyle().shape(), QCPScatterStyle::ssNone);
   }
 
   void instancesAreIndependent() {
@@ -390,25 +405,34 @@ class GuiPlotInteractionTests : public QObject {
     QCOMPARE(secondPlot->xAxis->range().upper, secondBefore.upper);
   }
 
-  void airfoilPanZoomKeepsEqualAspect() {
+  void airfoilPanAndWheelChangeRangesWithoutAspectLock() {
     GeometryPlotView view;
     view.resize(640, 480);
     view.show();
     QCoreApplication::processEvents();
     view.setGeometry(diamond());
     QCustomPlot* plot = canvas(view);
+    QVERIFY(scaleDifference(plot) > 1.0);
+
     const QPoint center = centerOf(plot);
+    const QCPRange beforeX = plot->xAxis->range();
+    const QCPRange beforeY = plot->yAxis->range();
     sendMouse(plot, QEvent::MouseButtonPress, center, Qt::LeftButton,
               Qt::LeftButton);
     sendMouse(plot, QEvent::MouseMove, center + QPoint(50, 30), Qt::NoButton,
               Qt::LeftButton);
     sendMouse(plot, QEvent::MouseButtonRelease, center + QPoint(50, 30),
               Qt::LeftButton, Qt::NoButton);
-    QVERIFY(scaleDifference(plot) <=
-            1.0e-6 * std::max(1.0, plot->xAxis->range().size()));
+    QVERIFY(plot->xAxis->range() != beforeX);
+    QVERIFY(plot->yAxis->range() != beforeY);
+    QVERIFY(scaleDifference(plot) > 1.0);
+
+    const QCPRange afterPanX = plot->xAxis->range();
+    const QCPRange afterPanY = plot->yAxis->range();
     sendWheel(plot, center, 120);
-    QVERIFY(scaleDifference(plot) <=
-            1.0e-6 * std::max(1.0, plot->xAxis->range().size()));
+    QVERIFY(plot->xAxis->range().size() < afterPanX.size());
+    QVERIFY(plot->yAxis->range().size() < afterPanY.size());
+    QVERIFY(scaleDifference(plot) > 1.0);
   }
 };
 

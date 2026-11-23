@@ -215,7 +215,7 @@ class XFoilWidgetG6bTests : public QObject {
     QCOMPARE(spin(widget, "viscousAccelerationSpin")->value(),
              configuration.viscousAcceleration);
     QVERIFY(check(widget, "showPanelingCheckBox")->isChecked() == false);
-    QVERIFY(check(widget, "showPanelNodesCheck")->isChecked());
+    QVERIFY(widget.viewOptions().showPanelNodes);
   }
 
   void applySetupBeforeShowRoundTripsAllFields() {
@@ -292,7 +292,7 @@ class XFoilWidgetG6bTests : public QObject {
     XFoilWidget first;
     QVERIFY(first.applySetup(memory).isOk());
     QCOMPARE(combo(first, "geometrySourceCombo")->currentText(),
-             QStringLiteral("Memory"));
+             QStringLiteral("File"));
     QVERIFY(first.geometry().has_value());
     QVERIFY(first.currentSetup().has_value());
     QVERIFY(std::holds_alternative<MemoryGeometrySetup>(
@@ -565,8 +565,8 @@ class XFoilWidgetG6bTests : public QObject {
     QVERIFY(plot != nullptr);
     auto* contour = plot->findChild<QCPCurve*>("panelContour");
     auto* ticks = plot->findChild<QCPCurve*>("panelTicks");
-    auto* nodes = plot->findChild<QCPGraph*>("panelNodes");
-    QVERIFY(contour != nullptr && ticks != nullptr && nodes != nullptr);
+    QVERIFY(contour != nullptr && ticks != nullptr);
+    QVERIFY(plot->findChild<QCPGraph*>("panelNodes") == nullptr);
     QVERIFY(!contour->visible());
     QVERIFY(!ticks->visible());
 
@@ -577,7 +577,6 @@ class XFoilWidgetG6bTests : public QObject {
     QVERIFY(contour->visible());
     QVERIFY(ticks->visible());
     QVERIFY(ticks->dataCount() > 0);
-    QVERIFY(nodes->visible());
     QVERIFY(contour->pen().color().red() > 180);
     QVERIFY(contour->pen().color().green() < 80);
     QCOMPARE(geometry.count(), 0);

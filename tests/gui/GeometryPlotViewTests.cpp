@@ -22,7 +22,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // File: tests/gui/GeometryPlotViewTests.cpp
-// Offscreen contour, panel-node, clear, aspect and instance tests.
+// Offscreen contour, panel-tick, clear, bounds and instance tests.
 
 #include <cmath>
 #include <limits>
@@ -74,12 +74,6 @@ QCPCurve* curveOf(QCustomPlot* plot, const char* name) {
   return curve;
 }
 
-QCPGraph* graphOf(QCustomPlot* plot, const char* name) {
-  QCPGraph* graph = plot->findChild<QCPGraph*>(QString::fromLatin1(name));
-  Q_ASSERT(graph != nullptr);
-  return graph;
-}
-
 }  // namespace
 
 class GeometryPlotViewTests : public QObject {
@@ -90,7 +84,7 @@ class GeometryPlotViewTests : public QObject {
     QVERIFY(QApplication::instance() != nullptr);
   }
 
-  void drawsContourPanelAndNodes() {
+  void drawsContourPanelAndTicks() {
     GeometryPlotView view;
     view.resize(480, 320);
     view.show();
@@ -106,17 +100,23 @@ class GeometryPlotViewTests : public QObject {
     QVERIFY(view.panelNodesVisible());
 
     QCustomPlot* plot = plotOf(view);
-    QCOMPARE(plot->graphCount(), 1);
-    QCOMPARE(plot->plottableCount(), 4);
+    QCOMPARE(plot->graphCount(), 0);
+    QCOMPARE(plot->plottableCount(), 3);
     QCPCurve* geometryCurve = curveOf(plot, "geometryContour");
     QCPCurve* panelContour = curveOf(plot, "panelContour");
-    QCPGraph* nodes = graphOf(plot, "panelNodes");
+    QCPCurve* panelTicks = curveOf(plot, "panelTicks");
     QCOMPARE(geometryCurve->dataCount(), 6);
     QCOMPARE(panelContour->dataCount(), 6);
-    QCOMPARE(nodes->dataCount(), 5);
+    QVERIFY(view.panelTickCount() > 0);
+    QCOMPARE(panelTicks->dataCount(),
+             static_cast<int>(view.panelTickCount() * 3));
     QVERIFY(geometryCurve->visible());
+    QVERIFY(!panelContour->visible());
+    QVERIFY(!panelTicks->visible());
+
+    view.setShowPaneling(true);
     QVERIFY(panelContour->visible());
-    QVERIFY(nodes->visible());
+    QVERIFY(panelTicks->visible());
     const auto contour = geometryCurve->data();
     auto iterator = contour->constBegin();
     QCOMPARE(iterator->t, 0.0);
@@ -127,11 +127,13 @@ class GeometryPlotViewTests : public QObject {
     QCOMPARE(iterator->key, 0.0);
     QCOMPARE(plot->xAxis->label(), QStringLiteral("x/c"));
     QCOMPARE(plot->yAxis->label(), QStringLiteral("y/c"));
-    QVERIFY(plot->xAxis->range().lower < 0.0);
-    QVERIFY(plot->xAxis->range().upper > 1.0);
+    QCOMPARE(plot->xAxis->range().lower, 0.0);
+    QCOMPARE(plot->xAxis->range().upper, 1.0);
+    QVERIFY(plot->yAxis->range().lower <= -0.09);
+    QVERIFY(plot->yAxis->range().upper >= 0.09);
   }
 
-  void panelNodesToggleAndClear() {
+  void panelTicksToggleAndClear() {
     GeometryPlotView view;
     view.resize(480, 320);
     view.show();
@@ -144,19 +146,20 @@ class GeometryPlotViewTests : public QObject {
 
     QCPCurve* geometryCurve = curveOf(plot, "geometryContour");
     QCPCurve* panelContour = curveOf(plot, "panelContour");
-    QCPGraph* nodes = graphOf(plot, "panelNodes");
+    QCPCurve* panelTicks = curveOf(plot, "panelTicks");
+    view.setShowPaneling(true);
     view.showPanelNodes(false);
     QVERIFY(!view.panelNodesVisible());
-    QVERIFY(!nodes->visible());
+    QVERIFY(!panelTicks->visible());
     view.showPanelNodes(true);
-    QVERIFY(nodes->visible());
+    QVERIFY(panelTicks->visible());
 
     view.clearPanel();
     QCOMPARE(view.panelPointCount(), std::size_t{0});
     QCOMPARE(panelContour->dataCount(), 0);
-    QCOMPARE(nodes->dataCount(), 0);
+    QCOMPARE(panelTicks->dataCount(), 0);
     QVERIFY(!panelContour->visible());
-    QVERIFY(!nodes->visible());
+    QVERIFY(!panelTicks->visible());
     QCOMPARE(view.geometryPointCount(), std::size_t{5});
     QVERIFY(geometryCurve->visible());
 
@@ -173,32 +176,31 @@ class GeometryPlotViewTests : public QObject {
     view.show();
     QCoreApplication::processEvents();
 
-    QVERIFY(view.showPaneling());
+    QVERIFY(!view.showPaneling());
     const AirfoilGeometry geometry = diamond();
     view.setGeometry(geometry);
     view.setPanelGeometry(panelFor(geometry));
     QCustomPlot* plot = plotOf(view);
     QCPCurve* panelContour = curveOf(plot, "panelContour");
     QCPCurve* ticks = curveOf(plot, "panelTicks");
-    QCPGraph* nodes = graphOf(plot, "panelNodes");
-    QVERIFY(panelContour->visible());
-    QVERIFY(ticks->visible());
-    QVERIFY(nodes->visible());
+    QVERIFY(!panelContour->visible());
+    QVERIFY(!ticks->visible());
+    QVERIFY(view.panelNodesVisible());
     QVERIFY(view.panelTickCount() > 0);
     QCOMPARE(ticks->dataCount(),
              static_cast<int>(view.panelTickCount() * 3));
 
-    view.setShowPaneling(false);
-    QVERIFY(!view.showPaneling());
-    QVERIFY(!panelContour->visible());
-    QVERIFY(!ticks->visible());
-    QVERIFY(nodes->visible());
-    view.showPanelNodes(false);
-    QVERIFY(!nodes->visible());
     view.setShowPaneling(true);
     QVERIFY(panelContour->visible());
     QVERIFY(ticks->visible());
-    QVERIFY(!nodes->visible());
+    view.setShowPaneling(false);
+    QVERIFY(!panelContour->visible());
+    QVERIFY(!ticks->visible());
+    view.showPanelNodes(false);
+    QVERIFY(!view.panelNodesVisible());
+    view.setShowPaneling(true);
+    QVERIFY(panelContour->visible());
+    QVERIFY(!ticks->visible());
     QVERIFY(view.panelTickCount() > 0);
   }
 
@@ -271,39 +273,36 @@ class GeometryPlotViewTests : public QObject {
              static_cast<int>(view.panelTickCount() * 3));
   }
 
-  void equalAxisScaleIsMaintained() {
+  void boundsUseXContractAndYMargin() {
     GeometryPlotView view;
     view.resize(480, 320);
     view.show();
     QCoreApplication::processEvents();
 
-    const AirfoilGeometry geometry = diamond();
+    AirfoilGeometry geometry;
+    const std::vector<xfoil::Point2D> points = {
+        {0.02, 0.12}, {0.98, 0.30}, {0.40, -0.05}};
+    QVERIFY(geometry.assign("bounds", points).success());
     view.setGeometry(geometry);
-    view.setPanelGeometry(panelFor(geometry));
     QCustomPlot* plot = plotOf(view);
-    plot->replot();
 
-    const QRect rect = plot->axisRect()->rect();
-    const double xScale =
-        static_cast<double>(rect.width()) / plot->xAxis->range().size();
-    const double yScale =
-        static_cast<double>(rect.height()) / plot->yAxis->range().size();
-    QVERIFY(xScale > 0.0);
-    QVERIFY(yScale > 0.0);
-    const double tolerance = 1.0e-6 * std::max(xScale, yScale);
-    QVERIFY(std::abs(xScale - yScale) <= tolerance);
+    QCOMPARE(plot->xAxis->range().lower, 0.0);
+    QCOMPARE(plot->xAxis->range().upper, 1.0);
+    QVERIFY(std::abs(plot->yAxis->range().lower - (-0.06)) <= 1.0e-12);
+    QVERIFY(std::abs(plot->yAxis->range().upper - 0.31) <= 1.0e-12);
 
     view.resize(320, 480);
     QCoreApplication::processEvents();
-    plot->replot();
-    const QRect resized = plot->axisRect()->rect();
-    const double resizedX =
-        static_cast<double>(resized.width()) / plot->xAxis->range().size();
-    const double resizedY =
-        static_cast<double>(resized.height()) / plot->yAxis->range().size();
-    const double resizedTolerance =
-        1.0e-6 * std::max(resizedX, resizedY);
-    QVERIFY(std::abs(resizedX - resizedY) <= resizedTolerance);
+    QCOMPARE(plot->xAxis->range().lower, 0.0);
+    QCOMPARE(plot->xAxis->range().upper, 1.0);
+    QVERIFY(std::abs(plot->yAxis->range().lower - (-0.06)) <= 1.0e-12);
+    QVERIFY(std::abs(plot->yAxis->range().upper - 0.31) <= 1.0e-12);
+
+    view.clear();
+    QCOMPARE(plot->xAxis->range().lower, 0.0);
+    QCOMPARE(plot->xAxis->range().upper, 1.0);
+    QCOMPARE(plot->yAxis->range().lower, -0.01);
+    QCOMPARE(plot->yAxis->range().upper, 0.01);
   }
 
   void twoViewsStayIndependent() {

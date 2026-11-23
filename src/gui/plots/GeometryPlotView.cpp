@@ -32,21 +32,16 @@
 #include <vector>
 
 #include <QResizeEvent>
+#include <QSizePolicy>
 #include <QVBoxLayout>
 #include <QVector>
 
 #include "plots/InteractivePlotController.h"
+#include "plots/PlotStyle.h"
 #include "qcustomplot.h"
 
 namespace xfoil::gui {
 namespace {
-
-const QColor kSampleColor(42, 118, 188);
-
-QCPScatterStyle sampleStyle() {
-  return QCPScatterStyle(QCPScatterStyle::ssCircle,
-                         QPen(kSampleColor, 1.0), Qt::NoBrush, 4.5);
-}
 
 }  // namespace
 namespace {
@@ -98,24 +93,6 @@ QVector<double> closedY(const std::vector<xfoil::Point2D>& points) {
   return values;
 }
 
-QVector<double> nodeX(const std::vector<xfoil::Point2D>& points) {
-  QVector<double> values;
-  values.reserve(static_cast<int>(points.size()));
-  for (const xfoil::Point2D& point : points) {
-    values.push_back(point.x);
-  }
-  return values;
-}
-
-QVector<double> nodeY(const std::vector<xfoil::Point2D>& points) {
-  QVector<double> values;
-  values.reserve(static_cast<int>(points.size()));
-  for (const xfoil::Point2D& point : points) {
-    values.push_back(point.y);
-  }
-  return values;
-}
-
 void setCurveData(QCPCurve* curve, const QVector<double>& x,
                   const QVector<double>& y) {
   QVector<double> t;
@@ -132,6 +109,8 @@ GeometryPlotView::GeometryPlotView(QWidget* parent) : QWidget(parent) {
   auto* layout = new QVBoxLayout(this);
   layout->setContentsMargins(0, 0, 0, 0);
   plot_ = new QCustomPlot(this);
+  plot_->setMinimumSize(0, 0);
+  plot_->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
   layout->addWidget(plot_);
 
   plot_->setObjectName(QStringLiteral("geometryPlot"));
@@ -141,37 +120,35 @@ GeometryPlotView::GeometryPlotView(QWidget* parent) : QWidget(parent) {
   geometryContour_ = new QCPCurve(plot_->xAxis, plot_->yAxis);
   geometryContour_->setObjectName(QStringLiteral("geometryContour"));
   geometryContour_->setName(QStringLiteral("Geometry contour"));
-  geometryContour_->setPen(QPen(QColor(32, 78, 121), 2.0));
+  geometryContour_->setPen(
+      QPen(QColor(32, 78, 121), kPrimaryLineWidth));
   geometryContour_->setLineStyle(QCPCurve::lsLine);
   geometryContour_->setScatterStyle(QCPScatterStyle::ssNone);
 
   panelContour_ = new QCPCurve(plot_->xAxis, plot_->yAxis);
   panelContour_->setObjectName(QStringLiteral("panelContour"));
   panelContour_->setName(QStringLiteral("Panel contour"));
-  panelContour_->setPen(QPen(QColor(200, 30, 30), 1.5));
+  panelContour_->setPen(
+      QPen(QColor(200, 30, 30), kPanelContourLineWidth));
   panelContour_->setLineStyle(QCPCurve::lsLine);
   panelContour_->setScatterStyle(QCPScatterStyle::ssNone);
 
   panelTicks_ = new QCPCurve(plot_->xAxis, plot_->yAxis);
   panelTicks_->setObjectName(QStringLiteral("panelTicks"));
   panelTicks_->setName(QStringLiteral("Panel node ticks"));
-  panelTicks_->setPen(QPen(QColor(200, 30, 30), 1.0));
+  panelTicks_->setPen(
+      QPen(QColor(200, 30, 30), kPanelTickLineWidth));
   panelTicks_->setLineStyle(QCPCurve::lsLine);
   panelTicks_->setScatterStyle(QCPScatterStyle::ssNone);
 
-  panelNodes_ = plot_->addGraph();
-  panelNodes_->setObjectName(QStringLiteral("panelNodes"));
-  panelNodes_->setName(QStringLiteral("Panel nodes"));
-  panelNodes_->setLineStyle(QCPGraph::lsNone);
-  panelNodes_->setScatterStyle(
-      QCPScatterStyle(QCPScatterStyle::ssDisc, QColor(200, 30, 30), 3.0));
-
-  interaction_ = new InteractivePlotController(plot_, true, true, this);
+  interaction_ = new InteractivePlotController(plot_, false, true, this);
   interaction_->setFitCallback([this]() { fitVisibleData(); });
   interaction_->setMarkerToggleCallback([this]() {
     sampleMarkersEnabled_ = interaction_->sampleMarkersEnabled();
+    panelTicksVisible_ = sampleMarkersEnabled_;
     applySampleMarkers();
   });
+  interaction_->setSampleMarkersEnabled(panelTicksVisible_);
 
   clear();
 }
@@ -193,7 +170,6 @@ void GeometryPlotView::setPanelGeometry(const SurfaceGeometry& panel) {
   panelPointCount_ = panel.points.size();
   hasPanel_ = !panel.points.empty();
   setCurveData(panelContour_, closedX(panel.points), closedY(panel.points));
-  panelNodes_->setData(nodeX(panel.points), nodeY(panel.points));
 
   QVector<double> tickT;
   QVector<double> tickX;
@@ -260,16 +236,19 @@ void GeometryPlotView::setShowPaneling(bool visible) {
 }
 
 void GeometryPlotView::showPanelNodes(bool visible) {
-  panelNodesVisible_ = visible;
-  panelNodes_->setVisible(hasPanel_ && panelNodesVisible_);
+  panelTicksVisible_ = visible;
+  sampleMarkersEnabled_ = visible;
+  if (interaction_ != nullptr) {
+    interaction_->setSampleMarkersEnabled(visible);
+  }
+  updatePanelVisibility();
   plot_->replot();
 }
 
 void GeometryPlotView::updatePanelVisibility() {
   panelContour_->setVisible(hasPanel_ && showPaneling_);
   panelTicks_->setVisible(hasPanel_ && showPaneling_ &&
-                          panelTickCount_ > 0);
-  panelNodes_->setVisible(hasPanel_ && panelNodesVisible_);
+                          panelTicksVisible_ && panelTickCount_ > 0);
 }
 
 void GeometryPlotView::clearPanel() {
@@ -278,10 +257,8 @@ void GeometryPlotView::clearPanel() {
   hasPanel_ = false;
   panelContour_->data()->clear();
   panelTicks_->data()->clear();
-  panelNodes_->data()->clear();
   panelContour_->setVisible(false);
   panelTicks_->setVisible(false);
-  panelNodes_->setVisible(false);
   updateAxes();
 }
 
@@ -294,17 +271,16 @@ void GeometryPlotView::clear() {
   geometryContour_->data()->clear();
   panelContour_->data()->clear();
   panelTicks_->data()->clear();
-  panelNodes_->data()->clear();
   geometryContour_->setVisible(false);
   panelContour_->setVisible(false);
   panelTicks_->setVisible(false);
-  panelNodes_->setVisible(false);
-  updateAxes();
+  plot_->xAxis->setRange(0.0, 1.0);
+  plot_->yAxis->setRange(-0.01, 0.01);
+  plot_->replot();
 }
 
 void GeometryPlotView::resizeEvent(QResizeEvent* event) {
   QWidget::resizeEvent(event);
-  applyEqualAspect();
 }
 
 void GeometryPlotView::fitVisibleData() {
@@ -316,6 +292,7 @@ void GeometryPlotView::fitVisibleData() {
 
 void GeometryPlotView::setSampleMarkersEnabled(bool enabled) {
   sampleMarkersEnabled_ = enabled;
+  panelTicksVisible_ = enabled;
   if (interaction_ != nullptr) {
     interaction_->setSampleMarkersEnabled(enabled);
   }
@@ -323,19 +300,7 @@ void GeometryPlotView::setSampleMarkersEnabled(bool enabled) {
 }
 
 void GeometryPlotView::applySampleMarkers() {
-  const QCPScatterStyle style =
-      sampleMarkersEnabled_ ? sampleStyle()
-                            : QCPScatterStyle(QCPScatterStyle::ssNone);
-  geometryContour_->setScatterStyle(style);
-  panelContour_->setScatterStyle(style);
-  plot_->replot();
-}
-
-void GeometryPlotView::applyEqualAspect() {
-  if (!hasGeometry_ && !hasPanel_) {
-    return;
-  }
-  plot_->yAxis->setScaleRatio(plot_->xAxis, 1.0);
+  updatePanelVisibility();
   plot_->replot();
 }
 
@@ -345,35 +310,36 @@ void GeometryPlotView::updateAxes() {
   if (hasGeometry_) {
     const auto data = geometryContour_->data();
     for (auto it = data->constBegin(); it != data->constEnd(); ++it) {
-      bounds.include(it->key, it->value);
+      if (std::isfinite(it->key) && std::isfinite(it->value)) {
+        bounds.include(it->key, it->value);
+      }
     }
   }
   if (hasPanel_) {
     const auto data = panelContour_->data();
     for (auto it = data->constBegin(); it != data->constEnd(); ++it) {
-      bounds.include(it->key, it->value);
+      if (std::isfinite(it->key) && std::isfinite(it->value)) {
+        bounds.include(it->key, it->value);
+      }
     }
   }
 
   if (!bounds.valid) {
-    bounds.xMinimum = 0.0;
-    bounds.xMaximum = 1.0;
-    bounds.yMinimum = 0.0;
-    bounds.yMaximum = 0.0;
+    plot_->xAxis->setRange(0.0, 1.0);
+    plot_->yAxis->setRange(-0.01, 0.01);
+    plot_->replot();
+    return;
   }
 
-  const double xSpan = std::max(bounds.xMaximum - bounds.xMinimum, 0.1);
-  const double ySpan = std::max(bounds.yMaximum - bounds.yMinimum, 0.1);
-  const double span = std::max({xSpan, ySpan, 0.1});
-  const double padding = span * 0.06 + 0.01;
-  const double xCenter = 0.5 * (bounds.xMinimum + bounds.xMaximum);
-  const double yCenter = 0.5 * (bounds.yMinimum + bounds.yMaximum);
-
-  plot_->xAxis->setRange(xCenter - 0.5 * span - padding,
-                         xCenter + 0.5 * span + padding);
-  plot_->yAxis->setRange(yCenter - 0.5 * span - padding,
-                         yCenter + 0.5 * span + padding);
-  plot_->yAxis->setScaleRatio(plot_->xAxis, 1.0);
+  constexpr double kXContractMinimum = 0.0;
+  constexpr double kXContractMaximum = 1.0;
+  constexpr double kYPad = 0.01;
+  const double xMinimum = std::min(kXContractMinimum, bounds.xMinimum);
+  const double xMaximum = std::max(kXContractMaximum, bounds.xMaximum);
+  const double yMinimum = bounds.yMinimum - kYPad;
+  const double yMaximum = bounds.yMaximum + kYPad;
+  plot_->xAxis->setRange(xMinimum, xMaximum);
+  plot_->yAxis->setRange(yMinimum, yMaximum);
   plot_->replot();
 }
 

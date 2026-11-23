@@ -34,9 +34,11 @@
 
 #include <QPen>
 #include <QVector>
+#include <QSizePolicy>
 #include <QVBoxLayout>
 
 #include "plots/InteractivePlotController.h"
+#include "plots/PlotStyle.h"
 #include "qcustomplot.h"
 
 namespace xfoil::gui {
@@ -156,15 +158,15 @@ ResultPlotView::ResultPlotView(QWidget* parent) : QWidget(parent) {
   upperGraph_ = plot_->addGraph();
   upperGraph_->setObjectName(QStringLiteral("upperDistribution"));
   upperGraph_->setName(QStringLiteral("Upper"));
-  upperGraph_->setPen(QPen(kUpperColor, 1.5));
+  upperGraph_->setPen(QPen(kUpperColor, kPrimaryLineWidth));
   lowerGraph_ = plot_->addGraph();
   lowerGraph_->setObjectName(QStringLiteral("lowerDistribution"));
   lowerGraph_->setName(QStringLiteral("Lower"));
-  lowerGraph_->setPen(QPen(kLowerColor, 1.5));
+  lowerGraph_->setPen(QPen(kLowerColor, kPrimaryLineWidth));
 
   zeroLine_ = new QCPItemStraightLine(plot_);
   zeroLine_->setObjectName(QStringLiteral("zeroLine"));
-  QPen zeroPen(QColor(110, 110, 110), 1.0);
+  QPen zeroPen(QColor(110, 110, 110), kZeroLineWidth);
   zeroPen.setStyle(Qt::DashLine);
   zeroLine_->setPen(zeroPen);
   zeroLine_->setVisible(false);
@@ -312,7 +314,7 @@ void ResultPlotView::applySampleMarkers() {
   const QCPScatterStyle style =
       sampleMarkersEnabled_
           ? QCPScatterStyle(QCPScatterStyle::ssCircle,
-                            QPen(kSampleColor, 1.0), Qt::NoBrush, 4.5)
+                            QPen(kSampleColor, 1.0), Qt::NoBrush, kSampleMarkerSize)
           : QCPScatterStyle(QCPScatterStyle::ssNone);
   if (upperGraph_ != nullptr) {
     upperGraph_->setScatterStyle(style);

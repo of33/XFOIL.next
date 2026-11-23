@@ -112,15 +112,13 @@ class XFoilWidgetG3Tests : public QObject {
 
     auto* analyzeButton =
         widget.findChild<QPushButton*>("analyzeButton");
-    auto* cancelButton = widget.findChild<QPushButton*>("cancelButton");
     auto* progress = widget.findChild<QProgressBar*>("analysisProgressBar");
     auto* status = widget.findChild<QLabel*>("analysisStatusLabel");
     QVERIFY(analyzeButton != nullptr);
-    QVERIFY(cancelButton != nullptr);
     QVERIFY(progress != nullptr);
     QVERIFY(status != nullptr);
+    QCOMPARE(analyzeButton->text(), QStringLiteral("Analyze"));
     QVERIFY(analyzeButton->isEnabled());
-    QVERIFY(!cancelButton->isEnabled());
 
     QSignalSpy started(&widget, &XFoilWidget::analysisStarted);
     QSignalSpy pointSpy(&widget, &XFoilWidget::operatingPointReady);
@@ -131,8 +129,8 @@ class XFoilWidgetG3Tests : public QObject {
     QCOMPARE(started.count(), 1);
     QVERIFY(widget.isRunning());
     QVERIFY(widget.state() == XFoilGuiState::running);
-    QVERIFY(!analyzeButton->isEnabled());
-    QVERIFY(cancelButton->isEnabled());
+    QCOMPARE(analyzeButton->text(), QStringLiteral("Cancel"));
+    QVERIFY(analyzeButton->isEnabled());
     QVERIFY(!widget.analyzeAction()->isEnabled());
     QVERIFY(widget.cancelAction()->isEnabled());
 
@@ -150,9 +148,11 @@ class XFoilWidgetG3Tests : public QObject {
     QVERIFY(!point->surface.has_value() ||
             point->surface->x.size() == point->surface->cp.size());
     QVERIFY(status->text().contains(QStringLiteral("complete")));
-    QVERIFY(progress->isHidden());
+    QVERIFY(!status->isHidden());
+    QVERIFY(!progress->isHidden());
+    QCOMPARE(progress->value(), 100);
+    QCOMPARE(analyzeButton->text(), QStringLiteral("Analyze"));
     QVERIFY(analyzeButton->isEnabled());
-    QVERIFY(!cancelButton->isEnabled());
     QVERIFY(widget.analyzeAction()->isEnabled());
     QVERIFY(!widget.cancelAction()->isEnabled());
   }
@@ -210,7 +210,7 @@ class XFoilWidgetG3Tests : public QObject {
                 .contains(QStringLiteral("Converged")));
   }
 
-  void progressIsDeliveredAndBarIsHiddenAtRest() {
+  void progressIsDeliveredAndBarRemainsVisibleAtRest() {
     XFoilWidget widget;
     configureSequence(widget);
 
@@ -221,7 +221,8 @@ class XFoilWidgetG3Tests : public QObject {
     QVERIFY(widget.state() == XFoilGuiState::results);
     auto* bar = widget.findChild<QProgressBar*>("analysisProgressBar");
     QVERIFY(bar != nullptr);
-    QVERIFY(bar->isHidden());
+    QVERIFY(!bar->isHidden());
+    QCOMPARE(bar->value(), 100);
   }
 
   void cancelDuringRunIsControlledAndIdempotent() {
@@ -242,8 +243,8 @@ class XFoilWidgetG3Tests : public QObject {
     QTRY_VERIFY_WITH_TIMEOUT(!widget.isRunning(), 30000);
     QCOMPARE(failed.count(), 0);
     QVERIFY(widget.state() == XFoilGuiState::cancelled);
-    QVERIFY(widget.findChild<QPushButton*>("cancelButton")
-                ->isEnabled() == false);
+    QCOMPARE(widget.findChild<QPushButton*>("analyzeButton")->text(),
+             QStringLiteral("Analyze"));
   }
 
   void secondAnalyzeWhileRunningIsNoOp() {

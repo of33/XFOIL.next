@@ -345,6 +345,16 @@ class XFoilWidget::Impl {
     }
     refreshPointSelection();
     refreshPolarManager();
+    ui.resultSplitter->setStretchFactor(0, 35);
+    ui.resultSplitter->setStretchFactor(1, 35);
+    ui.resultSplitter->setStretchFactor(2, 30);
+    ui.resultSplitter->setSizes({448, 448, 384});
+    ui.leftPlotSplitter->setStretchFactor(0, 3);
+    ui.leftPlotSplitter->setStretchFactor(1, 2);
+    ui.leftPlotSplitter->setSizes({300, 200});
+    ui.mainSplitter->setStretchFactor(0, 0);
+    ui.mainSplitter->setStretchFactor(1, 1);
+    ui.mainSplitter->setSizes({250, 450});
     refreshUi();
   }
 
@@ -416,6 +426,11 @@ class XFoilWidget::Impl {
     if (hadPanel) {
       Q_EMIT owner_->panelingChanged();
     }
+    const Result<SurfaceGeometry> panel =
+        generatePanel(panelingFromControls(ui));
+    if (panel.isErr()) {
+      return Result<void>::fail(panel.error());
+    }
     return Result<void>::ok();
   }
 
@@ -456,7 +471,7 @@ class XFoilWidget::Impl {
     model_.acceptPanel(panel, options);
     updatePanelingControls(options);
     ui.airfoilPlot->setPanelGeometry(panel);
-    ui.airfoilPlot->showPanelNodes(ui.showPanelNodesCheck->isChecked());
+    ui.airfoilPlot->showPanelNodes(viewOptions_.showPanelNodes);
     refreshUi();
     Q_EMIT owner_->panelingChanged();
     return Result<SurfaceGeometry>::ok(panel);
@@ -639,7 +654,6 @@ class XFoilWidget::Impl {
     viewOptions_ = options;
     updatingControls_ = true;
     setCheckState(ui.showPanelingCheckBox, options.showPaneling);
-    setCheckState(ui.showPanelNodesCheck, options.showPanelNodes);
     updatingControls_ = false;
     ui.airfoilPlot->setShowPaneling(options.showPaneling);
     ui.airfoilPlot->showPanelNodes(options.showPanelNodes);
@@ -1395,18 +1409,26 @@ class XFoilWidget::Impl {
 
   void refreshProgressBar() {
     const bool running = tracker_.isRunning();
-    ui.analysisProgressBar->setVisible(running);
+    ui.analysisProgressBar->setVisible(true);
     if (!running) {
-      ui.analysisProgressBar->setRange(0, 1);
-      ui.analysisProgressBar->setValue(0);
+      ui.analysisProgressBar->setRange(0, 100);
+      ui.analysisProgressBar->setValue(
+          analysisOutcome_ == AnalysisOutcome::results ? 100 : 0);
+      ui.analysisProgressBar->setFormat(QStringLiteral("%p%"));
+      ui.analysisProgressBar->setToolTip(
+          QStringLiteral("Current phase progress. No overall progress is implied."));
       return;
     }
+    ui.analysisProgressBar->setToolTip(
+        QStringLiteral("Current phase progress: %1").arg(analysisStatusText_));
     if (progressFraction_.has_value()) {
       ui.analysisProgressBar->setRange(0, 100);
       ui.analysisProgressBar->setValue(
           static_cast<int>(std::lround(*progressFraction_ * 100.0)));
+      ui.analysisProgressBar->setFormat(QStringLiteral("%p%"));
     } else {
       ui.analysisProgressBar->setRange(0, 0);
+      ui.analysisProgressBar->setFormat(QStringLiteral("Working…"));
     }
   }
 
@@ -1427,7 +1449,7 @@ class XFoilWidget::Impl {
 
   void populateChoiceControls() {
     ui.geometrySourceCombo->addItem(
-        QStringLiteral("Memory"),
+        QStringLiteral("File"),
         static_cast<int>(GeometrySource::memory));
     ui.geometrySourceCombo->addItem(
         QStringLiteral("NACA"),
@@ -1587,7 +1609,6 @@ class XFoilWidget::Impl {
     setDoubleValue(ui.clSequenceEndSpin, clSequence.endExclusive);
     setDoubleValue(ui.clSequenceStepSpin, clSequence.step);
     setCheckState(ui.showPanelingCheckBox, false);
-    setCheckState(ui.showPanelNodesCheck, true);
 
     setComboIndex(ui.geometrySourceCombo, 0);
     setComboIndex(ui.targetModeCombo, 0);
@@ -1617,12 +1638,6 @@ class XFoilWidget::Impl {
             [this](bool checked) {
               AnalysisWorkflowViewOptions options = viewOptions_;
               options.showPaneling = checked;
-              owner_->setViewOptions(options);
-            });
-    QObject::connect(ui.showPanelNodesCheck, &QCheckBox::toggled, owner_,
-            [this](bool checked) {
-              AnalysisWorkflowViewOptions options = viewOptions_;
-              options.showPanelNodes = checked;
               owner_->setViewOptions(options);
             });
 
@@ -1682,9 +1697,13 @@ class XFoilWidget::Impl {
     QObject::connect(ui.clearPolarsButton, &QPushButton::clicked, owner_,
             [this]() { clearComparisons(); });
     QObject::connect(ui.analyzeButton, &QPushButton::clicked, owner_,
-            [this]() { analyze(); });
-    QObject::connect(ui.cancelButton, &QPushButton::clicked, owner_,
-            [this]() { cancel(); });
+            [this]() {
+              if (tracker_.isRunning()) {
+                cancel();
+              } else {
+                analyze();
+              }
+            });
 
     QObject::connect(ui.operatingPointCombo,
             &QComboBox::currentIndexChanged, owner_,
@@ -2006,8 +2025,26 @@ class XFoilWidget::Impl {
       }
     }
     const GuiConvergenceText convergence = formatConvergence(state);
+    QString color = QStringLiteral("#777777");
+    switch (state) {
+      case GuiConvergenceState::converged:
+        color = QStringLiteral("#2e7d32");
+        break;
+      case GuiConvergenceState::notConverged:
+      case GuiConvergenceState::failed:
+        color = QStringLiteral("#c62828");
+        break;
+      case GuiConvergenceState::cancelled:
+        color = QStringLiteral("#e65100");
+        break;
+      case GuiConvergenceState::noPoint:
+        break;
+    }
     ui.currentPointConvergenceIcon->setText(
         QString::fromStdString(convergence.icon));
+    ui.currentPointConvergenceIcon->setStyleSheet(
+        QStringLiteral("QLabel { color: %1; font-size: 18pt; font-weight: 700; }")
+            .arg(color));
     ui.currentPointConvergenceLabel->setText(
         QString::fromStdString(convergence.label));
   }
@@ -2505,8 +2542,46 @@ class XFoilWidget::Impl {
     }
     ui.setupDiagnosticsView->setPlainText(diagnostics);
 
-    ui.analyzeButton->setEnabled(ready && !running);
-    ui.cancelButton->setEnabled(running);
+    const bool cancelling =
+        running && activeToken_ != nullptr &&
+        activeToken_->isCancellationRequested();
+    QString buttonText;
+    QString buttonAccessible;
+    QString buttonToolTip;
+    QString buttonStyle;
+    bool buttonEnabled = false;
+    if (cancelling) {
+      buttonText = QStringLiteral("Cancelling…");
+      buttonAccessible = QStringLiteral("Cancelling analysis");
+      buttonToolTip = QStringLiteral("Cancellation has been requested.");
+      buttonStyle = QStringLiteral(
+          "QPushButton { background-color: #c62828; color: #f5f5f5; font-weight: 600; }");
+    } else if (running) {
+      buttonText = QStringLiteral("Cancel");
+      buttonAccessible = QStringLiteral("Cancel analysis");
+      buttonToolTip = QStringLiteral("Requests cancellation of the active analysis.");
+      buttonStyle = QStringLiteral(
+          "QPushButton { background-color: #c62828; color: white; font-weight: 600; }");
+      buttonEnabled = true;
+    } else if (ready) {
+      buttonText = QStringLiteral("Analyze");
+      buttonAccessible = QStringLiteral("Analyze");
+      buttonToolTip = QStringLiteral("Starts one analysis in the widget worker.");
+      buttonStyle = QStringLiteral(
+          "QPushButton { background-color: #2e7d32; color: white; font-weight: 600; }");
+      buttonEnabled = true;
+    } else {
+      buttonText = QStringLiteral("Analyze");
+      buttonAccessible = QStringLiteral("Analyze");
+      buttonToolTip = QStringLiteral("Analysis is not ready.");
+      buttonStyle = QStringLiteral(
+          "QPushButton { background-color: #d9d9d9; color: #666666; }");
+    }
+    ui.analyzeButton->setText(buttonText);
+    ui.analyzeButton->setAccessibleName(buttonAccessible);
+    ui.analyzeButton->setToolTip(buttonToolTip);
+    ui.analyzeButton->setStyleSheet(buttonStyle);
+    ui.analyzeButton->setEnabled(buttonEnabled);
     ui.addCurrentPolarButton->setEnabled(
         !running && (currentOperatingPoint_.has_value() ||
                      currentSequence_.has_value()));
@@ -2530,7 +2605,7 @@ class XFoilWidget::Impl {
               ? QStringLiteral("NACA geometry ready")
               : model_.geometrySource() == GeometrySource::nacs
                     ? QStringLiteral("NACS geometry ready")
-                    : QStringLiteral("Memory geometry ready"));
+                    : QStringLiteral("File geometry ready"));
     } else {
       ui.geometryNameLabel->setText(QStringLiteral("No geometry"));
       ui.geometryStatusLabel->setText(QStringLiteral("Not set"));

@@ -117,6 +117,11 @@ class XFoilWidgetG4Tests : public QObject {
     QCOMPARE(operating->currentIndex(), 0);
     QCOMPARE(combo(widget, "deactivatePointCombo")->count(), 3);
     QCOMPARE(combo(widget, "activatePointCombo")->count(), 0);
+    auto* convergenceIcon =
+        widget.findChild<QLabel*>("currentPointConvergenceIcon");
+    QVERIFY(convergenceIcon != nullptr);
+    QVERIFY(convergenceIcon->styleSheet().contains(
+        QStringLiteral("#2e7d32")));
 
     for (const char* name :
          {"clAlphaPlot", "clCdPlot", "cmAlphaPlot", "cmClPlot",

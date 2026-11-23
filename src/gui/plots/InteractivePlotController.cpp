@@ -31,6 +31,7 @@
 #include <utility>
 
 #include <QEvent>
+#include <QFontMetrics>
 #include <QGuiApplication>
 #include <QMargins>
 #include <QMouseEvent>
@@ -53,6 +54,23 @@ bool insideAxes(QCustomPlot* plot, const QPoint& position) {
          plot->axisRect()->rect().contains(position);
 }
 
+QMargins compactMargins(const QCustomPlot* plot) {
+  if (plot == nullptr) {
+    return QMargins(64, 10, 10, 36);
+  }
+  const QFontMetrics tickMetrics(plot->xAxis->tickLabelFont());
+  const QFontMetrics labelMetrics(plot->xAxis->labelFont());
+  const int tickHeight = std::max(tickMetrics.height(), labelMetrics.height());
+  const int tickWidth =
+      std::max(tickMetrics.horizontalAdvance(QStringLiteral("-0.0000")),
+               tickMetrics.horizontalAdvance(QStringLiteral("−0.0000")));
+  const int left = tickWidth + tickHeight + 8;
+  const int top = tickHeight / 2 + 4;
+  const int right = tickHeight / 2 + 4;
+  const int bottom = tickHeight * 2 + 8;
+  return QMargins(left, top, right, bottom);
+}
+
 }  // namespace
 
 InteractivePlotController::InteractivePlotController(
@@ -61,7 +79,7 @@ InteractivePlotController::InteractivePlotController(
       markerToggle_(markerToggle) {
   if (plot_ != nullptr) {
     plot_->axisRect()->setAutoMargins(QCP::msNone);
-    plot_->axisRect()->setMargins(QMargins(82, 18, 18, 56));
+    plot_->axisRect()->setMargins(compactMargins(plot_));
     plot_->installEventFilter(this);
     plot_->setCursor(Qt::CrossCursor);
   }

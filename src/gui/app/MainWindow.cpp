@@ -44,7 +44,6 @@
 #include <QSettings>
 #include <QStatusBar>
 #include <QTimer>
-#include <QToolBar>
 
 #include "app/GuiFileAdapters.h"
 #include "app/ProductInfo.h"
@@ -203,12 +202,13 @@ MainWindow::MainWindow(Dependencies dependencies, QWidget* parent)
   }
 
   setWindowTitle(productName() + QStringLiteral(" ") + productVersion());
+  setMinimumSize(1280, 800);
   resize(1280, 800);
   widget_ = new XFoilWidget(this);
   setCentralWidget(widget_);
 
   createActions();
-  createMenusAndToolBar();
+  createMenus();
   statusBar()->showMessage(QStringLiteral("Ready"));
 
   connect(widget_, &XFoilWidget::geometryChanged, this,
@@ -324,7 +324,7 @@ void MainWindow::createActions() {
           [this](bool) { showAbout(); });
 }
 
-void MainWindow::createMenusAndToolBar() {
+void MainWindow::createMenus() {
   fileMenu_ = menuBar()->addMenu(QStringLiteral("&File"));
   fileMenu_->setObjectName(QStringLiteral("fileMenu"));
   fileMenu_->addAction(openAction_);
@@ -344,23 +344,10 @@ void MainWindow::createMenusAndToolBar() {
   fileMenu_->addSeparator();
   fileMenu_->addAction(exitAction_);
 
-  QMenu* analysisMenu = menuBar()->addMenu(QStringLiteral("&Analysis"));
-  analysisMenu->setObjectName(QStringLiteral("analysisMenu"));
-  analysisMenu->addAction(widget_->analyzeAction());
-  analysisMenu->addAction(widget_->cancelAction());
-
   helpMenu_ = menuBar()->addMenu(QStringLiteral("&Help"));
   helpMenu_->setObjectName(QStringLiteral("helpMenu"));
   helpMenu_->addAction(aboutAction_);
 
-  QToolBar* toolBar = addToolBar(QStringLiteral("Main"));
-  toolBar->setObjectName(QStringLiteral("mainToolBar"));
-  toolBar->addAction(openAction_);
-  toolBar->addAction(saveAirfoilAction_);
-  toolBar->addAction(exportDxfAction_);
-  toolBar->addSeparator();
-  toolBar->addAction(widget_->analyzeAction());
-  toolBar->addAction(widget_->cancelAction());
   updateRecentMenu();
 }
 
@@ -792,15 +779,18 @@ void MainWindow::showAbout() {
   const QString text =
       QStringLiteral(
           "%1 %2\n\n"
-          "Based upon XFOIL Version 6.996\n\n"
+          "Copyright (C) 2026 Olaf Frommann\n"
+          "%7\n\n"
+          "XFOIL.next is based on XFOIL 6.996\n"
+          "by Mark Drela and Harold Youngren.\n\n"
+          "License: %5\n\n"
           "Qt %3\n"
           "QCustomPlot %4\n\n"
-          "%5\n"
           "%6")
           .arg(productName(), productVersion(),
                QStringLiteral(QT_VERSION_STR),
                QStringLiteral(QCUSTOMPLOT_VERSION_STR), productLicense(),
-               productUrl());
+               productUrl(), QStringLiteral("https://github.com/of33/XFOIL.next"));
   showInfo(QStringLiteral("About XFOIL.next"), text);
 }
 

@@ -43,6 +43,7 @@
 #include <QPushButton>
 #include <QRegularExpression>
 #include <QScrollArea>
+#include <QSplitter>
 #include <QStringList>
 #include <QTabWidget>
 #include <QVBoxLayout>
@@ -133,15 +134,25 @@ class GuiResultWorkspaceTests : public QObject {
     }
   }
 
-  void workspaceHasThreeColumnsWithFixedRightColumn() {
+  void workspaceIsAHorizontalSplitterWithThreeColumns() {
     XFoilWidget widget;
     auto* workspace = widget.findChild<QWidget*>("resultWorkspace");
     QVERIFY(workspace != nullptr);
     auto* workspaceLayout = dynamic_cast<QHBoxLayout*>(
         layoutOf(workspace, "resultWorkspaceLayout"));
     QVERIFY(workspaceLayout != nullptr);
-    QCOMPARE(workspaceLayout->count(), 3);
-    QVERIFY(widgetNames(workspaceLayout) ==
+    QCOMPARE(workspaceLayout->count(), 1);
+
+    auto* splitter = widget.findChild<QSplitter*>("resultSplitter");
+    QVERIFY(splitter != nullptr);
+    QCOMPARE(splitter->orientation(), Qt::Horizontal);
+    QCOMPARE(splitter->count(), 3);
+    QVERIFY(!splitter->childrenCollapsible());
+    QStringList splitterNames;
+    for (int index = 0; index < splitter->count(); ++index) {
+      splitterNames.push_back(splitter->widget(index)->objectName());
+    }
+    QVERIFY(splitterNames ==
             (QStringList{"leftPlotColumn", "resultPlotTabs",
                          "resultsColumn"}));
 
@@ -151,63 +162,89 @@ class GuiResultWorkspaceTests : public QObject {
     QVERIFY(left != nullptr);
     QVERIFY(middle != nullptr);
     QVERIFY(right != nullptr);
-    QCOMPARE(left->sizePolicy().horizontalStretch(), 1);
-    QCOMPARE(middle->sizePolicy().horizontalStretch(), 1);
-    QCOMPARE(right->minimumWidth(), 340);
-    QCOMPARE(right->maximumWidth(), 340);
+    QCOMPARE(right->minimumWidth(), 280);
 
     widget.resize(1280, 800);
     widget.show();
     QCoreApplication::processEvents();
-    QCOMPARE(right->width(), 340);
-    const int firstWidth = left->width();
-    const int secondWidth = middle->width();
-    QVERIFY(std::abs(firstWidth - secondWidth) <= 1);
+    const int total = left->width() + middle->width() + right->width() +
+                      splitter->handleWidth() * 2;
+    QVERIFY(total > 0);
+    QVERIFY(std::abs(left->width() / static_cast<double>(total) - 0.35) < 0.03);
+    QVERIFY(std::abs(middle->width() / static_cast<double>(total) - 0.35) < 0.03);
+    QVERIFY(std::abs(right->width() / static_cast<double>(total) - 0.30) < 0.03);
 
     widget.resize(960, 640);
     QCoreApplication::processEvents();
-    QCOMPARE(right->width(), 340);
-    QVERIFY(std::abs(left->width() - middle->width()) <= 1);
-    QVERIFY(right->minimumSizeHint().width() <= right->width());
+    QCOMPARE(right->width(), right->minimumWidth());
+    QVERIFY(left->width() > 0);
+    QVERIFY(middle->width() > 0);
   }
 
-  void resultsColumnOrderEndsWithAnalyze() {
+  void mainSplitterKeepsDefinitionsAtTargetHeight() {
+    XFoilWidget widget;
+    widget.resize(1280, 800);
+    widget.show();
+    QCoreApplication::processEvents();
+    auto* splitter = widget.findChild<QSplitter*>("mainSplitter");
+    QVERIFY(splitter != nullptr);
+    QCOMPARE(splitter->orientation(), Qt::Vertical);
+    QCOMPARE(splitter->count(), 2);
+    QVERIFY(!splitter->childrenCollapsible());
+    QCOMPARE(splitter->widget(0)->objectName(),
+             QStringLiteral("definitionsFrame"));
+    QCOMPARE(splitter->widget(1)->objectName(),
+             QStringLiteral("resultWorkspace"));
+    QCOMPARE(splitter->sizes().at(0), 250);
+    QVERIFY(splitter->sizes().at(1) >= 449);
+
+    widget.resize(1280, 900);
+    QCoreApplication::processEvents();
+    QCOMPARE(splitter->sizes().at(0), 250);
+    QVERIFY(splitter->sizes().at(1) > 449);
+  }
+
+  void comparisonPolarManagerScrollsIndependently() {
+    XFoilWidget widget;
+    auto* scroll =
+        widget.findChild<QScrollArea*>("comparisonPolarsScrollArea");
+    QVERIFY(scroll != nullptr);
+    QVERIFY(scroll->widgetResizable());
+    auto* group = widget.findChild<QGroupBox*>("polarManagerGroup");
+    QVERIFY(group != nullptr);
+    QCOMPARE(scroll->widget(), group);
+  }
+
+  void resultsColumnContainsMatrixAndInfoTabs() {
     XFoilWidget widget;
     auto* right = widget.findChild<QFrame*>("resultsColumn");
     QVERIFY(right != nullptr);
     QLayout* layout = right->layout();
     QVERIFY(layout != nullptr);
+    QVERIFY(widgetNames(layout) ==
+            (QStringList{"resultMatrixGroup", "resultInfoTabs"}));
 
-    QStringList widgetItems;
-    int analyzeIndex = -1;
-    for (int index = 0; index < layout->count(); ++index) {
-      QLayoutItem* item = layout->itemAt(index);
-      if (item->widget() == nullptr) {
-        continue;
-      }
-      widgetItems.push_back(item->widget()->objectName());
-      if (item->widget()->objectName() == QStringLiteral("analyzeButton")) {
-        analyzeIndex = index;
-      }
-    }
-    QVERIFY(widgetItems ==
-            (QStringList{"pointSelectionGroup", "resultMatrixGroup",
-                         "setupDiagnosticsGroup", "polarManagerGroup",
-                         "analyzeButton"}));
-    QVERIFY(analyzeIndex == layout->count() - 1);
+    auto* action = widget.findChild<QFrame*>("analysisActionFrame");
+    QVERIFY(action != nullptr);
+    auto* analyze = widget.findChild<QPushButton*>("analyzeButton");
+    QVERIFY(analyze != nullptr);
+    QVERIFY(action->isAncestorOf(analyze));
   }
 
-  void leftColumnHasCpAboveAirfoilAtTwoToOne() {
+  void leftColumnHasCpAboveAirfoilAtThreeToTwo() {
     XFoilWidget widget;
     auto* cpSection = widget.findChild<QWidget*>("cpSection");
     auto* airfoilSection = widget.findChild<QWidget*>("airfoilSection");
+    auto* splitter = widget.findChild<QSplitter*>("leftPlotSplitter");
     QVERIFY(cpSection != nullptr);
     QVERIFY(airfoilSection != nullptr);
-    QCOMPARE(cpSection->sizePolicy().verticalStretch(), 2);
-    QCOMPARE(airfoilSection->sizePolicy().verticalStretch(), 1);
+    QVERIFY(splitter != nullptr);
+    QCOMPARE(splitter->orientation(), Qt::Vertical);
+    QCOMPARE(splitter->count(), 2);
+    QVERIFY(!splitter->childrenCollapsible());
+    QVERIFY(splitter->widget(0) == cpSection);
+    QVERIFY(splitter->widget(1) == airfoilSection);
 
-    QCOMPARE(widget.findChild<QLabel*>("cpTitleLabel")->text(),
-             QStringLiteral("Cp"));
     QCOMPARE(widget.findChild<QLabel*>("airfoilTitleLabel")->text(),
              QStringLiteral("Airfoil"));
 
@@ -334,13 +371,18 @@ class GuiResultWorkspaceTests : public QObject {
     QVERIFY(diagnostics->isReadOnly());
     QCOMPARE(diagnostics->placeholderText(),
              QStringLiteral("No setup diagnostics"));
+    auto* tabs = widget.findChild<QTabWidget*>("resultInfoTabs");
+    QVERIFY(tabs != nullptr);
+    QCOMPARE(tabs->count(), 2);
+    QCOMPARE(tabs->tabText(0), QStringLiteral("Diagnostics"));
+    QCOMPARE(tabs->tabText(1), QStringLiteral("Comparison Polars"));
+    QCOMPARE(tabs->currentIndex(), 0);
 
     auto* analyze = widget.findChild<QPushButton*>("analyzeButton");
     QVERIFY(analyze != nullptr);
     QVERIFY(!analyze->isEnabled());
 
     QVERIFY(widget.setNaca("2412").isOk());
-    QVERIFY(widget.generatePanel(xfoil::PanelingOptions{}).isOk());
     QVERIFY(analyze->isEnabled());
     QVERIFY(widget.isReadyToAnalyze());
     QVERIFY(!widget.isRunning());

@@ -34,10 +34,12 @@
 
 #include <QPoint>
 #include <QVector>
+#include <QSizePolicy>
 #include <QVBoxLayout>
 
 #include "model/GuiResultSummary.h"
 #include "plots/InteractivePlotController.h"
+#include "plots/PlotStyle.h"
 #include "qcustomplot.h"
 
 namespace xfoil::gui {
@@ -66,7 +68,7 @@ constexpr std::array<Qt::PenStyle, 8> kComparisonStyles = {
 
 QCPScatterStyle openCircle() {
   return QCPScatterStyle(QCPScatterStyle::ssCircle,
-                         QPen(kMarkerColor, 1.1), Qt::NoBrush, 5.5);
+                         QPen(kMarkerColor, 1.1), Qt::NoBrush, 5.0);
 }
 
 QCPScatterStyle filledCircle() {
@@ -121,21 +123,21 @@ ScalarPlotView::ScalarPlotView(QWidget* parent) : QWidget(parent) {
   solidBefore_ = new QCPCurve(plot_->xAxis, plot_->yAxis);
   solidBefore_->setObjectName(QStringLiteral("solidBefore"));
   solidBefore_->setName(QStringLiteral("Scalar curve"));
-  solidBefore_->setPen(QPen(kLineColor, 1.5));
+  solidBefore_->setPen(QPen(kLineColor, kPrimaryLineWidth));
   solidBefore_->setLineStyle(QCPCurve::lsLine);
   solidBefore_->setScatterStyle(QCPScatterStyle::ssNone);
 
   solidAfter_ = new QCPCurve(plot_->xAxis, plot_->yAxis);
   solidAfter_->setObjectName(QStringLiteral("solidAfter"));
   solidAfter_->setName(QStringLiteral("Scalar curve after NC"));
-  solidAfter_->setPen(QPen(kLineColor, 1.5));
+  solidAfter_->setPen(QPen(kLineColor, kPrimaryLineWidth));
   solidAfter_->setLineStyle(QCPCurve::lsLine);
   solidAfter_->setScatterStyle(QCPScatterStyle::ssNone);
 
   dashed_ = new QCPCurve(plot_->xAxis, plot_->yAxis);
   dashed_->setObjectName(QStringLiteral("ncDashed"));
   dashed_->setName(QStringLiteral("Selected NC neighbors"));
-  QPen dashedPen(kDashedColor, 1.4);
+  QPen dashedPen(kDashedColor, kDashedLineWidth);
   dashedPen.setStyle(Qt::DashLine);
   dashed_->setPen(dashedPen);
   dashed_->setLineStyle(QCPCurve::lsLine);
@@ -236,7 +238,7 @@ void ScalarPlotView::setComparisons(
         curve = new QCPCurve(plot_->xAxis, plot_->yAxis);
         curve->setObjectName(QStringLiteral("comparisonCurve%1")
                                  .arg(static_cast<qulonglong>(index)));
-        QPen pen(kComparisonColors[index], 1.4);
+        QPen pen(kComparisonColors[index], kComparisonLineWidth);
         pen.setStyle(kComparisonStyles[index]);
         curve->setPen(pen);
         curve->setLineStyle(QCPCurve::lsLine);
@@ -307,7 +309,9 @@ void ScalarPlotView::fitVisibleData() {
   const double yPadding = ySpan * 0.08 + 1.0e-9;
   plot_->xAxis->setRange(xMin - xPadding, xMax + xPadding);
   plot_->yAxis->setRange(yMin - yPadding, yMax + yPadding);
-  plot_->replot();
+  if (plot_->axisRect()->width() > 0 && plot_->axisRect()->height() > 0) {
+    plot_->replot();
+  }
 }
 
 std::size_t ScalarPlotView::visiblePointCount() const noexcept {
@@ -489,7 +493,9 @@ void ScalarPlotView::updateGraphs() {
   dashed_->setVisible(!dashed.empty());
   unselectedMarkers_->setVisible(!markers.empty());
   selectedMarker_->setVisible(!selectedData.empty());
-  plot_->replot();
+  if (plot_->axisRect()->width() > 0 && plot_->axisRect()->height() > 0) {
+    plot_->replot();
+  }
 }
 
 void ScalarPlotView::handleClick(const QPoint& position) {

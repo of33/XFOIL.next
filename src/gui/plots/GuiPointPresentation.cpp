@@ -47,7 +47,7 @@ GuiConvergenceText formatConvergence(GuiConvergenceState state) {
     case GuiConvergenceState::converged:
       return {"Converged", "●"};
     case GuiConvergenceState::notConverged:
-      return {"Not converged", "△"};
+      return {"Not converged", "●"};
     case GuiConvergenceState::cancelled:
       return {"Cancelled", "■"};
     case GuiConvergenceState::failed:

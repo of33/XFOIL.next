@@ -82,7 +82,7 @@ class MainWindow : public QMainWindow {
 
  private:
   void createActions();
-  void createMenusAndToolBar();
+  void createMenus();
   void loadSettings();
   void saveSettings();
   void updateAppActions();

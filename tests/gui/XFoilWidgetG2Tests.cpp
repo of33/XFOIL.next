@@ -147,8 +147,10 @@ class XFoilWidgetG2Tests : public QObject {
 
     QVERIFY(widget.setNaca("2412").isOk());
     QCOMPARE(geometrySpy.count(), 1);
-    QVERIFY(widget.state() == XFoilGuiState::geometry);
+    QCOMPARE(panelSpy.count(), 1);
+    QVERIFY(widget.state() == XFoilGuiState::configured);
     QVERIFY(widget.geometry().has_value());
+    QVERIFY(widget.panelGeometry().has_value());
     QCOMPARE(child<QComboBox>(widget, "geometrySourceCombo")->currentText(),
              QStringLiteral("NACA"));
     QCOMPARE(child<QLineEdit>(widget, "nacaDesignationEdit")->text(),
@@ -157,7 +159,7 @@ class XFoilWidgetG2Tests : public QObject {
              QStringLiteral("NACA geometry ready"));
 
     QVERIFY(widget.generatePanel(PanelingOptions{}).isOk());
-    QCOMPARE(panelSpy.count(), 1);
+    QCOMPARE(panelSpy.count(), 2);
     QVERIFY(widget.state() == XFoilGuiState::configured);
     QVERIFY(widget.panelGeometry().has_value());
     QVERIFY(widget.isReadyToAnalyze());
@@ -215,7 +217,9 @@ class XFoilWidgetG2Tests : public QObject {
     designation->setText(QStringLiteral("0012"));
     apply->click();
     QVERIFY(widget.geometry().has_value());
-    QVERIFY(widget.state() == XFoilGuiState::geometry);
+    QVERIFY(widget.panelGeometry().has_value());
+    QVERIFY(widget.state() == XFoilGuiState::configured);
+    QVERIFY(widget.isReadyToAnalyze());
 
     auto* panelCount = child<QSpinBox>(widget, "panelCountSpin");
     panelCount->setValue(180);
@@ -260,9 +264,9 @@ class XFoilWidgetG2Tests : public QObject {
     QVERIFY(widget.isReadyToAnalyze());
 
     QVERIFY(widget.setNaca("2412").isOk());
-    QVERIFY(!widget.panelGeometry().has_value());
-    QVERIFY(widget.state() == XFoilGuiState::geometry);
-    QVERIFY(!widget.isReadyToAnalyze());
+    QVERIFY(widget.panelGeometry().has_value());
+    QVERIFY(widget.state() == XFoilGuiState::configured);
+    QVERIFY(widget.isReadyToAnalyze());
 
     QVERIFY(widget.generatePanel(PanelingOptions{}).isOk());
     QVERIFY(widget.isReadyToAnalyze());
@@ -298,7 +302,9 @@ class XFoilWidgetG2Tests : public QObject {
     QVERIFY(widget.geometry().has_value());
     QVERIFY(widget.state() == XFoilGuiState::geometry);
     QCOMPARE(child<QComboBox>(widget, "geometrySourceCombo")->currentText(),
-             QStringLiteral("Memory"));
+             QStringLiteral("File"));
+    QCOMPARE(child<QLabel>(widget, "geometryStatusLabel")->text(),
+             QStringLiteral("File geometry ready"));
     QVERIFY(!child<QPushButton>(widget, "applyGeometryButton")->isEnabled());
   }
 

@@ -32,7 +32,6 @@
 #include <QMenu>
 #include <QSignalSpy>
 #include <QTemporaryDir>
-#include <QToolBar>
 #include <QtTest/QTest>
 
 #include "app/MainWindow.h"
@@ -164,9 +163,12 @@ class MainWindowTests : public QObject {
     QCOMPARE(window.findChild<QAction*>("exitAction") != nullptr, true);
     QCOMPARE(window.findChild<QAction*>("aboutAction") != nullptr, true);
     QVERIFY(window.findChild<QMenu*>("fileMenu") != nullptr);
-    QVERIFY(window.findChild<QMenu*>("analysisMenu") != nullptr);
+    QVERIFY(window.findChild<QMenu*>("analysisMenu") == nullptr);
     QVERIFY(window.findChild<QMenu*>("helpMenu") != nullptr);
-    QVERIFY(window.findChild<QToolBar*>("mainToolBar") != nullptr);
+    QVERIFY(window.findChild<QToolBar*>("mainToolBar") == nullptr);
+    QCOMPARE(window.minimumSize(), QSize(1280, 800));
+    QVERIFY(window.size().width() >= 1280);
+    QVERIFY(window.size().height() >= 800);
 
     QVERIFY(!window.findChild<QAction*>("saveAirfoilAction")->isEnabled());
     QVERIFY(!window.findChild<QAction*>("exportDxfAction")->isEnabled());
@@ -314,6 +316,12 @@ class MainWindowTests : public QObject {
     QVERIFY(harness.infoText.contains(QString::fromLatin1(
         xfoil::app::product::version.data(),
         static_cast<int>(xfoil::app::product::version.size()))));
+    QVERIFY(harness.infoText.contains(
+        QStringLiteral("Copyright (C) 2026 Olaf Frommann")));
+    QVERIFY(harness.infoText.contains(QStringLiteral("XFOIL 6.996")));
+    QVERIFY(harness.infoText.contains(QStringLiteral("GPL-3.0-or-later")));
+    QVERIFY(harness.infoText.contains(
+        QStringLiteral("https://github.com/of33/XFOIL.next")));
     QVERIFY(window.close());
   }
 

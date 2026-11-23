@@ -122,7 +122,13 @@ class XFoilWidgetShellTests : public QObject {
     QVERIFY(widget.findChild<QWidget*>("resultWorkspace") != nullptr);
     QVERIFY(widget.findChild<QWidget*>("leftPlotColumn") != nullptr);
     QVERIFY(widget.findChild<QFrame*>("resultsColumn") != nullptr);
-    QVERIFY(widget.findChild<QFrame*>("statusFrame") != nullptr);
+    QVERIFY(widget.findChild<QSplitter*>("mainSplitter") != nullptr);
+    QVERIFY(widget.findChild<QSplitter*>("resultSplitter") != nullptr);
+    QVERIFY(widget.findChild<QSplitter*>("leftPlotSplitter") != nullptr);
+    QVERIFY(widget.findChild<QFrame*>("analysisActionFrame") != nullptr);
+    QVERIFY(widget.findChild<QTabWidget*>("resultInfoTabs") != nullptr);
+    QVERIFY(widget.findChild<QScrollArea*>(
+                 "comparisonPolarsScrollArea") != nullptr);
 
     QVERIFY(widget.findChild<QGroupBox*>("geometryGroup") != nullptr);
     QVERIFY(widget.findChild<QGroupBox*>("panelingGroup") != nullptr);
@@ -133,7 +139,7 @@ class XFoilWidgetShellTests : public QObject {
     QVERIFY(widget.findChild<QWidget*>("cpPlot") != nullptr);
     QVERIFY(widget.findChild<QPlainTextEdit*>("setupDiagnosticsView") != nullptr);
     QVERIFY(widget.findChild<QPushButton*>("analyzeButton") != nullptr);
-    QVERIFY(widget.findChild<QPushButton*>("cancelButton") != nullptr);
+    QVERIFY(widget.findChild<QPushButton*>("cancelButton") == nullptr);
     QVERIFY(widget.findChild<QProgressBar*>("analysisProgressBar") != nullptr);
     QVERIFY(widget.findChild<QLabel*>("analysisStatusLabel") != nullptr);
     QVERIFY(widget.findChild<QLabel*>("statusLabel") != nullptr);
@@ -154,7 +160,6 @@ class XFoilWidgetShellTests : public QObject {
         QStringLiteral("bunchingSpin"),
         QStringLiteral("teToLeSpin"),
         QStringLiteral("refinementSpin"),
-        QStringLiteral("showPanelNodesCheck"),
         QStringLiteral("generatePanelButton"),
         QStringLiteral("reynoldsSpin"),
         QStringLiteral("machSpin"),
@@ -171,12 +176,12 @@ class XFoilWidgetShellTests : public QObject {
         QStringLiteral("sequenceStepSpin"),
         QStringLiteral("airfoilPlot"),
         QStringLiteral("resultsColumn"),
-        QStringLiteral("statusFrame"),
+        QStringLiteral("analysisActionFrame"),
         QStringLiteral("setupDiagnosticsView"),
         QStringLiteral("analyzeButton"),
-        QStringLiteral("cancelButton"),
         QStringLiteral("analysisProgressBar"),
         QStringLiteral("analysisStatusLabel"),
+        QStringLiteral("resultInfoTabs"),
     };
     for (const QString& name : required) {
       QVERIFY2(widget.findChild<QWidget*>(name) != nullptr,

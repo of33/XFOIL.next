@@ -77,7 +77,7 @@ class GeometryPlotView : public QWidget {
 
   [[nodiscard]]
   bool panelNodesVisible() const noexcept {
-    return panelNodesVisible_;
+    return panelTicksVisible_;
   }
 
   [[nodiscard]]
@@ -96,20 +96,18 @@ class GeometryPlotView : public QWidget {
  private:
   void updateAxes();
   void applySampleMarkers();
-  void applyEqualAspect();
   void updatePanelVisibility();
 
   QCustomPlot* plot_{};
   QCPCurve* geometryContour_{};
   QCPCurve* panelContour_{};
   QCPCurve* panelTicks_{};
-  QCPGraph* panelNodes_{};
   InteractivePlotController* interaction_{};
   std::size_t geometryPointCount_{0};
   std::size_t panelPointCount_{0};
   std::size_t panelTickCount_{0};
-  bool panelNodesVisible_{true};
-  bool showPaneling_{true};
+  bool panelTicksVisible_{true};
+  bool showPaneling_{false};
   bool sampleMarkersEnabled_{false};
   bool hasGeometry_{false};
   bool hasPanel_{false};
