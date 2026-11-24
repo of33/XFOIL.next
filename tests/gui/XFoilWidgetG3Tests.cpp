@@ -254,6 +254,58 @@ class XFoilWidgetG3Tests : public QObject {
     QVERIFY(widget.state() == XFoilGuiState::cancelled);
     QCOMPARE(widget.findChild<QPushButton*>("analyzeButton")->text(),
              QStringLiteral("Analyze"));
+    auto* iteration =
+        widget.findChild<QLabel*>("analysisIterationLabel");
+    auto* bar = widget.findChild<QProgressBar*>("analysisProgressBar");
+    QVERIFY(iteration && bar);
+    QVERIFY(iteration->text().isEmpty());
+    QCOMPARE(bar->minimum(), 0);
+    QCOMPARE(bar->maximum(), 100);
+    QCOMPARE(bar->value(), 0);
+  }
+
+  void progressShowsIterationAndClearsAfterCompletion() {
+    XFoilWidget widget;
+    widget.resize(1280, 800);
+    widget.show();
+    QCoreApplication::processEvents();
+    configurePoint(widget, 2.0);
+    auto* bar = widget.findChild<QProgressBar*>("analysisProgressBar");
+    auto* iteration =
+        widget.findChild<QLabel*>("analysisIterationLabel");
+    auto* status = widget.findChild<QLabel*>("analysisStatusLabel");
+    QVERIFY(bar && iteration && status);
+    QVERIFY(iteration->text().isEmpty());
+    QCOMPARE(bar->value(), 0);
+    QVERIFY(status->isHidden());
+
+    QString seenIteration;
+    QObject::connect(
+        &widget, &XFoilWidget::progressChanged, &widget,
+        [&](const xfoil::ProgressEvent& event) {
+          if (event.iteration.has_value()) {
+            const auto current = static_cast<qulonglong>(*event.iteration + 1);
+            if (event.total.has_value() && *event.total > 0) {
+              const QString expected =
+                  QStringLiteral("Iteration %1 / %2")
+                      .arg(current)
+                      .arg(static_cast<qulonglong>(*event.total));
+              if (iteration->text() == expected) {
+                seenIteration = expected;
+              }
+            }
+          }
+        });
+    widget.analyzeAction()->trigger();
+    QTRY_VERIFY_WITH_TIMEOUT(!widget.isRunning(), 30000);
+    QVERIFY(!seenIteration.isEmpty());
+    QVERIFY(iteration->text().isEmpty());
+    QCOMPARE(bar->text(), QStringLiteral("100%"));
+    QCOMPARE(bar->value(), 100);
+
+    widget.setTarget(AlphaTarget{Degrees{1.0}});
+    QVERIFY(iteration->text().isEmpty());
+    QCOMPARE(bar->value(), 0);
   }
 
   void secondAnalyzeWhileRunningIsNoOp() {

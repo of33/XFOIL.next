@@ -37,6 +37,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
+#include <QGroupBox>
 #include <QLabel>
 #include <QPlainTextEdit>
 #include <QScrollArea>
@@ -45,6 +46,7 @@
 #include <QRadioButton>
 #include <QSignalSpy>
 #include <QSpinBox>
+#include <QStyle>
 #include <QTabWidget>
 #include <QtTest/QTest>
 
@@ -194,8 +196,8 @@ class XFoilWidgetG6bTests : public QObject {
              paneling.lowerRefinementEnd);
 
     const AnalysisConfig configuration;
-    QCOMPARE(spin(widget, "reynoldsSpin")->value(),
-             configuration.reynoldsNumber);
+    QCOMPARE(configuration.reynoldsNumber, 100000.0);
+    QCOMPARE(spin(widget, "reynoldsSpin")->value(), 500000.0);
     QCOMPARE(spin(widget, "machSpin")->value(),
              configuration.machNumber);
     QCOMPARE(check(widget, "viscousCheck")->isChecked(),
@@ -492,6 +494,8 @@ class XFoilWidgetG6bTests : public QObject {
   void twoWidgetsKeepSetupAndViewOptionsIndependent() {
     XFoilWidget first;
     XFoilWidget second;
+    QCOMPARE(spin(first, "reynoldsSpin")->value(), 500000.0);
+    QCOMPARE(spin(second, "reynoldsSpin")->value(), 500000.0);
     QVERIFY(first.applySetup(nacaSetup("0012")).isOk());
     QVERIFY(second.applySetup(nacaSetup("2412")).isOk());
     first.setViewOptions({true, false});
@@ -518,6 +522,41 @@ class XFoilWidgetG6bTests : public QObject {
     QCOMPARE(widget.currentSequence()->points.size(), std::size_t{2});
     QVERIFY(widget.currentSequence()->points.front().polar.alpha.value <
             widget.currentSequence()->points.back().polar.alpha.value);
+  }
+
+  void panelingBasicControlsAndExpertAutoInitialize() {
+    XFoilWidget widget;
+    auto* basic = child<QWidget>(widget, "panelingBasicPage");
+    auto* expert = child<QWidget>(widget, "conditionExpertPage");
+    auto* show = check(widget, "showPanelingCheckBox");
+    auto* generate = child<QPushButton>(widget, "generatePanelButton");
+    auto* autoInit =
+        check(widget, "autoInitializeBoundaryLayerCheck");
+    QVERIFY(basic && expert && show && generate && autoInit);
+    QVERIFY(basic->isAncestorOf(show));
+    QVERIFY(basic->isAncestorOf(generate));
+    QVERIFY(expert->isAncestorOf(autoInit));
+    QVERIFY(widget.findChild<QLabel*>("autoInitializeLabel") == nullptr);
+    QCOMPARE(autoInit->text(),
+             QStringLiteral("Auto-initialize boundary layer"));
+    int explicitLabels = 0;
+    for (QLabel* label : widget.findChildren<QLabel*>()) {
+      if (label->text().contains(QStringLiteral("BL auto-initialize"))) {
+        ++explicitLabels;
+      }
+    }
+    QCOMPARE(explicitLabels, 0);
+
+    auto* operating = child<QGroupBox>(widget, "operatingGroup");
+    auto* target = child<QGroupBox>(widget, "targetGroup");
+    auto* conditionTabs = child<QTabWidget>(widget, "conditionSettingsTabs");
+    auto* targetTabs = child<QTabWidget>(widget, "analysisTargetTabs");
+    QVERIFY(operating->layout() != nullptr);
+    QVERIFY(target->layout() != nullptr);
+    QCOMPARE(operating->layout()->count(), 1);
+    QCOMPARE(target->layout()->count(), 1);
+    QCOMPARE(operating->layout()->itemAt(0)->widget(), conditionTabs);
+    QCOMPARE(target->layout()->itemAt(0)->widget(), targetTabs);
   }
 
   void minimumSizeKeepsDefinitionsReadableWithoutClipping() {
@@ -554,6 +593,9 @@ class XFoilWidgetG6bTests : public QObject {
 
   void defaultOverlayIsOffAndToggleIsViewOnly() {
     XFoilWidget widget;
+    widget.resize(1280, 800);
+    widget.show();
+    QCoreApplication::processEvents();
     QVERIFY(widget.applySetup(nacaSetup("0012")).isOk());
     QSignalSpy geometry(&widget, &XFoilWidget::geometryChanged);
     QSignalSpy paneling(&widget, &XFoilWidget::panelingChanged);
@@ -593,6 +635,45 @@ class XFoilWidgetG6bTests : public QObject {
     QCOMPARE(configuration.count(), 0);
     QCOMPARE(target.count(), 0);
     QVERIFY(widget.isReadyToAnalyze());
+  }
+
+  void ux3LayoutContracts() {
+    XFoilWidget widget;
+    widget.resize(1280, 800);
+    widget.show();
+    QCoreApplication::processEvents();
+    auto* geometry = widget.findChild<QGroupBox*>("geometryGroup");
+    auto* paneling = widget.findChild<QGroupBox*>("panelingGroup");
+    auto* operating = widget.findChild<QGroupBox*>("operatingGroup");
+    auto* target = widget.findChild<QGroupBox*>("targetGroup");
+    auto* panelTabs = widget.findChild<QTabWidget*>("panelingSettingsTabs");
+    auto* condTabs = widget.findChild<QTabWidget*>("conditionSettingsTabs");
+    auto* targetTabs = widget.findChild<QTabWidget*>("analysisTargetTabs");
+    auto* load = widget.findChild<QPushButton*>("loadAirfoilButton");
+    auto* designation = widget.findChild<QLineEdit*>("nacaDesignationEdit");
+    QVERIFY(geometry && paneling && operating && target);
+    QVERIFY(panelTabs && condTabs && targetTabs);
+    QVERIFY(load && designation);
+    QCOMPARE(geometry->width(), operating->width());
+    QCOMPARE(geometry->width(), target->width());
+    const double ratio = static_cast<double>(paneling->width()) /
+                         static_cast<double>(geometry->width());
+    QVERIFY(ratio >= 0.83 && ratio <= 0.87);
+    const int frame = 2 * panelTabs->style()->pixelMetric(
+                                QStyle::PM_DefaultFrameWidth,
+                                nullptr, panelTabs);
+    QCOMPARE(panelTabs->height(),
+             panelTabs->tabBar()->sizeHint().height() +
+                 panelTabs->widget(1)->sizeHint().height() + frame + 2);
+    QCOMPARE(condTabs->height(), targetTabs->height());
+    QVERIFY(panelTabs->height() < condTabs->height());
+    QVERIFY(load->width() >= 110 && load->width() <= 130);
+    QVERIFY(designation->width() >= 80 && designation->width() <= 150);
+    QCOMPARE(spin(widget, "reynoldsSpin")->value(), 500000.0);
+    auto* scroll = widget.findChild<QScrollArea*>("definitionsScrollArea");
+    QVERIFY(scroll != nullptr);
+    QCOMPARE(scroll->verticalScrollBar()->maximum(), 0);
+    QCOMPARE(scroll->horizontalScrollBar()->maximum(), 0);
   }
 
   void viewOptionsCanChangeDuringAnalysis() {

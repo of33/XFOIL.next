@@ -210,6 +210,7 @@ void ResultPlotView::setAxisTitles(const QString& xTitle,
 
 void ResultPlotView::setCpDistribution(
     const xfoil::SurfaceDistribution& distribution) {
+  cpPlot_ = true;
   const SplitDistribution split = splitCp(distribution);
   if (!split.valid) {
     clearData();
@@ -225,6 +226,7 @@ void ResultPlotView::setCpDistribution(
 
 void ResultPlotView::setCfDistribution(
     const xfoil::SkinFrictionDistribution& distribution) {
+  cpPlot_ = false;
   const CfData data = cfData(distribution);
   if (!data.valid) {
     clearData();
@@ -282,6 +284,9 @@ void ResultPlotView::fitVisibleData() {
   const auto include = [&](QCPGraph* graph) {
     const auto data = graph->data();
     for (auto it = data->constBegin(); it != data->constEnd(); ++it) {
+      if (!std::isfinite(it->key) || !std::isfinite(it->value)) {
+        continue;
+      }
       xMinimum = std::min(xMinimum, it->key);
       xMaximum = std::max(xMaximum, it->key);
       yMinimum = std::min(yMinimum, it->value);
@@ -290,6 +295,10 @@ void ResultPlotView::fitVisibleData() {
   };
   include(upperGraph_);
   include(lowerGraph_);
+  if (!std::isfinite(xMinimum) || !std::isfinite(xMaximum) ||
+      !std::isfinite(yMinimum) || !std::isfinite(yMaximum)) {
+    return;
+  }
   if (zeroLineVisible_) {
     yMinimum = std::min(yMinimum, 0.0);
     yMaximum = std::max(yMaximum, 0.0);
@@ -298,8 +307,9 @@ void ResultPlotView::fitVisibleData() {
   const double ySpan = std::max(yMaximum - yMinimum, 1.0e-9);
   const double xPadding = xSpan * 0.06 + 1.0e-9;
   const double yPadding = ySpan * 0.08 + 1.0e-9;
+  const double yUpper = cpPlot_ ? yMaximum + 0.1 : yMaximum + yPadding;
   plot_->xAxis->setRange(xMinimum - xPadding, xMaximum + xPadding);
-  plot_->yAxis->setRange(yMinimum - yPadding, yMaximum + yPadding);
+  plot_->yAxis->setRange(yMinimum - yPadding, yUpper);
   plot_->replot();
 }
 

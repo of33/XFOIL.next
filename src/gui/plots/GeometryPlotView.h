@@ -32,6 +32,7 @@
 #include <QWidget>
 
 #include <functional>
+#include <vector>
 
 #include "xfoil/AnalysisData.h"
 #include "xfoil/geometry/AirfoilGeometry.h"
@@ -98,6 +99,7 @@ class GeometryPlotView : public QWidget {
 
  private:
   void updateAxes();
+  void rebuildPanelTicks();
   void applySampleMarkers();
   void updatePanelVisibility();
 
@@ -107,6 +109,7 @@ class GeometryPlotView : public QWidget {
   QCPCurve* panelTicks_{};
   InteractivePlotController* interaction_{};
   std::function<void(bool)> panelingToggleCallback_;
+  std::vector<xfoil::Point2D> panelPoints_;
   std::size_t geometryPointCount_{0};
   std::size_t panelPointCount_{0};
   std::size_t panelTickCount_{0};
@@ -118,6 +121,7 @@ class GeometryPlotView : public QWidget {
   double xMaximum_{1.0};
   double yMinimum_{0.0};
   double yMaximum_{0.0};
+  bool adjustingAxes_{false};
 };
 
 }  // namespace xfoil::gui

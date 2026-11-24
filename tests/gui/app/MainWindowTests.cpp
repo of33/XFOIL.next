@@ -26,14 +26,19 @@
 // recent files, About and deferred close with cancellation.
 
 #include <QAction>
+#include <QApplication>
+#include <QDialog>
 #include <QFile>
 #include <QFileInfo>
 #include <QLabel>
 #include <QListWidget>
+#include <QPushButton>
 #include <QRadioButton>
 #include <QMenu>
+#include <QMessageBox>
 #include <QSignalSpy>
 #include <QTemporaryDir>
+#include <QTimer>
 #include <QtTest/QTest>
 
 #include "app/MainWindow.h"
@@ -405,6 +410,12 @@ class MainWindowTests : public QObject {
              QStringLiteral("radio"));
     QVERIFY(widget->findChild<QRadioButton*>("geometryImportRadio")
                 ->isChecked());
+    harness.chooseCalls = 0;
+    QTest::mouseClick(
+        widget->findChild<QPushButton*>("loadAirfoilButton"),
+        Qt::LeftButton);
+    QCOMPARE(harness.chooseCalls, 1);
+    QVERIFY(harness.errors.isEmpty());
     QVERIFY(window.close());
   }
 
@@ -458,6 +469,46 @@ class MainWindowTests : public QObject {
                  QStringLiteral("https://github.com/of33/XFOIL.next")),
              1);
     QVERIFY(!harness.infoText.contains(QStringLiteral("2.0.0")));
+    QVERIFY(window.close());
+  }
+
+  void aboutDialogUsesWiderMinimum() {
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    MainWindow::Dependencies dependencies;
+    dependencies.settingsFile =
+        directory.filePath(QStringLiteral("settings.ini"));
+    MainWindow window(dependencies);
+    window.show();
+    int baseWidth = 0;
+    int minimumWidth = 0;
+    int actualWidth = 0;
+    bool found = false;
+    QTimer timer;
+    QObject::connect(&timer, &QTimer::timeout, &window, [&]() {
+      for (QWidget* widget : QApplication::topLevelWidgets()) {
+        auto* box = qobject_cast<QDialog*>(widget);
+        if (box == nullptr ||
+            box->objectName() != QStringLiteral("aboutDialog")) {
+          continue;
+        }
+        baseWidth = box->property("aboutBaseWidth").toInt();
+        minimumWidth = box->minimumWidth();
+        actualWidth = box->width();
+        found = true;
+        timer.stop();
+        box->accept();
+        return;
+      }
+    });
+    timer.start(10);
+    window.findChild<QAction*>("aboutAction")->trigger();
+    QVERIFY(found);
+    QVERIFY2(baseWidth > 0, "base width missing");
+    const int targetWidth = qRound(static_cast<double>(baseWidth) * 1.2);
+    QVERIFY2(minimumWidth >= targetWidth || actualWidth >= targetWidth,
+             qPrintable(QStringLiteral("base=%1 min=%2 width=%3")
+                            .arg(baseWidth).arg(minimumWidth).arg(actualWidth)));
     QVERIFY(window.close());
   }
 

@@ -97,6 +97,7 @@ class ResultPlotView : public QWidget {
   QString message_;
   bool sampleMarkersEnabled_{false};
   bool zeroLineVisible_{false};
+  bool cpPlot_{false};
 };
 
 }  // namespace xfoil::gui

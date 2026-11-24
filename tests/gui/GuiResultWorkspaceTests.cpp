@@ -228,8 +228,16 @@ class GuiResultWorkspaceTests : public QObject {
     QVERIFY(paneling != nullptr);
     QVERIFY(conditions != nullptr);
     QVERIFY(target != nullptr);
-    QCOMPARE(paneling->height(), conditions->height());
-    QCOMPARE(paneling->height(), target->height());
+    QCOMPARE(conditions->height(), target->height());
+    QVERIFY(paneling->height() < conditions->height());
+    const int frame = 2 * paneling->style()->pixelMetric(
+                                QStyle::PM_DefaultFrameWidth, nullptr, paneling);
+    const int expectedPanelingHeight =
+        paneling->tabBar()->sizeHint().height() +
+        paneling->widget(1)->sizeHint().height() + frame + 2;
+    QCOMPARE(paneling->height(), expectedPanelingHeight);
+    QVERIFY(paneling->widget(0)->sizeHint().height() <=
+            paneling->widget(1)->sizeHint().height());
     QCOMPARE(target->count(), 4);
     QCOMPARE(target->tabText(0), QStringLiteral("Alpha"));
     QCOMPARE(target->tabText(1), QStringLiteral("Alpha Sequence"));
@@ -352,7 +360,7 @@ class GuiResultWorkspaceTests : public QObject {
     QVERIFY(grid != nullptr);
     QCOMPARE(grid->rowCount(), 4);
     QCOMPARE(grid->columnCount(), 3);
-    QVERIFY(grid->verticalSpacing() >= 8);
+    QCOMPARE(grid->verticalSpacing(), 6);
     QVERIFY(grid->horizontalSpacing() >= 6);
 
     const QStringList values = {

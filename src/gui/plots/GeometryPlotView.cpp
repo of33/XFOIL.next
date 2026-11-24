@@ -149,6 +149,18 @@ GeometryPlotView::GeometryPlotView(QWidget* parent) : QWidget(parent) {
       panelingToggleCallback_(showPaneling_);
     }
   });
+  const auto refreshTicks = [this](const QCPRange&) {
+    if (!adjustingAxes_) {
+      rebuildPanelTicks();
+      plot_->replot(QCustomPlot::rpQueuedReplot);
+    }
+  };
+  QObject::connect(plot_->xAxis,
+                   QOverload<const QCPRange&>::of(&QCPAxis::rangeChanged),
+                   this, refreshTicks);
+  QObject::connect(plot_->yAxis,
+                   QOverload<const QCPRange&>::of(&QCPAxis::rangeChanged),
+                   this, refreshTicks);
 
   clear();
 }
@@ -169,66 +181,108 @@ void GeometryPlotView::setGeometry(
 void GeometryPlotView::setPanelGeometry(const SurfaceGeometry& panel) {
   panelPointCount_ = panel.points.size();
   hasPanel_ = !panel.points.empty();
+  panelPoints_ = panel.points;
   setCurveData(panelContour_, closedX(panel.points), closedY(panel.points));
+  updateAxes();
+}
 
+void GeometryPlotView::rebuildPanelTicks() {
   QVector<double> tickT;
   QVector<double> tickX;
   QVector<double> tickY;
   panelTickCount_ = 0;
-  if (panel.points.size() >= 2) {
-    double xMinimum = panel.points.front().x;
-    double xMaximum = panel.points.front().x;
-    for (const Point2D& point : panel.points) {
-      xMinimum = std::min(xMinimum, point.x);
-      xMaximum = std::max(xMaximum, point.x);
+
+  constexpr double kTickPixels = 6.0;
+  constexpr double kDegenerate = 1.0e-12;
+  constexpr double kDataEpsilon = 1.0e-7;
+  const auto unit = [](double dx, double dy, Point2D& result) {
+    const double length = std::hypot(dx, dy);
+    if (!std::isfinite(length) || length <= kDegenerate) {
+      return false;
     }
-    const double chord = xMaximum - xMinimum;
-    const double tickLength =
-        0.005 * (std::isfinite(chord) && chord > 1.0e-12 ? chord : 1.0);
-    constexpr double kDegenerate = 1.0e-14;
-    const auto unit = [](const Point2D& from, const Point2D& to,
-                         Point2D& result) {
-      const double dx = to.x - from.x;
-      const double dy = to.y - from.y;
-      const double length = std::hypot(dx, dy);
-      if (!std::isfinite(length) || length <= kDegenerate) {
-        return false;
+    result = {dx / length, dy / length};
+    return true;
+  };
+  const auto unitPixel = [](const QPointF& vector, QPointF& result) {
+    const double length = std::hypot(vector.x(), vector.y());
+    if (!std::isfinite(length) || length <= kDegenerate) {
+      return false;
+    }
+    result = QPointF(vector.x() / length, vector.y() / length);
+    return true;
+  };
+  const auto pixel = [this](const Point2D& point) {
+    return QPointF(plot_->xAxis->coordToPixel(point.x),
+                   plot_->yAxis->coordToPixel(point.y));
+  };
+
+  if (panelPoints_.size() >= 2 && plot_->axisRect()->width() > 0 &&
+      plot_->axisRect()->height() > 0) {
+    for (std::size_t index = 0; index < panelPoints_.size(); ++index) {
+      const Point2D& current = panelPoints_[index];
+      QPointF leftPixel;
+      QPointF rightPixel;
+      Point2D leftData{};
+      Point2D rightData{};
+      const bool hasLeftData =
+          index > 0 &&
+          unit(current.x - panelPoints_[index - 1].x,
+               current.y - panelPoints_[index - 1].y, leftData);
+      const bool hasRightData =
+          index + 1 < panelPoints_.size() &&
+          unit(panelPoints_[index + 1].x - current.x,
+               panelPoints_[index + 1].y - current.y, rightData);
+      const QPointF currentPixel = pixel(current);
+      const bool hasLeftPixel =
+          index > 0 &&
+          unitPixel(currentPixel - pixel(panelPoints_[index - 1]),
+                    leftPixel);
+      const bool hasRightPixel =
+          index + 1 < panelPoints_.size() &&
+          unitPixel(pixel(panelPoints_[index + 1]) - currentPixel,
+                    rightPixel);
+      if (!hasLeftPixel && !hasRightPixel) {
+        continue;
       }
-      result = {dx / length, dy / length};
-      return true;
-    };
-    for (std::size_t index = 0; index < panel.points.size(); ++index) {
-      const Point2D& current = panel.points[index];
-      Point2D left{};
-      Point2D right{};
-      const bool hasLeft =
-          index > 0 && unit(panel.points[index - 1], current, left);
-      const bool hasRight =
-          index + 1 < panel.points.size() &&
-          unit(current, panel.points[index + 1], right);
-      Point2D tangent{};
-      if (hasLeft && hasRight) {
-        const double sumX = left.x + right.x;
-        const double sumY = left.y + right.y;
-        const double sumLength = std::hypot(sumX, sumY);
-        if (!std::isfinite(sumLength) || sumLength <= kDegenerate) {
-          // Nearly opposite tangents have no unique outward normal.
+      QPointF tangentPixel;
+      if (hasLeftPixel && hasRightPixel) {
+        const QPointF sum = leftPixel + rightPixel;
+        if (!unitPixel(sum, tangentPixel)) {
           continue;
         }
-        tangent = {sumX / sumLength, sumY / sumLength};
-      } else if (hasRight) {
-        tangent = right;
-      } else if (hasLeft) {
-        tangent = left;
+      } else if (hasRightPixel) {
+        tangentPixel = rightPixel;
+      } else {
+        tangentPixel = leftPixel;
+      }
+
+      Point2D tangentData{};
+      if (hasLeftData && hasRightData) {
+        const double sumX = leftData.x + rightData.x;
+        const double sumY = leftData.y + rightData.y;
+        if (!unit(sumX, sumY, tangentData)) {
+          continue;
+        }
+      } else if (hasRightData) {
+        tangentData = rightData;
+      } else if (hasLeftData) {
+        tangentData = leftData;
       } else {
         continue;
       }
-      // Canonical panel contours are counter-clockwise, so the right-hand
-      // normal (dy, -dx) points from the surface to the outside.
-      const double normalX = tangent.y;
-      const double normalY = -tangent.x;
-      const double endX = current.x + tickLength * normalX;
-      const double endY = current.y + tickLength * normalY;
+
+      QPointF normalPixel(tangentPixel.y(), -tangentPixel.x());
+      const Point2D dataNormal{tangentData.y, -tangentData.x};
+      const QPointF outwardPixel =
+          pixel({current.x + kDataEpsilon * dataNormal.x,
+                 current.y + kDataEpsilon * dataNormal.y}) -
+          currentPixel;
+      if (QPointF::dotProduct(normalPixel, outwardPixel) < 0.0) {
+        normalPixel = -normalPixel;
+      }
+      const QPointF endPixel = currentPixel + kTickPixels * normalPixel;
+      const double endX = plot_->xAxis->pixelToCoord(endPixel.x());
+      const double endY = plot_->yAxis->pixelToCoord(endPixel.y());
       if (!std::isfinite(endX) || !std::isfinite(endY)) {
         continue;
       }
@@ -240,9 +294,7 @@ void GeometryPlotView::setPanelGeometry(const SurfaceGeometry& panel) {
     }
   }
   panelTicks_->setData(tickT, tickX, tickY, true);
-
   updatePanelVisibility();
-  updateAxes();
 }
 
 void GeometryPlotView::setShowPaneling(bool visible) {
@@ -271,6 +323,7 @@ void GeometryPlotView::updatePanelVisibility() {
 void GeometryPlotView::clearPanel() {
   panelPointCount_ = 0;
   panelTickCount_ = 0;
+  panelPoints_.clear();
   hasPanel_ = false;
   panelContour_->data()->clear();
   panelTicks_->data()->clear();
@@ -283,6 +336,7 @@ void GeometryPlotView::clear() {
   geometryPointCount_ = 0;
   panelPointCount_ = 0;
   panelTickCount_ = 0;
+  panelPoints_.clear();
   hasGeometry_ = false;
   hasPanel_ = false;
   geometryContour_->data()->clear();
@@ -298,6 +352,8 @@ void GeometryPlotView::clear() {
 
 void GeometryPlotView::resizeEvent(QResizeEvent* event) {
   QWidget::resizeEvent(event);
+  rebuildPanelTicks();
+  plot_->replot(QCustomPlot::rpQueuedReplot);
 }
 
 void GeometryPlotView::fitVisibleData() {
@@ -337,8 +393,11 @@ void GeometryPlotView::updateAxes() {
   }
 
   if (!bounds.valid) {
+    adjustingAxes_ = true;
     plot_->xAxis->setRange(0.0, 1.0);
     plot_->yAxis->setRange(-0.01, 0.01);
+    adjustingAxes_ = false;
+    rebuildPanelTicks();
     plot_->replot();
     return;
   }
@@ -350,8 +409,11 @@ void GeometryPlotView::updateAxes() {
   const double xMaximum = std::max(kXContractMaximum, bounds.xMaximum);
   const double yMinimum = bounds.yMinimum - kYPad;
   const double yMaximum = bounds.yMaximum + kYPad;
+  adjustingAxes_ = true;
   plot_->xAxis->setRange(xMinimum, xMaximum);
   plot_->yAxis->setRange(yMinimum, yMaximum);
+  adjustingAxes_ = false;
+  rebuildPanelTicks();
   plot_->replot();
 }
 

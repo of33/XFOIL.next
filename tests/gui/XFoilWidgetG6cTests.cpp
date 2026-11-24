@@ -29,16 +29,21 @@
 #include <string>
 
 #include <QCheckBox>
+#include <QImage>
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
+#include <QPainter>
 #include <QPushButton>
 #include <QSignalSpy>
 #include <QStyledItemDelegate>
+#include <QStyle>
+#include <QStyleOptionViewItem>
 #include <QtTest/QTest>
 
 #include "plots/ComparisonStyle.h"
 #include "plots/ScalarPlotView.h"
+#include "qcustomplot.h"
 #include "xfoil/gui/XFoilWidget.h"
 
 namespace {
@@ -136,6 +141,63 @@ class XFoilWidgetG6cTests : public QObject {
       QCOMPARE(scalar(widget, name)->comparisonCurveCount(), std::size_t{1});
       QCOMPARE(scalar(widget, name)->comparisonPointCount(), std::size_t{3});
     }
+  }
+
+  void comparisonStyleIsStableAndDistinctFromCurrent() {
+    XFoilWidget widget;
+    QVERIFY(widget.addComparisonPolar(polar("First", 0.4)).isOk());
+    QVERIFY(widget.addComparisonPolar(polar("Second", 0.6)).isOk());
+    auto* list = polarList(widget);
+    QCOMPARE(list->count(), 2);
+    QCOMPARE(list->item(0)->data(xfoil::gui::kComparisonStyleIndexRole).toInt(),
+             0);
+    QCOMPARE(list->item(1)->data(xfoil::gui::kComparisonStyleIndexRole).toInt(),
+             1);
+    QCOMPARE(xfoil::gui::comparisonColor(0), QColor(213, 94, 0));
+    QVERIFY(xfoil::gui::comparisonPenStyle(0) != Qt::SolidLine);
+    QVERIFY(xfoil::gui::comparisonColor(0) != QColor(0, 114, 178));
+
+    QImage image(220, 26, QImage::Format_ARGB32);
+    image.fill(Qt::white);
+    QPainter painter(&image);
+    QStyleOptionViewItem option;
+    option.rect = QRect(0, 0, 220, 26);
+    option.state = QStyle::State_Enabled;
+    option.font = list->font();
+    option.palette = list->palette();
+    option.widget = list;
+    list->itemDelegate()->paint(&painter, option,
+                                list->model()->index(0, 0));
+    painter.end();
+    bool sawSample = false;
+    for (int y = 6; y <= 20 && !sawSample; ++y) {
+      for (int x = 150; x <= 210; ++x) {
+        const QColor sample = image.pixelColor(x, y);
+        if (sample.red() > 140 && sample.red() > sample.green() + 20 &&
+            sample.red() > sample.blue() + 20) {
+          sawSample = true;
+          break;
+        }
+      }
+    }
+    QVERIFY(sawSample);
+
+    list->setCurrentRow(1);
+    widget.findChild<QPushButton*>("movePolarUpButton")->click();
+    QCOMPARE(list->item(0)->text(), QStringLiteral("Second"));
+    QCOMPARE(list->item(0)->data(xfoil::gui::kComparisonStyleIndexRole).toInt(),
+             1);
+    QCOMPARE(list->item(1)->text(), QStringLiteral("First"));
+    QCOMPARE(list->item(1)->data(xfoil::gui::kComparisonStyleIndexRole).toInt(),
+             0);
+    auto* plot = scalar(widget, "clAlphaPlot")->findChild<QCustomPlot*>();
+    QVERIFY(plot != nullptr);
+    auto* firstCurve = plot->findChild<QCPCurve*>("comparisonCurve0");
+    auto* secondCurve = plot->findChild<QCPCurve*>("comparisonCurve1");
+    QVERIFY(firstCurve && secondCurve);
+    QCOMPARE(firstCurve->pen().color(), xfoil::gui::comparisonColor(1));
+    QCOMPARE(secondCurve->pen().color(), xfoil::gui::comparisonColor(0));
+    QVERIFY(!plot->legend->visible());
   }
 
   void renameVisibilityAndRemoveAreInstanceLocal() {

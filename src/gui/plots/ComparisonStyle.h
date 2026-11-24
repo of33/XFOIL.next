@@ -28,6 +28,7 @@
 
 #include <array>
 #include <cstddef>
+#include <cstdint>
 
 #include <QColor>
 #include <Qt>
@@ -39,21 +40,27 @@ inline constexpr int kComparisonStyleIndexRole = Qt::UserRole + 1;
 
 inline constexpr std::array<QColor, kMaxComparisonStyles>
     kComparisonColors = {
+        QColor(213, 94, 0),     // vermillion, distinct from current blue
         QColor(0, 114, 178),    // blue
-        QColor(213, 94, 0),     // vermillion
         QColor(0, 158, 115),    // bluish green
         QColor(204, 121, 167),  // reddish purple
         QColor(86, 180, 233),   // sky blue
-        QColor(230, 159, 0),    // orange
         QColor(0, 0, 0),        // black
-        QColor(240, 228, 68),   // yellow
+        QColor(230, 159, 0),    // orange-yellow
+        QColor(140, 86, 75),    // brown
 };
 
 inline constexpr std::array<Qt::PenStyle, kMaxComparisonStyles>
     kComparisonStyles = {
-        Qt::SolidLine,     Qt::DashLine,    Qt::DotLine,     Qt::DashDotLine,
-        Qt::DashDotDotLine, Qt::SolidLine,  Qt::DashLine,    Qt::DashDotLine,
+        Qt::DashLine,      Qt::DotLine,    Qt::DashDotLine,
+        Qt::DashDotDotLine, Qt::SolidLine, Qt::DashLine,
+        Qt::DotLine,       Qt::DashDotLine,
 };
+
+[[nodiscard]]
+inline std::size_t comparisonStyleIndexForId(std::uint64_t id) {
+  return id == 0 ? 0 : static_cast<std::size_t>((id - 1) % kMaxComparisonStyles);
+}
 
 [[nodiscard]]
 inline QColor comparisonColor(std::size_t index) {

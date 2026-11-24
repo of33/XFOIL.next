@@ -177,7 +177,9 @@ class XFoilWidgetShellTests : public QObject {
   void g2StructureUsesSemanticNamesAndPromotedPlot() {
     XFoilWidget widget;
     const QStringList required = {
+        QStringLiteral("geometryTitleLabel"),
         QStringLiteral("geometryImportRadio"),
+        QStringLiteral("loadAirfoilButton"),
         QStringLiteral("geometryNacaRadio"),
         QStringLiteral("geometryNacsRadio"),
         QStringLiteral("airfoilNameDisplayLabel"),
@@ -209,6 +211,7 @@ class XFoilWidgetShellTests : public QObject {
         QStringLiteral("setupDiagnosticsView"),
         QStringLiteral("analyzeButton"),
         QStringLiteral("analysisProgressBar"),
+        QStringLiteral("analysisIterationLabel"),
         QStringLiteral("analysisStatusLabel"),
         QStringLiteral("resultInfoTabs"),
     };

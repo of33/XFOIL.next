@@ -30,6 +30,7 @@
 
 #include <QApplication>
 #include <QCoreApplication>
+#include <QPointF>
 #include <QString>
 #include <QtTest/QTest>
 
@@ -72,6 +73,19 @@ QCPCurve* curveOf(QCustomPlot* plot, const char* name) {
   QCPCurve* curve = plot->findChild<QCPCurve*>(QString::fromLatin1(name));
   Q_ASSERT(curve != nullptr);
   return curve;
+}
+
+QPointF pixelOf(QCustomPlot* plot, double x, double y) {
+  return QPointF(plot->xAxis->coordToPixel(x),
+                 plot->yAxis->coordToPixel(y));
+}
+
+QPointF unitVector(const QPointF& vector) {
+  const double length = std::hypot(vector.x(), vector.y());
+  if (length <= 0.0) {
+    return {};
+  }
+  return vector / length;
 }
 
 }  // namespace
@@ -211,8 +225,9 @@ class GeometryPlotViewTests : public QObject {
     QCoreApplication::processEvents();
 
     const AirfoilGeometry geometry = diamond();
+    const SurfaceGeometry panel = panelFor(geometry);
     view.setGeometry(geometry);
-    view.setPanelGeometry(panelFor(geometry));
+    view.setPanelGeometry(panel);
     view.setShowPaneling(true);
 
     QCustomPlot* plot = plotOf(view);
@@ -227,31 +242,74 @@ class GeometryPlotViewTests : public QObject {
     QVERIFY(tickColor.green() < 80);
     QVERIFY(tickColor.blue() < 80);
 
-    bool sawUpperOutward = false;
-    bool sawLowerOutward = false;
-    bool sawLeadingEdgeOutward = false;
-    const auto data = ticks->data();
-    for (int index = 0; index + 1 < data->size(); index += 3) {
-      const double startX = data->at(index)->key;
-      const double startY = data->at(index)->value;
-      const double endX = data->at(index + 1)->key;
-      const double endY = data->at(index + 1)->value;
-      const double length =
-          std::hypot(endX - startX, endY - startY);
-      QVERIFY(std::abs(length - 0.005) <= 1.0e-12);
-      if (startY > 0.0 && endY > startY) {
-        sawUpperOutward = true;
+    const auto verifyTicks = [&]() {
+      const auto data = ticks->data();
+      QCOMPARE(data->size(), static_cast<int>(panel.points.size() * 3));
+      bool sawUpperOutward = false;
+      bool sawLowerOutward = false;
+      bool sawLeadingEdgeOutward = false;
+      for (int tick = 0; tick < data->size() / 3; ++tick) {
+        const auto& current = panel.points[static_cast<std::size_t>(tick)];
+        const QPointF start = pixelOf(plot, data->at(tick * 3)->key,
+                                      data->at(tick * 3)->value);
+        const QPointF end = pixelOf(plot, data->at(tick * 3 + 1)->key,
+                                    data->at(tick * 3 + 1)->value);
+        const QPointF tickVector = end - start;
+        QVERIFY(std::abs(std::hypot(tickVector.x(), tickVector.y()) - 6.0) <
+                0.75);
+        if (current.y > 0.01) {
+          QVERIFY(end.y() < start.y());
+          sawUpperOutward = true;
+        }
+        if (current.y < -0.01) {
+          QVERIFY(end.y() > start.y());
+          sawLowerOutward = true;
+        }
+        if (std::abs(current.x) < 1.0e-12) {
+          QVERIFY(end.x() < start.x());
+          sawLeadingEdgeOutward = true;
+        }
+        QPointF tangentPixel;
+        if (tick > 0 && tick + 1 < data->size() / 3) {
+          tangentPixel = unitVector(
+              unitVector(start - pixelOf(plot,
+                                         panel.points[static_cast<std::size_t>(tick - 1)].x,
+                                         panel.points[static_cast<std::size_t>(tick - 1)].y)) +
+              unitVector(pixelOf(plot,
+                                 panel.points[static_cast<std::size_t>(tick + 1)].x,
+                                 panel.points[static_cast<std::size_t>(tick + 1)].y) -
+                         start));
+        } else if (tick > 0) {
+          tangentPixel = unitVector(
+              start - pixelOf(plot,
+                              panel.points[static_cast<std::size_t>(tick - 1)].x,
+                              panel.points[static_cast<std::size_t>(tick - 1)].y));
+        } else {
+          tangentPixel = unitVector(
+              pixelOf(plot, panel.points[1].x, panel.points[1].y) - start);
+        }
+        QVERIFY(!tangentPixel.isNull());
+        QVERIFY(std::abs(QPointF::dotProduct(unitVector(tickVector),
+                                             tangentPixel)) < 0.06);
       }
-      if (startY < 0.0 && endY < startY) {
-        sawLowerOutward = true;
-      }
-      if (std::abs(startX) <= 1.0e-12 && endX < startX) {
-        sawLeadingEdgeOutward = true;
-      }
-    }
-    QVERIFY(sawUpperOutward);
-    QVERIFY(sawLowerOutward);
-    QVERIFY(sawLeadingEdgeOutward);
+      QVERIFY(sawUpperOutward);
+      QVERIFY(sawLowerOutward);
+      QVERIFY(sawLeadingEdgeOutward);
+    };
+    verifyTicks();
+
+    plot->xAxis->setRange(0.2, 0.8);
+    plot->yAxis->setRange(-0.05, 0.05);
+    QCoreApplication::processEvents();
+    verifyTicks();
+
+    plot->xAxis->setRange(-0.1, 1.1);
+    QCoreApplication::processEvents();
+    verifyTicks();
+
+    view.resize(700, 260);
+    QCoreApplication::processEvents();
+    verifyTicks();
   }
 
   void degeneratePanelNodesProduceNoTicks() {

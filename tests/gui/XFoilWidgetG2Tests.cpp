@@ -39,6 +39,7 @@
 #include <QDoubleSpinBox>
 #include <QGroupBox>
 #include <QLabel>
+#include <QFontMetrics>
 #include <QLineEdit>
 #include <QPlainTextEdit>
 #include <QPushButton>
@@ -109,8 +110,8 @@ class XFoilWidgetG2Tests : public QObject {
     QVERIFY(!widget.geometry().has_value());
     QVERIFY(!widget.panelGeometry().has_value());
     QCOMPARE(widget.panelingOptions().panelCount, paneling.panelCount);
-    QCOMPARE(widget.configuration().reynoldsNumber,
-             configuration.reynoldsNumber);
+    QCOMPARE(configuration.reynoldsNumber, 100000.0);
+    QCOMPARE(widget.configuration().reynoldsNumber, 500000.0);
     QCOMPARE(widget.configuration().machNumber, configuration.machNumber);
     QCOMPARE(widget.configuration().viscous, configuration.viscous);
     QCOMPARE(widget.configuration().maximumIterations,
@@ -394,6 +395,55 @@ class XFoilWidgetG2Tests : public QObject {
     QVERIFY(widget.setGeometry(diamond()).isOk());
     QVERIFY(child<QRadioButton>(widget, "geometryImportRadio")->isChecked());
     QCOMPARE(requested.count(), 0);
+  }
+
+  void geometryHeaderAndTwoColumnSourceBody() {
+    XFoilWidget widget;
+    widget.resize(1280, 800);
+    widget.show();
+    QCoreApplication::processEvents();
+
+    auto* title = child<QLabel>(widget, "geometryTitleLabel");
+    QVERIFY(title != nullptr);
+    QCOMPARE(title->text(), QStringLiteral("Geometry:"));
+    QVERIFY(widget.findChild<QLabel*>("geometryHeaderLabel") == nullptr);
+    auto* load = child<QPushButton>(widget, "loadAirfoilButton");
+    auto* block = child<QWidget>(widget, "nacaGeometryBlock");
+    auto* designation = child<QLineEdit>(widget, "nacaDesignationEdit");
+    auto* create = child<QPushButton>(widget, "applyGeometryButton");
+    QVERIFY(load && block && designation && create);
+    QCOMPARE(load->text(), QStringLiteral("Load Airfoil"));
+    QVERIFY(load->geometry().right() <= block->geometry().left());
+    QVERIFY(load->isEnabled());
+    QVERIFY(!designation->isEnabled());
+    QVERIFY(!create->isEnabled());
+    QVERIFY(designation->maxLength() >= 5);
+    const QFontMetrics metrics(designation->font());
+    QVERIFY(designation->width() >=
+            metrics.horizontalAdvance(QStringLiteral("00000")));
+    QVERIFY(designation->width() < 150);
+
+    QSignalSpy requested(&widget, &XFoilWidget::airfoilImportRequested);
+    QTest::mouseClick(load, Qt::LeftButton);
+    QCOMPARE(requested.count(), 1);
+
+    child<QRadioButton>(widget, "geometryNacaRadio")->click();
+    QVERIFY(!load->isEnabled());
+    QVERIFY(designation->isEnabled());
+    QVERIFY(create->isEnabled());
+    child<QRadioButton>(widget, "geometryImportRadio")->click();
+    QVERIFY(load->isEnabled());
+    QVERIFY(!designation->isEnabled());
+    QVERIFY(!create->isEnabled());
+
+    QVERIFY(widget.setNaca("0012").isOk());
+    int nameLabels = 0;
+    for (QLabel* label : widget.findChildren<QLabel*>()) {
+      if (label->text().contains(QStringLiteral("NACA 0012"))) {
+        ++nameLabels;
+      }
+    }
+    QCOMPARE(nameLabels, 1);
   }
 
   void geometryNameEditingCommitsAndCancels() {

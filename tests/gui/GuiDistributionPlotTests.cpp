@@ -106,6 +106,7 @@ class GuiDistributionPlotTests : public QObject {
     QVERIFY(plot->xAxis->range().contains(1.0));
     QVERIFY(plot->yAxis->range().contains(-0.1));
     QVERIFY(plot->yAxis->range().contains(2.0));
+    QVERIFY(std::abs(plot->yAxis->range().upper - 2.1) < 1.0e-12);
   }
 
   void cpLegendIsTopRightAndMarginsAreCompact() {

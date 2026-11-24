@@ -47,6 +47,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
+#include <QFontMetrics>
 #include <QFormLayout>
 #include <QLabel>
 #include <QImage>
@@ -174,6 +175,29 @@ QString formatProgress(const ProgressEvent& event) {
                 .arg(static_cast<qulonglong>(event.completed));
   }
   return text;
+}
+
+QString formatIteration(const ProgressEvent& event) {
+  if (event.iteration.has_value()) {
+    const auto current = static_cast<qulonglong>(*event.iteration + 1);
+    if (event.total.has_value() && *event.total > 0) {
+      return QStringLiteral("Iteration %1 / %2")
+          .arg(current)
+          .arg(static_cast<qulonglong>(*event.total));
+    }
+    return QStringLiteral("Iteration %1").arg(current);
+  }
+  if (event.phase == ProgressPhase::sequence &&
+      event.sequenceIndex.has_value()) {
+    if (event.total.has_value() && *event.total > 0) {
+      return QStringLiteral("Point %1 / %2")
+          .arg(static_cast<qulonglong>(*event.sequenceIndex + 1))
+          .arg(static_cast<qulonglong>(*event.total));
+    }
+    return QStringLiteral("Point %1")
+        .arg(static_cast<qulonglong>(*event.sequenceIndex + 1));
+  }
+  return {};
 }
 
 QString severityName(DiagnosticSeverity severity) {
@@ -326,7 +350,7 @@ class ComparisonPolarDelegate : public QStyledItemDelegate {
              const QModelIndex& index) const override {
     QStyleOptionViewItem textOption(option);
     textOption.rect.setRight(std::max(textOption.rect.left(),
-                                      textOption.rect.right() - 64));
+                                      textOption.rect.right() - 74));
     QStyledItemDelegate::paint(painter, textOption, index);
 
     const QVariant styleValue = index.data(kComparisonStyleIndexRole);
@@ -337,12 +361,12 @@ class ComparisonPolarDelegate : public QStyledItemDelegate {
     if (styleIndex < 0) {
       return;
     }
-    QPen pen(comparisonColor(static_cast<std::size_t>(styleIndex)), 1.8);
+    QPen pen(comparisonColor(static_cast<std::size_t>(styleIndex)), 2.0);
     pen.setStyle(
         comparisonPenStyle(static_cast<std::size_t>(styleIndex)));
     pen.setCapStyle(Qt::FlatCap);
-    const int right = option.rect.right() - 10;
-    const int left = std::max(option.rect.left() + 4, right - 46);
+    const int right = option.rect.right() - 8;
+    const int left = std::max(option.rect.left() + 4, right - 56);
     const int y = option.rect.center().y();
     painter->save();
     painter->setPen(pen);
@@ -450,6 +474,11 @@ class XFoilWidget::Impl {
     ui.mainSplitter->setStretchFactor(0, 0);
     ui.mainSplitter->setStretchFactor(1, 1);
     compactDefinitionLayouts();
+    ui.definitionsRowLayout->setStretch(0, 100);
+    ui.definitionsRowLayout->setStretch(1, 85);
+    ui.definitionsRowLayout->setStretch(2, 100);
+    ui.definitionsRowLayout->setStretch(3, 100);
+    configureGeometryControlWidths();
     adjustDefinitionTabHeights();
     refreshUi();
   }
@@ -897,15 +926,13 @@ class XFoilWidget::Impl {
       GuiScalarPlotKind kind) const {
     std::vector<ScalarComparisonSeries> result;
     const auto& entries = polarManager_.entries();
-    for (std::size_t entryIndex = 0; entryIndex < entries.size();
-         ++entryIndex) {
-      const GuiStoredPolar& entry = entries[entryIndex];
+    for (const GuiStoredPolar& entry : entries) {
       if (!entry.visible) {
         continue;
       }
       ScalarComparisonSeries series;
       series.name = entry.name;
-      series.styleIndex = entryIndex;
+      series.styleIndex = comparisonStyleIndexForId(entry.id);
       series.points.reserve(entry.polar.points.size());
       for (const PolarPoint& point : entry.polar.points) {
         if (point.convergence != ConvergenceStatus::converged) {
@@ -967,15 +994,13 @@ class XFoilWidget::Impl {
       const QSignalBlocker blocker(ui.polarListView);
       ui.polarListView->clear();
       const auto& entries = polarManager_.entries();
-      for (std::size_t entryIndex = 0; entryIndex < entries.size();
-           ++entryIndex) {
-        const GuiStoredPolar& entry = entries[entryIndex];
+      for (const GuiStoredPolar& entry : entries) {
         auto* item = new QListWidgetItem(
             QString::fromStdString(entry.name), ui.polarListView);
         item->setData(Qt::UserRole,
                       QVariant::fromValue<qulonglong>(entry.id));
         item->setData(kComparisonStyleIndexRole,
-                      static_cast<int>(entryIndex));
+                      static_cast<int>(comparisonStyleIndexForId(entry.id)));
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
         item->setCheckState(entry.visible ? Qt::Checked : Qt::Unchecked);
       }
@@ -1163,6 +1188,7 @@ class XFoilWidget::Impl {
     currentOperatingPoint_.reset();
     currentSequence_.reset();
     progressFraction_.reset();
+    analysisIterationText_.clear();
     clearResultData();
     activeToken_ = std::make_shared<CancellationToken>();
 
@@ -1378,6 +1404,7 @@ class XFoilWidget::Impl {
     currentSequence_.reset();
     analysisDiagnostics_.clear();
     progressFraction_.reset();
+    analysisIterationText_.clear();
     activeToken_.reset();
     analysisStatusText_ = QStringLiteral("Idle");
     clearResultData();
@@ -1469,6 +1496,7 @@ class XFoilWidget::Impl {
     tracker_.finish(jobId, generationId);
     activeToken_.reset();
     progressFraction_.reset();
+    analysisIterationText_.clear();
 
     const bool havePoint = currentOperatingPoint_.has_value();
     const bool haveSequence =
@@ -1536,6 +1564,7 @@ class XFoilWidget::Impl {
 
   void updateProgress(const ProgressEvent& event) {
     analysisStatusText_ = formatProgress(event);
+    analysisIterationText_ = formatIteration(event);
     if (event.total.has_value() && *event.total > 0) {
       const double fraction =
           event.fraction.has_value()
@@ -1549,6 +1578,7 @@ class XFoilWidget::Impl {
     }
     refreshProgressBar();
     ui.analysisStatusLabel->setText(analysisStatusText_);
+    ui.analysisIterationLabel->setText(analysisIterationText_);
   }
 
   void refreshProgressBar() {
@@ -1559,6 +1589,7 @@ class XFoilWidget::Impl {
       ui.analysisProgressBar->setValue(
           analysisOutcome_ == AnalysisOutcome::results ? 100 : 0);
       ui.analysisProgressBar->setFormat(QStringLiteral("%p%"));
+      ui.analysisIterationLabel->clear();
       ui.analysisProgressBar->setToolTip(
           QStringLiteral("Progress of the current analysis phase"));
       ui.analysisProgressBar->setAccessibleDescription(analysisStatusText_);
@@ -1648,7 +1679,8 @@ class XFoilWidget::Impl {
                    paneling.lowerRefinementStart);
     setDoubleValue(ui.lowerRefinementEndSpin, paneling.lowerRefinementEnd);
 
-    const AnalysisConfig configuration;
+    AnalysisConfig configuration;
+    configuration.reynoldsNumber = 500000.0;
     ui.reynoldsSpin->setRange(0.0, 1.0e12);
     ui.reynoldsSpin->setDecimals(0);
     ui.reynoldsSpin->setSingleStep(1000.0);
@@ -1738,6 +1770,8 @@ class XFoilWidget::Impl {
   }
 
   void connectControls() {
+    QObject::connect(ui.loadAirfoilButton, &QPushButton::clicked, owner_,
+            [this]() { Q_EMIT owner_->airfoilImportRequested(); });
     QObject::connect(ui.geometryImportRadio, &QRadioButton::clicked, owner_,
             [this](bool checked) {
               if (!checked) {
@@ -1918,26 +1952,35 @@ class XFoilWidget::Impl {
                                     QSizePolicy::Ignored);
   }
 
+  void configureGeometryControlWidths() {
+    const QFontMetrics metrics(ui.nacaDesignationEdit->font());
+    const int width =
+        metrics.horizontalAdvance(QStringLiteral("NACA 00000")) + 18;
+    ui.nacaDesignationEdit->setMinimumWidth(width);
+    ui.nacaDesignationEdit->setMaximumWidth(width + 12);
+  }
+
   void adjustDefinitionTabHeights() {
-    const auto heightFor = [](QTabWidget* tabs) {
-      int content = 0;
-      for (int index = 0; index < tabs->count(); ++index) {
-        content = std::max(content, tabs->widget(index)->sizeHint().height());
-      }
+    const auto heightForPage = [](QTabWidget* tabs, int page) {
       const int bar = tabs->tabBar()->sizeHint().height();
       const int frame = 2 * tabs->style()->pixelMetric(
                                   QStyle::PM_DefaultFrameWidth, nullptr, tabs);
-      return std::max(tabs->sizeHint().height(), bar + content + frame + 2);
+      return bar + tabs->widget(page)->sizeHint().height() + frame + 2;
     };
-    const int height = std::max({
-        heightFor(ui.panelingSettingsTabs),
-        heightFor(ui.conditionSettingsTabs),
-        heightFor(ui.analysisTargetTabs)});
-    for (QTabWidget* tabs :
-         {ui.panelingSettingsTabs, ui.conditionSettingsTabs,
-          ui.analysisTargetTabs}) {
-      tabs->setFixedHeight(height);
-    }
+    const auto heightForTabs = [&heightForPage](QTabWidget* tabs) {
+      int content = 0;
+      for (int index = 0; index < tabs->count(); ++index) {
+        content = std::max(content, heightForPage(tabs, index));
+      }
+      return std::max(tabs->sizeHint().height(), content);
+    };
+    const int panelingHeight =
+        heightForPage(ui.panelingSettingsTabs, 1);
+    const int conditionHeight = heightForTabs(ui.conditionSettingsTabs);
+    const int targetHeight = conditionHeight;
+    ui.panelingSettingsTabs->setFixedHeight(panelingHeight);
+    ui.conditionSettingsTabs->setFixedHeight(conditionHeight);
+    ui.analysisTargetTabs->setFixedHeight(targetHeight);
   }
 
   void applyGeometryFromControls() {
@@ -2029,6 +2072,7 @@ class XFoilWidget::Impl {
 
   void updateGeometrySourceControls() {
     const bool textual = geometrySourceFromControls() != GeometrySource::memory;
+    ui.loadAirfoilButton->setEnabled(!textual);
     ui.nacaDesignationLabel->setEnabled(textual);
     ui.nacaDesignationEdit->setEnabled(textual);
     ui.applyGeometryButton->setEnabled(textual);
@@ -2746,6 +2790,7 @@ class XFoilWidget::Impl {
     const bool running = tracker_.isRunning();
 
     ui.analysisStatusLabel->setText(analysisStatusText_);
+    ui.analysisIterationLabel->setText(analysisIterationText_);
     ui.analysisProgressBar->setAccessibleDescription(analysisStatusText_);
 
     QString diagnostics;
@@ -2903,6 +2948,7 @@ class XFoilWidget::Impl {
   bool updatingPolarList_{false};
   AnalysisOutcome analysisOutcome_{AnalysisOutcome::none};
   QString analysisStatusText_{QStringLiteral("Idle")};
+  QString analysisIterationText_;
   bool updatingControls_{false};
   bool updatingName_{false};
   bool geometryImportNotice_{false};

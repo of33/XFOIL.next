@@ -33,16 +33,20 @@
 
 #include <QAction>
 #include <QCloseEvent>
+#include <QDialog>
+#include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QInputDialog>
 #include <QKeySequence>
+#include <QLabel>
 #include <QLineEdit>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QSettings>
 #include <QStatusBar>
+#include <QVBoxLayout>
 #include <QTimer>
 
 #include "app/GuiFileAdapters.h"
@@ -203,7 +207,30 @@ MainWindow::MainWindow(Dependencies dependencies, QWidget* parent)
   if (!dependencies_.showInfo) {
     dependencies_.showInfo = [this](const QString& title,
                                     const QString& text) {
-      QMessageBox::information(this, title, text);
+      QMessageBox reference(QMessageBox::Information, title, text,
+                            QMessageBox::Ok, this);
+      reference.ensurePolished();
+      const int baseWidth = reference.sizeHint().width();
+      QDialog dialog(this);
+      dialog.setObjectName(QStringLiteral("aboutDialog"));
+      dialog.setWindowTitle(title);
+      auto* layout = new QVBoxLayout(&dialog);
+      auto* label = new QLabel(text, &dialog);
+      label->setObjectName(QStringLiteral("aboutTextLabel"));
+      label->setTextInteractionFlags(Qt::TextBrowserInteraction);
+      layout->addWidget(label);
+      auto* buttons =
+          new QDialogButtonBox(QDialogButtonBox::Ok, &dialog);
+      QObject::connect(buttons, &QDialogButtonBox::accepted, &dialog,
+                       &QDialog::accept);
+      layout->addWidget(buttons);
+      dialog.ensurePolished();
+      dialog.setProperty("aboutBaseWidth", baseWidth);
+      const int targetWidth =
+          qRound(static_cast<double>(baseWidth) * 1.2);
+      dialog.setMinimumWidth(targetWidth);
+      dialog.resize(targetWidth, dialog.sizeHint().height());
+      dialog.exec();
     };
   }
 

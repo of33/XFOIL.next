@@ -133,7 +133,7 @@
                  <number>5</number>
                 </property>
                 <item>
-                 <widget class="QLabel" name="geometryHeaderLabel">
+                 <widget class="QLabel" name="geometryTitleLabel">
                   <property name="text">
                    <string>Geometry:</string>
                   </property>
@@ -223,46 +223,114 @@
                </layout>
               </item>
               <item>
-               <layout class="QFormLayout" name="geometryForm">
-                <item row="0" column="0">
-                 <widget class="QLabel" name="nacaDesignationLabel">
-                  <property name="text">
-                   <string>NACA designation</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QLineEdit" name="nacaDesignationEdit">
-                  <property name="placeholderText">
-                   <string>e.g. 2412</string>
-                  </property>
-                  <property name="toolTip">
-                   <string>NACA 4/5-digit or NACS designation, for example 2412.</string>
-                  </property>
-                  <property name="accessibleName">
-                   <string>NACA designation</string>
-                  </property>
-                  <property name="maximumWidth">
-                   <number>120</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QPushButton" name="applyGeometryButton">
-                  <property name="text">
-                   <string>Create Geometry</string>
-                  </property>
-                  <property name="toolTip">
-                   <string>Create the selected NACA or NACS geometry and generate panels.</string>
-                  </property>
-                  <property name="accessibleName">
-                   <string>Create geometry</string>
-                  </property>
-                 </widget>
-                </item>
-                <property name="rowWrapPolicy">
-                 <enum>QFormLayout::WrapLongRows</enum>
+               <layout class="QHBoxLayout" name="geometryBodyLayout">
+                <property name="leftMargin">
+                 <number>0</number>
                 </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <property name="spacing">
+                 <number>8</number>
+                </property>
+                <item alignment="Qt::AlignTop">
+                 <widget class="QPushButton" name="loadAirfoilButton">
+                  <property name="text">
+                   <string>Load Airfoil</string>
+                  </property>
+                  <property name="toolTip">
+                   <string>Choose a coordinate file through the application file dialog.</string>
+                  </property>
+                  <property name="accessibleName">
+                   <string>Load airfoil</string>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>110</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>130</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QWidget" name="nacaGeometryBlock" native="true">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                    <horstretch>1</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <layout class="QVBoxLayout" name="nacaGeometryBlockLayout">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="spacing">
+                    <number>3</number>
+                   </property>
+                   <item>
+                    <layout class="QFormLayout" name="geometryForm">
+                     <property name="rowWrapPolicy">
+                      <enum>QFormLayout::WrapLongRows</enum>
+                     </property>
+                     <item row="0" column="0">
+                      <widget class="QLabel" name="nacaDesignationLabel">
+                       <property name="text">
+                        <string>NACA designation</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="0" column="1">
+                      <widget class="QLineEdit" name="nacaDesignationEdit">
+                       <property name="placeholderText">
+                        <string>e.g. 2412</string>
+                       </property>
+                       <property name="toolTip">
+                        <string>NACA 4/5-digit or NACS designation, for example 2412.</string>
+                       </property>
+                       <property name="accessibleName">
+                        <string>NACA designation</string>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="applyGeometryButton">
+                     <property name="text">
+                      <string>Create Geometry</string>
+                     </property>
+                     <property name="toolTip">
+                      <string>Create the selected NACA or NACS geometry and generate panels.</string>
+                     </property>
+                     <property name="accessibleName">
+                      <string>Create geometry</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
                </layout>
               </item>
               <item>
@@ -368,6 +436,32 @@
                      <number>100</number>
                     </property>
                    </widget>
+                  </item>
+                  <item row="3" column="0" colspan="2">
+                   <widget class="QCheckBox" name="showPanelingCheckBox">
+                <property name="text">
+                 <string>Show paneling</string>
+                </property>
+                <property name="toolTip">
+                 <string>Show or hide the red panel contour and panel-node ticks. View only.</string>
+                </property>
+                <property name="accessibleName">
+                 <string>Show paneling</string>
+                </property>
+               </widget>
+                  </item>
+                  <item row="4" column="0" colspan="2">
+                   <widget class="QPushButton" name="generatePanelButton">
+                <property name="text">
+                 <string>Generate Panels</string>
+                </property>
+                <property name="toolTip">
+                 <string>Generate the panel from the current geometry and paneling options.</string>
+                </property>
+                <property name="accessibleName">
+                 <string>Generate panels</string>
+                </property>
+               </widget>
                   </item>
                  </layout>
                 </widget>
@@ -483,33 +577,7 @@
                 </widget>
                </widget>
               </item>
-              <item>
-               <widget class="QCheckBox" name="showPanelingCheckBox">
-                <property name="text">
-                 <string>Show paneling</string>
-                </property>
-                <property name="toolTip">
-                 <string>Show or hide the red panel contour and panel-node ticks. View only.</string>
-                </property>
-                <property name="accessibleName">
-                 <string>Show paneling</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="generatePanelButton">
-                <property name="text">
-                 <string>Generate Panels</string>
-                </property>
-                <property name="toolTip">
-                 <string>Generate the panel from the current geometry and paneling options.</string>
-                </property>
-                <property name="accessibleName">
-                 <string>Generate panels</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
+                                         </layout>
             </widget>
            </item>
            <item>
@@ -707,14 +775,7 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="2" column="0">
-                   <widget class="QLabel" name="autoInitializeLabel">
-                    <property name="text">
-                     <string>BL auto-initialize</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="1">
+                  <item row="2" column="0" colspan="2">
                    <widget class="QCheckBox" name="autoInitializeBoundaryLayerCheck">
                     <property name="text">
                      <string>Auto-initialize boundary layer</string>
@@ -2363,7 +2424,7 @@
                <number>6</number>
               </property>
               <property name="verticalSpacing">
-               <number>8</number>
+               <number>6</number>
               </property>
              </layout>
             </widget>
@@ -2699,6 +2760,31 @@
        </widget>
       </item>
       <item>
+       <widget class="QLabel" name="analysisIterationLabel">
+        <property name="text">
+         <string />
+        </property>
+        <property name="accessibleName">
+         <string>Analysis iteration</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignVCenter</set>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>110</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>170</width>
+          <height>16777215</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QLabel" name="analysisStatusLabel">
         <property name="text">
          <string>Idle</string>
@@ -2739,6 +2825,7 @@ QProgressBar#analysisProgressBar::chunk { background-color: #1565c0; }
  </widget>
  <tabstops>
   <tabstop>geometryImportRadio</tabstop>
+  <tabstop>loadAirfoilButton</tabstop>
   <tabstop>geometryNacaRadio</tabstop>
   <tabstop>geometryNacsRadio</tabstop>
   <tabstop>airfoilNameDisplayLabel</tabstop>
