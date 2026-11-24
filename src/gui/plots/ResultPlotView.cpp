@@ -32,6 +32,7 @@
 #include <utility>
 #include <vector>
 
+#include <QMargins>
 #include <QPen>
 #include <QVector>
 #include <QSizePolicy>
@@ -188,6 +189,12 @@ ResultPlotView::ResultPlotView(QWidget* parent) : QWidget(parent) {
   });
 
   plot_->legend->setVisible(true);
+  plot_->axisRect()->insetLayout()->setInsetAlignment(
+      0, Qt::AlignTop | Qt::AlignRight);
+  plot_->legend->setBorderPen(Qt::NoPen);
+  plot_->legend->setBrush(QColor(255, 255, 255, 210));
+  plot_->legend->setMargins(QMargins(2, 2, 2, 2));
+  plot_->legend->setRowSpacing(0);
   setAxisTitles(QStringLiteral("x/c"), QStringLiteral("-Cp"));
   clear();
 }

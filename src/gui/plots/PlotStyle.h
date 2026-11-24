@@ -28,11 +28,11 @@
 
 namespace xfoil::gui {
 
-inline constexpr double kPrimaryLineWidth = 1.35;
-inline constexpr double kComparisonLineWidth = 1.15;
+inline constexpr double kPrimaryLineWidth = 1.25;
+inline constexpr double kComparisonLineWidth = 1.10;
 inline constexpr double kDashedLineWidth = 1.10;
 inline constexpr double kZeroLineWidth = 0.90;
-inline constexpr double kPanelContourLineWidth = 1.10;
+inline constexpr double kPanelContourLineWidth = 1.00;
 inline constexpr double kPanelTickLineWidth = 0.90;
 inline constexpr double kSampleMarkerSize = 4.5;
 

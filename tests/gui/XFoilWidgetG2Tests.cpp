@@ -24,6 +24,7 @@
 // File: tests/gui/XFoilWidgetG2Tests.cpp
 // G2 host setter, UI binding, validation, invalidation and isolation tests.
 
+#include <algorithm>
 #include <cstddef>
 #include <string>
 #include <variant>
@@ -36,13 +37,19 @@
 #include <QDir>
 #include <QObject>
 #include <QDoubleSpinBox>
+#include <QGroupBox>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPlainTextEdit>
 #include <QPushButton>
+#include <QRadioButton>
+#include <QScrollArea>
+#include <QScrollBar>
 #include <QSignalSpy>
 #include <QSpinBox>
+#include <QStackedWidget>
 #include <QStringList>
+#include <QTabWidget>
 #include <QtTest/QTest>
 
 #include "xfoil/gui/XFoilWidget.h"
@@ -110,13 +117,22 @@ class XFoilWidgetG2Tests : public QObject {
              configuration.maximumIterations);
     QVERIFY(std::holds_alternative<xfoil::AlphaTarget>(widget.target()));
 
-    QVERIFY(child<QComboBox>(widget, "geometrySourceCombo") != nullptr);
+    QVERIFY(child<QRadioButton>(widget, "geometryImportRadio") != nullptr);
+    QVERIFY(child<QRadioButton>(widget, "geometryNacaRadio") != nullptr);
+    QVERIFY(child<QRadioButton>(widget, "geometryNacsRadio") != nullptr);
+    QVERIFY(child<QRadioButton>(widget, "geometryImportRadio")->isChecked());
     QVERIFY(child<QLineEdit>(widget, "nacaDesignationEdit") != nullptr);
     QVERIFY(child<QPushButton>(widget, "applyGeometryButton") != nullptr);
     QVERIFY(child<QSpinBox>(widget, "panelCountSpin") != nullptr);
     QVERIFY(child<QPushButton>(widget, "generatePanelButton") != nullptr);
     QVERIFY(child<QDoubleSpinBox>(widget, "reynoldsSpin") != nullptr);
-    QVERIFY(child<QComboBox>(widget, "targetModeCombo") != nullptr);
+    auto* targetTabs = child<QTabWidget>(widget, "analysisTargetTabs");
+    QCOMPARE(targetTabs->count(), 4);
+    QCOMPARE(targetTabs->currentIndex(), 0);
+    QCOMPARE(widget.findChild<QGroupBox*>("panelingGroup")->title(),
+             QStringLiteral("Paneling: no panel"));
+    QCOMPARE(widget.findChild<QLabel*>("airfoilNameDisplayLabel")->text(),
+             QStringLiteral("No geometry"));
     QVERIFY(widget.findChild<QLabel*>("definitionsPlaceholder") == nullptr);
     QVERIFY(widget.findChild<QLabel*>("geometryPlaceholder") == nullptr);
     QCOMPARE(widget.findChild<QLabel*>("cdValue")->text(),
@@ -151,12 +167,15 @@ class XFoilWidgetG2Tests : public QObject {
     QVERIFY(widget.state() == XFoilGuiState::configured);
     QVERIFY(widget.geometry().has_value());
     QVERIFY(widget.panelGeometry().has_value());
-    QCOMPARE(child<QComboBox>(widget, "geometrySourceCombo")->currentText(),
-             QStringLiteral("NACA"));
+    QVERIFY(child<QRadioButton>(widget, "geometryNacaRadio")->isChecked());
     QCOMPARE(child<QLineEdit>(widget, "nacaDesignationEdit")->text(),
              QStringLiteral("2412"));
-    QCOMPARE(child<QLabel>(widget, "geometryStatusLabel")->text(),
-             QStringLiteral("NACA geometry ready"));
+    QVERIFY(widget.findChild<QLabel*>("airfoilNameDisplayLabel")
+                ->text()
+                .contains(QStringLiteral("2412")));
+    QVERIFY(widget.findChild<QGroupBox*>("panelingGroup")
+                ->title()
+                .contains(QStringLiteral("panel points")));
 
     QVERIFY(widget.generatePanel(PanelingOptions{}).isOk());
     QCOMPARE(panelSpy.count(), 2);
@@ -187,10 +206,9 @@ class XFoilWidgetG2Tests : public QObject {
 
     widget.setTarget(LiftTarget{0.55});
     QCOMPARE(targetSpy.count(), 1);
-    QCOMPARE(child<QComboBox>(widget, "targetModeCombo")->currentText(),
-             QStringLiteral("CL point"));
+    QCOMPARE(child<QTabWidget>(widget, "analysisTargetTabs")->currentIndex(),
+             2);
     QCOMPARE(child<QDoubleSpinBox>(widget, "clTargetSpin")->value(), 0.55);
-    QVERIFY(!child<QDoubleSpinBox>(widget, "alphaTargetSpin")->isEnabled());
     QVERIFY(std::holds_alternative<LiftTarget>(widget.target()));
 
     AlphaSequence sequence;
@@ -199,9 +217,8 @@ class XFoilWidgetG2Tests : public QObject {
     sequence.step = Degrees{0.5};
     widget.setSequence(sequence);
     QCOMPARE(targetSpy.count(), 2);
-    QCOMPARE(child<QComboBox>(widget, "targetModeCombo")->currentText(),
-             QStringLiteral("Alpha sequence"));
-    QVERIFY(child<QWidget>(widget, "sequenceFields")->isEnabled());
+    QCOMPARE(child<QTabWidget>(widget, "analysisTargetTabs")->currentIndex(),
+             1);
     QCOMPARE(widget.sequence().endExclusive.value, 3.0);
 
     QVERIFY(stateSpy.count() >= 2);
@@ -210,10 +227,10 @@ class XFoilWidgetG2Tests : public QObject {
   void uiControlsUseTheSameControllerPath() {
     XFoilWidget widget;
 
-    auto* source = child<QComboBox>(widget, "geometrySourceCombo");
+    auto* source = child<QRadioButton>(widget, "geometryNacaRadio");
     auto* designation = child<QLineEdit>(widget, "nacaDesignationEdit");
     auto* apply = child<QPushButton>(widget, "applyGeometryButton");
-    source->setCurrentIndex(1);
+    source->setChecked(true);
     designation->setText(QStringLiteral("0012"));
     apply->click();
     QVERIFY(widget.geometry().has_value());
@@ -235,14 +252,13 @@ class XFoilWidgetG2Tests : public QObject {
     child<QCheckBox>(widget, "viscousCheck")->setChecked(false);
     QCOMPARE(widget.configuration().viscous, false);
 
-    auto* mode = child<QComboBox>(widget, "targetModeCombo");
-    mode->setCurrentIndex(1);
+    auto* mode = child<QTabWidget>(widget, "analysisTargetTabs");
+    mode->setCurrentIndex(2);
     child<QDoubleSpinBox>(widget, "clTargetSpin")->setValue(0.4);
     QVERIFY(std::holds_alternative<LiftTarget>(widget.target()));
     QCOMPARE(std::get<LiftTarget>(widget.target()).cl, 0.4);
 
-    mode->setCurrentIndex(2);
-    QVERIFY(child<QWidget>(widget, "sequenceFields")->isEnabled());
+    mode->setCurrentIndex(1);
     child<QDoubleSpinBox>(widget, "sequenceStepSpin")->setValue(0.0);
     QVERIFY(widget.state() == XFoilGuiState::error);
     QVERIFY(!widget.isReadyToAnalyze());
@@ -301,11 +317,116 @@ class XFoilWidgetG2Tests : public QObject {
     QVERIFY(widget.setGeometry(diamond()).isOk());
     QVERIFY(widget.geometry().has_value());
     QVERIFY(widget.state() == XFoilGuiState::geometry);
-    QCOMPARE(child<QComboBox>(widget, "geometrySourceCombo")->currentText(),
-             QStringLiteral("File"));
-    QCOMPARE(child<QLabel>(widget, "geometryStatusLabel")->text(),
-             QStringLiteral("File geometry ready"));
+    QVERIFY(child<QRadioButton>(widget, "geometryImportRadio")->isChecked());
+    QCOMPARE(child<QLabel>(widget, "airfoilNameDisplayLabel")->text(),
+             QStringLiteral("diamond"));
     QVERIFY(!child<QPushButton>(widget, "applyGeometryButton")->isEnabled());
+  }
+
+  void nacsAutopanelsWithoutImportNotice() {
+    XFoilWidget widget;
+    QVERIFY(widget.setNacs("0012").isOk());
+    QVERIFY(widget.geometry().has_value());
+    QVERIFY(widget.panelGeometry().has_value());
+    QVERIFY(widget.isReadyToAnalyze());
+    QVERIFY(widget.findChild<QRadioButton*>("geometryNacsRadio")->isChecked());
+    QVERIFY(widget.findChild<QLabel*>("geometryImportNoticeLabel")->isHidden());
+  }
+
+  void importNoticeIsViewStateAndClears() {
+    XFoilWidget widget;
+    widget.resize(1280, 800);
+    widget.show();
+    QCoreApplication::processEvents();
+    std::vector<xfoil::Point2D> points = {
+        {1.0, 0.0}, {0.5, -0.08}, {0.0, 0.0},
+        {0.5, 0.08}, {1.0, 0.0}};
+    AirfoilGeometry clockwise;
+    QVERIFY(clockwise.assign("clockwise", points).success());
+    QVERIFY(widget.applyImportedGeometry(clockwise, true).isOk());
+    auto* notice =
+        widget.findChild<QLabel*>("geometryImportNoticeLabel");
+    QVERIFY(notice != nullptr);
+    QVERIFY(!notice->isHidden());
+    QCOMPARE(notice->text(), QStringLiteral(
+        "Clockwise point order detected and reversed to "
+        "counter-clockwise."));
+    QVERIFY(child<QRadioButton>(widget, "geometryImportRadio")->isChecked());
+    auto* scroll = child<QScrollArea>(widget, "definitionsScrollArea");
+    QCOMPARE(scroll->verticalScrollBar()->maximum(), 0);
+
+    points = {{1.0, 0.0}, {0.5, 0.08}, {0.0, 0.0},
+              {0.5, -0.08}, {1.0, 0.0}};
+    AirfoilGeometry counterClockwise;
+    QVERIFY(counterClockwise.assign("ccw", points).success());
+    QVERIFY(widget.applyImportedGeometry(counterClockwise, false).isOk());
+    QVERIFY(notice->isHidden());
+    QVERIFY(notice->text().isEmpty());
+
+    QVERIFY(widget.applyImportedGeometry(clockwise, true).isOk());
+    QVERIFY(!notice->isHidden());
+    QVERIFY(widget.setNaca("0012").isOk());
+    QVERIFY(notice->isHidden());
+  }
+
+  void geometrySourceRadiosRequestImportAndRestoreOnCancel() {
+    XFoilWidget widget;
+    widget.resize(800, 600);
+    widget.show();
+    QCoreApplication::processEvents();
+    QVERIFY(widget.setNaca("0012").isOk());
+    QVERIFY(child<QRadioButton>(widget, "geometryNacaRadio")->isChecked());
+
+    QSignalSpy requested(&widget, &XFoilWidget::airfoilImportRequested);
+    QTest::mouseClick(child<QRadioButton>(widget, "geometryImportRadio"),
+                      Qt::LeftButton);
+    QCOMPARE(requested.count(), 1);
+    QVERIFY(child<QRadioButton>(widget, "geometryImportRadio")->isChecked());
+    QVERIFY(!child<QRadioButton>(widget, "geometryNacaRadio")->isChecked());
+    QVERIFY(!child<QLineEdit>(widget, "nacaDesignationEdit")->isEnabled());
+    QVERIFY(!child<QPushButton>(widget, "applyGeometryButton")->isEnabled());
+
+    widget.cancelAirfoilImportRequest();
+    QVERIFY(child<QRadioButton>(widget, "geometryNacaRadio")->isChecked());
+    QVERIFY(child<QLineEdit>(widget, "nacaDesignationEdit")->isEnabled());
+
+    requested.clear();
+    QVERIFY(widget.setGeometry(diamond()).isOk());
+    QVERIFY(child<QRadioButton>(widget, "geometryImportRadio")->isChecked());
+    QCOMPARE(requested.count(), 0);
+  }
+
+  void geometryNameEditingCommitsAndCancels() {
+    XFoilWidget widget;
+    widget.resize(800, 600);
+    widget.show();
+    QCoreApplication::processEvents();
+    QVERIFY(widget.setNaca("0012").isOk());
+    auto* display = child<QLabel>(widget, "airfoilNameDisplayLabel");
+    auto* edit = child<QLineEdit>(widget, "airfoilNameEdit");
+    auto* stack = child<QStackedWidget>(widget, "airfoilNameStack");
+    QCOMPARE(stack->currentWidget(), display);
+
+    QTest::mouseClick(display, Qt::LeftButton);
+    QCOMPARE(stack->currentWidget(), edit);
+    edit->setText(QStringLiteral("My Wing"));
+    QTest::keyClick(edit, Qt::Key_Return);
+    QCoreApplication::processEvents();
+    QCOMPARE(QString::fromStdString(std::string(widget.geometry()->name())),
+             QStringLiteral("My Wing"));
+    QCOMPARE(display->text(), QStringLiteral("My Wing"));
+    QCOMPARE(stack->currentWidget(), display);
+    QVERIFY(!widget.isReadyToAnalyze() ||
+            widget.panelGeometry().has_value());
+
+    QTest::mouseClick(display, Qt::LeftButton);
+    edit->setText(QStringLiteral("Discarded"));
+    QTest::keyClick(edit, Qt::Key_Escape);
+    QCoreApplication::processEvents();
+    QCOMPARE(QString::fromStdString(std::string(widget.geometry()->name())),
+             QStringLiteral("My Wing"));
+    QCOMPARE(display->text(), QStringLiteral("My Wing"));
+    QCOMPARE(stack->currentWidget(), display);
   }
 
   void twoWidgetsRemainIndependent() {
@@ -340,6 +461,8 @@ class XFoilWidgetG2Tests : public QObject {
     for (QObject* child : widget.findChildren<QObject*>()) {
       after.push_back(child->objectName());
     }
+    std::sort(before.begin(), before.end());
+    std::sort(after.begin(), after.end());
     QCOMPARE(after, before);
   }
 

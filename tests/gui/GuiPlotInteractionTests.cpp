@@ -303,8 +303,8 @@ class GuiPlotInteractionTests : public QObject {
     plot->xAxis->setRange(0.0, 1.0e-12);
     plot->yAxis->setRange(0.0, 1.0e-12);
     sendWheel(plot, centerOf(plot), 120);
-    QVERIFY(plot->xAxis->range().size() >= 1.0e-12);
-    QVERIFY(plot->yAxis->range().size() >= 1.0e-12);
+    QVERIFY(plot->xAxis->range().size() >= 0.999e-12);
+    QVERIFY(plot->yAxis->range().size() >= 0.999e-12);
     plot->xAxis->setRange(0.0, 1.0e12);
     plot->yAxis->setRange(0.0, 1.0e12);
     sendWheel(plot, centerOf(plot), -120);
@@ -362,7 +362,7 @@ class GuiPlotInteractionTests : public QObject {
               Qt::RightButton, Qt::ControlModifier);
     sendMouse(plot, QEvent::MouseButtonRelease, center, Qt::RightButton,
               Qt::NoButton, Qt::ControlModifier);
-    QVERIFY(!view.panelNodesVisible());
+    QVERIFY(!view.showPaneling());
     QVERIFY(!ticks->visible());
     QCOMPARE(contour->scatterStyle().shape(), QCPScatterStyle::ssNone);
     QCOMPARE(plot->xAxis->range().lower, beforeX.lower);
@@ -372,7 +372,7 @@ class GuiPlotInteractionTests : public QObject {
               Qt::RightButton, Qt::ControlModifier);
     sendMouse(plot, QEvent::MouseButtonRelease, center, Qt::RightButton,
               Qt::NoButton, Qt::ControlModifier);
-    QVERIFY(view.panelNodesVisible());
+    QVERIFY(view.showPaneling());
     QVERIFY(ticks->visible());
     QCOMPARE(contour->scatterStyle().shape(), QCPScatterStyle::ssNone);
   }

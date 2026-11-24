@@ -144,11 +144,11 @@ GeometryPlotView::GeometryPlotView(QWidget* parent) : QWidget(parent) {
   interaction_ = new InteractivePlotController(plot_, false, true, this);
   interaction_->setFitCallback([this]() { fitVisibleData(); });
   interaction_->setMarkerToggleCallback([this]() {
-    sampleMarkersEnabled_ = interaction_->sampleMarkersEnabled();
-    panelTicksVisible_ = sampleMarkersEnabled_;
-    applySampleMarkers();
+    setShowPaneling(!showPaneling_);
+    if (panelingToggleCallback_) {
+      panelingToggleCallback_(showPaneling_);
+    }
   });
-  interaction_->setSampleMarkersEnabled(panelTicksVisible_);
 
   clear();
 }
@@ -184,33 +184,49 @@ void GeometryPlotView::setPanelGeometry(const SurfaceGeometry& panel) {
     }
     const double chord = xMaximum - xMinimum;
     const double tickLength =
-        0.01 * (std::isfinite(chord) && chord > 1.0e-12 ? chord : 1.0);
+        0.005 * (std::isfinite(chord) && chord > 1.0e-12 ? chord : 1.0);
     constexpr double kDegenerate = 1.0e-14;
-    const auto distance = [](const Point2D& a, const Point2D& b) {
-      return std::hypot(b.x - a.x, b.y - a.y);
+    const auto unit = [](const Point2D& from, const Point2D& to,
+                         Point2D& result) {
+      const double dx = to.x - from.x;
+      const double dy = to.y - from.y;
+      const double length = std::hypot(dx, dy);
+      if (!std::isfinite(length) || length <= kDegenerate) {
+        return false;
+      }
+      result = {dx / length, dy / length};
+      return true;
     };
     for (std::size_t index = 0; index < panel.points.size(); ++index) {
       const Point2D& current = panel.points[index];
-      const bool hasPrevious = index > 0;
-      const bool hasNext = index + 1 < panel.points.size();
-      const Point2D& previous =
-          hasPrevious ? panel.points[index - 1] : current;
-      const Point2D& next = hasNext ? panel.points[index + 1] : current;
-      if ((hasPrevious && distance(previous, current) <= kDegenerate) ||
-          (hasNext && distance(current, next) <= kDegenerate)) {
+      Point2D left{};
+      Point2D right{};
+      const bool hasLeft =
+          index > 0 && unit(panel.points[index - 1], current, left);
+      const bool hasRight =
+          index + 1 < panel.points.size() &&
+          unit(current, panel.points[index + 1], right);
+      Point2D tangent{};
+      if (hasLeft && hasRight) {
+        const double sumX = left.x + right.x;
+        const double sumY = left.y + right.y;
+        const double sumLength = std::hypot(sumX, sumY);
+        if (!std::isfinite(sumLength) || sumLength <= kDegenerate) {
+          // Nearly opposite tangents have no unique outward normal.
+          continue;
+        }
+        tangent = {sumX / sumLength, sumY / sumLength};
+      } else if (hasRight) {
+        tangent = right;
+      } else if (hasLeft) {
+        tangent = left;
+      } else {
         continue;
       }
-      const double dx = next.x - previous.x;
-      const double dy = next.y - previous.y;
-      const double tangentLength = std::hypot(dx, dy);
-      if (!std::isfinite(tangentLength) || tangentLength <= kDegenerate) {
-        continue;
-      }
-      // XFOIL NCALC uses the spline tangent and the averaged normal at
-      // duplicated corner nodes. For the panel nodes this is the outward
-      // normal of the local chord bisector.
-      const double normalX = dy / tangentLength;
-      const double normalY = -dx / tangentLength;
+      // Canonical panel contours are counter-clockwise, so the right-hand
+      // normal (dy, -dx) points from the surface to the outside.
+      const double normalX = tangent.y;
+      const double normalY = -tangent.x;
       const double endX = current.x + tickLength * normalX;
       const double endY = current.y + tickLength * normalY;
       if (!std::isfinite(endX) || !std::isfinite(endY)) {
@@ -237,12 +253,13 @@ void GeometryPlotView::setShowPaneling(bool visible) {
 
 void GeometryPlotView::showPanelNodes(bool visible) {
   panelTicksVisible_ = visible;
-  sampleMarkersEnabled_ = visible;
-  if (interaction_ != nullptr) {
-    interaction_->setSampleMarkersEnabled(visible);
-  }
   updatePanelVisibility();
   plot_->replot();
+}
+
+void GeometryPlotView::setPanelingToggleCallback(
+    std::function<void(bool)> callback) {
+  panelingToggleCallback_ = std::move(callback);
 }
 
 void GeometryPlotView::updatePanelVisibility() {
@@ -291,12 +308,7 @@ void GeometryPlotView::fitVisibleData() {
 }
 
 void GeometryPlotView::setSampleMarkersEnabled(bool enabled) {
-  sampleMarkersEnabled_ = enabled;
-  panelTicksVisible_ = enabled;
-  if (interaction_ != nullptr) {
-    interaction_->setSampleMarkersEnabled(enabled);
-  }
-  applySampleMarkers();
+  setShowPaneling(enabled);
 }
 
 void GeometryPlotView::applySampleMarkers() {

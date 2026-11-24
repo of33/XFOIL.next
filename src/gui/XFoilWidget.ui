@@ -99,91 +99,185 @@
              <property name="title">
               <string>Geometry</string>
              </property>
-             <layout class="QFormLayout" name="geometryForm">
-              <property name="rowWrapPolicy">
-               <enum>QFormLayout::WrapLongRows</enum>
+             <layout class="QVBoxLayout" name="geometryGroupLayout">
+              <property name="leftMargin">
+               <number>6</number>
               </property>
-              <item row="0" column="0">
-               <widget class="QLabel" name="geometrySourceLabel">
+              <property name="topMargin">
+               <number>6</number>
+              </property>
+              <property name="rightMargin">
+               <number>6</number>
+              </property>
+              <property name="bottomMargin">
+               <number>6</number>
+              </property>
+              <property name="spacing">
+               <number>5</number>
+              </property>
+              <item>
+               <layout class="QHBoxLayout" name="geometryHeaderLayout">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <property name="spacing">
+                 <number>5</number>
+                </property>
+                <item>
+                 <widget class="QLabel" name="geometryHeaderLabel">
+                  <property name="text">
+                   <string>Geometry:</string>
+                  </property>
+                  <property name="accessibleName">
+                   <string>Geometry</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QStackedWidget" name="airfoilNameStack">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                    <horstretch>1</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <widget class="QLabel" name="airfoilNameDisplayLabel">
+                   <property name="text">
+                    <string>No geometry</string>
+                   </property>
+                   <property name="styleSheet">
+                    <string>font-weight: 600;</string>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Airfoil name</string>
+                   </property>
+                  </widget>
+                  <widget class="QLineEdit" name="airfoilNameEdit">
+                   <property name="toolTip">
+                    <string>Click the name, edit it, then press Enter or leave the field. Escape cancels.</string>
+                   </property>
+                   <property name="accessibleName">
+                    <string>Airfoil name</string>
+                   </property>
+                  </widget>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="geometrySourceLayout">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <property name="spacing">
+                 <number>10</number>
+                </property>
+                <item>
+                 <widget class="QRadioButton" name="geometryImportRadio">
+                  <property name="text">
+                   <string>Import</string>
+                  </property>
+                  <property name="accessibleName">
+                   <string>Import airfoil coordinates</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="geometryNacaRadio">
+                  <property name="text">
+                   <string>NACA</string>
+                  </property>
+                  <property name="accessibleName">
+                   <string>NACA geometry</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="geometryNacsRadio">
+                  <property name="text">
+                   <string>NACS</string>
+                  </property>
+                  <property name="accessibleName">
+                   <string>NACS geometry</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QFormLayout" name="geometryForm">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="nacaDesignationLabel">
+                  <property name="text">
+                   <string>NACA designation</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QLineEdit" name="nacaDesignationEdit">
+                  <property name="placeholderText">
+                   <string>e.g. 2412</string>
+                  </property>
+                  <property name="toolTip">
+                   <string>NACA 4/5-digit or NACS designation, for example 2412.</string>
+                  </property>
+                  <property name="accessibleName">
+                   <string>NACA designation</string>
+                  </property>
+                  <property name="maximumWidth">
+                   <number>120</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QPushButton" name="applyGeometryButton">
+                  <property name="text">
+                   <string>Create Geometry</string>
+                  </property>
+                  <property name="toolTip">
+                   <string>Create the selected NACA or NACS geometry and generate panels.</string>
+                  </property>
+                  <property name="accessibleName">
+                   <string>Create geometry</string>
+                  </property>
+                 </widget>
+                </item>
+                <property name="rowWrapPolicy">
+                 <enum>QFormLayout::WrapLongRows</enum>
+                </property>
+               </layout>
+              </item>
+              <item>
+               <widget class="QLabel" name="geometryImportNoticeLabel">
                 <property name="text">
-                 <string>Source</string>
+                 <string />
                 </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QComboBox" name="geometrySourceCombo">
-                <property name="toolTip">
-                 <string>File geometry is supplied by the host through setGeometry(). NACA and NACS generate in memory.</string>
+                <property name="wordWrap">
+                 <bool>true</bool>
                 </property>
-                <property name="accessibleName">
-                 <string>Geometry source</string>
+                <property name="visible">
+                 <bool>false</bool>
                 </property>
-                <property name="maximumWidth">
-                 <number>160</number>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="nacaDesignationLabel">
-                <property name="text">
-                 <string>NACA/NACS designation</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QLineEdit" name="nacaDesignationEdit">
-                <property name="placeholderText">
-                 <string>e.g. 2412</string>
-                </property>
-                <property name="toolTip">
-                 <string>NACA 4/5-digit or NACS designation, for example 2412.</string>
-                </property>
-                <property name="accessibleName">
-                 <string>NACA or NACS designation</string>
-                </property>
-                <property name="maximumWidth">
-                 <number>120</number>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QPushButton" name="applyGeometryButton">
-                <property name="text">
-                 <string>Apply Geometry</string>
-                </property>
-                <property name="toolTip">
-                 <string>Validate and adopt the selected NACA or NACS geometry.</string>
-                </property>
-                <property name="accessibleName">
-                 <string>Apply geometry</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="geometryNameCaption">
-                <property name="text">
-                 <string>Name</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="1">
-               <widget class="QLabel" name="geometryNameLabel">
-                <property name="text">
-                 <string>No geometry</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="0">
-               <widget class="QLabel" name="geometryStatusCaption">
-                <property name="text">
-                 <string>Status</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="1">
-               <widget class="QLabel" name="geometryStatusLabel">
-                <property name="text">
-                 <string>Not set</string>
+                <property name="styleSheet">
+                 <string>QLabel { color: #6a4c00; background-color: #fff4d6; border: 1px solid #e0c36a; border-radius: 3px; padding: 3px; }</string>
                 </property>
                </widget>
               </item>
@@ -199,7 +293,7 @@
               </sizepolicy>
              </property>
              <property name="title">
-              <string>Paneling</string>
+              <string>Paneling: no panel</string>
              </property>
              <layout class="QVBoxLayout" name="panelingGroupLayout">
               <item>
@@ -390,65 +484,30 @@
                </widget>
               </item>
               <item>
-               <layout class="QFormLayout" name="panelingPreviewForm">
-                <property name="rowWrapPolicy">
-                 <enum>QFormLayout::WrapLongRows</enum>
+               <widget class="QCheckBox" name="showPanelingCheckBox">
+                <property name="text">
+                 <string>Show paneling</string>
                 </property>
-                <item row="0" column="0">
-                 <widget class="QLabel" name="showPanelingLabel">
-                  <property name="text">
-                   <string>Overlay</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QCheckBox" name="showPanelingCheckBox">
-                  <property name="text">
-                   <string>Show paneling</string>
-                  </property>
-                  <property name="toolTip">
-                   <string>Show the red panel contour and panel-node ticks. View only.</string>
-                  </property>
-                  <property name="accessibleName">
-                   <string>Show paneling overlay</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
+                <property name="toolTip">
+                 <string>Show or hide the red panel contour and panel-node ticks. View only.</string>
+                </property>
+                <property name="accessibleName">
+                 <string>Show paneling</string>
+                </property>
+               </widget>
               </item>
               <item>
                <widget class="QPushButton" name="generatePanelButton">
                 <property name="text">
-                 <string>Generate Panel</string>
+                 <string>Generate Panels</string>
                 </property>
                 <property name="toolTip">
                  <string>Generate the panel from the current geometry and paneling options.</string>
                 </property>
                 <property name="accessibleName">
-                 <string>Generate panel</string>
+                 <string>Generate panels</string>
                 </property>
                </widget>
-              </item>
-              <item>
-               <layout class="QFormLayout" name="panelingStatusForm">
-                <property name="rowWrapPolicy">
-                 <enum>QFormLayout::WrapLongRows</enum>
-                </property>
-                <item row="0" column="0">
-                 <widget class="QLabel" name="panelStatusCaption">
-                  <property name="text">
-                   <string>Status</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QLabel" name="panelStatusLabel">
-                  <property name="text">
-                   <string>Not generated</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
               </item>
              </layout>
             </widget>
@@ -559,33 +618,13 @@
                    </widget>
                   </item>
                   <item row="4" column="0">
-                   <widget class="QLabel" name="ncritLabel">
-                    <property name="text">
-                     <string>Ncrit</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="4" column="1">
-                   <widget class="QDoubleSpinBox" name="ncritSpin">
-                    <property name="toolTip">
-                     <string>Critical amplification exponent; must be positive.</string>
-                    </property>
-                    <property name="accessibleName">
-                     <string>Ncrit</string>
-                    </property>
-                    <property name="maximumWidth">
-                     <number>95</number>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="5" column="0">
                    <widget class="QLabel" name="xtrUpperLabel">
                     <property name="text">
                      <string>Xtr upper (x/c)</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="5" column="1">
+                  <item row="4" column="1">
                    <widget class="QDoubleSpinBox" name="xtrUpperSpin">
                     <property name="toolTip">
                      <string>Upper transition trip position x/c in [0, 1].</string>
@@ -598,14 +637,14 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="6" column="0">
+                  <item row="5" column="0">
                    <widget class="QLabel" name="xtrLowerLabel">
                     <property name="text">
                      <string>Xtr lower (x/c)</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="6" column="1">
+                  <item row="5" column="1">
                    <widget class="QDoubleSpinBox" name="xtrLowerSpin">
                     <property name="toolTip">
                      <string>Lower transition trip position x/c in [0, 1].</string>
@@ -708,6 +747,26 @@
                     </property>
                    </widget>
                   </item>
+                  <item row="4" column="0">
+                   <widget class="QLabel" name="ncritLabel">
+                    <property name="text">
+                     <string>Ncrit</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="1">
+                   <widget class="QDoubleSpinBox" name="ncritSpin">
+                    <property name="toolTip">
+                     <string>Critical amplification exponent; must be positive.</string>
+                    </property>
+                    <property name="accessibleName">
+                     <string>Ncrit</string>
+                    </property>
+                    <property name="maximumWidth">
+                     <number>95</number>
+                    </property>
+                   </widget>
+                  </item>
                  </layout>
                 </widget>
                </widget>
@@ -726,217 +785,227 @@
              <property name="title">
               <string>Analysis target</string>
              </property>
-             <layout class="QFormLayout" name="targetForm">
-              <property name="rowWrapPolicy">
-               <enum>QFormLayout::WrapLongRows</enum>
+             <layout class="QVBoxLayout" name="targetGroupLayout">
+              <property name="leftMargin">
+               <number>6</number>
               </property>
-              <item row="0" column="0">
-               <widget class="QLabel" name="targetModeLabel">
-                <property name="text">
-                 <string>Mode</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QComboBox" name="targetModeCombo">
-                <property name="toolTip">
-                 <string>Choose alpha point, CL point, alpha sequence or CL sequence.</string>
-                </property>
+              <property name="topMargin">
+               <number>6</number>
+              </property>
+              <property name="rightMargin">
+               <number>6</number>
+              </property>
+              <property name="bottomMargin">
+               <number>6</number>
+              </property>
+              <property name="spacing">
+               <number>4</number>
+              </property>
+              <item>
+               <widget class="QTabWidget" name="analysisTargetTabs">
                 <property name="accessibleName">
-                 <string>Analysis target mode</string>
+                 <string>Analysis target mode pages</string>
                 </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="alphaTargetLabel">
-                <property name="text">
-                 <string>Alpha target (deg)</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QDoubleSpinBox" name="alphaTargetSpin">
-                <property name="toolTip">
-                 <string>Alpha target in degrees.</string>
-                </property>
-                <property name="accessibleName">
-                 <string>Alpha target in degrees</string>
-                </property>
-                <property name="maximumWidth">
-                 <number>100</number>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="clTargetLabel">
-                <property name="text">
-                 <string>CL target</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QDoubleSpinBox" name="clTargetSpin">
-                <property name="toolTip">
-                 <string>Lift coefficient target; dimensionless.</string>
-                </property>
-                <property name="accessibleName">
-                 <string>Lift coefficient target</string>
-                </property>
-                <property name="maximumWidth">
-                 <number>100</number>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0" colspan="2">
-               <widget class="QWidget" name="sequenceFields" native="true">
-                <layout class="QFormLayout" name="sequenceForm">
-                 <property name="rowWrapPolicy">
-                  <enum>QFormLayout::WrapLongRows</enum>
-                 </property>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="sequenceStartLabel">
-                   <property name="text">
-                    <string>Sequence start (deg)</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QDoubleSpinBox" name="sequenceStartSpin">
-                   <property name="toolTip">
-                    <string>Sequence start in degrees.</string>
-                   </property>
-                   <property name="accessibleName">
-                    <string>Sequence start in degrees</string>
-                   </property>
-                   <property name="maximumWidth">
-                    <number>100</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="sequenceEndLabel">
-                   <property name="text">
-                    <string>Sequence end, exclusive (deg)</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QDoubleSpinBox" name="sequenceEndSpin">
-                   <property name="toolTip">
-                    <string>Exclusive end: the end value itself is not run.</string>
-                   </property>
-                   <property name="accessibleName">
-                    <string>Sequence exclusive end in degrees</string>
-                   </property>
-                   <property name="maximumWidth">
-                    <number>100</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="sequenceStepLabel">
-                   <property name="text">
-                    <string>Sequence step (deg)</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="QDoubleSpinBox" name="sequenceStepSpin">
-                   <property name="toolTip">
-                    <string>Sequence step in degrees. Zero is rejected.</string>
-                   </property>
-                   <property name="accessibleName">
-                    <string>Sequence step in degrees</string>
-                   </property>
-                   <property name="maximumWidth">
-                    <number>100</number>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item row="4" column="0" colspan="2">
-               <widget class="QWidget" name="clSequenceFields" native="true">
-                <layout class="QFormLayout" name="clSequenceForm">
-                 <property name="rowWrapPolicy">
-                  <enum>QFormLayout::WrapLongRows</enum>
-                 </property>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="clSequenceStartLabel">
-                   <property name="text">
-                    <string>CL sequence start</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QDoubleSpinBox" name="clSequenceStartSpin">
-                   <property name="toolTip">
-                    <string>First lift coefficient in the sequence.</string>
-                   </property>
-                   <property name="accessibleName">
-                    <string>CL sequence start</string>
-                   </property>
-                   <property name="maximumWidth">
-                    <number>100</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="clSequenceEndLabel">
-                   <property name="text">
-                    <string>CL end, exclusive</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QDoubleSpinBox" name="clSequenceEndSpin">
-                   <property name="toolTip">
-                    <string>Exclusive end: the end lift coefficient is not run.</string>
-                   </property>
-                   <property name="accessibleName">
-                    <string>CL sequence exclusive end</string>
-                   </property>
-                   <property name="maximumWidth">
-                    <number>100</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="clSequenceStepLabel">
-                   <property name="text">
-                    <string>CL sequence step</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="QDoubleSpinBox" name="clSequenceStepSpin">
-                   <property name="toolTip">
-                    <string>Lift-coefficient step. Zero is rejected.</string>
-                   </property>
-                   <property name="accessibleName">
-                    <string>CL sequence step</string>
-                   </property>
-                   <property name="maximumWidth">
-                    <number>100</number>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item row="5" column="0">
-               <widget class="QLabel" name="targetStatusCaption">
-                <property name="text">
-                 <string>Status</string>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="1">
-               <widget class="QLabel" name="targetStatusLabel">
-                <property name="text">
-                 <string>Alpha point</string>
-                </property>
+                <widget class="QWidget" name="alphaPointPage">
+                 <attribute name="title">
+                  <string>Alpha</string>
+                 </attribute>
+                 <layout class="QFormLayout" name="alphaPointPageForm">
+                  <property name="rowWrapPolicy">
+                   <enum>QFormLayout::WrapLongRows</enum>
+                  </property>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="alphaTargetLabel">
+                    <property name="text">
+                     <string>Alpha target (deg)</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QDoubleSpinBox" name="alphaTargetSpin">
+                    <property name="toolTip">
+                     <string>Alpha target in degrees.</string>
+                    </property>
+                    <property name="accessibleName">
+                     <string>Alpha target in degrees</string>
+                    </property>
+                    <property name="maximumWidth">
+                     <number>100</number>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+                <widget class="QWidget" name="alphaSequencePage">
+                 <attribute name="title">
+                  <string>Alpha Sequence</string>
+                 </attribute>
+                 <layout class="QFormLayout" name="alphaSequencePageForm">
+                  <property name="rowWrapPolicy">
+                   <enum>QFormLayout::WrapLongRows</enum>
+                  </property>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="sequenceStartLabel">
+                    <property name="text">
+                     <string>Sequence start (deg)</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QDoubleSpinBox" name="sequenceStartSpin">
+                    <property name="toolTip">
+                     <string>Sequence start in degrees.</string>
+                    </property>
+                    <property name="accessibleName">
+                     <string>Sequence start in degrees</string>
+                    </property>
+                    <property name="maximumWidth">
+                     <number>100</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="sequenceEndLabel">
+                    <property name="text">
+                     <string>Sequence end, exclusive (deg)</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QDoubleSpinBox" name="sequenceEndSpin">
+                    <property name="toolTip">
+                     <string>Exclusive end: the end value itself is not run.</string>
+                    </property>
+                    <property name="accessibleName">
+                     <string>Sequence exclusive end in degrees</string>
+                    </property>
+                    <property name="maximumWidth">
+                     <number>100</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="sequenceStepLabel">
+                    <property name="text">
+                     <string>Sequence step (deg)</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QDoubleSpinBox" name="sequenceStepSpin">
+                    <property name="toolTip">
+                     <string>Sequence step in degrees. Zero is rejected.</string>
+                    </property>
+                    <property name="accessibleName">
+                     <string>Sequence step in degrees</string>
+                    </property>
+                    <property name="maximumWidth">
+                     <number>100</number>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+                <widget class="QWidget" name="clPointPage">
+                 <attribute name="title">
+                  <string>CL</string>
+                 </attribute>
+                 <layout class="QFormLayout" name="clPointPageForm">
+                  <property name="rowWrapPolicy">
+                   <enum>QFormLayout::WrapLongRows</enum>
+                  </property>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="clTargetLabel">
+                    <property name="text">
+                     <string>CL target</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QDoubleSpinBox" name="clTargetSpin">
+                    <property name="toolTip">
+                     <string>Lift coefficient target; dimensionless.</string>
+                    </property>
+                    <property name="accessibleName">
+                     <string>Lift coefficient target</string>
+                    </property>
+                    <property name="maximumWidth">
+                     <number>100</number>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+                <widget class="QWidget" name="clSequencePage">
+                 <attribute name="title">
+                  <string>CL Sequence</string>
+                 </attribute>
+                 <layout class="QFormLayout" name="clSequencePageForm">
+                  <property name="rowWrapPolicy">
+                   <enum>QFormLayout::WrapLongRows</enum>
+                  </property>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="clSequenceStartLabel">
+                    <property name="text">
+                     <string>CL sequence start</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QDoubleSpinBox" name="clSequenceStartSpin">
+                    <property name="toolTip">
+                     <string>First lift coefficient in the sequence.</string>
+                    </property>
+                    <property name="accessibleName">
+                     <string>CL sequence start</string>
+                    </property>
+                    <property name="maximumWidth">
+                     <number>100</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="clSequenceEndLabel">
+                    <property name="text">
+                     <string>CL end, exclusive</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QDoubleSpinBox" name="clSequenceEndSpin">
+                    <property name="toolTip">
+                     <string>Exclusive end: the end lift coefficient is not run.</string>
+                    </property>
+                    <property name="accessibleName">
+                     <string>CL sequence exclusive end</string>
+                    </property>
+                    <property name="maximumWidth">
+                     <number>100</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="clSequenceStepLabel">
+                    <property name="text">
+                     <string>CL sequence step</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QDoubleSpinBox" name="clSequenceStepSpin">
+                    <property name="toolTip">
+                     <string>Lift-coefficient step. Zero is rejected.</string>
+                    </property>
+                    <property name="accessibleName">
+                     <string>CL sequence step</string>
+                    </property>
+                    <property name="maximumWidth">
+                     <number>100</number>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
                </widget>
               </item>
              </layout>
@@ -1523,22 +1592,6 @@
           </property>
           <layout class="QVBoxLayout" name="resultsColumnLayout">
            <item>
-            <spacer name="resultsColumnSpacer">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Expanding</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
             <widget class="QGroupBox" name="resultMatrixGroup">
              <property name="title">
               <string>Results</string>
@@ -1595,19 +1648,19 @@
                   </widget>
                  </item>
                  <property name="leftMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="topMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="rightMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="bottomMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="spacing">
-                  <number>3</number>
+                  <number>4</number>
                  </property>
                 </layout>
                </widget>
@@ -1657,19 +1710,19 @@
                   </widget>
                  </item>
                  <property name="leftMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="topMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="rightMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="bottomMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="spacing">
-                  <number>3</number>
+                  <number>4</number>
                  </property>
                 </layout>
                </widget>
@@ -1719,19 +1772,19 @@
                   </widget>
                  </item>
                  <property name="leftMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="topMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="rightMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="bottomMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="spacing">
-                  <number>3</number>
+                  <number>4</number>
                  </property>
                 </layout>
                </widget>
@@ -1781,19 +1834,19 @@
                   </widget>
                  </item>
                  <property name="leftMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="topMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="rightMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="bottomMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="spacing">
-                  <number>3</number>
+                  <number>4</number>
                  </property>
                 </layout>
                </widget>
@@ -1843,19 +1896,19 @@
                   </widget>
                  </item>
                  <property name="leftMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="topMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="rightMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="bottomMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="spacing">
-                  <number>3</number>
+                  <number>4</number>
                  </property>
                 </layout>
                </widget>
@@ -1905,19 +1958,19 @@
                   </widget>
                  </item>
                  <property name="leftMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="topMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="rightMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="bottomMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="spacing">
-                  <number>3</number>
+                  <number>4</number>
                  </property>
                 </layout>
                </widget>
@@ -1967,19 +2020,19 @@
                   </widget>
                  </item>
                  <property name="leftMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="topMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="rightMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="bottomMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="spacing">
-                  <number>3</number>
+                  <number>4</number>
                  </property>
                 </layout>
                </widget>
@@ -2029,19 +2082,19 @@
                   </widget>
                  </item>
                  <property name="leftMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="topMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="rightMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="bottomMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="spacing">
-                  <number>3</number>
+                  <number>4</number>
                  </property>
                 </layout>
                </widget>
@@ -2091,19 +2144,19 @@
                   </widget>
                  </item>
                  <property name="leftMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="topMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="rightMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="bottomMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="spacing">
-                  <number>3</number>
+                  <number>4</number>
                  </property>
                 </layout>
                </widget>
@@ -2153,19 +2206,19 @@
                   </widget>
                  </item>
                  <property name="leftMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="topMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="rightMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="bottomMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="spacing">
-                  <number>3</number>
+                  <number>4</number>
                  </property>
                 </layout>
                </widget>
@@ -2215,19 +2268,19 @@
                   </widget>
                  </item>
                  <property name="leftMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="topMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="rightMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="bottomMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="spacing">
-                  <number>3</number>
+                  <number>4</number>
                  </property>
                 </layout>
                </widget>
@@ -2277,19 +2330,19 @@
                   </widget>
                  </item>
                  <property name="leftMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="topMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="rightMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="bottomMargin">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="spacing">
-                  <number>3</number>
+                  <number>4</number>
                  </property>
                 </layout>
                </widget>
@@ -2307,10 +2360,10 @@
                <number>4</number>
               </property>
               <property name="horizontalSpacing">
-               <number>4</number>
+               <number>6</number>
               </property>
               <property name="verticalSpacing">
-               <number>3</number>
+               <number>8</number>
               </property>
              </layout>
             </widget>
@@ -2393,140 +2446,140 @@
                   <enum>Qt::ScrollBarAsNeeded</enum>
                  </property>
                  <widget class="QGroupBox" name="polarManagerGroup">
-                 <property name="title">
-                  <string>Comparison Polars</string>
-                 </property>
-                 <property name="accessibleName">
-                  <string>Comparison polar manager</string>
-                 </property>
-                 <property name="minimumSize">
-                  <size>
-                   <width>210</width>
-                   <height>0</height>
-                  </size>
-                 </property>
-                 <layout class="QVBoxLayout" name="polarManagerLayout">
-                  <item>
-                   <widget class="QListWidget" name="polarListView">
-                    <property name="selectionMode">
-                     <enum>QAbstractItemView::SingleSelection</enum>
-                    </property>
-                    <property name="accessibleName">
-                     <string>Stored comparison polars</string>
-                    </property>
-                    <property name="toolTip">
-                     <string>Select the comparison polar to rename, reorder, hide or remove.</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QPushButton" name="addCurrentPolarButton">
-                    <property name="text">
-                     <string>Add Current as Comparison</string>
-                    </property>
-                    <property name="toolTip">
-                     <string>Stores an independent scalar snapshot of the current result.</string>
-                    </property>
-                    <property name="accessibleName">
-                     <string>Add current as comparison</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QLineEdit" name="polarNameEdit">
-                    <property name="placeholderText">
-                     <string>Comparison name</string>
-                    </property>
-                    <property name="accessibleName">
-                     <string>Comparison polar name</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QCheckBox" name="polarVisibilityCheckBox">
-                    <property name="text">
-                     <string>Visible</string>
-                    </property>
-                    <property name="toolTip">
-                     <string>Show or hide the selected comparison polar in the five scalar plots.</string>
-                    </property>
-                    <property name="accessibleName">
-                     <string>Comparison polar visible</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QPushButton" name="renamePolarButton">
-                    <property name="text">
-                     <string>Rename</string>
-                    </property>
-                    <property name="accessibleName">
-                     <string>Rename comparison polar</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QPushButton" name="removePolarButton">
-                    <property name="text">
-                     <string>Remove</string>
-                    </property>
-                    <property name="accessibleName">
-                     <string>Remove comparison polar</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <layout class="QHBoxLayout" name="polarOrderLayout">
-                    <item>
-                     <widget class="QPushButton" name="movePolarUpButton">
-                      <property name="text">
-                       <string>Move Up</string>
-                      </property>
-                      <property name="accessibleName">
-                       <string>Move comparison polar up</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QPushButton" name="movePolarDownButton">
-                      <property name="text">
-                       <string>Move Down</string>
-                      </property>
-                      <property name="accessibleName">
-                       <string>Move comparison polar down</string>
-                      </property>
-                     </widget>
-                    </item>
-                   </layout>
-                  </item>
-                  <item>
-                   <widget class="QPushButton" name="clearPolarsButton">
-                    <property name="text">
-                     <string>Clear Comparisons</string>
-                    </property>
-                    <property name="accessibleName">
-                     <string>Clear comparison polars</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QLabel" name="polarManagerStatusLabel">
-                    <property name="text">
-                     <string>0 / 8 comparisons</string>
-                    </property>
-                    <property name="accessibleName">
-                     <string>Comparison polar status</string>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                   <horstretch>1</horstretch>
-                   <verstretch>1</verstretch>
-                  </sizepolicy>
-                 </property>
-                </widget>
+                  <property name="title">
+                   <string>Comparison Polars</string>
+                  </property>
+                  <property name="accessibleName">
+                   <string>Comparison polar manager</string>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>210</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <layout class="QVBoxLayout" name="polarManagerLayout">
+                   <item>
+                    <widget class="QListWidget" name="polarListView">
+                     <property name="selectionMode">
+                      <enum>QAbstractItemView::SingleSelection</enum>
+                     </property>
+                     <property name="accessibleName">
+                      <string>Stored comparison polars</string>
+                     </property>
+                     <property name="toolTip">
+                      <string>Select the comparison polar to rename, reorder, hide or remove.</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="addCurrentPolarButton">
+                     <property name="text">
+                      <string>Add Current as Comparison</string>
+                     </property>
+                     <property name="toolTip">
+                      <string>Stores an independent scalar snapshot of the current result.</string>
+                     </property>
+                     <property name="accessibleName">
+                      <string>Add current as comparison</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLineEdit" name="polarNameEdit">
+                     <property name="placeholderText">
+                      <string>Comparison name</string>
+                     </property>
+                     <property name="accessibleName">
+                      <string>Comparison polar name</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QCheckBox" name="polarVisibilityCheckBox">
+                     <property name="text">
+                      <string>Visible</string>
+                     </property>
+                     <property name="toolTip">
+                      <string>Show or hide the selected comparison polar in the five scalar plots.</string>
+                     </property>
+                     <property name="accessibleName">
+                      <string>Comparison polar visible</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="renamePolarButton">
+                     <property name="text">
+                      <string>Rename</string>
+                     </property>
+                     <property name="accessibleName">
+                      <string>Rename comparison polar</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="removePolarButton">
+                     <property name="text">
+                      <string>Remove</string>
+                     </property>
+                     <property name="accessibleName">
+                      <string>Remove comparison polar</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="polarOrderLayout">
+                     <item>
+                      <widget class="QPushButton" name="movePolarUpButton">
+                       <property name="text">
+                        <string>Move Up</string>
+                       </property>
+                       <property name="accessibleName">
+                        <string>Move comparison polar up</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QPushButton" name="movePolarDownButton">
+                       <property name="text">
+                        <string>Move Down</string>
+                       </property>
+                       <property name="accessibleName">
+                        <string>Move comparison polar down</string>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="clearPolarsButton">
+                     <property name="text">
+                      <string>Clear Comparisons</string>
+                     </property>
+                     <property name="accessibleName">
+                      <string>Clear comparison polars</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="polarManagerStatusLabel">
+                     <property name="text">
+                      <string>0 / 8 comparisons</string>
+                     </property>
+                     <property name="accessibleName">
+                      <string>Comparison polar status</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                    <horstretch>1</horstretch>
+                    <verstretch>1</verstretch>
+                   </sizepolicy>
+                  </property>
+                 </widget>
                 </widget>
                </item>
               </layout>
@@ -2614,7 +2667,7 @@
          <string>Analysis progress</string>
         </property>
         <property name="toolTip">
-         <string>Determinate progress when a total is known; busy otherwise.</string>
+         <string>Progress of the current analysis phase</string>
         </property>
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -2646,26 +2699,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="workflowStateLabel">
-        <property name="text">
-         <string>Workflow: Empty</string>
-        </property>
-        <property name="visible">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="statusLabel">
-        <property name="text">
-         <string>Not ready</string>
-        </property>
-        <property name="visible">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QLabel" name="analysisStatusLabel">
         <property name="text">
          <string>Idle</string>
@@ -2685,15 +2718,30 @@
           <height>16777215</height>
          </size>
         </property>
+        <property name="visible">
+         <bool>false</bool>
+        </property>
        </widget>
       </item>
      </layout>
+     <property name="styleSheet">
+      <string>
+QPushButton#analyzeButton[analysisState="disabled"] { background-color: #d9d9d9; color: #666666; }
+QPushButton#analyzeButton[analysisState="ready"] { background-color: #2e7d32; color: white; font-weight: 600; }
+QPushButton#analyzeButton[analysisState="running"] { background-color: #c62828; color: white; font-weight: 600; }
+QPushButton#analyzeButton[analysisState="cancelling"] { background-color: #c62828; color: #f5f5f5; font-weight: 600; }
+QProgressBar#analysisProgressBar::chunk { background-color: #1565c0; }
+</string>
+     </property>
     </widget>
    </item>
   </layout>
  </widget>
  <tabstops>
-  <tabstop>geometrySourceCombo</tabstop>
+  <tabstop>geometryImportRadio</tabstop>
+  <tabstop>geometryNacaRadio</tabstop>
+  <tabstop>geometryNacsRadio</tabstop>
+  <tabstop>airfoilNameDisplayLabel</tabstop>
   <tabstop>nacaDesignationEdit</tabstop>
   <tabstop>applyGeometryButton</tabstop>
   <tabstop>panelCountSpin</tabstop>
@@ -2717,7 +2765,7 @@
   <tabstop>machDependencyCombo</tabstop>
   <tabstop>autoInitializeBoundaryLayerCheck</tabstop>
   <tabstop>viscousAccelerationSpin</tabstop>
-  <tabstop>targetModeCombo</tabstop>
+  <tabstop>analysisTargetTabs</tabstop>
   <tabstop>alphaTargetSpin</tabstop>
   <tabstop>clTargetSpin</tabstop>
   <tabstop>sequenceStartSpin</tabstop>
@@ -2730,6 +2778,7 @@
   <tabstop>operatingPointCombo</tabstop>
   <tabstop>deactivatePointCombo</tabstop>
   <tabstop>activatePointCombo</tabstop>
+  <tabstop>resultInfoTabs</tabstop>
   <tabstop>setupDiagnosticsView</tabstop>
   <tabstop>analyzeButton</tabstop>
  </tabstops>

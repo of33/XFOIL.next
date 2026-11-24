@@ -72,6 +72,15 @@ class XFOIL_GUI_API XFoilWidget : public QWidget {
 
   [[nodiscard]]
   Result<void> setGeometry(const geometry::AirfoilGeometry& geometry);
+  // App-owned import transaction: validates the supplied unpaneled geometry,
+  // regenerates the panel with the current options and replaces the setup
+  // atomically. No analysis is started. The notice is view-only.
+  [[nodiscard]]
+  Result<void> applyImportedGeometry(
+      const geometry::AirfoilGeometry& geometry, bool clockwiseReversed);
+  // Restores the source radio selection from the committed model after a
+  // canceled or failed import dialog. No dialog is opened by the widget.
+  void cancelAirfoilImportRequest();
   [[nodiscard]]
   Result<void> setNaca(std::string_view designation);
   [[nodiscard]]
@@ -174,6 +183,7 @@ class XFOIL_GUI_API XFoilWidget : public QWidget {
   std::optional<xfoil::DetailedSequenceResult> currentSequence() const;
 
  signals:
+  void airfoilImportRequested();
   void geometryChanged();
   void panelingChanged();
   void configurationChanged();

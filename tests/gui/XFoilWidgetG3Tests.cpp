@@ -118,6 +118,8 @@ class XFoilWidgetG3Tests : public QObject {
     QVERIFY(progress != nullptr);
     QVERIFY(status != nullptr);
     QCOMPARE(analyzeButton->text(), QStringLiteral("Analyze"));
+    QCOMPARE(analyzeButton->property("analysisState").toString(),
+             QStringLiteral("ready"));
     QVERIFY(analyzeButton->isEnabled());
 
     QSignalSpy started(&widget, &XFoilWidget::analysisStarted);
@@ -130,6 +132,8 @@ class XFoilWidgetG3Tests : public QObject {
     QVERIFY(widget.isRunning());
     QVERIFY(widget.state() == XFoilGuiState::running);
     QCOMPARE(analyzeButton->text(), QStringLiteral("Cancel"));
+    QCOMPARE(analyzeButton->property("analysisState").toString(),
+             QStringLiteral("running"));
     QVERIFY(analyzeButton->isEnabled());
     QVERIFY(!widget.analyzeAction()->isEnabled());
     QVERIFY(widget.cancelAction()->isEnabled());
@@ -148,10 +152,15 @@ class XFoilWidgetG3Tests : public QObject {
     QVERIFY(!point->surface.has_value() ||
             point->surface->x.size() == point->surface->cp.size());
     QVERIFY(status->text().contains(QStringLiteral("complete")));
-    QVERIFY(!status->isHidden());
+    QVERIFY(status->isHidden());
+    QVERIFY(status->parentWidget() != nullptr);
+    QCOMPARE(progress->toolTip(),
+             QStringLiteral("Progress of the current analysis phase"));
     QVERIFY(!progress->isHidden());
     QCOMPARE(progress->value(), 100);
     QCOMPARE(analyzeButton->text(), QStringLiteral("Analyze"));
+    QCOMPARE(analyzeButton->property("analysisState").toString(),
+             QStringLiteral("ready"));
     QVERIFY(analyzeButton->isEnabled());
     QVERIFY(widget.analyzeAction()->isEnabled());
     QVERIFY(!widget.cancelAction()->isEnabled());

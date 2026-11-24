@@ -31,6 +31,7 @@
 
 #include <QApplication>
 #include <QCoreApplication>
+#include <QMargins>
 #include <QPoint>
 #include <QTest>
 
@@ -105,6 +106,26 @@ class GuiDistributionPlotTests : public QObject {
     QVERIFY(plot->xAxis->range().contains(1.0));
     QVERIFY(plot->yAxis->range().contains(-0.1));
     QVERIFY(plot->yAxis->range().contains(2.0));
+  }
+
+  void cpLegendIsTopRightAndMarginsAreCompact() {
+    ResultPlotView view;
+    view.resize(640, 480);
+    view.show();
+    QCoreApplication::processEvents();
+    view.setCpDistribution(cpDistribution());
+    QCustomPlot* plot = canvas(view);
+    QVERIFY(plot->legend->visible());
+    QCOMPARE(plot->axisRect()->insetLayout()->insetAlignment(0),
+             Qt::AlignTop | Qt::AlignRight);
+    QVERIFY(plot->legend->margins() == QMargins(2, 2, 2, 2));
+    const QMargins margins = plot->axisRect()->margins();
+    QVERIFY(margins.left() < 82);
+    QVERIFY(margins.top() <= 6);
+    QVERIFY(margins.right() <= 8);
+    QVERIFY(margins.bottom() < 56);
+    QVERIFY(plot->axisRect()->width() > 0);
+    QVERIFY(plot->axisRect()->height() > 0);
   }
 
   void cpSelectionReplacementLeavesNoStaleCurve() {

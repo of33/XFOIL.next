@@ -25,6 +25,7 @@
 // G6b Basic/Expert controls, owning host setup transaction, repeated
 // reinitialization, reset, busy behavior, CL sequence and panel overlay.
 
+#include <array>
 #include <cstddef>
 #include <optional>
 #include <string>
@@ -41,6 +42,7 @@
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QPushButton>
+#include <QRadioButton>
 #include <QSignalSpy>
 #include <QSpinBox>
 #include <QTabWidget>
@@ -238,8 +240,9 @@ class XFoilWidgetG6bTests : public QObject {
              MachDependency::inverseLift);
     QCOMPARE(widget.configuration().autoInitializeBoundaryLayer, false);
     QCOMPARE(widget.clSequence().endExclusive, 0.8);
-    QCOMPARE(combo(widget, "targetModeCombo")->currentText(),
-             QStringLiteral("CL sequence"));
+    QCOMPARE(widget.findChild<QTabWidget*>("analysisTargetTabs")
+                 ->currentIndex(),
+             3);
     const auto current = widget.currentSetup();
     QVERIFY(current.has_value());
     QVERIFY(std::holds_alternative<NacaGeometrySetup>(current->geometry));
@@ -271,9 +274,7 @@ class XFoilWidgetG6bTests : public QObject {
     QCOMPARE(widget.configuration().autoInitializeBoundaryLayer, false);
     QCOMPARE(widget.configuration().viscousAcceleration, 0.03);
 
-    combo(widget, "targetModeCombo")->setCurrentIndex(3);
-    QVERIFY(widget.findChild<QWidget*>("clSequenceFields")->isEnabled());
-    QVERIFY(!widget.findChild<QWidget*>("sequenceFields")->isEnabled());
+    widget.findChild<QTabWidget*>("analysisTargetTabs")->setCurrentIndex(3);
     spin(widget, "clSequenceStartSpin")->setValue(0.1);
     spin(widget, "clSequenceEndSpin")->setValue(0.7);
     spin(widget, "clSequenceStepSpin")->setValue(0.15);
@@ -291,8 +292,8 @@ class XFoilWidgetG6bTests : public QObject {
     memory.geometry = MemoryGeometrySetup{*source.geometry()};
     XFoilWidget first;
     QVERIFY(first.applySetup(memory).isOk());
-    QCOMPARE(combo(first, "geometrySourceCombo")->currentText(),
-             QStringLiteral("File"));
+    QVERIFY(first.findChild<QRadioButton*>("geometryImportRadio")
+                ->isChecked());
     QVERIFY(first.geometry().has_value());
     QVERIFY(first.currentSetup().has_value());
     QVERIFY(std::holds_alternative<MemoryGeometrySetup>(
@@ -302,8 +303,8 @@ class XFoilWidgetG6bTests : public QObject {
     nacs.geometry = NacsGeometrySetup{"0012"};
     XFoilWidget second;
     QVERIFY(second.applySetup(nacs).isOk());
-    QCOMPARE(combo(second, "geometrySourceCombo")->currentText(),
-             QStringLiteral("NACS"));
+    QVERIFY(second.findChild<QRadioButton*>("geometryNacsRadio")
+                ->isChecked());
     QVERIFY(std::holds_alternative<NacsGeometrySetup>(
         second.currentSetup()->geometry));
   }
@@ -315,15 +316,14 @@ class XFoilWidgetG6bTests : public QObject {
         AlphaTarget{Degrees{2.0}}, LiftTarget{0.4},
         AlphaSequence{Degrees{0.0}, Degrees{3.0}, Degrees{1.0}},
         LiftSequence{0.2, 0.8, 0.2}};
-    const QStringList expected = {
-        QStringLiteral("Alpha point"), QStringLiteral("CL point"),
-        QStringLiteral("Alpha sequence"), QStringLiteral("CL sequence")};
+    const std::array<int, 4> expectedTabs = {0, 2, 1, 3};
     for (std::size_t index = 0; index < requests.size(); ++index) {
       auto setup = nacaSetup();
       setup.request = requests[index];
       QVERIFY(widget.applySetup(setup).isOk());
-      QCOMPARE(combo(widget, "targetModeCombo")->currentText(),
-               expected[static_cast<int>(index)]);
+      QCOMPARE(widget.findChild<QTabWidget*>("analysisTargetTabs")
+                   ->currentIndex(),
+               expectedTabs[index]);
       QVERIFY(widget.isReadyToAnalyze());
     }
     QCOMPARE(started.count(), 0);
@@ -527,8 +527,10 @@ class XFoilWidgetG6bTests : public QObject {
     QCoreApplication::processEvents();
     auto* scroll = child<QScrollArea>(widget, "definitionsScrollArea");
     QVERIFY(scroll->horizontalScrollBar()->maximum() == 0);
+    QVERIFY(scroll->verticalScrollBar()->maximum() == 0);
     auto* row = child<QWidget>(widget, "definitionsRow");
     QVERIFY(row->height() > 0);
+    QVERIFY(row->height() <= scroll->viewport()->height() + 1);
     QVERIFY(row->width() <= scroll->viewport()->width() + 1);
   }
 
@@ -541,7 +543,7 @@ class XFoilWidgetG6bTests : public QObject {
              QStringLiteral("sequence.zeroStep"));
 
     QVERIFY(widget.applySetup(nacaSetup("0012")).isOk());
-    combo(widget, "targetModeCombo")->setCurrentIndex(3);
+    widget.findChild<QTabWidget*>("analysisTargetTabs")->setCurrentIndex(3);
     spin(widget, "clSequenceStepSpin")->setValue(0.0);
     QVERIFY(widget.state() == XFoilGuiState::error);
     QVERIFY(!widget.isReadyToAnalyze());
@@ -569,6 +571,13 @@ class XFoilWidgetG6bTests : public QObject {
     QVERIFY(plot->findChild<QCPGraph*>("panelNodes") == nullptr);
     QVERIFY(!contour->visible());
     QVERIFY(!ticks->visible());
+
+    QTest::mouseClick(plot, Qt::RightButton, Qt::ControlModifier,
+                      plot->axisRect()->rect().center());
+    QVERIFY(widget.viewOptions().showPaneling);
+    QVERIFY(check(widget, "showPanelingCheckBox")->isChecked());
+    QVERIFY(contour->visible());
+    QVERIFY(ticks->visible());
 
     AnalysisWorkflowViewOptions options;
     options.showPaneling = true;

@@ -135,6 +135,7 @@ class GuiDefinitionModel {
   void acceptGeometry(const geometry::AirfoilGeometry& geometry);
   void acceptNaca(const geometry::AirfoilGeometry& geometry,
                   std::string designation, bool sharpTrailingEdge);
+  void renameGeometry(std::string name);
   void setPanelingOptions(const PanelingOptions& options);
   void acceptPanel(const SurfaceGeometry& panel,
                    const PanelingOptions& options);

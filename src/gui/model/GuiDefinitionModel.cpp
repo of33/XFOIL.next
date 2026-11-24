@@ -164,6 +164,14 @@ void GuiDefinitionModel::acceptGeometry(
   refreshState();
 }
 
+void GuiDefinitionModel::renameGeometry(std::string name) {
+  if (!geometry_.has_value()) {
+    return;
+  }
+  geometry_->setName(name);
+  refreshState();
+}
+
 void GuiDefinitionModel::acceptNaca(
     const geometry::AirfoilGeometry& geometry, std::string designation,
     bool sharpTrailingEdge) {

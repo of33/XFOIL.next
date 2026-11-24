@@ -64,10 +64,11 @@ QMargins compactMargins(const QCustomPlot* plot) {
   const int tickWidth =
       std::max(tickMetrics.horizontalAdvance(QStringLiteral("-0.0000")),
                tickMetrics.horizontalAdvance(QStringLiteral("−0.0000")));
-  const int left = tickWidth + tickHeight + 8;
-  const int top = tickHeight / 2 + 4;
-  const int right = tickHeight / 2 + 4;
-  const int bottom = tickHeight * 2 + 8;
+  const int labelHeight = labelMetrics.height();
+  const int left = tickWidth + labelHeight + 4;
+  const int top = 4;
+  const int right = 6;
+  const int bottom = tickHeight + labelHeight + 6;
   return QMargins(left, top, right, bottom);
 }
 

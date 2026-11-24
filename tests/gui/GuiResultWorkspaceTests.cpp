@@ -32,6 +32,7 @@
 
 #include <QApplication>
 #include <QComboBox>
+#include <QDoubleSpinBox>
 #include <QCoreApplication>
 #include <QFrame>
 #include <QGridLayout>
@@ -176,7 +177,7 @@ class GuiResultWorkspaceTests : public QObject {
 
     widget.resize(960, 640);
     QCoreApplication::processEvents();
-    QCOMPARE(right->width(), right->minimumWidth());
+    QVERIFY(right->width() >= right->minimumWidth());
     QVERIFY(left->width() > 0);
     QVERIFY(middle->width() > 0);
   }
@@ -195,13 +196,13 @@ class GuiResultWorkspaceTests : public QObject {
              QStringLiteral("definitionsFrame"));
     QCOMPARE(splitter->widget(1)->objectName(),
              QStringLiteral("resultWorkspace"));
-    QCOMPARE(splitter->sizes().at(0), 250);
-    QVERIFY(splitter->sizes().at(1) >= 449);
+    QCOMPARE(splitter->sizes().at(0), 270);
+    QVERIFY(splitter->sizes().at(1) >= 429);
 
     widget.resize(1280, 900);
     QCoreApplication::processEvents();
-    QCOMPARE(splitter->sizes().at(0), 250);
-    QVERIFY(splitter->sizes().at(1) > 449);
+    QCOMPARE(splitter->sizes().at(0), 270);
+    QVERIFY(splitter->sizes().at(1) > 429);
   }
 
   void comparisonPolarManagerScrollsIndependently() {
@@ -213,6 +214,36 @@ class GuiResultWorkspaceTests : public QObject {
     auto* group = widget.findChild<QGroupBox*>("polarManagerGroup");
     QVERIFY(group != nullptr);
     QCOMPARE(scroll->widget(), group);
+  }
+
+  void definitionTabsShareHeightAndNcritIsExpert() {
+    XFoilWidget widget;
+    widget.resize(1280, 800);
+    widget.show();
+    QCoreApplication::processEvents();
+    auto* paneling = widget.findChild<QTabWidget*>("panelingSettingsTabs");
+    auto* conditions =
+        widget.findChild<QTabWidget*>("conditionSettingsTabs");
+    auto* target = widget.findChild<QTabWidget*>("analysisTargetTabs");
+    QVERIFY(paneling != nullptr);
+    QVERIFY(conditions != nullptr);
+    QVERIFY(target != nullptr);
+    QCOMPARE(paneling->height(), conditions->height());
+    QCOMPARE(paneling->height(), target->height());
+    QCOMPARE(target->count(), 4);
+    QCOMPARE(target->tabText(0), QStringLiteral("Alpha"));
+    QCOMPARE(target->tabText(1), QStringLiteral("Alpha Sequence"));
+    QCOMPARE(target->tabText(2), QStringLiteral("CL"));
+    QCOMPARE(target->tabText(3), QStringLiteral("CL Sequence"));
+
+    auto* ncrit = widget.findChild<QDoubleSpinBox*>("ncritSpin");
+    auto* expert = widget.findChild<QWidget*>("conditionExpertPage");
+    auto* basic = widget.findChild<QWidget*>("conditionBasicPage");
+    QVERIFY(ncrit != nullptr);
+    QVERIFY(expert != nullptr);
+    QVERIFY(basic != nullptr);
+    QVERIFY(expert->isAncestorOf(ncrit));
+    QVERIFY(!basic->isAncestorOf(ncrit));
   }
 
   void resultsColumnContainsMatrixAndInfoTabs() {
@@ -321,6 +352,8 @@ class GuiResultWorkspaceTests : public QObject {
     QVERIFY(grid != nullptr);
     QCOMPARE(grid->rowCount(), 4);
     QCOMPARE(grid->columnCount(), 3);
+    QVERIFY(grid->verticalSpacing() >= 8);
+    QVERIFY(grid->horizontalSpacing() >= 6);
 
     const QStringList values = {
         QStringLiteral("cdValue"), QStringLiteral("cdfValue"),

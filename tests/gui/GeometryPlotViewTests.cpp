@@ -238,7 +238,7 @@ class GeometryPlotViewTests : public QObject {
       const double endY = data->at(index + 1)->value;
       const double length =
           std::hypot(endX - startX, endY - startY);
-      QVERIFY(std::abs(length - 0.01) <= 1.0e-12);
+      QVERIFY(std::abs(length - 0.005) <= 1.0e-12);
       if (startY > 0.0 && endY > startY) {
         sawUpperOutward = true;
       }

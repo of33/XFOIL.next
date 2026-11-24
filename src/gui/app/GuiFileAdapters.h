@@ -49,6 +49,7 @@ struct AirfoilFileReadResult {
   AirfoilFileReadStatus status{AirfoilFileReadStatus::error};
   geometry::AirfoilGeometry geometry;
   std::string message;
+  bool clockwiseReversed{false};
 };
 
 // Reads the existing XFOIL coordinate-file formats through DatFileReader.

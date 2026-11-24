@@ -34,8 +34,10 @@
 #include <QListWidget>
 #include <QPushButton>
 #include <QSignalSpy>
+#include <QStyledItemDelegate>
 #include <QtTest/QTest>
 
+#include "plots/ComparisonStyle.h"
 #include "plots/ScalarPlotView.h"
 #include "xfoil/gui/XFoilWidget.h"
 
@@ -117,6 +119,12 @@ class XFoilWidgetG6cTests : public QObject {
     QCOMPARE(changed.count(), 1);
     QCOMPARE(polarList(widget)->count(), 1);
     QCOMPARE(polarList(widget)->item(0)->text(), QStringLiteral("Imported"));
+    QCOMPARE(polarList(widget)->item(0)
+                 ->data(xfoil::gui::kComparisonStyleIndexRole)
+                 .toInt(),
+             0);
+    QVERIFY(dynamic_cast<QStyledItemDelegate*>(
+                polarList(widget)->itemDelegate()) != nullptr);
     QCOMPARE(widget.findChild<QLabel*>("polarManagerStatusLabel")->text(),
              QStringLiteral("1 / 8 comparisons"));
     QVERIFY(widget.selectedComparisonPolar().has_value());

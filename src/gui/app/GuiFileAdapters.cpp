@@ -27,6 +27,7 @@
 
 #include "app/GuiFileAdapters.h"
 
+#include <algorithm>
 #include <string>
 #include <system_error>
 #include <vector>
@@ -65,6 +66,46 @@ std::string readErrorText(const xfoil::app::DatReadError error,
       break;
   }
   return "The airfoil file could not be read.";
+}
+
+struct CoordinateOrientation {
+  bool valid{false};
+  bool clockwise{false};
+};
+
+// XFOIL's LOAD path uses this signed area form and treats negative area as
+// clockwise. The final point is implicitly joined to the first; no point is
+// added to the stored geometry.
+CoordinateOrientation coordinateOrientation(
+    const std::vector<Point2D>& points) {
+  if (points.size() < 3) {
+    return {};
+  }
+  double area = 0.0;
+  double xMinimum = points.front().x;
+  double xMaximum = points.front().x;
+  double yMinimum = points.front().y;
+  double yMaximum = points.front().y;
+  for (std::size_t index = 0; index < points.size(); ++index) {
+    const Point2D& current = points[index];
+    const Point2D& next = points[(index + 1) % points.size()];
+    area += 0.5 * (current.y + next.y) * (current.x - next.x);
+    xMinimum = std::min(xMinimum, current.x);
+    xMaximum = std::max(xMaximum, current.x);
+    yMinimum = std::min(yMinimum, current.y);
+    yMaximum = std::max(yMaximum, current.y);
+  }
+  const double spanX = xMaximum - xMinimum;
+  const double spanY = yMaximum - yMinimum;
+  const double scale = spanX * spanY;
+  if (!(area == area) || !(scale > 0.0)) {
+    return {};
+  }
+  const double areaMagnitude = area < 0.0 ? -area : area;
+  if (!(areaMagnitude > 1.0e-9 * scale)) {
+    return {};
+  }
+  return {true, area < 0.0};
 }
 
 FileWriteResult checkTarget(const std::filesystem::path& path,
@@ -133,8 +174,20 @@ AirfoilFileReadResult readAirfoilFile(
     name = std::string(suppliedName);
   }
 
+  const CoordinateOrientation orientation =
+      coordinateOrientation(read.coordinates);
+  if (!orientation.valid) {
+    result.message =
+        "The airfoil coordinates have no measurable orientation.";
+    return result;
+  }
+  std::vector<Point2D> coordinates = read.coordinates;
+  if (orientation.clockwise) {
+    std::reverse(coordinates.begin(), coordinates.end());
+    result.clockwiseReversed = true;
+  }
   const geometry::GeometryAssignmentResult assigned =
-      result.geometry.assign(name, read.coordinates);
+      result.geometry.assign(name, coordinates);
   if (!assigned.success()) {
     result.message = assigned.message;
     return result;

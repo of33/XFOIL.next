@@ -25,6 +25,7 @@
 // App-only adapter tests: existing DAT reader, labeled writer and DXF R12
 // encoder contracts, including prompts represented as statuses.
 
+#include <algorithm>
 #include <clocale>
 
 #include <QFile>
@@ -141,6 +142,73 @@ class GuiFileAdaptersTests : public QObject {
     const auto second = readAirfoilFile(path, 2);
     QVERIFY(second.status == AirfoilFileReadStatus::success);
     QCOMPARE(second.geometry.pointCount(), std::size_t{3});
+  }
+
+  void clockwiseImportIsReversedToCounterClockwise() {
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const std::vector<xfoil::Point2D> counterClockwise = {
+        {1.0, 0.0}, {0.5, 0.08}, {0.0, 0.0},
+        {0.5, -0.08}, {1.0, 0.0}};
+    std::vector<xfoil::Point2D> clockwise = counterClockwise;
+    std::reverse(clockwise.begin(), clockwise.end());
+
+    const auto ccwPath = pathIn(directory, "ccw.dat");
+    QVERIFY(writeText(ccwPath,
+                      "ccw\n"
+                      "1.0 0.0\n"
+                      "0.5 0.08\n"
+                      "0.0 0.0\n"
+                      "0.5 -0.08\n"
+                      "1.0 0.0\n"));
+    const auto ccw = readAirfoilFile(ccwPath);
+    QVERIFY2(ccw.status == AirfoilFileReadStatus::success,
+             ccw.message.c_str());
+    QVERIFY(!ccw.clockwiseReversed);
+    QCOMPARE(ccw.geometry.pointCount(), counterClockwise.size());
+    for (std::size_t index = 0; index < counterClockwise.size(); ++index) {
+      QCOMPARE(ccw.geometry.coordinates()[index].x,
+               counterClockwise[index].x);
+      QCOMPARE(ccw.geometry.coordinates()[index].y,
+               counterClockwise[index].y);
+    }
+
+    const auto cwPath = pathIn(directory, "cw.dat");
+    QVERIFY(writeText(cwPath,
+                      "cw\n"
+                      "1.0 0.0\n"
+                      "0.5 -0.08\n"
+                      "0.0 0.0\n"
+                      "0.5 0.08\n"
+                      "1.0 0.0\n"));
+    const auto cw = readAirfoilFile(cwPath);
+    QVERIFY2(cw.status == AirfoilFileReadStatus::success,
+             cw.message.c_str());
+    QVERIFY(cw.clockwiseReversed);
+    QCOMPARE(QString::fromStdString(std::string(cw.geometry.name())),
+             QStringLiteral("cw"));
+    QCOMPARE(cw.geometry.pointCount(), counterClockwise.size());
+    for (std::size_t index = 0; index < counterClockwise.size(); ++index) {
+      QCOMPARE(cw.geometry.coordinates()[index].x,
+               counterClockwise[index].x);
+      QCOMPARE(cw.geometry.coordinates()[index].y,
+               counterClockwise[index].y);
+    }
+  }
+
+  void degenerateImportIsRejectedWithoutGeometry() {
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const auto path = pathIn(directory, "line.dat");
+    QVERIFY(writeText(path,
+                      "line\n"
+                      "0.0 0.0\n"
+                      "0.5 0.0\n"
+                      "1.0 0.0\n"));
+    const auto result = readAirfoilFile(path);
+    QVERIFY(result.status == AirfoilFileReadStatus::error);
+    QVERIFY(result.message.find("orientation") != std::string::npos);
+    QVERIFY(result.geometry.empty());
   }
 
   void missingFileReportsError() {

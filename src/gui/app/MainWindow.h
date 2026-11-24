@@ -121,7 +121,7 @@ class MainWindow : public QMainWindow {
 
   Dependencies dependencies_;
   XFoilWidget* widget_{};
-  QAction* openAction_{};
+  QAction* loadAirfoilAction_{};
   QAction* saveAirfoilAction_{};
   QAction* exportDxfAction_{};
   QAction* importPolarAction_{};

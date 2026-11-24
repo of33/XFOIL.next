@@ -54,6 +54,19 @@
 namespace xfoil::gui::app {
 namespace {
 
+QString ensureSuffix(const QString& path, const QString& suffix) {
+  return path.endsWith(suffix, Qt::CaseInsensitive) ? path : path + suffix;
+}
+
+QString safeAirfoilBaseName(const QString& name) {
+  QString base = QFileInfo(name).fileName();
+  if (base.isEmpty() || base == QStringLiteral(".") ||
+      base == QStringLiteral("..")) {
+    return QStringLiteral("airfoil");
+  }
+  return base;
+}
+
 QString productName() {
   return QString::fromLatin1(xfoil::app::product::name.data(),
                              static_cast<int>(
@@ -207,6 +220,9 @@ MainWindow::MainWindow(Dependencies dependencies, QWidget* parent)
   widget_ = new XFoilWidget(this);
   setCentralWidget(widget_);
 
+  connect(widget_, &XFoilWidget::airfoilImportRequested, this,
+          [this]() { openFileDialog(); });
+
   createActions();
   createMenus();
   statusBar()->showMessage(QStringLiteral("Ready"));
@@ -253,10 +269,10 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::createActions() {
-  openAction_ = new QAction(QStringLiteral("&Open..."), this);
-  openAction_->setObjectName(QStringLiteral("openAction"));
-  openAction_->setShortcut(QKeySequence::Open);
-  connect(openAction_, &QAction::triggered, this,
+  loadAirfoilAction_ = new QAction(QStringLiteral("&Load Airfoil..."), this);
+  loadAirfoilAction_->setObjectName(QStringLiteral("loadAirfoilAction"));
+  loadAirfoilAction_->setShortcut(QKeySequence::Open);
+  connect(loadAirfoilAction_, &QAction::triggered, this,
           [this](bool) { openFileDialog(); });
 
   saveAirfoilAction_ = new QAction(QStringLiteral("&Save Airfoil..."), this);
@@ -327,7 +343,7 @@ void MainWindow::createActions() {
 void MainWindow::createMenus() {
   fileMenu_ = menuBar()->addMenu(QStringLiteral("&File"));
   fileMenu_->setObjectName(QStringLiteral("fileMenu"));
-  fileMenu_->addAction(openAction_);
+  fileMenu_->addAction(loadAirfoilAction_);
   fileMenu_->addAction(saveAirfoilAction_);
   fileMenu_->addAction(exportDxfAction_);
   fileMenu_->addSeparator();
@@ -452,11 +468,13 @@ void MainWindow::removeRecentFile(const QString& path) {
 
 void MainWindow::openFileDialog() {
   const std::optional<QString> path =
-      chooseFile(FileDialogMode::open, QStringLiteral("Open Airfoil"),
+      chooseFile(FileDialogMode::open, QStringLiteral("Load Airfoil"),
                  openFilter(), QString());
-  if (path.has_value()) {
-    openPath(*path);
+  if (!path.has_value()) {
+    widget_->cancelAirfoilImportRequest();
+    return;
   }
+  openPath(*path);
 }
 
 void MainWindow::openPath(const QString& path) {
@@ -470,10 +488,11 @@ void MainWindow::openPath(const QString& path) {
                            suppliedName.toStdString());
     if (read.status == AirfoilFileReadStatus::elementSelectionRequired) {
       const std::optional<int> selected = askInt(
-          QStringLiteral("Open Airfoil"),
+          QStringLiteral("Load Airfoil"),
           QStringLiteral("Enter element number:"),
           selectedElement > 0 ? selectedElement : 1, 1, 100000);
       if (!selected.has_value()) {
+        widget_->cancelAirfoilImportRequest();
         return;
       }
       selectedElement = *selected;
@@ -481,9 +500,10 @@ void MainWindow::openPath(const QString& path) {
     }
     if (read.status == AirfoilFileReadStatus::nameRequired) {
       const std::optional<QString> name = askText(
-          QStringLiteral("Open Airfoil"),
+          QStringLiteral("Load Airfoil"),
           QStringLiteral("Enter profile name:"), suggestedName);
       if (!name.has_value()) {
+        widget_->cancelAirfoilImportRequest();
         return;
       }
       suppliedName = name->isEmpty() ? suggestedName : *name;
@@ -493,25 +513,22 @@ void MainWindow::openPath(const QString& path) {
   }
 
   if (read.status != AirfoilFileReadStatus::success) {
-    showError(QStringLiteral("Open Airfoil"),
+    showError(QStringLiteral("Load Airfoil"),
               QString::fromStdString(read.message));
+    widget_->cancelAirfoilImportRequest();
     removeRecentFile(path);
     return;
   }
 
-  const Result<void> set = widget_->setGeometry(read.geometry);
+  const Result<void> set =
+      widget_->applyImportedGeometry(read.geometry, read.clockwiseReversed);
   if (set.isErr()) {
-    showError(QStringLiteral("Open Airfoil"),
+    showError(QStringLiteral("Load Airfoil"),
               QString::fromStdString(set.error().message));
+    widget_->cancelAirfoilImportRequest();
     return;
   }
 
-  const Result<SurfaceGeometry> panel =
-      widget_->generatePanel(widget_->panelingOptions());
-  if (panel.isErr()) {
-    showError(QStringLiteral("Panel generation failed"),
-              QString::fromStdString(panel.error().message));
-  }
   addRecentFile(path);
   statusBar()->showMessage(
       QStringLiteral("Loaded %1").arg(QFileInfo(path).fileName()));
@@ -527,10 +544,8 @@ void MainWindow::saveAirfoilDialog() {
     return;
   }
 
-  QString suggested = QString::fromStdString(std::string(geometry->name()));
-  if (suggested.isEmpty()) {
-    suggested = QStringLiteral("airfoil");
-  }
+  QString suggested = safeAirfoilBaseName(
+      QString::fromStdString(std::string(geometry->name())));
   const std::optional<QString> path = chooseFile(
       FileDialogMode::save, QStringLiteral("Save Airfoil"),
       airfoilSaveFilter(), suggested);
@@ -555,13 +570,10 @@ void MainWindow::exportDxfDialog() {
               QStringLiteral("No panel geometry is available."));
     return;
   }
-  QString suggested = QString::fromStdString(
+  QString suggested = safeAirfoilBaseName(QString::fromStdString(
       std::string(widget_->geometry().has_value()
                       ? widget_->geometry()->name()
-                      : std::string_view{}));
-  if (suggested.isEmpty()) {
-    suggested = QStringLiteral("airfoil");
-  }
+                      : std::string_view{})));
   const std::optional<QString> path = chooseFile(
       FileDialogMode::save, QStringLiteral("Export DXF"), dxfSaveFilter(),
       suggested);
@@ -615,6 +627,8 @@ void MainWindow::exportCurrentPolarDialog() {
   if (suggested.isEmpty()) {
     suggested = QStringLiteral("polar");
   }
+  suggested = ensureSuffix(safeAirfoilBaseName(suggested),
+                           QStringLiteral(".pol"));
   const std::optional<QString> path = chooseFile(
       FileDialogMode::save, QStringLiteral("Export Current Polar"),
       polarSaveFilter(), suggested);
@@ -622,7 +636,8 @@ void MainWindow::exportCurrentPolarDialog() {
     return;
   }
   const FileWriteResult written =
-      savePolarFile(toPath(*path), *polar, true);
+      savePolarFile(toPath(ensureSuffix(*path, QStringLiteral(".pol"))),
+                    *polar, true);
   if (!written.success) {
     showError(QStringLiteral("Export Current Polar"),
               QString::fromStdString(written.message));
@@ -643,6 +658,8 @@ void MainWindow::exportComparisonPolarDialog() {
   if (suggested.isEmpty()) {
     suggested = QStringLiteral("polar");
   }
+  suggested = ensureSuffix(safeAirfoilBaseName(suggested),
+                           QStringLiteral(".pol"));
   const std::optional<QString> path = chooseFile(
       FileDialogMode::save, QStringLiteral("Export Comparison Polar"),
       polarSaveFilter(), suggested);
@@ -650,7 +667,8 @@ void MainWindow::exportComparisonPolarDialog() {
     return;
   }
   const FileWriteResult written =
-      savePolarFile(toPath(*path), *polar, true);
+      savePolarFile(toPath(ensureSuffix(*path, QStringLiteral(".pol"))),
+                    *polar, true);
   if (!written.success) {
     showError(QStringLiteral("Export Comparison Polar"),
               QString::fromStdString(written.message));
@@ -675,14 +693,11 @@ void MainWindow::exportCpDialog() {
               QString::fromStdString(encoded.error().message));
     return;
   }
-  QString suggested = QString::fromStdString(
-      std::string(widget_->geometry().has_value()
-                      ? widget_->geometry()->name()
-                      : std::string_view{}));
-  if (suggested.isEmpty()) {
-    suggested = QStringLiteral("xfoil");
-  }
-  suggested += QStringLiteral("_cp.txt");
+  const QString suggested = ensureSuffix(
+      safeAirfoilBaseName(QString::fromStdString(std::string(
+          widget_->geometry().has_value() ? widget_->geometry()->name()
+                                          : std::string_view{}))),
+      QStringLiteral(".cp"));
   const std::optional<QString> path = chooseFile(
       FileDialogMode::save, QStringLiteral("Export Pressure (Cp)"),
       cpSaveFilter(), suggested);
@@ -690,7 +705,8 @@ void MainWindow::exportCpDialog() {
     return;
   }
   const FileWriteResult written =
-      saveTextFile(toPath(*path), encoded.value(), true);
+      saveTextFile(toPath(ensureSuffix(*path, QStringLiteral(".cp"))),
+                   encoded.value(), true);
   if (!written.success) {
     showError(QStringLiteral("Export Pressure (Cp)"),
               QString::fromStdString(written.message));
@@ -780,17 +796,16 @@ void MainWindow::showAbout() {
       QStringLiteral(
           "%1 %2\n\n"
           "Copyright (C) 2026 Olaf Frommann\n"
-          "%7\n\n"
+          "%6\n\n"
           "XFOIL.next is based on XFOIL 6.996\n"
           "by Mark Drela and Harold Youngren.\n\n"
           "License: %5\n\n"
           "Qt %3\n"
-          "QCustomPlot %4\n\n"
-          "%6")
+          "QCustomPlot %4")
           .arg(productName(), productVersion(),
                QStringLiteral(QT_VERSION_STR),
                QStringLiteral(QCUSTOMPLOT_VERSION_STR), productLicense(),
-               productUrl(), QStringLiteral("https://github.com/of33/XFOIL.next"));
+               productUrl());
   showInfo(QStringLiteral("About XFOIL.next"), text);
 }
 

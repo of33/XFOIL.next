@@ -58,6 +58,7 @@ enum class GuiScalarPlotKind {
 struct ScalarComparisonSeries {
   std::string name;
   std::vector<std::pair<double, double>> points;
+  std::size_t styleIndex{static_cast<std::size_t>(-1)};
 };
 
 class ScalarPlotView : public QWidget {

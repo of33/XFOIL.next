@@ -36,6 +36,7 @@
 #include <QPoint>
 #include <QTest>
 
+#include "plots/ComparisonStyle.h"
 #include "plots/ScalarPlotView.h"
 #include "qcustomplot.h"
 
@@ -354,6 +355,7 @@ class GuiScalarPlotTests : public QObject {
         ScalarComparisonSeries{"First", {{0.0, 0.0}, {1.0, 0.4}, {2.0, 0.8}}},
         ScalarComparisonSeries{"Second", {{0.0, 0.1}, {2.0, 0.5}}}};
     view.setComparisons(comparisons, true);
+    QVERIFY(!plot->legend->visible());
     QCOMPARE(view.comparisonCurveCount(), std::size_t{2});
     QCOMPARE(view.comparisonPointCount(), std::size_t{5});
     QCOMPARE(plot->plottableCount(), 7);
@@ -364,6 +366,16 @@ class GuiScalarPlotTests : public QObject {
     QCOMPARE(view.comparisonCurveCount(), std::size_t{1});
     QCOMPARE(view.comparisonPointCount(), std::size_t{3});
     QCOMPARE(plot->plottableCount(), 6);
+
+    ScalarComparisonSeries styled{"Styled", {{0.0, 0.0}, {1.0, 1.0}}};
+    styled.styleIndex = 5;
+    view.setComparisons({styled}, false);
+    auto* styledCurve = plot->findChild<QCPCurve*>(
+        QStringLiteral("comparisonCurve0"));
+    QVERIFY(styledCurve != nullptr);
+    QCOMPARE(styledCurve->pen().color(), xfoil::gui::comparisonColor(5));
+    QCOMPARE(styledCurve->pen().style(), xfoil::gui::comparisonPenStyle(5));
+    QVERIFY(!plot->legend->visible());
 
     view.setComparisons({}, false);
     QCOMPARE(view.comparisonCurveCount(), std::size_t{0});

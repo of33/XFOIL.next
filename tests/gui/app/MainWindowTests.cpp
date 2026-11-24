@@ -28,7 +28,9 @@
 #include <QAction>
 #include <QFile>
 #include <QFileInfo>
+#include <QLabel>
 #include <QListWidget>
+#include <QRadioButton>
 #include <QMenu>
 #include <QSignalSpy>
 #include <QTemporaryDir>
@@ -51,6 +53,8 @@ struct Harness {
   QStringList infos;
   QString infoTitle;
   QString infoText;
+  QString lastSuggested;
+  int chooseCalls{};
   int confirmCalls{};
   bool confirmAnswer{false};
 
@@ -59,7 +63,9 @@ struct Harness {
     dependencies.settingsFile = settingsFile;
     dependencies.chooseFile =
         [this](MainWindow::FileDialogMode mode, const QString&, const QString&,
-               const QString&) -> std::optional<QString> {
+               const QString& suggested) -> std::optional<QString> {
+      lastSuggested = suggested;
+      ++chooseCalls;
       if (mode == MainWindow::FileDialogMode::open) {
         if (openPath.isEmpty()) {
           return std::nullopt;
@@ -153,7 +159,9 @@ class MainWindowTests : public QObject {
     auto* widget = qobject_cast<XFoilWidget*>(window.centralWidget());
     QVERIFY(widget != nullptr);
     QCOMPARE(window.findChildren<XFoilWidget*>().size(), 1);
-    QCOMPARE(window.findChild<QAction*>("openAction") != nullptr, true);
+    QCOMPARE(window.findChild<QAction*>("loadAirfoilAction") != nullptr, true);
+    QCOMPARE(window.findChild<QAction*>("loadAirfoilAction")->text(),
+             QStringLiteral("&Load Airfoil..."));
     QCOMPARE(window.findChild<QAction*>("saveAirfoilAction") != nullptr, true);
     QCOMPARE(window.findChild<QAction*>("exportDxfAction") != nullptr, true);
     QCOMPARE(window.findChild<QAction*>("exportCpAction") != nullptr, true);
@@ -192,7 +200,7 @@ class MainWindowTests : public QObject {
         QFileInfo(QStringLiteral(
                       "tests/data/xfoil-6.996/s11/canonical-base.pol"))
             .absoluteFilePath();
-    harness.savePath = directory.filePath(QStringLiteral("output.pol"));
+    harness.savePath = directory.filePath(QStringLiteral("output"));
     MainWindow window(harness.dependencies());
     auto* widget = qobject_cast<XFoilWidget*>(window.centralWidget());
     QVERIFY(widget != nullptr);
@@ -208,8 +216,22 @@ class MainWindowTests : public QObject {
     window.findChild<QAction*>("exportComparisonPolarAction")->trigger();
     QVERIFY2(harness.errors.empty(),
              harness.errors.join(QStringLiteral("; ")).toUtf8().constData());
-    const QString saved = readText(harness.savePath);
+    QVERIFY(harness.lastSuggested.endsWith(QStringLiteral(".pol")));
+    const QString saved = readText(harness.savePath + QStringLiteral(".pol"));
     QVERIFY(saved.contains(QStringLiteral("Calculated polar for: NACA 0012")));
+
+    harness.savePath = directory.filePath(QStringLiteral("upper.POL"));
+    window.findChild<QAction*>("exportComparisonPolarAction")->trigger();
+    QVERIFY2(harness.errors.empty(),
+             harness.errors.join(QStringLiteral("; ")).toUtf8().constData());
+    QVERIFY(harness.lastSuggested.endsWith(QStringLiteral(".pol")));
+    QVERIFY(QFile::exists(harness.savePath));
+
+    harness.savePath = directory.filePath(QStringLiteral("foreign.txt"));
+    window.findChild<QAction*>("exportComparisonPolarAction")->trigger();
+    QVERIFY2(harness.errors.empty(),
+             harness.errors.join(QStringLiteral("; ")).toUtf8().constData());
+    QVERIFY(QFile::exists(harness.savePath + QStringLiteral(".pol")));
     QVERIFY(window.close());
   }
 
@@ -235,12 +257,26 @@ class MainWindowTests : public QObject {
     QTRY_VERIFY_WITH_TIMEOUT(
         window.findChild<QAction*>("exportCpAction")->isEnabled(), 5000);
 
+    harness.savePath = directory.filePath(QStringLiteral("out_cp"));
+    window.findChild<QAction*>("exportCpAction")->trigger();
+    QVERIFY2(harness.errors.empty(),
+             harness.errors.join(QStringLiteral("; ")).toUtf8().constData());
+    QVERIFY(harness.lastSuggested.endsWith(QStringLiteral(".cp")));
+    QVERIFY(harness.lastSuggested.startsWith(QStringLiteral("NACA 0012")));
+    const QString cp = readText(harness.savePath + QStringLiteral(".cp"));
+    QVERIFY(cp.startsWith(QStringLiteral("#      x          Cp")));
+
+    harness.savePath = directory.filePath(QStringLiteral("out_cp.CP"));
+    window.findChild<QAction*>("exportCpAction")->trigger();
+    QVERIFY2(harness.errors.empty(),
+             harness.errors.join(QStringLiteral("; ")).toUtf8().constData());
+    QVERIFY(QFile::exists(harness.savePath));
+
     harness.savePath = directory.filePath(QStringLiteral("out_cp.txt"));
     window.findChild<QAction*>("exportCpAction")->trigger();
     QVERIFY2(harness.errors.empty(),
              harness.errors.join(QStringLiteral("; ")).toUtf8().constData());
-    const QString cp = readText(harness.savePath);
-    QVERIFY(cp.startsWith(QStringLiteral("#      x          Cp")));
+    QVERIFY(QFile::exists(harness.savePath + QStringLiteral(".cp")));
 
     harness.savePath = directory.filePath(QStringLiteral("plot.png"));
     window.findChild<QAction*>("exportPlotPngAction")->trigger();
@@ -275,6 +311,103 @@ class MainWindowTests : public QObject {
     QVERIFY(window.close());
   }
 
+  void loadAirfoilNormalizesClockwiseAndCancelRestoresSource() {
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    Harness harness;
+    harness.settingsFile = directory.filePath(QStringLiteral("settings.ini"));
+    harness.openPath = directory.filePath(QStringLiteral("clockwise.dat"));
+    QVERIFY(writeText(harness.openPath,
+                      "clockwise\n"
+                      "1.0 0.0\n"
+                      "0.5 -0.08\n"
+                      "0.0 0.0\n"
+                      "0.5 0.08\n"
+                      "1.0 0.0\n"));
+    MainWindow window(harness.dependencies());
+    auto* widget = qobject_cast<XFoilWidget*>(window.centralWidget());
+    QVERIFY(widget != nullptr);
+    QSignalSpy started(widget, &XFoilWidget::analysisStarted);
+
+    window.findChild<QAction*>("loadAirfoilAction")->trigger();
+    QVERIFY2(harness.errors.empty(),
+             harness.errors.join(QStringLiteral("; ")).toUtf8().constData());
+    QCOMPARE(started.count(), 0);
+    QVERIFY(widget->geometry().has_value());
+    QCOMPARE(QString::fromStdString(std::string(widget->geometry()->name())),
+             QStringLiteral("clockwise"));
+    QVERIFY(widget->panelGeometry().has_value());
+    QVERIFY(widget->isReadyToAnalyze());
+    auto* notice =
+        widget->findChild<QLabel*>("geometryImportNoticeLabel");
+    QVERIFY(notice != nullptr);
+    QVERIFY(!notice->isHidden());
+    QCOMPARE(widget->geometry()->coordinates()[1].y, 0.08);
+
+    QVERIFY(widget->setNaca("0012").isOk());
+    QVERIFY(notice->isHidden());
+    QVERIFY(widget->findChild<QRadioButton*>("geometryNacaRadio")
+                ->isChecked());
+    harness.openPath.clear();
+    QTest::mouseClick(
+        widget->findChild<QRadioButton*>("geometryImportRadio"),
+        Qt::LeftButton);
+    QVERIFY(widget->findChild<QRadioButton*>("geometryNacaRadio")
+                ->isChecked());
+    QVERIFY(!widget->findChild<QRadioButton*>("geometryImportRadio")
+                 ->isChecked());
+    QCOMPARE(QString::fromStdString(std::string(widget->geometry()->name())),
+             QStringLiteral("NACA 0012"));
+
+    const QString beforeName =
+        QString::fromStdString(std::string(widget->geometry()->name()));
+    harness.openPath = directory.filePath(QStringLiteral("degenerate.dat"));
+    QVERIFY(writeText(harness.openPath,
+                      "degenerate\n"
+                      "0.0 0.0\n"
+                      "0.5 0.0\n"
+                      "1.0 0.0\n"));
+    harness.errors.clear();
+    window.findChild<QAction*>("loadAirfoilAction")->trigger();
+    QVERIFY(!harness.errors.isEmpty());
+    QCOMPARE(QString::fromStdString(std::string(widget->geometry()->name())),
+             beforeName);
+    QVERIFY(notice->isHidden());
+    QVERIFY(widget->panelGeometry().has_value());
+    QVERIFY(window.close());
+  }
+
+  void importRadioUsesSameDialogProvider() {
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    Harness harness;
+    harness.settingsFile = directory.filePath(QStringLiteral("settings.ini"));
+    harness.openPath = directory.filePath(QStringLiteral("radio.dat"));
+    QVERIFY(writeText(harness.openPath,
+                      "radio\n"
+                      "1.0 0.0\n"
+                      "0.5 0.08\n"
+                      "0.0 0.0\n"
+                      "0.5 -0.08\n"
+                      "1.0 0.0\n"));
+    MainWindow window(harness.dependencies());
+    auto* widget = qobject_cast<XFoilWidget*>(window.centralWidget());
+    QVERIFY(widget != nullptr);
+    QVERIFY(widget->setNaca("0012").isOk());
+    harness.chooseCalls = 0;
+
+    QTest::mouseClick(
+        widget->findChild<QRadioButton*>("geometryImportRadio"),
+        Qt::LeftButton);
+    QCOMPARE(harness.chooseCalls, 1);
+    QVERIFY(harness.errors.isEmpty());
+    QCOMPARE(QString::fromStdString(std::string(widget->geometry()->name())),
+             QStringLiteral("radio"));
+    QVERIFY(widget->findChild<QRadioButton*>("geometryImportRadio")
+                ->isChecked());
+    QVERIFY(window.close());
+  }
+
   void openSaveExportAndAboutUseExistingContracts() {
     QTemporaryDir directory;
     QVERIFY(directory.isValid());
@@ -287,7 +420,7 @@ class MainWindowTests : public QObject {
     auto* widget = qobject_cast<XFoilWidget*>(window.centralWidget());
     QVERIFY(widget != nullptr);
 
-    window.findChild<QAction*>("openAction")->trigger();
+    window.findChild<QAction*>("loadAirfoilAction")->trigger();
     QVERIFY(harness.errors.isEmpty());
     QVERIFY(widget->geometry().has_value());
     QVERIFY(widget->panelGeometry().has_value());
@@ -296,6 +429,7 @@ class MainWindowTests : public QObject {
 
     window.findChild<QAction*>("saveAirfoilAction")->trigger();
     QVERIFY(harness.errors.isEmpty());
+    QCOMPARE(harness.lastSuggested, QStringLiteral("diamond"));
     const QString saved = readText(harness.savePath);
     QVERIFY(saved.startsWith(QStringLiteral("diamond\n")));
     QCOMPARE(saved.count(QLatin1Char('\n')), 6);
@@ -320,8 +454,10 @@ class MainWindowTests : public QObject {
         QStringLiteral("Copyright (C) 2026 Olaf Frommann")));
     QVERIFY(harness.infoText.contains(QStringLiteral("XFOIL 6.996")));
     QVERIFY(harness.infoText.contains(QStringLiteral("GPL-3.0-or-later")));
-    QVERIFY(harness.infoText.contains(
-        QStringLiteral("https://github.com/of33/XFOIL.next")));
+    QCOMPARE(harness.infoText.count(
+                 QStringLiteral("https://github.com/of33/XFOIL.next")),
+             1);
+    QVERIFY(!harness.infoText.contains(QStringLiteral("2.0.0")));
     QVERIFY(window.close());
   }
 
@@ -335,7 +471,7 @@ class MainWindowTests : public QObject {
     auto* widget = qobject_cast<XFoilWidget*>(window.centralWidget());
     QVERIFY(widget != nullptr);
 
-    window.findChild<QAction*>("openAction")->trigger();
+    window.findChild<QAction*>("loadAirfoilAction")->trigger();
     QVERIFY(harness.errors.isEmpty());
     QVERIFY(!widget->geometry().has_value());
     QVERIFY(window.findChild<QMenu*>("recentFilesMenu")->actions().size() == 1);
@@ -350,7 +486,7 @@ class MainWindowTests : public QObject {
     harness.openPath = directory.filePath(QStringLiteral("missing.dat"));
     MainWindow window(harness.dependencies());
 
-    window.findChild<QAction*>("openAction")->trigger();
+    window.findChild<QAction*>("loadAirfoilAction")->trigger();
     QCOMPARE(harness.errors.size(), 1);
     QVERIFY(window.findChild<QMenu*>("recentFilesMenu")->actions().size() == 1);
     QVERIFY(window.close());
@@ -368,7 +504,7 @@ class MainWindowTests : public QObject {
       harness.settingsFile = settings;
       harness.openPath = input;
       MainWindow window(harness.dependencies());
-      window.findChild<QAction*>("openAction")->trigger();
+      window.findChild<QAction*>("loadAirfoilAction")->trigger();
       QVERIFY(harness.errors.isEmpty());
       QVERIFY(window.findChild<QAction*>("recentFile0Action") != nullptr);
       QVERIFY(window.close());

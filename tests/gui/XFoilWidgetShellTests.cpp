@@ -26,6 +26,8 @@
 // tests for the public XFoilWidget shell.
 
 #include <QApplication>
+#include <QButtonGroup>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QDir>
@@ -33,6 +35,7 @@
 #include <QGroupBox>
 #include <QGuiApplication>
 #include <QLabel>
+#include <QLineEdit>
 #include <QLocale>
 #include <QMainWindow>
 #include <QPalette>
@@ -40,6 +43,7 @@
 #include <QPointer>
 #include <QProgressBar>
 #include <QPushButton>
+#include <QRadioButton>
 #include <QRegularExpression>
 #include <QSpinBox>
 #include <QScrollArea>
@@ -142,7 +146,27 @@ class XFoilWidgetShellTests : public QObject {
     QVERIFY(widget.findChild<QPushButton*>("cancelButton") == nullptr);
     QVERIFY(widget.findChild<QProgressBar*>("analysisProgressBar") != nullptr);
     QVERIFY(widget.findChild<QLabel*>("analysisStatusLabel") != nullptr);
-    QVERIFY(widget.findChild<QLabel*>("statusLabel") != nullptr);
+    QVERIFY(widget.findChild<QLabel*>("statusLabel") == nullptr);
+    QVERIFY(widget.findChild<QLabel*>("workflowStateLabel") == nullptr);
+    QVERIFY(widget.findChild<QRadioButton*>("geometryImportRadio") != nullptr);
+    QVERIFY(widget.findChild<QRadioButton*>("geometryNacaRadio") != nullptr);
+    QVERIFY(widget.findChild<QRadioButton*>("geometryNacsRadio") != nullptr);
+    QVERIFY(widget.findChild<QLabel*>("airfoilNameDisplayLabel") != nullptr);
+    QVERIFY(widget.findChild<QLineEdit*>("airfoilNameEdit") != nullptr);
+    QVERIFY(widget.findChild<QLabel*>("geometryImportNoticeLabel") != nullptr);
+    QVERIFY(widget.findChild<QTabWidget*>("analysisTargetTabs") != nullptr);
+    QVERIFY(widget.findChild<QLabel*>("targetStatusLabel") == nullptr);
+    QVERIFY(widget.findChild<QLabel*>("panelStatusLabel") == nullptr);
+    QVERIFY(widget.findChild<QLabel*>("geometryStatusLabel") == nullptr);
+    QVERIFY(widget.findChild<QComboBox*>("targetModeCombo") == nullptr);
+    QVERIFY(widget.findChild<QComboBox*>("geometrySourceCombo") == nullptr);
+    QCOMPARE(widget.findChild<QCheckBox*>("showPanelingCheckBox")
+                 ->accessibleName(),
+             QStringLiteral("Show paneling"));
+    QCOMPARE(widget.findChild<QPushButton*>("generatePanelButton")->text(),
+             QStringLiteral("Generate Panels"));
+    QVERIFY(widget.findChild<QTabWidget*>("panelingSettingsTabs") != nullptr);
+    QVERIFY(widget.findChild<QTabWidget*>("conditionSettingsTabs") != nullptr);
 
     QTabWidget* tabs = widget.findChild<QTabWidget*>("resultPlotTabs");
     QVERIFY(tabs != nullptr);
@@ -153,7 +177,12 @@ class XFoilWidgetShellTests : public QObject {
   void g2StructureUsesSemanticNamesAndPromotedPlot() {
     XFoilWidget widget;
     const QStringList required = {
-        QStringLiteral("geometrySourceCombo"),
+        QStringLiteral("geometryImportRadio"),
+        QStringLiteral("geometryNacaRadio"),
+        QStringLiteral("geometryNacsRadio"),
+        QStringLiteral("airfoilNameDisplayLabel"),
+        QStringLiteral("airfoilNameEdit"),
+        QStringLiteral("geometryImportNoticeLabel"),
         QStringLiteral("nacaDesignationEdit"),
         QStringLiteral("applyGeometryButton"),
         QStringLiteral("panelCountSpin"),
@@ -168,7 +197,7 @@ class XFoilWidgetShellTests : public QObject {
         QStringLiteral("ncritSpin"),
         QStringLiteral("xtrUpperSpin"),
         QStringLiteral("xtrLowerSpin"),
-        QStringLiteral("targetModeCombo"),
+        QStringLiteral("analysisTargetTabs"),
         QStringLiteral("alphaTargetSpin"),
         QStringLiteral("clTargetSpin"),
         QStringLiteral("sequenceStartSpin"),
@@ -187,6 +216,8 @@ class XFoilWidgetShellTests : public QObject {
       QVERIFY2(widget.findChild<QWidget*>(name) != nullptr,
                qPrintable(name));
     }
+    QVERIFY(widget.findChild<QButtonGroup*>("geometrySourceButtonGroup") !=
+            nullptr);
 
     auto* plotWidget = widget.findChild<QWidget*>("airfoilPlot");
     QVERIFY(plotWidget != nullptr);
@@ -205,8 +236,8 @@ class XFoilWidgetShellTests : public QObject {
       QVERIFY2(!generic.match(name).hasMatch(), qPrintable(name));
     }
 
-    QVERIFY(!widget.findChild<QComboBox*>(
-                 QStringLiteral("geometrySourceCombo"))
+    QVERIFY(!widget.findChild<QRadioButton*>(
+                 QStringLiteral("geometryImportRadio"))
                  ->accessibleName()
                  .isEmpty());
     QVERIFY(!widget.findChild<QSpinBox*>(QStringLiteral("panelCountSpin"))

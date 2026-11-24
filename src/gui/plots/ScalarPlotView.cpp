@@ -38,6 +38,7 @@
 #include <QVBoxLayout>
 
 #include "model/GuiResultSummary.h"
+#include "plots/ComparisonStyle.h"
 #include "plots/InteractivePlotController.h"
 #include "plots/PlotStyle.h"
 #include "qcustomplot.h"
@@ -50,21 +51,6 @@ const QColor kMarkerColor(34, 93, 148);
 const QColor kSelectedColor(205, 45, 45);
 const QColor kDashedColor(128, 72, 130);
 
-constexpr std::array<QColor, 8> kComparisonColors = {
-    QColor(0, 114, 178),    // blue
-    QColor(213, 94, 0),     // vermillion
-    QColor(0, 158, 115),    // bluish green
-    QColor(204, 121, 167),  // reddish purple
-    QColor(86, 180, 233),   // sky blue
-    QColor(230, 159, 0),    // orange
-    QColor(0, 0, 0),        // black
-    QColor(240, 228, 68),   // yellow
-};
-
-constexpr std::array<Qt::PenStyle, 8> kComparisonStyles = {
-    Qt::SolidLine, Qt::DashLine, Qt::DotLine, Qt::DashDotLine,
-    Qt::DashDotDotLine, Qt::SolidLine, Qt::DashLine, Qt::DashDotLine,
-};
 
 QCPScatterStyle openCircle() {
   return QCPScatterStyle(QCPScatterStyle::ssCircle,
@@ -238,12 +224,16 @@ void ScalarPlotView::setComparisons(
         curve = new QCPCurve(plot_->xAxis, plot_->yAxis);
         curve->setObjectName(QStringLiteral("comparisonCurve%1")
                                  .arg(static_cast<qulonglong>(index)));
-        QPen pen(kComparisonColors[index], kComparisonLineWidth);
-        pen.setStyle(kComparisonStyles[index]);
-        curve->setPen(pen);
         curve->setLineStyle(QCPCurve::lsLine);
         curve->setScatterStyle(QCPScatterStyle::ssNone);
       }
+      const std::size_t styleIndex =
+          source.styleIndex == static_cast<std::size_t>(-1)
+              ? index
+              : source.styleIndex;
+      QPen pen(comparisonColor(styleIndex), kComparisonLineWidth);
+      pen.setStyle(comparisonPenStyle(styleIndex));
+      curve->setPen(pen);
       curve->setData(t, x, y, true);
       curve->setName(QString::fromStdString(source.name));
       curve->setVisible(true);
@@ -254,7 +244,8 @@ void ScalarPlotView::setComparisons(
     }
     comparisonPointCounts_[index] = count;
   }
-  plot_->legend->setVisible(any);
+  plot_->legend->setVisible(false);
+  (void)any;
   plot_->replot();
   if (fitData) {
     fitVisibleData();
