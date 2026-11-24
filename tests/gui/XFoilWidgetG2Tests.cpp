@@ -38,7 +38,9 @@
 #include <QObject>
 #include <QDoubleSpinBox>
 #include <QGroupBox>
+#include <QHBoxLayout>
 #include <QLabel>
+#include <QLayout>
 #include <QFontMetrics>
 #include <QLineEdit>
 #include <QPlainTextEdit>
@@ -404,9 +406,22 @@ class XFoilWidgetG2Tests : public QObject {
     QCoreApplication::processEvents();
 
     auto* title = child<QLabel>(widget, "geometryTitleLabel");
+    auto* geometryGroup = child<QGroupBox>(widget, "geometryGroup");
     QVERIFY(title != nullptr);
     QCOMPARE(title->text(), QStringLiteral("Geometry:"));
+    auto* header = child<QHBoxLayout>(widget, "geometryHeaderLayout");
+    auto* nameStack = child<QStackedWidget>(widget, "airfoilNameStack");
+    QVERIFY(header && nameStack);
+    QVERIFY(header->indexOf(title) >= 0);
+    QVERIFY(header->indexOf(nameStack) > header->indexOf(title));
+    QVERIFY(geometryGroup->title().isEmpty());
     QVERIFY(widget.findChild<QLabel*>("geometryHeaderLabel") == nullptr);
+    const int untitledHint = geometryGroup->minimumSizeHint().height();
+    const int layoutHint = geometryGroup->layout()->minimumSize().height();
+    QVERIFY2(untitledHint - layoutHint <= 18,
+             qPrintable(QStringLiteral("group hint=%1 layout hint=%2")
+                            .arg(untitledHint).arg(layoutHint)));
+
     auto* load = child<QPushButton>(widget, "loadAirfoilButton");
     auto* block = child<QWidget>(widget, "nacaGeometryBlock");
     auto* designation = child<QLineEdit>(widget, "nacaDesignationEdit");
@@ -477,6 +492,20 @@ class XFoilWidgetG2Tests : public QObject {
              QStringLiteral("My Wing"));
     QCOMPARE(display->text(), QStringLiteral("My Wing"));
     QCOMPARE(stack->currentWidget(), display);
+
+    QTest::mouseClick(display, Qt::LeftButton);
+    edit->setText(QStringLiteral("Focus Commit"));
+    child<QLineEdit>(widget, "nacaDesignationEdit")->setFocus();
+    QCoreApplication::processEvents();
+    QCOMPARE(QString::fromStdString(std::string(widget.geometry()->name())),
+             QStringLiteral("Focus Commit"));
+    QCOMPARE(display->text(), QStringLiteral("Focus Commit"));
+    QCOMPARE(stack->currentWidget(), display);
+
+    AirfoilGeometry renamed = *widget.geometry();
+    renamed.setName("Programmatic");
+    QVERIFY(widget.applyImportedGeometry(renamed, false).isOk());
+    QCOMPARE(display->text(), QStringLiteral("Programmatic"));
   }
 
   void twoWidgetsRemainIndependent() {

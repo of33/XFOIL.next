@@ -117,6 +117,8 @@ class XFoilWidgetG3Tests : public QObject {
     QVERIFY(analyzeButton != nullptr);
     QVERIFY(progress != nullptr);
     QVERIFY(status != nullptr);
+    QVERIFY(progress->isTextVisible());
+    QCOMPARE(progress->alignment(), Qt::AlignCenter);
     QCOMPARE(analyzeButton->text(), QStringLiteral("Analyze"));
     QCOMPARE(analyzeButton->property("analysisState").toString(),
              QStringLiteral("ready"));
@@ -131,6 +133,8 @@ class XFoilWidgetG3Tests : public QObject {
     QCOMPARE(started.count(), 1);
     QVERIFY(widget.isRunning());
     QVERIFY(widget.state() == XFoilGuiState::running);
+    QVERIFY(progress->isTextVisible());
+    QCOMPARE(progress->alignment(), Qt::AlignCenter);
     QCOMPARE(analyzeButton->text(), QStringLiteral("Cancel"));
     QCOMPARE(analyzeButton->property("analysisState").toString(),
              QStringLiteral("running"));
@@ -248,6 +252,10 @@ class XFoilWidgetG3Tests : public QObject {
     widget.cancel();
     widget.cancel();
     widget.cancelAction()->trigger();
+    auto* runningBar = widget.findChild<QProgressBar*>("analysisProgressBar");
+    QVERIFY(runningBar != nullptr);
+    QVERIFY(runningBar->isTextVisible());
+    QCOMPARE(runningBar->alignment(), Qt::AlignCenter);
     QTRY_VERIFY_WITH_TIMEOUT(cancelled.count() == 1, 30000);
     QTRY_VERIFY_WITH_TIMEOUT(!widget.isRunning(), 30000);
     QCOMPARE(failed.count(), 0);
@@ -277,6 +285,8 @@ class XFoilWidgetG3Tests : public QObject {
     QVERIFY(bar && iteration && status);
     QVERIFY(iteration->text().isEmpty());
     QCOMPARE(bar->value(), 0);
+    QCOMPARE(bar->format(), QStringLiteral("%p%"));
+    QCOMPARE(bar->alignment(), Qt::AlignCenter);
     QVERIFY(status->isHidden());
 
     QString seenIteration;
@@ -302,6 +312,7 @@ class XFoilWidgetG3Tests : public QObject {
     QVERIFY(iteration->text().isEmpty());
     QCOMPARE(bar->text(), QStringLiteral("100%"));
     QCOMPARE(bar->value(), 100);
+    QCOMPARE(bar->alignment(), Qt::AlignCenter);
 
     widget.setTarget(AlphaTarget{Degrees{1.0}});
     QVERIFY(iteration->text().isEmpty());
