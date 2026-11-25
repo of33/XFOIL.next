@@ -227,11 +227,28 @@ ticks, binds full scalar curves and selected-point Cp/Cf distributions with
 QCustomPlot, and provides source-index point selection, activate/deactivate
 filtering, a result matrix and derived summaries.
 The embeddable widget itself still has no file dialog, QSettings or import or
-export adapter; those responsibilities belong to the standalone shell. There
-is no GUI release asset or installer. The Windows UCRT64 Qt 6.12.0
-development build is qualified, but no Windows GUI package is provided.
-See [building and testing](docs/building-and-testing.md) for the complete target
-list, compiler requirements, and validation checks.
+export adapter; those responsibilities belong to the standalone shell.
+
+G8 adds local portable GUI packages for Linux and Windows:
+
+```sh
+export QT_ROOT=/path/to/Qt/6.12.0/gcc_64
+export APPIMAGE_TOOLS_DIR=/path/to/pinned/appimage-tools
+make gui-appimage
+make gui-portable-check-linux
+
+# In an MSYS2 UCRT64 shell on Windows:
+make gui-portable-windows
+```
+
+The Linux AppImage is built and tested on Ubuntu 24.04 with GCC 13.3.0 and the
+Qt 6.12.0 kit. It bundles Qt libraries and plugins but not the CLI executable.
+No GLIBC 2.35 or older-glibc compatibility is promised for the GUI AppImage.
+The Windows ZIP is a complete folder: extract it and run
+`xfoil.next-gui.exe`; do not move the executable away from its Qt libraries and
+plugin directories. The local G8 artifacts are test packages, not release
+downloads. See [packaging/gui](packaging/gui/README.md) and
+[building and testing](docs/building-and-testing.md).
 
 ## Portable runtime executables
 

@@ -169,9 +169,27 @@ widget shell, definition model, session backend, geometry preview, generated
 UI/meta-objects and QCustomPlot. Core, session and CLI objects remain in the
 separate public library.
 
-The GUI now includes a thin standalone application shell, but no GUI release
-package or installer is provided. A Windows UCRT64 Qt 6.12.0 development build
-is qualified, but not packaged. The product version remains 1.2.1.
+The GUI now includes a thin standalone application shell. G8 provides local
+portable GUI packages:
+
+```text
+make gui-appimage               Linux AppImage (Ubuntu 24.04 build host)
+make gui-portable-windows       Windows GUI ZIP (MSYS2 UCRT64)
+make gui-portable-check-linux   validate and run the AppImage
+make gui-portable-check-windows validate the Windows ZIP
+make gui-portable-repro-linux   two AppImage packaging runs
+make gui-portable-repro-windows two Windows ZIP packaging runs
+make test-gui-portable          packaging infrastructure tests
+```
+
+The Linux AppImage uses the Qt 6.12.0 kit selected by `QT_ROOT` and pinned
+AppImage tools in `APPIMAGE_TOOLS_DIR`. No AppImage tool or runtime is
+downloaded. The AppImage is built and tested on Ubuntu 24.04 with GCC 13.3.0;
+no GLIBC 2.35 compatibility promise is made for it. The Windows ZIP contains
+the GUI executable, Qt DLLs, plugins and MinGW runtime together in one
+top-level folder. The product version remains 1.2.1; the G8 artifacts use a
+`local-g8` suffix and are not release downloads. See
+[packaging/gui](../packaging/gui/README.md).
 
 Product programs land under `bin/<mode>/`; intermediate objects, tests,
 generated files and libraries remain under `build/<mode>/`. The default
@@ -191,11 +209,13 @@ XFOIL.next-GUI-2.0.0-linux-x86_64.AppImage
 XFOIL.next-GUI-2.0.0-windows-x86_64.zip
 ```
 
-These are not part of the current version or a finished release. The Windows
-GUI ZIP is planned to keep the executable, Qt libraries, plugins and MinGW
-runtime together; run the executable from the extracted folder, not on its
-own. The Linux AppImage is the planned portable GUI asset. The CLI archive
-names remain `XFOIL.next-2.0.0-linux-x86_64.tar.xz` and
+These are not part of the current version or a finished release. G8 builds
+local `1.2.1-local-g8` GUI packages with the same structure. The Windows GUI
+ZIP keeps the executable, Qt libraries, plugins and MinGW runtime together;
+run the executable from the extracted folder, not on its own. The Linux GUI
+AppImage is the portable GUI asset and is built/tested on Ubuntu 24.04; no
+older-glibc promise is made for it. The CLI archive names remain
+`XFOIL.next-2.0.0-linux-x86_64.tar.xz` and
 `XFOIL.next-2.0.0-windows-x86_64.zip`; the Linux CLI archive preserves file
 names, executable permissions and bundled release information, while the
 Windows CLI ZIP keeps the executable and required runtime files together.

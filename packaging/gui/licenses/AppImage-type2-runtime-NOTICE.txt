@@ -1,0 +1,19 @@
+AppImage type-2 runtime notice
+==============================
+
+The Linux AppImage package uses the AppImage type-2 runtime. The runtime
+itself reports the following components and license references:
+
+* runtime, licensed under the terms of
+  https://github.com/AppImage/type2-runtime/blob/main/LICENSE
+* musl libc, licensed under the terms of
+  https://git.musl-libc.org/cgit/musl/tree/COPYRIGHT
+* libfuse, licensed under the terms of its upstream license
+* squashfuse, licensed under the terms of
+  https://github.com/vasi/squashfuse/blob/master/LICENSE
+* libzstd, licensed under the terms of
+  https://github.com/facebook/zstd/blob/dev/LICENSE
+* zlib, licensed under the terms of
+  https://zlib.net/zlib_license.html
+
+Upstream project: https://github.com/AppImage/type2-runtime

@@ -1,0 +1,54 @@
+XFOIL.next GUI portable distribution
+====================================
+
+XFOIL.next
+Copyright (C) 2026 Olaf Frommann
+https://github.com/of33/XFOIL.next
+
+XFOIL.next is based on XFOIL 6.99 by Mark Drela and Harold Youngren.
+
+This package contains the standalone XFOIL.next graphical application. The
+command-line program is distributed separately.
+
+License
+-------
+
+XFOIL.next is distributed as a whole under the GNU General Public License,
+version 3 or later (GPL-3.0-or-later). The full license text is provided in
+LICENSE.
+
+The original XFOIL 6.99 sources retain their own copyright and license
+notices. The original XFOIL 6.99 distribution was made available under the
+GNU General Public License, version 2 or later.
+
+Bundled components
+------------------
+
+* Qt 6.12.0 shared libraries and plugins. Qt is used under the open-source
+  LGPLv3/GPLv3 terms. The complete Qt license text is provided in
+  licenses/Qt-LGPLv3-GPLv3.txt. Qt is dynamically linked and the shared
+  libraries remain replaceable by the recipient.
+* QCustomPlot 2.1.1, copyright 2011-2022 Emanuel Eichhammer, licensed under
+  GPL-3.0-or-later. Its license text is the GPLv3 text and is provided in
+  licenses/QCustomPlot-GPL-3.0.txt.
+* The GCC runtime support code, where present, under the GCC Runtime Library
+  Exception, version 3.1; see licenses/GCC-RUNTIME-EXCEPTION.txt.
+* On Windows, MinGW-w64 runtime and winpthreads notices are included in
+  licenses/.
+
+Exact source
+------------
+
+The source commit, tree, reference and source-date epoch for this package are
+recorded in SOURCE-INFO.txt. The corresponding source is the complete source
+tree at that commit. It can be obtained from the project URL above.
+
+The archive is a binary distribution and does not contain the full source
+tree.
+
+No warranty
+-----------
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.

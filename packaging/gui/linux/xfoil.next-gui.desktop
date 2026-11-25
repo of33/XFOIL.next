@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=XFOIL.next GUI
+GenericName=Airfoil Analysis
+Comment=Interactive XFOIL.next airfoil analysis
+Exec=xfoil.next-gui
+Icon=xfoil-next
+Terminal=false
+Categories=Science;Engineering;

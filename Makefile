@@ -510,6 +510,21 @@ PORTABLE_WINDOWS_BINARY := $(PORTABLE_WINDOWS_BUILDROOT)/release/xfoil.next.exe
 PORTABLE_LINUX_ARCHIVE := $(PORTABLE_DIST)/XFOIL.next-$(PRODUCT_VERSION)-linux-x86_64.tar.xz
 PORTABLE_WINDOWS_ARCHIVE := $(PORTABLE_DIST)/XFOIL.next-$(PRODUCT_VERSION)-windows-x86_64.zip
 PORTABLE_WINDOWS_RUN_VERSION := $(if $(filter .exe,$(EXEEXT)),--run-version,)
+
+# Local G8 GUI packaging. The product version remains canonical; the label
+# only distinguishes the local test artifacts from a future release.
+GUI_PORTABLE_ROOT ?= $(BUILDROOT)/portable/gui
+GUI_PORTABLE_DIST ?= $(GUI_PORTABLE_ROOT)/dist
+GUI_PORTABLE_LINUX_BUILDROOT ?= $(GUI_PORTABLE_ROOT)/linux-x86_64
+GUI_PORTABLE_WINDOWS_BUILDROOT ?= $(GUI_PORTABLE_ROOT)/windows-x86_64
+GUI_PORTABLE_LABEL ?= local-g8
+GUI_PACKAGE_VERSION := $(PRODUCT_VERSION)$(if $(strip $(GUI_PORTABLE_LABEL)),-$(GUI_PORTABLE_LABEL),)
+GUI_PORTABLE_LINUX_APPIMAGE := $(GUI_PORTABLE_DIST)/XFOIL.next-GUI-$(GUI_PACKAGE_VERSION)-linux-x86_64.AppImage
+GUI_PORTABLE_WINDOWS_ARCHIVE := $(GUI_PORTABLE_DIST)/XFOIL.next-GUI-$(GUI_PACKAGE_VERSION)-windows-x86_64.zip
+GUI_PORTABLE_WINDOWS_CLEAN_RUN := $(if $(filter .exe,$(EXEEXT)),--clean-run,)
+APPIMAGE_TOOLS_DIR ?=
+QT_ROOT ?=
+
 SOURCE_DATE_EPOCH ?= $(shell git show -s --format=%ct HEAD 2>/dev/null)
 export SOURCE_DATE_EPOCH
 
@@ -555,6 +570,9 @@ LIB_SHARED_IMPORT_FLAG := -Wl,--out-implib
 	portable-linux portable-windows portable-package-linux portable-package-windows \
 	portable-check-linux portable-check-windows portable-repro-linux \
 	portable-repro-windows portable-sha256sums \
+	gui-appimage gui-portable-windows gui-portable-check-linux \
+	gui-portable-check-windows gui-portable-repro-linux \
+	gui-portable-repro-windows test-gui-portable \
 	gui gui-debug gui-release gui-app gui-app-debug gui-app-release run-gui \
 	test-gui gui-qcustomplot-check gui-link-check gui-check-qt \
 	clean-gui check-gui-dependencies \
@@ -1049,6 +1067,51 @@ portable-sha256sums:
 		--output-dir "$(PORTABLE_DIST)"
 
 # ---------------------------------------------------------------------------
+# Portable GUI packaging. These targets are separate from the default build
+# and require Qt only when invoked. AppImage tools are never downloaded; set
+# APPIMAGE_TOOLS_DIR to the verified external tool directory.
+# ---------------------------------------------------------------------------
+gui-appimage:
+	APPIMAGE_TOOLS_DIR="$(APPIMAGE_TOOLS_DIR)" QT_ROOT="$(QT_ROOT)" \
+	GUI_PORTABLE_BUILDROOT="$(GUI_PORTABLE_LINUX_BUILDROOT)" \
+	GUI_PORTABLE_DIST="$(GUI_PORTABLE_DIST)" \
+	GUI_PACKAGE_VERSION="$(GUI_PACKAGE_VERSION)" \
+	GUI_APPIMAGE="$(GUI_PORTABLE_LINUX_APPIMAGE)" \
+	tools/build-gui-appimage.sh
+
+gui-portable-windows:
+	QT_ROOT="$(QT_ROOT)" \
+	GUI_PORTABLE_BUILDROOT="$(GUI_PORTABLE_WINDOWS_BUILDROOT)" \
+	GUI_PORTABLE_DIST="$(GUI_PORTABLE_DIST)" \
+	GUI_PACKAGE_VERSION="$(GUI_PACKAGE_VERSION)" \
+	GUI_WINDOWS_ARCHIVE="$(GUI_PORTABLE_WINDOWS_ARCHIVE)" \
+	tools/build-gui-portable-windows.sh
+
+gui-portable-check-linux:
+	XFOIL_PRODUCT_VERSION="$(PRODUCT_VERSION)" \
+	GUI_APPIMAGE="$(GUI_PORTABLE_LINUX_APPIMAGE)" \
+	tools/check-gui-appimage.sh
+
+gui-portable-check-windows:
+	python3 packaging/gui/windows/check_gui_windows.py \
+		--archive "$(GUI_PORTABLE_WINDOWS_ARCHIVE)" \
+		--expected-version "$(PRODUCT_VERSION)" \
+		--epoch "$(SOURCE_DATE_EPOCH)" \
+		$(GUI_PORTABLE_WINDOWS_CLEAN_RUN)
+
+gui-portable-repro-linux:
+	APPIMAGE_TOOLS_DIR="$(APPIMAGE_TOOLS_DIR)" QT_ROOT="$(QT_ROOT)" \
+	GUI_PACKAGE_VERSION="$(GUI_PACKAGE_VERSION)" \
+	tools/repro-gui-appimage.sh
+
+gui-portable-repro-windows:
+	QT_ROOT="$(QT_ROOT)" GUI_PACKAGE_VERSION="$(GUI_PACKAGE_VERSION)" \
+	tools/repro-gui-portable-windows.sh
+
+test-gui-portable:
+	PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s packaging/gui/tests -v
+
+# ---------------------------------------------------------------------------
 # Armed no-I/O proof (Linux). The interposition shim is disarmed for
 # loader/harness work and is armed only around the public API workflow.
 # ---------------------------------------------------------------------------
@@ -1335,6 +1398,13 @@ help:
 	@echo "  make portable-sha256sums        - write separate SHA256SUMS"
 	@echo "  make portable-repro-linux       - two clean Linux builds and compare"
 	@echo "  make portable-repro-windows     - two clean Windows builds and compare"
+	@echo "  make gui-appimage               - build+package Linux GUI AppImage"
+	@echo "  make gui-portable-windows       - build+package Windows GUI ZIP"
+	@echo "  make gui-portable-check-linux   - validate and run Linux GUI AppImage"
+	@echo "  make gui-portable-check-windows - validate Windows GUI ZIP"
+	@echo "  make gui-portable-repro-linux   - two AppImage packaging runs"
+	@echo "  make gui-portable-repro-windows - two Windows ZIP packaging runs"
+	@echo "  make test-gui-portable          - packaging infrastructure tests"
 	@echo ""
 	@echo "Optional GUI skeleton (requires Qt 6.12.0 and QT_ROOT):"
 	@echo "  make gui                 - build libxfoil_next_gui.a (debug)"
@@ -1380,7 +1450,7 @@ help:
 	@echo ""
 	@echo "Variables: CXX (default g++), BUILDROOT (default build),"
 	@echo "           BINROOT (default bin)."
-	@echo "Example:   make debug CXX=clang++ \"
+	@echo "Example:   make debug CXX=clang++"
 	@echo "             BUILDROOT=build/clang BINROOT=bin/clang"
 	@echo "Note: run make from the repository root; tests resolve sample/ paths"
 	@echo "relative to the root."
