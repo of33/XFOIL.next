@@ -40,6 +40,8 @@ REQUIRED = {
     "xfoil.next-gui.exe",
     "Install XFOIL.next GUI.cmd",
     "Install-XFOIL.next-GUI.ps1",
+    "Uninstall XFOIL.next GUI.cmd",
+    "Uninstall-XFOIL.next-GUI.ps1",
     "README-Windows.txt",
     "LICENSE",
     "NOTICE",
@@ -140,6 +142,10 @@ def check_archive(path, expected_version, epoch=None):
             raise CheckError(f"required ZIP entries missing: {missing}")
         for rel in relative:
             name = rel.rsplit("/", 1)[-1]
+            if name == ".xfoil-next-gui-install":
+                raise CheckError(
+                    "the installation marker must be created by the installer, "
+                    "not shipped in the ZIP")
             if name in ("xfoil.next.exe", "xfoil.next",
                         "qmake.exe", "moc.exe", "uic.exe", "rcc.exe",
                         "windeployqt.exe", "Qt6Test.dll"):
@@ -199,6 +205,74 @@ def check_dependencies(root, relative):
         raise CheckError("GUI executable has no readable PE import table")
     if (root / "xfoil.next-gui.exe").read_bytes().find(b"\x00") < 0:
         raise CheckError("GUI executable is not a PE image")
+
+
+def pe_version_strings(path):
+    """Read the native VS_VERSIONINFO strings on Windows."""
+    if os.name != "nt":
+        return {}
+    import ctypes
+    from ctypes import wintypes
+
+    version = ctypes.WinDLL("version")
+    version.GetFileVersionInfoSizeW.argtypes = [
+        wintypes.LPCWSTR, ctypes.POINTER(wintypes.DWORD)]
+    version.GetFileVersionInfoSizeW.restype = wintypes.DWORD
+    version.GetFileVersionInfoW.argtypes = [
+        wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD, ctypes.c_void_p]
+    version.GetFileVersionInfoW.restype = wintypes.BOOL
+    version.VerQueryValueW.argtypes = [
+        ctypes.c_void_p, wintypes.LPCWSTR,
+        ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(wintypes.UINT)]
+    version.VerQueryValueW.restype = wintypes.BOOL
+
+    ignored = wintypes.DWORD()
+    size = version.GetFileVersionInfoSizeW(str(path), ctypes.byref(ignored))
+    if not size:
+        raise CheckError(f"no native Windows version resource in {path}")
+    buffer = ctypes.create_string_buffer(size)
+    if not version.GetFileVersionInfoW(str(path), 0, size, buffer):
+        raise CheckError(f"cannot read Windows version resource from {path}")
+    pointer = ctypes.c_void_p()
+    length = wintypes.UINT()
+    if not version.VerQueryValueW(
+            buffer, "\\VarFileInfo\\Translation",
+            ctypes.byref(pointer), ctypes.byref(length)):
+        raise CheckError("version resource has no translation table")
+    if length.value < 4:
+        raise CheckError("version translation table is truncated")
+    language, codepage = struct.unpack_from(
+        "<HH", ctypes.string_at(pointer.value, 4))
+    values = {}
+    for name in ("FileDescription", "ProductName", "InternalName",
+                 "OriginalFilename", "FileVersion", "ProductVersion"):
+        key = (f"\\StringFileInfo\\{language:04x}{codepage:04x}\\{name}")
+        if not version.VerQueryValueW(
+                buffer, key, ctypes.byref(pointer), ctypes.byref(length)):
+            values[name] = None
+            continue
+        values[name] = ctypes.wstring_at(
+            pointer.value, length.value).rstrip("\0")
+    return values
+
+
+def check_version_metadata(root, expected_version):
+    values = pe_version_strings(root / "xfoil.next-gui.exe")
+    expected = {
+        "FileDescription": "XFOIL.next GUI",
+        "ProductName": "XFOIL.next GUI",
+        "InternalName": "XFOIL.next GUI",
+        "OriginalFilename": "xfoil.next-gui.exe",
+    }
+    for name, wanted in expected.items():
+        if values.get(name) != wanted:
+            raise CheckError(
+                f"PE {name} is {values.get(name)!r}, expected {wanted!r}")
+    for name in ("FileVersion", "ProductVersion"):
+        actual = values.get(name) or ""
+        if not actual.startswith(expected_version):
+            raise CheckError(
+                f"PE {name} is {actual!r}, expected {expected_version!r}")
 
 
 def window_titles(pid):
@@ -299,6 +373,7 @@ def main():
             root = pathlib.Path(temp) / top
             extract(args.archive, temp)
             check_dependencies(root, relative)
+            check_version_metadata(root, args.expected_version)
             if args.clean_run:
                 check_clean_run(root)
         print(f"Windows GUI ZIP: PASS ({len(relative)} files)")

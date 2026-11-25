@@ -301,7 +301,7 @@ class MainWindowTests : public QObject {
     qApp->setWindowIcon(previous);
   }
 
-  void applicationIconHasWhiteHexagonInteriorAndTransparentOutside() {
+  void applicationIconHasWhiteInteriorAndTransparentOutside() {
     const QImage image(QStringLiteral(":/xfoil-next/xfoil-next-icon.png"));
     QVERIFY(!image.isNull());
     QCOMPARE(image.size(), QSize(512, 512));
@@ -310,16 +310,15 @@ class MainWindowTests : public QObject {
     for (const QPoint& point : corners) {
       QCOMPARE(qAlpha(image.pixel(point)), 0);
     }
-    const QPoint whitePoints[] = {{256, 100}, {256, 400}, {80, 256},
-                                  {432, 256}, {200, 240}, {300, 350}};
-    for (const QPoint& point : whitePoints) {
-      const QColor colour = image.pixelColor(point);
-      QCOMPARE(colour.alpha(), 255);
-      QVERIFY(colour.red() >= 250);
-      QVERIFY(colour.green() >= 250);
-      QVERIFY(colour.blue() >= 250);
-    }
+    QCOMPARE(qAlpha(image.pixel(0, 256)), 0);
+    QCOMPARE(qAlpha(image.pixel(511, 256)), 0);
+    const QColor centre = image.pixelColor(256, 256);
+    QVERIFY(centre.alpha() >= 230);
+    QVERIFY(centre.red() >= 250);
+    QVERIFY(centre.green() >= 250);
+    QVERIFY(centre.blue() >= 250);
     int transparent = 0;
+    int white = 0;
     int blue = 0;
     int black = 0;
     for (int y = 0; y < image.height(); ++y) {
@@ -327,6 +326,9 @@ class MainWindowTests : public QObject {
         const QColor colour = image.pixelColor(x, y);
         if (colour.alpha() == 0) {
           ++transparent;
+        } else if (colour.alpha() >= 230 && colour.red() >= 250 &&
+                   colour.green() >= 250 && colour.blue() >= 250) {
+          ++white;
         } else if (colour.blue() > 80 && colour.red() < 80 &&
                    colour.green() < 80) {
           ++blue;
@@ -336,7 +338,9 @@ class MainWindowTests : public QObject {
         }
       }
     }
-    QVERIFY(transparent > 0);
+    const int total = image.width() * image.height();
+    QVERIFY(transparent > total / 100);
+    QVERIFY(white > total / 20);
     QVERIFY(blue > 0);
     QVERIFY(black > 0);
   }

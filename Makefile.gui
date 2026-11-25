@@ -38,6 +38,18 @@ GUI_BUILDROOT ?= $(BUILDROOT)/gui
 GUI_MODE ?= debug
 CORE_BUILDROOT ?= $(BUILDROOT)
 
+# Product version is read from the canonical C++ header. Windows version
+# resources receive these values at windres time; they are not duplicated in
+# the resource file.
+GUI_PRODUCT_VERSION := $(shell sed -n 's/.*inline constexpr std::string_view version = "\([^"]*\)".*/\1/p' src/app/ProductInfo.h)
+GUI_VERSION_PARTS := $(subst ., ,$(GUI_PRODUCT_VERSION))
+GUI_VERSION_MAJOR := $(word 1,$(GUI_VERSION_PARTS))
+GUI_VERSION_MINOR := $(word 2,$(GUI_VERSION_PARTS))
+GUI_VERSION_PATCH := $(word 3,$(GUI_VERSION_PARTS))
+ifeq ($(strip $(GUI_PRODUCT_VERSION)),)
+$(error Cannot read the product version from src/app/ProductInfo.h)
+endif
+
 # Reserved canonical product paths for the future GUI executable. G2c does
 # not build or create either file; the GUI archive and tests stay below
 # build/gui/. G5 will link these reserved names from the GUI archive.
@@ -183,6 +195,7 @@ GUI_QRC_CPP := $(GUI_GEN_DIR)/qrc_xfoil_next_icon.cpp
 GUI_QRC_OBJ := $(GUI_OBJ_DIR)/qrc_xfoil_next_icon.o
 GUI_WIN_RESOURCE := resources/gui/xfoil-next-icon.rc
 GUI_WIN_RESOURCE_OBJ := $(GUI_OBJ_DIR)/app/xfoil-next-icon.o
+GUI_WIN_VERSION_HEADER := $(GUI_GEN_DIR)/xfoil-next-version.h
 # QCustomPlot 2.1.1 still uses the Qt 5 Q_ENUMS/Q_FLAGS macros. Qt 6.12
 # marks those macros deprecated, and Clang also reports two legacy
 # indentation sites. Limit both suppressions to the vendored QCP
@@ -209,6 +222,7 @@ GUI_ARCHIVE_OBJS := \
 GUI_APP_MAIN_OBJ := $(GUI_OBJ_DIR)/app/main.o
 GUI_APP_COMMON_OBJS := \
 	$(GUI_OBJ_DIR)/app/AppIcon.o \
+	$(GUI_OBJ_DIR)/app/ApplicationMetadata.o \
 	$(GUI_OBJ_DIR)/app/MainWindow.o \
 	$(GUI_OBJ_DIR)/app/GuiFileAdapters.o \
 	$(GUI_OBJ_DIR)/app/DatFileReader.o \
@@ -243,6 +257,7 @@ GUI_TEST_OBJS := \
 	$(GUI_OBJ_DIR)/tests/XFoilAnalysisWidgetG6dTests.o \
 	$(GUI_OBJ_DIR)/tests/XFoilAnalysisWidgetShellTests.o \
 	$(GUI_OBJ_DIR)/tests/app/GuiFileAdaptersTests.o \
+	$(GUI_OBJ_DIR)/tests/app/ApplicationMetadataTests.o \
 	$(GUI_OBJ_DIR)/tests/app/MainWindowTests.o \
 	$(GUI_APP_COMMON_OBJS)
 GUI_LINKCHECK := $(GUI_TEST_DIR)/$(GUI_VARIANT)/gui-link-check$(GUI_EXE_SUFFIX)
@@ -361,6 +376,10 @@ $(GUI_GEN_DIR)/GuiFileAdaptersTests.moc: \
 		tests/gui/app/GuiFileAdaptersTests.cpp | $(GUI_GEN_DIR) $(GUI_STAMP)
 	$(QT_MOC) $(GUI_MOC_FLAGS) $< -o $@
 
+$(GUI_GEN_DIR)/ApplicationMetadataTests.moc: \
+		tests/gui/app/ApplicationMetadataTests.cpp | $(GUI_GEN_DIR) $(GUI_STAMP)
+	$(QT_MOC) $(GUI_MOC_FLAGS) $< -o $@
+
 $(GUI_GEN_DIR)/MainWindowTests.moc: tests/gui/app/MainWindowTests.cpp \
 		| $(GUI_GEN_DIR) $(GUI_STAMP)
 	$(QT_MOC) $(GUI_MOC_FLAGS) $< -o $@
@@ -467,9 +486,18 @@ $(GUI_QRC_OBJ): $(GUI_QRC_CPP) | $(GUI_STAMP)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
 
 ifeq ($(GUI_EXE_SUFFIX),.exe)
-$(GUI_WIN_RESOURCE_OBJ): $(GUI_WIN_RESOURCE) resources/gui/xfoil-next-icon.ico | $(GUI_STAMP)
+$(GUI_WIN_VERSION_HEADER): src/app/ProductInfo.h | $(GUI_GEN_DIR) $(GUI_STAMP)
 	@mkdir -p $(dir $@)
-	$(WINDRES) -I resources/gui $< -O coff -o $@
+	@printf '%s\n' \
+		'#define XFOIL_GUI_VERSION_STRING "$(GUI_PRODUCT_VERSION)"' \
+		'#define XFOIL_GUI_VERSION_MAJOR $(GUI_VERSION_MAJOR)' \
+		'#define XFOIL_GUI_VERSION_MINOR $(GUI_VERSION_MINOR)' \
+		'#define XFOIL_GUI_VERSION_PATCH $(GUI_VERSION_PATCH)' > $@
+
+$(GUI_WIN_RESOURCE_OBJ): $(GUI_WIN_RESOURCE) $(GUI_WIN_VERSION_HEADER) \
+		resources/gui/xfoil-next-icon.ico | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(WINDRES) -I $(GUI_GEN_DIR) -I resources/gui $< -O coff -o $@
 endif
 
 $(GUI_OBJ_DIR)/tests/GuiTestMain.o: tests/gui/GuiTestMain.cpp | $(GUI_STAMP)
@@ -601,6 +629,13 @@ $(GUI_OBJ_DIR)/tests/app/GuiFileAdaptersTests.o: \
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
 
+$(GUI_OBJ_DIR)/tests/app/ApplicationMetadataTests.o: \
+		tests/gui/app/ApplicationMetadataTests.cpp \
+		src/gui/app/ApplicationMetadata.h \
+		$(GUI_GEN_DIR)/ApplicationMetadataTests.moc | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
 $(GUI_OBJ_DIR)/tests/app/MainWindowTests.o: \
 		tests/gui/app/MainWindowTests.cpp \
 		src/gui/app/AppIcon.h \
@@ -618,12 +653,19 @@ $(GUI_ARCHIVE): $(GUI_ARCHIVE_OBJS)
 	$(AR) rcs $@ $(GUI_ARCHIVE_OBJS)
 
 $(GUI_APP_MAIN_OBJ): src/gui/app/main.cpp src/gui/app/MainWindow.h \
-		src/gui/app/AppIcon.h src/app/ProductInfo.h | $(GUI_STAMP)
+		src/gui/app/AppIcon.h src/gui/app/ApplicationMetadata.h \
+		src/app/ProductInfo.h | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
 
 $(GUI_OBJ_DIR)/app/AppIcon.o: src/gui/app/AppIcon.cpp \
 		src/gui/app/AppIcon.h | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/app/ApplicationMetadata.o: \
+		src/gui/app/ApplicationMetadata.cpp \
+		src/gui/app/ApplicationMetadata.h src/app/ProductInfo.h | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
 

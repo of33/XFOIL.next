@@ -37,16 +37,20 @@ make gui-portable-repro-linux
 
 Outputs are written below `build/portable/gui/` and are not committed.
 
-The derived GUI PNG/ICO can be regenerated offline from the canonical root
-`XFOIL.next.png` with `tools/generate-gui-icons.py` (Pillow, NumPy and SciPy are
-required only for that one-time regeneration, not for normal builds).
+The derived GUI PNG/ICO can be regenerated offline from the owner-approved
+canonical source `resources/gui/Airfoil.Next_icon.png` with
+`tools/generate-gui-icons.py`. The tool preserves the source aspect ratio,
+centres non-square sources on a transparent 512x512 canvas and writes the ICO
+frames from that proportional PNG. Pillow is required only for that explicit
+regeneration, not for normal builds.
 
 ## Windows GUI ZIP
 
 Build in MSYS2 UCRT64 on the validated Windows 11 baseline. The ZIP uses a
 single top-level directory and contains the GUI executable, Qt DLLs, MinGW
-runtime DLLs, Qt platform/image/icon plugins, license/notice files and two
-install helpers. The CLI executable and development files are excluded.
+runtime DLLs, Qt platform/image/icon plugins, license/notice files, the install
+helpers and the uninstall helpers. The CLI executable and development files
+are excluded.
 
 ```sh
 export QT_ROOT=/c/msys64/ucrt64
@@ -64,12 +68,22 @@ Portable use is unchanged: extract the complete ZIP and run
 current process only. The installer copies the full runtime to
 `%LOCALAPPDATA%\Programs\XFOIL.next GUI`, creates a Desktop shortcut and a
 Start Menu shortcut, and does not request elevation, change the registry or use
-the network. Re-running updates the same target and shortcuts.
+the network. Re-running updates the same target, the install marker and the
+shortcuts. The Start Menu folder also receives an uninstaller shortcut.
+
+`Uninstall XFOIL.next GUI.cmd` and `Uninstall-XFOIL.next-GUI.ps1` validate the
+per-user target, the install marker, the executable and the owned shortcuts
+before removing anything. Reparse points, foreign shortcuts and unexpected
+targets are refused. The uninstaller removes its managed shortcuts and folder,
+then removes itself through a temporary helper process.
 
 The Windows check validates the ZIP layout, modes, timestamps, PE imports,
-GUI subsystem, native icon resource and a clean-`PATH` GUI startup. The
-PowerShell installer tests use temporary known-folder overrides and do not leave
-shortcuts in the real user profile.
+GUI subsystem, native icon and version resources, the Qt application identity
+and a clean-`PATH` GUI startup. The PowerShell installer tests use temporary
+known-folder overrides and do not leave shortcuts in the real user profile.
+They cover install, repeated install, foreign-link preservation, marker and
+reparse rejection, running/locked rejection, installation-marker migration,
+uninstall, reinstall, complete removal and temporary-helper cleanup.
 
 The Windows GUI executable is linked with `-mwindows`; the CLI and GUI test
 programs keep their console subsystem.

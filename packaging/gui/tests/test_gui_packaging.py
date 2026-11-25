@@ -54,6 +54,10 @@ ICONS = load("icon_checks", GUI / "icon_checks.py")
 REQUIRED = set(WINDOWS.REQUIRED_FILES)
 OLD_PNG_SHA256 = "a04555590ece3c54a6ed19972725684064311bbc2b55157868be6bb8ab228dea"
 OLD_ICO_SHA256 = "5cb06f57a12a0f65cad644a02e0a98f6f34694259ef9800d1062c66887b46951"
+G8A_PNG_SHA256 = "d250aac993d795b39f5e22a98a3f10d907286794506b778208a78c2f068269b2"
+G8A_ICO_SHA256 = "53ffac2ae38968ad7e084d2c97a3fd2926859dcc33bbae0bf973618850f0d6cb"
+CANONICAL_SHA256 = "9d1abd6e7c5375357bd8caa0f7189138fa744776d835cd7b55138a9f59233218"
+CANONICAL = ROOT / "resources/gui/Airfoil.Next_icon.png"
 
 
 def fake_pe(subsystem=2):
@@ -104,16 +108,38 @@ class ToolTests(unittest.TestCase):
 
 
 class IconTests(unittest.TestCase):
-    def test_corrected_png_and_ico(self):
+    def test_canonical_source_is_the_owner_file(self):
+        self.assertTrue(CANONICAL.is_file())
+        self.assertEqual(hashlib.sha256(CANONICAL.read_bytes()).hexdigest(),
+                         CANONICAL_SHA256)
+        info = ICONS.check_canonical_source(CANONICAL)
+        self.assertEqual((info["width"], info["height"]), (4233, 4841))
+        self.assertAlmostEqual(info["aspect"], 4233 / 4841, places=8)
+        self.assertGreater(info["transparent_fraction"], 0.20)
+        self.assertGreater(info["white_fraction"], 0.50)
+
+    def test_corrected_png_and_ico_preserve_source_aspect(self):
         png = ROOT / "resources/gui/xfoil-next-icon.png"
         ico = ROOT / "resources/gui/xfoil-next-icon.ico"
-        png_info, sizes = ICONS.check_pair(png, ico)
+        png_info, sizes, source_info = ICONS.check_pair(png, ico, CANONICAL)
         self.assertEqual(png_info[:2], (512, 512))
         self.assertEqual({(w, h) for w, h in sizes}, set(ICONS.ICO_SIZES))
-        self.assertNotEqual(
-            hashlib.sha256(png.read_bytes()).hexdigest(), OLD_PNG_SHA256)
-        self.assertNotEqual(
-            hashlib.sha256(ico.read_bytes()).hexdigest(), OLD_ICO_SHA256)
+        self.assertAlmostEqual(source_info["aspect"], 4233 / 4841, places=8)
+        png_hash = hashlib.sha256(png.read_bytes()).hexdigest()
+        ico_hash = hashlib.sha256(ico.read_bytes()).hexdigest()
+        self.assertNotIn(png_hash, (OLD_PNG_SHA256, G8A_PNG_SHA256))
+        self.assertNotIn(ico_hash, (OLD_ICO_SHA256, G8A_ICO_SHA256))
+
+    def test_generator_uses_only_new_canonical_source(self):
+        text = (ROOT / "tools/generate-gui-icons.py").read_text(
+            encoding="utf-8")
+        self.assertIn(
+            'CANONICAL_SOURCE = "resources/gui/Airfoil.Next_icon.png"', text)
+        self.assertNotIn("XFOIL.next.png", text)
+        self.assertNotIn("numpy", text.lower())
+        self.assertNotIn("scipy", text.lower())
+        self.assertIn("Image.Resampling.LANCZOS", text)
+        self.assertIn("alpha_composite", text)
 
     def test_installer_scripts_have_no_network_or_absolute_dev_paths(self):
         ps = (GUI / "windows/Install-XFOIL.next-GUI.ps1").read_text(
@@ -127,6 +153,9 @@ class IconTests(unittest.TestCase):
         self.assertIn("GetFolderPath('Programs')", ps)
         self.assertIn("WorkingDirectory", ps)
         self.assertIn("IconLocation", ps)
+        self.assertIn("Uninstall XFOIL.next GUI.cmd", ps)
+        self.assertIn("StartUninstallLink", ps)
+        self.assertIn("marker", ps.lower())
         self.assertIn("-NoProfile", cmd)
         self.assertIn("-ExecutionPolicy Bypass", cmd)
         for text in (ps, cmd):
@@ -138,6 +167,40 @@ class IconTests(unittest.TestCase):
                           "Start-BitsTransfer", "New-ItemProperty",
                           "reg.exe", "Registry::", "Start-Process -Verb RunAs"):
                 self.assertNotIn(token, text)
+
+    def test_uninstaller_scripts_are_guarded_and_offline(self):
+        ps = (GUI / "windows/Uninstall-XFOIL.next-GUI.ps1").read_text(
+            encoding="utf-8")
+        cmd = (GUI / "windows/Uninstall XFOIL.next GUI.cmd").read_text(
+            encoding="utf-8")
+        self.assertIn("MarkerName", ps)
+        self.assertIn("ReparsePoint", ps)
+        self.assertIn("HelperInstallRoot", ps)
+        self.assertIn("Schedule-HelperCleanup", ps)
+        self.assertIn("'Uninstall ' + $TargetName", ps)
+        self.assertIn("GetFolderPath('Desktop')", ps)
+        self.assertIn("GetFolderPath('Programs')", ps)
+        self.assertIn("-NoProfile", cmd)
+        self.assertIn("-ExecutionPolicy Bypass", cmd)
+        self.assertIn("%TEMP%", cmd)
+        for text in (ps, cmd):
+            self.assertNotIn("C:\\Program Files", text)
+            self.assertNotIn("C:\\Windows", text)
+            self.assertNotIn("C:\\Users\\Agent", text)
+            self.assertNotIn("/local/Olaf", text)
+            for token in ("Invoke-WebRequest", "Invoke-RestMethod",
+                          "Start-BitsTransfer", "New-ItemProperty",
+                          "reg.exe", "Registry::", "Start-Process -Verb RunAs"):
+                self.assertNotIn(token, text)
+
+    def test_windows_version_resource_uses_canonical_metadata(self):
+        rc = (ROOT / "resources/gui/xfoil-next-icon.rc").read_text(
+            encoding="utf-8")
+        self.assertIn('VALUE "FileDescription", "XFOIL.next GUI"', rc)
+        self.assertIn('VALUE "ProductName", "XFOIL.next GUI"', rc)
+        self.assertIn('VALUE "InternalName", "XFOIL.next GUI"', rc)
+        self.assertIn('VALUE "OriginalFilename", "xfoil.next-gui.exe"', rc)
+        self.assertIn("XFOIL_GUI_VERSION_STRING", rc)
 
     def test_pe_subsystem_parser(self):
         def pe(subsystem):
@@ -201,6 +264,17 @@ class WindowsPackageTests(unittest.TestCase):
             actual_top, relative = CHECK_ZIP.check_archive(archive, "1.2.1")
             self.assertEqual(actual_top, top)
             self.assertIn("xfoil.next-gui.exe", relative)
+
+    def test_archive_check_rejects_marker(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp) / "stage"
+            fill_required(root)
+            (root / ".xfoil-next-gui-install").write_text("product\n")
+            archive = pathlib.Path(temp) / "gui.zip"
+            top = "XFOIL.next-GUI-1.2.1-local-g8-windows-x86_64"
+            WINDOWS.write_zip(root, archive, top, 1700000000)
+            with self.assertRaises(CHECK_ZIP.CheckError):
+                CHECK_ZIP.check_archive(archive, "1.2.1")
 
     def test_archive_check_rejects_cli(self):
         with tempfile.TemporaryDirectory() as temp:

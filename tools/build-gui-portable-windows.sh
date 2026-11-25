@@ -125,6 +125,8 @@ if [ "$PACKAGE_ONLY" -eq 0 ]; then
     cp "$GUI_EXE" "$STAGE/xfoil.next-gui.exe"
     cp "packaging/gui/windows/Install XFOIL.next GUI.cmd" "$STAGE/"
     cp packaging/gui/windows/Install-XFOIL.next-GUI.ps1 "$STAGE/"
+    cp "packaging/gui/windows/Uninstall XFOIL.next GUI.cmd" "$STAGE/"
+    cp packaging/gui/windows/Uninstall-XFOIL.next-GUI.ps1 "$STAGE/"
     cp packaging/gui/windows/README-Windows.txt "$STAGE/README-Windows.txt"
 
     PATH="$QT_ROOT/bin:$PATH" \

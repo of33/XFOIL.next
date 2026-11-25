@@ -1,0 +1,53 @@
+// XFOIL.next
+//
+// Copyright (C) 2026 Olaf Frommann
+// https://github.com/of33/XFOIL.next
+//
+// XFOIL.next is based on XFOIL 6.99 by Mark Drela and
+// Harold Youngren.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+// File: src/gui/app/ApplicationMetadata.cpp
+// Process-global metadata for the standalone GUI only. Values come from the
+// canonical product information header.
+
+#include "app/ApplicationMetadata.h"
+
+#include <QCoreApplication>
+#include <QGuiApplication>
+#include <QString>
+
+#include "app/ProductInfo.h"
+
+namespace xfoil::gui::app {
+
+void configureApplicationMetadata() {
+  const QString productName = QString::fromLatin1(
+      xfoil::app::product::name.data(),
+      static_cast<int>(xfoil::app::product::name.size()));
+  QCoreApplication::setOrganizationName(productName);
+  QCoreApplication::setApplicationName(productName + QStringLiteral(" GUI"));
+  QGuiApplication::setApplicationDisplayName(
+      QStringLiteral("XFOIL.next GUI"));
+  QCoreApplication::setApplicationVersion(QString::fromLatin1(
+      xfoil::app::product::version.data(),
+      static_cast<int>(xfoil::app::product::version.size())));
+}
+
+}  // namespace xfoil::gui::app
+
+// End: src/gui/app/ApplicationMetadata.cpp

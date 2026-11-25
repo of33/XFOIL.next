@@ -38,6 +38,8 @@ REQUIRED_FILES = (
     "xfoil.next-gui.exe",
     "Install XFOIL.next GUI.cmd",
     "Install-XFOIL.next-GUI.ps1",
+    "Uninstall XFOIL.next GUI.cmd",
+    "Uninstall-XFOIL.next-GUI.ps1",
     "README-Windows.txt",
     "LICENSE",
     "NOTICE",
@@ -65,6 +67,7 @@ REQUIRED_FILES = (
     "licenses/MINGW-W64-ZPL-2.1.txt",
 )
 FORBIDDEN_NAMES = {
+    ".xfoil-next-gui-install",
     "xfoil.next",
     "xfoil.next.exe",
     "xfoil.next-gui.pdb",

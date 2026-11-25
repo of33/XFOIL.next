@@ -48,6 +48,7 @@ int runXFoilAnalysisWidgetG6cTests(int argc, char** argv);
 int runXFoilAnalysisWidgetG6dTests(int argc, char** argv);
 int runXFoilAnalysisWidgetShellTests(int argc, char** argv);
 int runGuiFileAdaptersTests(int argc, char** argv);
+int runApplicationMetadataTests(int argc, char** argv);
 int runMainWindowTests(int argc, char** argv);
 
 int main(int argc, char** argv) {
@@ -75,6 +76,7 @@ int main(int argc, char** argv) {
   failures += runXFoilAnalysisWidgetG6dTests(argc, argv);
   failures += runXFoilAnalysisWidgetShellTests(argc, argv);
   failures += runGuiFileAdaptersTests(argc, argv);
+  failures += runApplicationMetadataTests(argc, argv);
   failures += runMainWindowTests(argc, argv);
   return failures == 0 ? 0 : 1;
 }

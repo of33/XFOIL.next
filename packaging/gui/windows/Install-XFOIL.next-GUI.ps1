@@ -9,8 +9,18 @@ $ErrorActionPreference = 'Stop'
 
 $PackageRoot = $PSScriptRoot
 $TargetName = 'XFOIL.next GUI'
+$MarkerName = '.xfoil-next-gui-install'
+$MarkerLines = @(
+    'product = XFOIL.next GUI',
+    'scope = per-user',
+    'install-root = managed'
+)
 $Required = @(
     'xfoil.next-gui.exe',
+    'Install XFOIL.next GUI.cmd',
+    'Install-XFOIL.next-GUI.ps1',
+    'Uninstall XFOIL.next GUI.cmd',
+    'Uninstall-XFOIL.next-GUI.ps1',
     'Qt6Core.dll',
     'platforms\qwindows.dll'
 )
@@ -47,27 +57,47 @@ function Assert-Package([string]$Root) {
     }
 }
 
-function Assert-ShortcutTarget([string]$ShortcutPath, [string]$ExpectedExe, [string]$ExpectedDirectory) {
+function Assert-NotReparse([string]$Path) {
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return
+    }
+    $item = Get-Item -LiteralPath $Path -Force
+    if ([bool]($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+        Fail "Refusing to install through a reparse point: $Path"
+    }
+}
+
+function Assert-ShortcutTarget(
+    [string]$ShortcutPath,
+    [string]$ExpectedTarget,
+    [string]$ExpectedDirectory,
+    [string]$ExpectedIcon
+) {
     $shell = New-Object -ComObject WScript.Shell
     $shortcut = $shell.CreateShortcut($ShortcutPath)
-    if ([IO.Path]::GetFullPath($shortcut.TargetPath) -ine [IO.Path]::GetFullPath($ExpectedExe)) {
+    if ([IO.Path]::GetFullPath($shortcut.TargetPath) -ine [IO.Path]::GetFullPath($ExpectedTarget)) {
         Fail "Shortcut target is wrong: $ShortcutPath"
     }
     if ([IO.Path]::GetFullPath($shortcut.WorkingDirectory) -ine [IO.Path]::GetFullPath($ExpectedDirectory)) {
         Fail "Shortcut working directory is wrong: $ShortcutPath"
     }
-    if (-not $shortcut.IconLocation.StartsWith($ExpectedExe, [StringComparison]::OrdinalIgnoreCase)) {
+    if (-not $shortcut.IconLocation.StartsWith($ExpectedIcon, [StringComparison]::OrdinalIgnoreCase)) {
         Fail "Shortcut icon is wrong: $ShortcutPath"
     }
 }
 
-function New-Shortcut([string]$ShortcutPath, [string]$TargetExe, [string]$TargetDirectory) {
+function New-Shortcut(
+    [string]$ShortcutPath,
+    [string]$TargetPath,
+    [string]$TargetDirectory,
+    [string]$Description
+) {
     $shell = New-Object -ComObject WScript.Shell
     $shortcut = $shell.CreateShortcut($ShortcutPath)
-    $shortcut.TargetPath = $TargetExe
+    $shortcut.TargetPath = $TargetPath
     $shortcut.WorkingDirectory = $TargetDirectory
     $shortcut.IconLocation = "$TargetExe,0"
-    $shortcut.Description = 'XFOIL.next GUI'
+    $shortcut.Description = $Description
     $shortcut.Save()
 }
 
@@ -78,11 +108,15 @@ try {
     }
 
     New-Item -ItemType Directory -Path $ProgramsRoot -Force | Out-Null
+    Assert-NotReparse $ProgramsRoot
+    Assert-NotReparse $Target
     New-Item -ItemType Directory -Path $Staging -Force | Out-Null
     Get-ChildItem -LiteralPath $PackageRoot -Force | ForEach-Object {
         Copy-Item -LiteralPath $_.FullName -Destination $Staging -Recurse -Force
     }
     Assert-Package $Staging
+    $MarkerLines | Set-Content -LiteralPath (Join-Path $Staging $MarkerName) `
+        -Encoding ascii
 
     if (Test-Path -LiteralPath $Target -PathType Container) {
         if (Test-Path -LiteralPath $TargetExe -PathType Leaf) {
@@ -122,17 +156,23 @@ try {
     New-Item -ItemType Directory -Path $StartMenuFolder -Force | Out-Null
     $DesktopLink = Join-Path $DesktopDirectory ($TargetName + '.lnk')
     $StartMenuLink = Join-Path $StartMenuFolder ($TargetName + '.lnk')
-    New-Shortcut $DesktopLink $TargetExe $Target
-    New-Shortcut $StartMenuLink $TargetExe $Target
-    Assert-ShortcutTarget $DesktopLink $TargetExe $Target
-    Assert-ShortcutTarget $StartMenuLink $TargetExe $Target
+    $StartUninstallLink = Join-Path $StartMenuFolder (
+        'Uninstall ' + $TargetName + '.lnk')
+    $UninstallCmd = Join-Path $Target 'Uninstall XFOIL.next GUI.cmd'
+    New-Shortcut $DesktopLink $TargetExe $Target 'XFOIL.next GUI'
+    New-Shortcut $StartMenuLink $TargetExe $Target 'XFOIL.next GUI'
+    New-Shortcut $StartUninstallLink $UninstallCmd $Target `
+        'Uninstall XFOIL.next GUI'
+    Assert-ShortcutTarget $DesktopLink $TargetExe $Target $TargetExe
+    Assert-ShortcutTarget $StartMenuLink $TargetExe $Target $TargetExe
+    Assert-ShortcutTarget $StartUninstallLink $UninstallCmd $Target $TargetExe
 
     Write-Host ''
     Write-Host "XFOIL.next GUI was installed for the current user:"
     Write-Host "  $Target"
     Write-Host 'Desktop and Start Menu shortcuts were created or updated.'
+    Write-Host 'Uninstall XFOIL.next GUI is available in the Start Menu and installation folder.'
     Write-Host 'No administrator rights were required.'
-    Write-Host 'To remove it manually, delete both shortcuts and the folder above.'
     exit 0
 } catch {
     Write-Host ''

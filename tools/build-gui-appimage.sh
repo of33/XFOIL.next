@@ -214,7 +214,8 @@ find "$APPDIR" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
 python3 packaging/gui/linux/check_appimage.py \
     --appdir "$APPDIR" \
     --expected-version "$PRODUCT_VERSION" \
-    --inventory "$BUILD_ROOT/appdir-inventory.json"
+    --inventory "$BUILD_ROOT/appdir-inventory.json" \
+    --expected-icon resources/gui/xfoil-next-icon.png
 
 mkdir -p "$(dirname "$OUTPUT")"
 rm -f "$OUTPUT"
@@ -236,7 +237,8 @@ python3 packaging/gui/linux/check_appimage.py \
     --appdir "$EXTRACT/squashfs-root" \
     --expected-version "$PRODUCT_VERSION" \
     --inventory "$BUILD_ROOT/extracted-inventory.json" \
-    --compare-appdir "$APPDIR"
+    --compare-appdir "$APPDIR" \
+    --expected-icon resources/gui/xfoil-next-icon.png
 
 sha256sum "$OUTPUT" | tee "$OUTPUT.sha256"
 printf 'AppImage: %s\n' "$OUTPUT"

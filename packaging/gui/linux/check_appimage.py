@@ -215,12 +215,14 @@ def check_desktop(appdir):
             raise CheckError(f"desktop-file-validate failed:\n{result.stdout}")
 
 
-def check_icon(appdir):
+def check_icon(appdir, expected_icon=None):
     path = appdir / "xfoil-next.png"
     try:
         width, height, _colours, _transparent = check_png(path, 512, 512)
     except IconError as error:
         raise CheckError(f"corrected GUI icon check failed: {error}")
+    if expected_icon is not None and sha256(path) != sha256(expected_icon):
+        raise CheckError("AppDir icon does not match the current canonical icon")
     installed = appdir / "usr/share/icons/hicolor/512x512/apps/xfoil-next.png"
     if sha256(path) != sha256(installed):
         raise CheckError("AppDir root icon and installed icon differ")
@@ -396,13 +398,14 @@ def inventory(appdir, expected_version, elf_data):
     }
 
 
-def check_tree(appdir, expected_version, write_inventory=None):
+def check_tree(appdir, expected_version, write_inventory=None,
+               expected_icon=None):
     appdir = pathlib.Path(appdir)
     if not appdir.is_dir():
         raise CheckError(f"AppDir not found: {appdir}")
     check_required(appdir)
     check_desktop(appdir)
-    width = check_icon(appdir)
+    width = check_icon(appdir, expected_icon)
     check_symlinks(appdir)
     check_forbidden(appdir)
     check_version_markers(appdir, expected_version)
@@ -452,9 +455,11 @@ def main():
     parser.add_argument("--expected-version", required=True)
     parser.add_argument("--inventory")
     parser.add_argument("--compare-appdir")
+    parser.add_argument("--expected-icon")
     args = parser.parse_args()
     try:
-        data = check_tree(args.appdir, args.expected_version, args.inventory)
+        data = check_tree(args.appdir, args.expected_version, args.inventory,
+                          args.expected_icon)
         if args.compare_appdir:
             compare_trees(pathlib.Path(args.compare_appdir),
                           pathlib.Path(args.appdir),

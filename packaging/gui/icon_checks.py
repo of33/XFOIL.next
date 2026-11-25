@@ -22,9 +22,8 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Standard-library checks for the corrected GUI PNG and ICO."""
+"""Standard-library checks for the canonical GUI source, PNG and ICO."""
 
-import io
 import pathlib
 import struct
 import zlib
@@ -32,8 +31,9 @@ import zlib
 ICO_SIZES = ((256, 256), (128, 128), (64, 64), (48, 48),
              (32, 32), (24, 24), (16, 16))
 CORNER_POINTS = ((0, 0), (0, 511), (511, 0), (511, 511))
-WHITE_POINTS = ((256, 100), (256, 400), (80, 256), (432, 256),
-                (200, 240), (300, 350))
+VISIBLE_ALPHA = 32
+WHITE_ALPHA = 230
+WHITE_MIN_RGB = 245
 
 
 class IconError(Exception):
@@ -172,43 +172,113 @@ def decode_ico_frame(entry):
     return width, height, rows
 
 
-def check_png(path, expected_width=512, expected_height=512):
+def visible_bbox(rows, threshold=VISIBLE_ALPHA):
+    xs = []
+    ys = []
+    for y, row in enumerate(rows):
+        for x, pixel in enumerate(row):
+            if pixel[3] > threshold:
+                xs.append(x)
+                ys.append(y)
+    if not xs:
+        raise IconError("image has no visible pixels")
+    return min(xs), min(ys), max(xs), max(ys)
+
+
+def visible_aspect(rows, threshold=VISIBLE_ALPHA):
+    left, top, right, bottom = visible_bbox(rows, threshold)
+    return (right - left + 1) / (bottom - top + 1)
+
+
+def check_canonical_source(path):
+    width, height, rows = read_png_rgba(pathlib.Path(path).read_bytes())
+    if width < 256 or height < 256:
+        raise IconError("canonical icon source is too small")
+    left, top, right, bottom = visible_bbox(rows)
+    pixels = [pixel for row in rows for pixel in row]
+    transparent = sum(1 for pixel in pixels if pixel[3] == 0)
+    white = sum(1 for r, g, b, a in pixels
+                if a >= WHITE_ALPHA and min(r, g, b) >= WHITE_MIN_RGB)
+    if transparent == 0:
+        raise IconError("canonical source has no transparent pixels")
+    if white == 0:
+        raise IconError("canonical source has no white region")
+    if left == 0 and top == 0 and right == width - 1 and bottom == height - 1:
+        pass
+    return {
+        "width": width,
+        "height": height,
+        "aspect": width / height,
+        "visible_bbox": (left, top, right, bottom),
+        "transparent_fraction": transparent / len(pixels),
+        "white_fraction": white / len(pixels),
+    }
+
+
+def check_png(path, expected_width=512, expected_height=512, source_aspect=None):
     width, height, rows = read_png_rgba(pathlib.Path(path).read_bytes())
     if (width, height) != (expected_width, expected_height):
         raise IconError(
             f"PNG is {width}x{height}, expected {expected_width}x{expected_height}")
     for x, y in CORNER_POINTS:
+        if y >= height or x >= width:
+            continue
         if rows[y][x][3] > 8:
             raise IconError(f"PNG corner {(x, y)} is not transparent")
-    for x, y in WHITE_POINTS:
-        pixel = rows[y][x]
-        if pixel[3] != 255 or min(pixel[:3]) < 250:
+    left, top, right, bottom = visible_bbox(rows)
+    visible_width = right - left + 1
+    visible_height = bottom - top + 1
+    if visible_width < 2 or visible_height < 2:
+        raise IconError("PNG visible area is degenerate")
+    if source_aspect is not None:
+        actual = visible_width / visible_height
+        if abs(actual - source_aspect) > 0.06:
             raise IconError(
-                f"PNG interior point {(x, y)} is not opaque white: {pixel}")
+                "PNG visible aspect ratio is distorted: "
+                f"{actual:.4f} vs source {source_aspect:.4f}")
+    left_pad = left
+    right_pad = width - 1 - right
+    top_pad = top
+    bottom_pad = height - 1 - bottom
+    if abs(left_pad - right_pad) > 2 or abs(top_pad - bottom_pad) > 2:
+        raise IconError(
+            "PNG visible area is not centred: "
+            f"left/right={left_pad}/{right_pad} "
+            f"top/bottom={top_pad}/{bottom_pad}")
     colours = set()
     alpha_zero = 0
+    white = 0
     blue = 0
     black = 0
+    total = width * height
     for row in rows:
         for r, g, b, a in row:
             if a == 0:
                 alpha_zero += 1
             else:
                 colours.add((r, g, b, a))
+                if a >= WHITE_ALPHA and min(r, g, b) >= WHITE_MIN_RGB:
+                    white += 1
                 if b > 80 and r < 80 and g < 80:
                     blue += 1
                 if r < 50 and g < 50 and b < 50:
                     black += 1
     if alpha_zero == 0:
         raise IconError("PNG has no transparent outside pixels")
+    if white == 0:
+        raise IconError("PNG lost the white interior")
     if blue == 0 or black == 0:
         raise IconError("PNG lost blue frame or black logo elements")
+    if alpha_zero / total < 0.01:
+        raise IconError("PNG has no meaningful transparent padding/outside")
+    if white / total < 0.02:
+        raise IconError("PNG has too little preserved white area")
     if len(colours) < 100:
         raise IconError("PNG has too few distinct visible colours")
     return width, height, len(colours), alpha_zero
 
 
-def check_ico(path):
+def check_ico(path, source_aspect=None):
     entries = read_ico_entries(path)
     actual = {(entry["width"], entry["height"]) for entry in entries}
     missing = [size for size in ICO_SIZES if size not in actual]
@@ -222,19 +292,34 @@ def check_ico(path):
         transparent = sum(1 for pixel in pixels if pixel[3] == 0)
         opaque = sum(1 for pixel in pixels if pixel[3] == 255)
         white = sum(1 for r, g, b, a in pixels
-                    if a == 255 and min(r, g, b) >= 250)
+                    if a >= WHITE_ALPHA and min(r, g, b) >= WHITE_MIN_RGB)
         blue = sum(1 for r, g, b, a in pixels
                    if a and b > 80 and r < 80 and g < 80)
+        black = sum(1 for r, g, b, a in pixels
+                    if a and r < 50 and g < 50 and b < 50)
         if transparent == 0 or opaque == 0 or white == 0 or blue == 0:
             raise IconError(
                 f"ICO frame {width}x{height} is empty, unicolour or missing "
                 "white/blue structure")
+        if black == 0:
+            raise IconError(f"ICO frame {width}x{height} lost black logo elements")
         if len(set(pixels)) < 8:
             raise IconError(f"ICO frame {width}x{height} has too few colours")
+        if source_aspect is not None:
+            actual_aspect = visible_aspect(rows)
+            if abs(actual_aspect - source_aspect) > 0.06:
+                raise IconError(
+                    f"ICO frame {width}x{height} aspect ratio is distorted: "
+                    f"{actual_aspect:.4f} vs source {source_aspect:.4f}")
     return sorted(actual)
 
 
-def check_pair(png, ico):
-    png_info = check_png(png)
-    ico_sizes = check_ico(ico)
-    return png_info, ico_sizes
+def check_pair(png, ico, source=None):
+    source_info = None
+    source_aspect = None
+    if source is not None:
+        source_info = check_canonical_source(source)
+        source_aspect = source_info["aspect"]
+    png_info = check_png(png, source_aspect=source_aspect)
+    ico_sizes = check_ico(ico, source_aspect=source_aspect)
+    return png_info, ico_sizes, source_info

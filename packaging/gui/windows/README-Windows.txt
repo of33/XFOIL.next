@@ -20,7 +20,9 @@ User installation
 2. Run "Install XFOIL.next GUI.cmd" from the extracted top-level folder.
 3. The complete runtime is copied to:
    %LOCALAPPDATA%\Programs\XFOIL.next GUI
-4. A Desktop shortcut and a Start Menu shortcut are created.
+4. A Desktop shortcut and a Start Menu shortcut named "XFOIL.next GUI"
+   are created. The Start Menu folder also contains
+   "Uninstall XFOIL.next GUI".
 5. No administrator rights are required.
 
 The installer is per-user only. It does not install under Program Files,
@@ -32,11 +34,19 @@ Start pinning is not claimed.
 
 Portable use remains supported. Copying only the EXE is not supported.
 
-Manual removal
+Uninstallation
 --------------
 
-Delete the Desktop shortcut "XFOIL.next GUI.lnk", the Start Menu folder
-"XFOIL.next GUI" (with its shortcut), and the folder:
+Use "Uninstall XFOIL.next GUI" in the Start Menu, or run
+"Uninstall XFOIL.next GUI.cmd" from:
 %LOCALAPPDATA%\Programs\XFOIL.next GUI
 
-This is not a formal uninstaller.
+The uninstaller runs for the current user only. It checks that the target is
+the per-user installation managed by this package, removes the Desktop and
+Start Menu shortcuts and the application folder, and then removes itself.
+It does not need administrator rights, does not change the registry, does not
+use the network and does not remove other XFOIL installations or shortcuts.
+
+Close XFOIL.next GUI before uninstalling. If an older test installation has no
+installation marker, run the current installer once and then use the
+uninstaller.

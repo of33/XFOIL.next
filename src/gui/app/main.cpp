@@ -26,25 +26,15 @@
 // MainWindow; the embeddable widget remains a host-neutral component.
 
 #include <QApplication>
-#include <QCoreApplication>
-#include <QString>
 
 #include "app/AppIcon.h"
+#include "app/ApplicationMetadata.h"
 #include "app/MainWindow.h"
-#include "app/ProductInfo.h"
 
 int main(int argc, char** argv) {
   QApplication application(argc, argv);
   application.setWindowIcon(xfoil::gui::app::applicationIcon());
-  const QString productName = QString::fromLatin1(
-      xfoil::app::product::name.data(),
-      static_cast<int>(xfoil::app::product::name.size()));
-  QCoreApplication::setOrganizationName(productName);
-  QCoreApplication::setApplicationName(productName +
-                                       QStringLiteral(" GUI"));
-  QCoreApplication::setApplicationVersion(QString::fromLatin1(
-      xfoil::app::product::version.data(),
-      static_cast<int>(xfoil::app::product::version.size())));
+  xfoil::gui::app::configureApplicationMetadata();
 
   xfoil::gui::app::MainWindow window;
   window.show();

@@ -137,6 +137,7 @@ mkdir -p "$WORK/extract"
 python3 packaging/gui/linux/check_appimage.py \
     --appdir "$WORK/extract/squashfs-root" \
     --expected-version "$EXPECTED_VERSION" \
-    --inventory "$WORK/extracted-inventory.json"
+    --inventory "$WORK/extracted-inventory.json" \
+    --expected-icon resources/gui/xfoil-next-icon.png
 
 printf 'GUI AppImage checks: PASS\n'
