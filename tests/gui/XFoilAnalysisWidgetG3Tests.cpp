@@ -21,7 +21,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// File: tests/gui/XFoilWidgetG3Tests.cpp
+// File: tests/gui/XFoilAnalysisWidgetG3Tests.cpp
 // G3 integration tests for the widget worker, owning results, progress,
 // cancellation, busy no-ops, isolation and shutdown.
 
@@ -44,7 +44,7 @@
 #include <QTimer>
 #include <QtTest/QTest>
 
-#include "xfoil/gui/XFoilWidget.h"
+#include "xfoil/gui/XFoilAnalysisWidget.h"
 
 namespace {
 
@@ -55,15 +55,15 @@ using xfoil::LiftTarget;
 using xfoil::OperatingPointData;
 using xfoil::PanelingOptions;
 using xfoil::gui::XFoilGuiState;
-using xfoil::gui::XFoilWidget;
+using xfoil::gui::XFoilAnalysisWidget;
 
-void configurePoint(XFoilWidget& widget, double alpha = 2.0) {
+void configurePoint(XFoilAnalysisWidget& widget, double alpha = 2.0) {
   QVERIFY(widget.setNaca("0012").isOk());
   QVERIFY(widget.generatePanel(PanelingOptions{}).isOk());
   widget.setTarget(AlphaTarget{Degrees{alpha}});
 }
 
-void configureSequence(XFoilWidget& widget, double end = 2.0,
+void configureSequence(XFoilAnalysisWidget& widget, double end = 2.0,
                        double step = 1.0) {
   QVERIFY(widget.setNaca("0012").isOk());
   QVERIFY(widget.generatePanel(PanelingOptions{}).isOk());
@@ -71,7 +71,7 @@ void configureSequence(XFoilWidget& widget, double end = 2.0,
       AlphaSequence{Degrees{0.0}, Degrees{end}, Degrees{step}});
 }
 
-void configureLongRun(XFoilWidget& widget) {
+void configureLongRun(XFoilAnalysisWidget& widget) {
   QVERIFY(widget.setNaca("0012").isOk());
   PanelingOptions paneling;
   paneling.panelCount = 80;
@@ -89,14 +89,14 @@ QStringList directoryEntries(const QString& path) {
 
 }  // namespace
 
-class XFoilWidgetG3Tests : public QObject {
+class XFoilAnalysisWidgetG3Tests : public QObject {
   Q_OBJECT
 
  private slots:
   void analyzeBeforeReadyIsNoOp() {
-    XFoilWidget widget;
-    QSignalSpy started(&widget, &XFoilWidget::analysisStarted);
-    QSignalSpy failed(&widget, &XFoilWidget::analysisFailed);
+    XFoilAnalysisWidget widget;
+    QSignalSpy started(&widget, &XFoilAnalysisWidget::analysisStarted);
+    QSignalSpy failed(&widget, &XFoilAnalysisWidget::analysisFailed);
     QVERIFY(!widget.analyzeAction()->isEnabled());
     widget.analyze();
     widget.analyzeAction()->trigger();
@@ -107,7 +107,7 @@ class XFoilWidgetG3Tests : public QObject {
   }
 
   void alphaPointRunsAsynchronouslyAndReturnsOwningValue() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     configurePoint(widget, 2.0);
 
     auto* analyzeButton =
@@ -124,10 +124,10 @@ class XFoilWidgetG3Tests : public QObject {
              QStringLiteral("ready"));
     QVERIFY(analyzeButton->isEnabled());
 
-    QSignalSpy started(&widget, &XFoilWidget::analysisStarted);
-    QSignalSpy pointSpy(&widget, &XFoilWidget::operatingPointReady);
-    QSignalSpy failed(&widget, &XFoilWidget::analysisFailed);
-    QSignalSpy stateSpy(&widget, &XFoilWidget::stateChanged);
+    QSignalSpy started(&widget, &XFoilAnalysisWidget::analysisStarted);
+    QSignalSpy pointSpy(&widget, &XFoilAnalysisWidget::operatingPointReady);
+    QSignalSpy failed(&widget, &XFoilAnalysisWidget::analysisFailed);
+    QSignalSpy stateSpy(&widget, &XFoilAnalysisWidget::stateChanged);
 
     widget.analyzeAction()->trigger();
     QCOMPARE(started.count(), 1);
@@ -171,10 +171,10 @@ class XFoilWidgetG3Tests : public QObject {
   }
 
   void clPointRetryKeepsEarlierOwningCopy() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     configurePoint(widget, 2.0);
 
-    QSignalSpy pointSpy(&widget, &XFoilWidget::operatingPointReady);
+    QSignalSpy pointSpy(&widget, &XFoilAnalysisWidget::operatingPointReady);
     widget.analyze();
     QTRY_VERIFY_WITH_TIMEOUT(pointSpy.count() == 1, 30000);
     QTRY_VERIFY_WITH_TIMEOUT(!widget.isRunning(), 30000);
@@ -196,11 +196,11 @@ class XFoilWidgetG3Tests : public QObject {
   }
 
   void detailedSequenceOwnsPointsAndSelectsFirstVisiblePoint() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     configureSequence(widget, 2.0, 1.0);
 
-    QSignalSpy sequenceSpy(&widget, &XFoilWidget::sequenceReady);
-    QSignalSpy pointSpy(&widget, &XFoilWidget::operatingPointReady);
+    QSignalSpy sequenceSpy(&widget, &XFoilAnalysisWidget::sequenceReady);
+    QSignalSpy pointSpy(&widget, &XFoilAnalysisWidget::operatingPointReady);
     widget.analyze();
     QTRY_VERIFY_WITH_TIMEOUT(sequenceSpy.count() == 1, 30000);
     QTRY_VERIFY_WITH_TIMEOUT(!widget.isRunning(), 30000);
@@ -225,10 +225,10 @@ class XFoilWidgetG3Tests : public QObject {
   }
 
   void progressIsDeliveredAndBarRemainsVisibleAtRest() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     configureSequence(widget);
 
-    QSignalSpy progressSpy(&widget, &XFoilWidget::progressChanged);
+    QSignalSpy progressSpy(&widget, &XFoilAnalysisWidget::progressChanged);
     widget.analyze();
     QTRY_VERIFY_WITH_TIMEOUT(progressSpy.count() > 0, 30000);
     QTRY_VERIFY_WITH_TIMEOUT(!widget.isRunning(), 30000);
@@ -240,12 +240,12 @@ class XFoilWidgetG3Tests : public QObject {
   }
 
   void cancelDuringRunIsControlledAndIdempotent() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     configureLongRun(widget);
 
-    QSignalSpy started(&widget, &XFoilWidget::analysisStarted);
-    QSignalSpy cancelled(&widget, &XFoilWidget::analysisCancelled);
-    QSignalSpy failed(&widget, &XFoilWidget::analysisFailed);
+    QSignalSpy started(&widget, &XFoilAnalysisWidget::analysisStarted);
+    QSignalSpy cancelled(&widget, &XFoilAnalysisWidget::analysisCancelled);
+    QSignalSpy failed(&widget, &XFoilAnalysisWidget::analysisFailed);
     widget.analyze();
     QCOMPARE(started.count(), 1);
     QVERIFY(widget.isRunning());
@@ -274,7 +274,7 @@ class XFoilWidgetG3Tests : public QObject {
   }
 
   void progressShowsIterationAndClearsAfterCompletion() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     widget.resize(1280, 800);
     widget.show();
     QCoreApplication::processEvents();
@@ -296,7 +296,7 @@ class XFoilWidgetG3Tests : public QObject {
     QString seenIteration;
     QString seenCurrent;
     QObject::connect(
-        &widget, &XFoilWidget::progressChanged, &widget,
+        &widget, &XFoilAnalysisWidget::progressChanged, &widget,
         [&](const xfoil::ProgressEvent& event) {
           if (!current->text().contains(QStringLiteral("2")) ||
               !current->text().contains(QString::fromUtf8("\xCE\xB1"))) {
@@ -334,11 +334,11 @@ class XFoilWidgetG3Tests : public QObject {
   }
 
   void secondAnalyzeWhileRunningIsNoOp() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     configureLongRun(widget);
 
-    QSignalSpy started(&widget, &XFoilWidget::analysisStarted);
-    QSignalSpy cancelled(&widget, &XFoilWidget::analysisCancelled);
+    QSignalSpy started(&widget, &XFoilAnalysisWidget::analysisStarted);
+    QSignalSpy cancelled(&widget, &XFoilAnalysisWidget::analysisCancelled);
     widget.analyze();
     widget.analyze();
     QCOMPARE(started.count(), 1);
@@ -349,14 +349,14 @@ class XFoilWidgetG3Tests : public QObject {
   }
 
   void setupCallsDuringRunAreBusyNoOps() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     configureLongRun(widget);
     const auto previousTarget = widget.target();
     const double previousAlpha =
         std::get<AlphaTarget>(previousTarget).alpha.value;
     const auto previousPaneling = widget.panelingOptions();
 
-    QSignalSpy cancelled(&widget, &XFoilWidget::analysisCancelled);
+    QSignalSpy cancelled(&widget, &XFoilAnalysisWidget::analysisCancelled);
     widget.analyze();
     QVERIFY(widget.isRunning());
 
@@ -382,10 +382,10 @@ class XFoilWidgetG3Tests : public QObject {
   }
 
   void cancelOutsideRunIsNoOp() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     configurePoint(widget);
-    QSignalSpy cancelled(&widget, &XFoilWidget::analysisCancelled);
-    QSignalSpy started(&widget, &XFoilWidget::analysisStarted);
+    QSignalSpy cancelled(&widget, &XFoilAnalysisWidget::analysisCancelled);
+    QSignalSpy started(&widget, &XFoilAnalysisWidget::analysisStarted);
     const auto stateBefore = widget.state();
     widget.cancel();
     widget.cancelAction()->trigger();
@@ -396,13 +396,13 @@ class XFoilWidgetG3Tests : public QObject {
   }
 
   void twoWidgetsUseIsolatedWorkers() {
-    XFoilWidget first;
-    XFoilWidget second;
+    XFoilAnalysisWidget first;
+    XFoilAnalysisWidget second;
     configurePoint(first, 1.0);
     configurePoint(second, -1.0);
 
-    QSignalSpy firstPoint(&first, &XFoilWidget::operatingPointReady);
-    QSignalSpy secondPoint(&second, &XFoilWidget::operatingPointReady);
+    QSignalSpy firstPoint(&first, &XFoilAnalysisWidget::operatingPointReady);
+    QSignalSpy secondPoint(&second, &XFoilAnalysisWidget::operatingPointReady);
     first.analyze();
     second.analyze();
     QTRY_VERIFY_WITH_TIMEOUT(firstPoint.count() == 1, 30000);
@@ -414,10 +414,10 @@ class XFoilWidgetG3Tests : public QObject {
   }
 
   void eventLoopStaysResponsiveWhileWorkerRuns() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     configureLongRun(widget);
 
-    QSignalSpy cancelled(&widget, &XFoilWidget::analysisCancelled);
+    QSignalSpy cancelled(&widget, &XFoilAnalysisWidget::analysisCancelled);
     QTimer timer;
     int ticks = 0;
     QObject::connect(&timer, &QTimer::timeout, &timer,
@@ -432,7 +432,7 @@ class XFoilWidgetG3Tests : public QObject {
   }
 
   void destructionDuringRunJoinsWorker() {
-    auto widget = std::make_unique<XFoilWidget>();
+    auto widget = std::make_unique<XFoilAnalysisWidget>();
     configureLongRun(*widget);
     widget->analyze();
     QVERIFY(widget->isRunning());
@@ -450,7 +450,7 @@ class XFoilWidgetG3Tests : public QObject {
     const QString cwd = QDir::currentPath();
     const QStringList before = directoryEntries(cwd);
     {
-      XFoilWidget widget;
+      XFoilAnalysisWidget widget;
       configureSequence(widget);
       widget.analyze();
       QTRY_VERIFY_WITH_TIMEOUT(!widget.isRunning(), 30000);
@@ -461,11 +461,11 @@ class XFoilWidgetG3Tests : public QObject {
   }
 };
 
-int runXFoilWidgetG3Tests(int argc, char** argv) {
-  XFoilWidgetG3Tests tests;
+int runXFoilAnalysisWidgetG3Tests(int argc, char** argv) {
+  XFoilAnalysisWidgetG3Tests tests;
   return QTest::qExec(&tests, argc, argv);
 }
 
-#include "XFoilWidgetG3Tests.moc"
+#include "XFoilAnalysisWidgetG3Tests.moc"
 
-// End: tests/gui/XFoilWidgetG3Tests.cpp
+// End: tests/gui/XFoilAnalysisWidgetG3Tests.cpp

@@ -49,11 +49,11 @@
 #include "app/MainWindow.h"
 #include "app/ProductInfo.h"
 #include "qcustomplot.h"
-#include "xfoil/gui/XFoilWidget.h"
+#include "xfoil/gui/XFoilAnalysisWidget.h"
 
 namespace {
 
-using xfoil::gui::XFoilWidget;
+using xfoil::gui::XFoilAnalysisWidget;
 using xfoil::gui::app::MainWindow;
 
 struct Harness {
@@ -143,7 +143,7 @@ QString writeDiamond(const QTemporaryDir& directory, const char* name) {
   return path;
 }
 
-void configureLongRun(XFoilWidget& widget) {
+void configureLongRun(XFoilAnalysisWidget& widget) {
   QVERIFY(widget.setNaca("0012").isOk());
   xfoil::PanelingOptions paneling;
   paneling.panelCount = 80;
@@ -166,9 +166,9 @@ class MainWindowTests : public QObject {
     harness.settingsFile = directory.filePath(QStringLiteral("settings.ini"));
     MainWindow window(harness.dependencies());
 
-    auto* widget = qobject_cast<XFoilWidget*>(window.centralWidget());
+    auto* widget = qobject_cast<XFoilAnalysisWidget*>(window.centralWidget());
     QVERIFY(widget != nullptr);
-    QCOMPARE(window.findChildren<XFoilWidget*>().size(), 1);
+    QCOMPARE(window.findChildren<XFoilAnalysisWidget*>().size(), 1);
     const QIcon productIcon = xfoil::gui::app::applicationIcon();
     QVERIFY(!productIcon.isNull());
     QVERIFY(!window.windowIcon().isNull());
@@ -241,7 +241,7 @@ class MainWindowTests : public QObject {
             .absoluteFilePath();
     harness.savePath = directory.filePath(QStringLiteral("output"));
     MainWindow window(harness.dependencies());
-    auto* widget = qobject_cast<XFoilWidget*>(window.centralWidget());
+    auto* widget = qobject_cast<XFoilAnalysisWidget*>(window.centralWidget());
     QVERIFY(widget != nullptr);
 
     QVERIFY(!window.findChild<QAction*>("exportCurrentPolarAction")->isEnabled());
@@ -280,7 +280,7 @@ class MainWindowTests : public QObject {
     Harness harness;
     harness.settingsFile = directory.filePath(QStringLiteral("settings.ini"));
     MainWindow window(harness.dependencies());
-    auto* widget = qobject_cast<XFoilWidget*>(window.centralWidget());
+    auto* widget = qobject_cast<XFoilAnalysisWidget*>(window.centralWidget());
     QVERIFY(widget != nullptr);
     QVERIFY(widget->setNaca("0012").isOk());
     xfoil::PanelingOptions paneling;
@@ -364,9 +364,9 @@ class MainWindowTests : public QObject {
                       "0.5 0.08\n"
                       "1.0 0.0\n"));
     MainWindow window(harness.dependencies());
-    auto* widget = qobject_cast<XFoilWidget*>(window.centralWidget());
+    auto* widget = qobject_cast<XFoilAnalysisWidget*>(window.centralWidget());
     QVERIFY(widget != nullptr);
-    QSignalSpy started(widget, &XFoilWidget::analysisStarted);
+    QSignalSpy started(widget, &XFoilAnalysisWidget::analysisStarted);
 
     window.findChild<QAction*>("loadAirfoilAction")->trigger();
     QVERIFY2(harness.errors.empty(),
@@ -430,7 +430,7 @@ class MainWindowTests : public QObject {
                       "0.5 -0.08\n"
                       "1.0 0.0\n"));
     MainWindow window(harness.dependencies());
-    auto* widget = qobject_cast<XFoilWidget*>(window.centralWidget());
+    auto* widget = qobject_cast<XFoilAnalysisWidget*>(window.centralWidget());
     QVERIFY(widget != nullptr);
     QVERIFY(widget->setNaca("0012").isOk());
     harness.chooseCalls = 0;
@@ -462,7 +462,7 @@ class MainWindowTests : public QObject {
     harness.savePath = directory.filePath(QStringLiteral("saved.dat"));
     QVERIFY(!harness.openPath.isEmpty());
     MainWindow window(harness.dependencies());
-    auto* widget = qobject_cast<XFoilWidget*>(window.centralWidget());
+    auto* widget = qobject_cast<XFoilAnalysisWidget*>(window.centralWidget());
     QVERIFY(widget != nullptr);
 
     window.findChild<QAction*>("loadAirfoilAction")->trigger();
@@ -553,7 +553,7 @@ class MainWindowTests : public QObject {
     harness.settingsFile = directory.filePath(QStringLiteral("settings.ini"));
     harness.openPath.clear();
     MainWindow window(harness.dependencies());
-    auto* widget = qobject_cast<XFoilWidget*>(window.centralWidget());
+    auto* widget = qobject_cast<XFoilAnalysisWidget*>(window.centralWidget());
     QVERIFY(widget != nullptr);
 
     window.findChild<QAction*>("loadAirfoilAction")->trigger();
@@ -611,11 +611,11 @@ class MainWindowTests : public QObject {
     harness.settingsFile = directory.filePath(QStringLiteral("settings.ini"));
     MainWindow window(harness.dependencies());
     window.show();
-    auto* widget = qobject_cast<XFoilWidget*>(window.centralWidget());
+    auto* widget = qobject_cast<XFoilAnalysisWidget*>(window.centralWidget());
     QVERIFY(widget != nullptr);
     configureLongRun(*widget);
 
-    QSignalSpy cancelled(widget, &XFoilWidget::analysisCancelled);
+    QSignalSpy cancelled(widget, &XFoilAnalysisWidget::analysisCancelled);
     widget->analyzeAction()->trigger();
     QVERIFY(widget->isRunning());
 

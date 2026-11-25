@@ -39,7 +39,7 @@
 
 #include "model/GuiDetailedSequenceResult.h"
 #include "model/GuiResultSelectionModel.h"
-#include "xfoil/gui/XFoilWidget.h"
+#include "xfoil/gui/XFoilAnalysisWidget.h"
 
 namespace {
 
@@ -108,7 +108,7 @@ class GuiDetailedSequenceContractTests : public QObject {
   }
 
   void scalarTabsArePointSelectableAndDistributionTabsAreNot() {
-    xfoil::gui::XFoilWidget widget;
+    xfoil::gui::XFoilAnalysisWidget widget;
     auto* tabs = widget.findChild<QTabWidget*>("resultPlotTabs");
     QVERIFY(tabs != nullptr);
     QCOMPARE(tabs->count(), 7);
@@ -144,7 +144,7 @@ class GuiDetailedSequenceContractTests : public QObject {
   }
 
   void leftCpAndAirfoilHaveExplicitRoles() {
-    xfoil::gui::XFoilWidget widget;
+    xfoil::gui::XFoilAnalysisWidget widget;
     QWidget* cp = plotWidget(widget, QStringLiteral("cpPlot"));
     QCOMPARE(cp->property("xfoilPlotRole").toString(),
              QStringLiteral("distribution-cp"));
@@ -191,7 +191,7 @@ class GuiDetailedSequenceContractTests : public QObject {
   }
 
   void distributionPlotsRemainEmptyShells() {
-    xfoil::gui::XFoilWidget widget;
+    xfoil::gui::XFoilAnalysisWidget widget;
     const QStringList plots = {
         QStringLiteral("cpPlot"), QStringLiteral("cpAlphaPlot"),
         QStringLiteral("cfAlphaPlot")};

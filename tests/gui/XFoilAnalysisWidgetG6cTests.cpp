@@ -21,7 +21,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// File: tests/gui/XFoilWidgetG6cTests.cpp
+// File: tests/gui/XFoilAnalysisWidgetG6cTests.cpp
 // G6c manager integration, current/imported snapshot ownership, eight-entry
 // limit, comparison scalar curves, explicit rename/visibility/removal and reset.
 
@@ -44,7 +44,7 @@
 #include "plots/ComparisonStyle.h"
 #include "plots/ScalarPlotView.h"
 #include "qcustomplot.h"
-#include "xfoil/gui/XFoilWidget.h"
+#include "xfoil/gui/XFoilAnalysisWidget.h"
 
 namespace {
 
@@ -54,7 +54,7 @@ using xfoil::PanelingOptions;
 using xfoil::PolarData;
 using xfoil::PolarPoint;
 using xfoil::gui::ScalarPlotView;
-using xfoil::gui::XFoilWidget;
+using xfoil::gui::XFoilAnalysisWidget;
 
 PolarData polar(std::string name, double cl = 0.5) {
   PolarData value;
@@ -71,13 +71,13 @@ PolarData polar(std::string name, double cl = 0.5) {
   return value;
 }
 
-QListWidget* polarList(XFoilWidget& widget) {
+QListWidget* polarList(XFoilAnalysisWidget& widget) {
   auto* list = widget.findChild<QListWidget*>("polarListView");
   Q_ASSERT(list != nullptr);
   return list;
 }
 
-ScalarPlotView* scalar(XFoilWidget& widget, const char* name) {
+ScalarPlotView* scalar(XFoilAnalysisWidget& widget, const char* name) {
   auto* base = widget.findChild<QWidget*>(QString::fromLatin1(name));
   Q_ASSERT(base != nullptr);
   auto* view = dynamic_cast<ScalarPlotView*>(base);
@@ -85,7 +85,7 @@ ScalarPlotView* scalar(XFoilWidget& widget, const char* name) {
   return view;
 }
 
-void configurePoint(XFoilWidget& widget) {
+void configurePoint(XFoilAnalysisWidget& widget) {
   QVERIFY(widget.setNaca("0012").isOk());
   PanelingOptions paneling;
   paneling.panelCount = 80;
@@ -99,12 +99,12 @@ void configurePoint(XFoilWidget& widget) {
 
 }  // namespace
 
-class XFoilWidgetG6cTests : public QObject {
+class XFoilAnalysisWidgetG6cTests : public QObject {
   Q_OBJECT
 
  private slots:
   void initialManagerIsEmptyAndFileActionFree() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     QCOMPARE(polarList(widget)->count(), 0);
     QCOMPARE(widget.findChild<QLabel*>("polarManagerStatusLabel")->text(),
              QStringLiteral("0 / 8 comparisons"));
@@ -117,8 +117,8 @@ class XFoilWidgetG6cTests : public QObject {
   }
 
   void importedComparisonIsOwnedAndDrawnInAllFivePlots() {
-    XFoilWidget widget;
-    QSignalSpy changed(&widget, &XFoilWidget::comparisonPolarsChanged);
+    XFoilAnalysisWidget widget;
+    QSignalSpy changed(&widget, &XFoilAnalysisWidget::comparisonPolarsChanged);
     const auto id = widget.addComparisonPolar(polar("Imported", 0.4));
     QVERIFY(id.isOk());
     QCOMPARE(changed.count(), 1);
@@ -144,7 +144,7 @@ class XFoilWidgetG6cTests : public QObject {
   }
 
   void comparisonStyleIsStableAndDistinctFromCurrent() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     QVERIFY(widget.addComparisonPolar(polar("First", 0.4)).isOk());
     QVERIFY(widget.addComparisonPolar(polar("Second", 0.6)).isOk());
     auto* list = polarList(widget);
@@ -201,7 +201,7 @@ class XFoilWidgetG6cTests : public QObject {
   }
 
   void renameVisibilityAndRemoveAreInstanceLocal() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     QVERIFY(widget.addComparisonPolar(polar("Draft")).isOk());
     auto* list = polarList(widget);
     list->setCurrentRow(0);
@@ -228,7 +228,7 @@ class XFoilWidgetG6cTests : public QObject {
   }
 
   void ninthComparisonIsRejectedAndResetClearsManager() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     for (std::size_t index = 0; index < 8; ++index) {
       QVERIFY(widget.addComparisonPolar(
                   polar("P" + std::to_string(index)))
@@ -250,7 +250,7 @@ class XFoilWidgetG6cTests : public QObject {
   }
 
   void currentResultIsNotStoredUntilExplicitAdd() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     configurePoint(widget);
     widget.analyze();
     QTRY_VERIFY_WITH_TIMEOUT(!widget.isRunning(), 30000);
@@ -270,11 +270,11 @@ class XFoilWidgetG6cTests : public QObject {
   }
 };
 
-int runXFoilWidgetG6cTests(int argc, char** argv) {
-  XFoilWidgetG6cTests tests;
+int runXFoilAnalysisWidgetG6cTests(int argc, char** argv) {
+  XFoilAnalysisWidgetG6cTests tests;
   return QTest::qExec(&tests, argc, argv);
 }
 
-#include "XFoilWidgetG6cTests.moc"
+#include "XFoilAnalysisWidgetG6cTests.moc"
 
-// End: tests/gui/XFoilWidgetG6cTests.cpp
+// End: tests/gui/XFoilAnalysisWidgetG6cTests.cpp

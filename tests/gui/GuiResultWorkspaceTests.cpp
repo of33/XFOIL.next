@@ -57,13 +57,13 @@
 #include "plots/ResultPlotView.h"
 #include "plots/ScalarPlotView.h"
 #include "qcustomplot.h"
-#include "xfoil/gui/XFoilWidget.h"
+#include "xfoil/gui/XFoilAnalysisWidget.h"
 
 namespace {
 
 using xfoil::gui::ResultPlotView;
 using xfoil::gui::XFoilGuiState;
-using xfoil::gui::XFoilWidget;
+using xfoil::gui::XFoilAnalysisWidget;
 
 QLayout* layoutOf(QWidget* widget, const char* name) {
   QLayout* layout = widget->findChild<QLayout*>(QString::fromLatin1(name));
@@ -115,7 +115,7 @@ class GuiResultWorkspaceTests : public QObject {
   }
 
   void definitionsAreOneByFourInWorkflowOrder() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     auto* scroll = widget.findChild<QScrollArea*>("definitionsScrollArea");
     QVERIFY(scroll != nullptr);
     auto* row = widget.findChild<QWidget*>("definitionsRow");
@@ -137,7 +137,7 @@ class GuiResultWorkspaceTests : public QObject {
   }
 
   void workspaceIsAHorizontalSplitterWithThreeColumns() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     auto* workspace = widget.findChild<QWidget*>("resultWorkspace");
     QVERIFY(workspace != nullptr);
     auto* workspaceLayout = dynamic_cast<QHBoxLayout*>(
@@ -184,7 +184,7 @@ class GuiResultWorkspaceTests : public QObject {
   }
 
   void mainSplitterKeepsDefinitionsAtTargetHeight() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     widget.resize(1280, 800);
     widget.show();
     QCoreApplication::processEvents();
@@ -219,7 +219,7 @@ class GuiResultWorkspaceTests : public QObject {
   }
 
   void comparisonPolarManagerScrollsIndependently() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     auto* scroll =
         widget.findChild<QScrollArea*>("comparisonPolarsScrollArea");
     QVERIFY(scroll != nullptr);
@@ -230,7 +230,7 @@ class GuiResultWorkspaceTests : public QObject {
   }
 
   void definitionTabsShareHeightAndNcritIsExpert() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     widget.resize(1280, 800);
     widget.show();
     QCoreApplication::processEvents();
@@ -278,7 +278,7 @@ class GuiResultWorkspaceTests : public QObject {
   }
 
   void resultsColumnContainsMatrixAndInfoTabs() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     auto* right = widget.findChild<QFrame*>("resultsColumn");
     QVERIFY(right != nullptr);
     QLayout* layout = right->layout();
@@ -294,7 +294,7 @@ class GuiResultWorkspaceTests : public QObject {
   }
 
   void leftColumnHasCpAboveAirfoilAtThreeToTwo() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     auto* cpSection = widget.findChild<QWidget*>("cpSection");
     auto* airfoilSection = widget.findChild<QWidget*>("airfoilSection");
     auto* splitter = widget.findChild<QSplitter*>("leftPlotSplitter");
@@ -325,7 +325,7 @@ class GuiResultWorkspaceTests : public QObject {
   }
 
   void middleTabsAreSevenInOrderAndEmpty() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     auto* tabs = widget.findChild<QTabWidget*>("resultPlotTabs");
     QVERIFY(tabs != nullptr);
     QCOMPARE(tabs->count(), 7);
@@ -375,7 +375,7 @@ class GuiResultWorkspaceTests : public QObject {
   }
 
   void resultMatrixIsFourByThreeAndStartsUnavailable() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     auto* group = widget.findChild<QGroupBox*>("resultMatrixGroup");
     QVERIFY(group != nullptr);
     auto* grid = dynamic_cast<QGridLayout*>(
@@ -410,7 +410,7 @@ class GuiResultWorkspaceTests : public QObject {
   }
 
   void pointSelectionAndConvergenceStartNeutral() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     auto* operating = widget.findChild<QComboBox*>("operatingPointCombo");
     auto* deactivate = widget.findChild<QComboBox*>("deactivatePointCombo");
     auto* activate = widget.findChild<QComboBox*>("activatePointCombo");
@@ -428,7 +428,7 @@ class GuiResultWorkspaceTests : public QObject {
   }
 
   void diagnosticsAreReadOnlyAndAnalyzeBecomesAvailable() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     auto* diagnostics =
         widget.findChild<QPlainTextEdit*>("setupDiagnosticsView");
     QVERIFY(diagnostics != nullptr);
@@ -459,7 +459,7 @@ class GuiResultWorkspaceTests : public QObject {
   }
 
   void newObjectNamesAreSemantic() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     const QRegularExpression generic(
         QStringLiteral("^(frame|label|comboBox|widget|groupBox|pushButton)_?\\d+$"));
     for (QWidget* child : widget.findChildren<QWidget*>()) {

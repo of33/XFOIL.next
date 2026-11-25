@@ -31,14 +31,14 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "xfoil/gui/XFoilWidget.h"
+#include "xfoil/gui/XFoilAnalysisWidget.h"
 
 int main(int argc, char** argv) {
   QApplication application(argc, argv);
 
   QWidget host;
   auto* layout = new QVBoxLayout(&host);
-  auto* widget = new xfoil::gui::XFoilWidget(&host);
+  auto* widget = new xfoil::gui::XFoilAnalysisWidget(&host);
   layout->addWidget(widget);
 
   if (widget->parentWidget() != &host || layout->count() != 1) {

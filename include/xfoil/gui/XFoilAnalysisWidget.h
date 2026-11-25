@@ -21,7 +21,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// File: include/xfoil/gui/XFoilWidget.h
+// File: include/xfoil/gui/XFoilAnalysisWidget.h
 // Public embeddable GUI surface. Setup is validated and snapshotted in the
 // widget model and applied to one worker-owned xfoil::Session. Analysis runs
 // asynchronously in exactly one worker thread; results are owning values.
@@ -59,17 +59,17 @@ class QShowEvent;
 
 namespace xfoil::gui {
 
-class XFOIL_GUI_API XFoilWidget : public QWidget {
+class XFOIL_GUI_API XFoilAnalysisWidget : public QWidget {
   Q_OBJECT
 
  public:
-  explicit XFoilWidget(QWidget* parent = nullptr);
-  ~XFoilWidget() override;
+  explicit XFoilAnalysisWidget(QWidget* parent = nullptr);
+  ~XFoilAnalysisWidget() override;
 
-  XFoilWidget(const XFoilWidget&) = delete;
-  XFoilWidget& operator=(const XFoilWidget&) = delete;
-  XFoilWidget(XFoilWidget&&) = delete;
-  XFoilWidget& operator=(XFoilWidget&&) = delete;
+  XFoilAnalysisWidget(const XFoilAnalysisWidget&) = delete;
+  XFoilAnalysisWidget& operator=(const XFoilAnalysisWidget&) = delete;
+  XFoilAnalysisWidget(XFoilAnalysisWidget&&) = delete;
+  XFoilAnalysisWidget& operator=(XFoilAnalysisWidget&&) = delete;
 
   [[nodiscard]]
   Result<void> setGeometry(const geometry::AirfoilGeometry& geometry);
@@ -103,8 +103,9 @@ class XFOIL_GUI_API XFoilWidget : public QWidget {
   // show() or any event-loop iteration. It never starts an analysis.
   [[nodiscard]]
   Result<void> applySetup(const AnalysisWorkflowSetup& setup);
-  // Replaces the active worker session with an empty session and clears the
-  // workflow to the empty state. Host defaults are not applied.
+  // Replaces the active worker session with an empty session and restores the
+  // built-in workflow defaults. Host view options are preserved. No analysis
+  // is started.
   [[nodiscard]]
   Result<void> resetWorkflow();
   // View-only options are instance-local and may change during analysis.
@@ -219,4 +220,4 @@ Q_DECLARE_METATYPE(xfoil::OperatingPointData)
 Q_DECLARE_METATYPE(xfoil::DetailedSequenceResult)
 Q_DECLARE_METATYPE(xfoil::Error)
 
-// End: include/xfoil/gui/XFoilWidget.h
+// End: include/xfoil/gui/XFoilAnalysisWidget.h

@@ -21,7 +21,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// File: tests/gui/XFoilWidgetG4Tests.cpp
+// File: tests/gui/XFoilAnalysisWidgetG4Tests.cpp
 // G4 widget integration: selected point, curves, matrix, filtering,
 // Cp/Cf details, click synchronization and no extra analysis.
 
@@ -44,7 +44,7 @@
 #include "plots/ResultPlotView.h"
 #include "plots/ScalarPlotView.h"
 #include "qcustomplot.h"
-#include "xfoil/gui/XFoilWidget.h"
+#include "xfoil/gui/XFoilAnalysisWidget.h"
 
 namespace {
 
@@ -56,30 +56,30 @@ using xfoil::PanelingOptions;
 using xfoil::gui::ResultPlotView;
 using xfoil::gui::ScalarPlotView;
 using xfoil::gui::XFoilGuiState;
-using xfoil::gui::XFoilWidget;
+using xfoil::gui::XFoilAnalysisWidget;
 
-void configureSequence(XFoilWidget& widget, double end = 3.0) {
+void configureSequence(XFoilAnalysisWidget& widget, double end = 3.0) {
   QVERIFY(widget.setNaca("0012").isOk());
   QVERIFY(widget.generatePanel(PanelingOptions{}).isOk());
   widget.setSequence(
       AlphaSequence{Degrees{0.0}, Degrees{end}, Degrees{1.0}});
 }
 
-QComboBox* combo(XFoilWidget& widget, const char* name) {
+QComboBox* combo(XFoilAnalysisWidget& widget, const char* name) {
   QComboBox* value =
       widget.findChild<QComboBox*>(QString::fromLatin1(name));
   Q_ASSERT(value != nullptr);
   return value;
 }
 
-ScalarPlotView* scalar(XFoilWidget& widget, const char* name) {
+ScalarPlotView* scalar(XFoilAnalysisWidget& widget, const char* name) {
   QWidget* base = widget.findChild<QWidget*>(QString::fromLatin1(name));
   auto* value = dynamic_cast<ScalarPlotView*>(base);
   Q_ASSERT(value != nullptr);
   return value;
 }
 
-ResultPlotView* distribution(XFoilWidget& widget, const char* name) {
+ResultPlotView* distribution(XFoilAnalysisWidget& widget, const char* name) {
   QWidget* base = widget.findChild<QWidget*>(QString::fromLatin1(name));
   auto* value = dynamic_cast<ResultPlotView*>(base);
   Q_ASSERT(value != nullptr);
@@ -99,14 +99,14 @@ void sendClick(QWidget* widget, const QPoint& point) {
 
 }  // namespace
 
-class XFoilWidgetG4Tests : public QObject {
+class XFoilAnalysisWidgetG4Tests : public QObject {
   Q_OBJECT
 
  private slots:
   void sequencePopulatesSelectionPlotsAndMatrix() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     configureSequence(widget, 3.0);
-    QSignalSpy started(&widget, &XFoilWidget::analysisStarted);
+    QSignalSpy started(&widget, &XFoilAnalysisWidget::analysisStarted);
     widget.analyze();
     QTRY_VERIFY_WITH_TIMEOUT(!widget.isRunning(), 30000);
     QCOMPARE(started.count(), 1);
@@ -182,9 +182,9 @@ class XFoilWidgetG4Tests : public QObject {
   }
 
   void selectingACombinationPointSynchronizesWithoutSolving() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     configureSequence(widget, 3.0);
-    QSignalSpy started(&widget, &XFoilWidget::analysisStarted);
+    QSignalSpy started(&widget, &XFoilAnalysisWidget::analysisStarted);
     widget.analyze();
     QTRY_VERIFY_WITH_TIMEOUT(!widget.isRunning(), 30000);
     QCOMPARE(started.count(), 1);
@@ -203,7 +203,7 @@ class XFoilWidgetG4Tests : public QObject {
   }
 
   void scalarPlotClickSelectsAndSynchronizesDropdowns() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     widget.resize(1280, 800);
     widget.show();
     QCoreApplication::processEvents();
@@ -239,7 +239,7 @@ class XFoilWidgetG4Tests : public QObject {
   }
 
   void deactivateAndActivateRestoreEnabledSourceOrder() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     configureSequence(widget, 3.0);
     widget.analyze();
     QTRY_VERIFY_WITH_TIMEOUT(!widget.isRunning(), 30000);
@@ -285,7 +285,7 @@ class XFoilWidgetG4Tests : public QObject {
   }
 
   void inviscidPointClearsCfAndShowsMessage() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     QVERIFY(widget.setNaca("0012").isOk());
     QVERIFY(widget.generatePanel(PanelingOptions{}).isOk());
     widget.setTarget(AlphaTarget{Degrees{2.0}});
@@ -317,9 +317,9 @@ class XFoilWidgetG4Tests : public QObject {
   }
 
   void targetChangeKeepsResultsUntilNextAnalysis() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     configureSequence(widget, 3.0);
-    QSignalSpy started(&widget, &XFoilWidget::analysisStarted);
+    QSignalSpy started(&widget, &XFoilAnalysisWidget::analysisStarted);
     widget.analyze();
     QTRY_VERIFY_WITH_TIMEOUT(!widget.isRunning(), 30000);
     QCOMPARE(started.count(), 1);
@@ -365,11 +365,11 @@ class XFoilWidgetG4Tests : public QObject {
   }
 };
 
-int runXFoilWidgetG4Tests(int argc, char** argv) {
-  XFoilWidgetG4Tests tests;
+int runXFoilAnalysisWidgetG4Tests(int argc, char** argv) {
+  XFoilAnalysisWidgetG4Tests tests;
   return QTest::qExec(&tests, argc, argv);
 }
 
-#include "XFoilWidgetG4Tests.moc"
+#include "XFoilAnalysisWidgetG4Tests.moc"
 
-// End: tests/gui/XFoilWidgetG4Tests.cpp
+// End: tests/gui/XFoilAnalysisWidgetG4Tests.cpp

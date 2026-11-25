@@ -627,7 +627,7 @@ setup.paneling = xfoil::PanelingOptions{};
 setup.configuration = xfoil::AnalysisConfig{};
 setup.request = xfoil::LiftSequence{0.2, 0.8, 0.2};
 
-xfoil::gui::XFoilWidget widget;
+xfoil::gui::XFoilAnalysisWidget widget;
 if (!widget.applySetup(setup).isOk()) {
   // The previous workflow, if any, is unchanged.
 }
@@ -635,7 +635,7 @@ if (!widget.applySetup(setup).isOk()) {
 
 `AnalysisWorkflowSetup` has one geometry source (memory, NACA or NACS), one
 complete `PanelingOptions`, one `AnalysisConfig` and one request (`AlphaTarget`,
-`LiftTarget`, `AlphaSequence` or `LiftSequence`). `XFoilWidget::applySetup`
+`LiftTarget`, `AlphaSequence` or `LiftSequence`). `XFoilAnalysisWidget::applySetup`
 validates a transient candidate session in the worker and atomically replaces
 the active session only after complete success. It never starts an analysis.
 `resetWorkflow()` returns the widget to its empty state, and

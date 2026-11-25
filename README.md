@@ -217,7 +217,7 @@ PowerShell helper `scripts/setup-gui-build.ps1` prepares the same Qt variables
 for child processes. The standalone GUI embeds its application icon; the
 Windows executable also carries the native icon resource.
 
-Run the GUI targets sequentially. The embeddable `xfoil::gui::XFoilWidget`
+Run the GUI targets sequentially. The embeddable `xfoil::gui::XFoilAnalysisWidget`
 accepts memory, NACA and NACS geometry, complete Basic/Expert paneling and
 condition controls, and an alpha/CL/alpha-sequence/CL-sequence target. It validates setup through the public
 `xfoil::Session` API and runs analysis in one persistent worker-owned session

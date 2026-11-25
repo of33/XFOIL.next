@@ -21,13 +21,13 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// File: src/gui/XFoilWidget.cpp
+// File: src/gui/XFoilAnalysisWidget.cpp
 // G3 widget controller. The widget owns one QThread and one worker-owned
 // Session. Programmatic setters are short synchronous worker calls outside
 // a job; analysis is queued and all results return as owning values. No
 // file system or application ownership is introduced.
 
-#include "xfoil/gui/XFoilWidget.h"
+#include "xfoil/gui/XFoilAnalysisWidget.h"
 
 #include <algorithm>
 #include <cmath>
@@ -93,7 +93,7 @@
 #include "plots/ResultPlotView.h"
 #include "plots/ScalarPlotView.h"
 #include "3rdparty/qcustomplot-2.1.1/qcustomplot.h"
-#include "ui_XFoilWidget.h"
+#include "ui_XFoilAnalysisWidget.h"
 #include "worker/GuiAnalysisWorker.h"
 #include "worker/GuiJobTracker.h"
 #include "xfoil/Diagnostic.h"
@@ -268,7 +268,7 @@ QString formatError(const Error& error) {
   return QStringLiteral("%1: %2").arg(code, message);
 }
 
-PanelingOptions panelingFromControls(const Ui::XFoilWidget& ui) {
+PanelingOptions panelingFromControls(const Ui::XFoilAnalysisWidget& ui) {
   PanelingOptions options;
   options.panelCount =
       static_cast<std::size_t>(ui.panelCountSpin->value());
@@ -282,7 +282,7 @@ PanelingOptions panelingFromControls(const Ui::XFoilWidget& ui) {
   return options;
 }
 
-AnalysisConfig configurationFromControls(const Ui::XFoilWidget& ui) {
+AnalysisConfig configurationFromControls(const Ui::XFoilAnalysisWidget& ui) {
   AnalysisConfig configuration;
   configuration.reynoldsNumber = ui.reynoldsSpin->value();
   configuration.machNumber = ui.machSpin->value();
@@ -301,19 +301,19 @@ AnalysisConfig configurationFromControls(const Ui::XFoilWidget& ui) {
   return configuration;
 }
 
-AlphaSequence sequenceFromControls(const Ui::XFoilWidget& ui) {
+AlphaSequence sequenceFromControls(const Ui::XFoilAnalysisWidget& ui) {
   return AlphaSequence{Degrees{ui.sequenceStartSpin->value()},
                        Degrees{ui.sequenceEndSpin->value()},
                        Degrees{ui.sequenceStepSpin->value()}};
 }
 
-LiftSequence clSequenceFromControls(const Ui::XFoilWidget& ui) {
+LiftSequence clSequenceFromControls(const Ui::XFoilAnalysisWidget& ui) {
   return LiftSequence{ui.clSequenceStartSpin->value(),
                       ui.clSequenceEndSpin->value(),
                       ui.clSequenceStepSpin->value()};
 }
 
-AnalysisTarget targetFromControls(const Ui::XFoilWidget& ui,
+AnalysisTarget targetFromControls(const Ui::XFoilAnalysisWidget& ui,
                                   AnalysisMode mode) {
   if (mode == AnalysisMode::clPoint) {
     return LiftTarget{ui.clTargetSpin->value()};
@@ -594,9 +594,9 @@ class GeometryDraftDiscardFilter : public QObject {
 
 }  // namespace
 
-class XFoilWidget::Impl {
+class XFoilAnalysisWidget::Impl {
  public:
-  explicit Impl(XFoilWidget* owner) : owner_(owner) {
+  explicit Impl(XFoilAnalysisWidget* owner) : owner_(owner) {
     ensureGuiMetaTypes();
     ui.setupUi(owner_);
     geometrySourceButtonGroup_ = new QButtonGroup(owner_);
@@ -3222,8 +3222,8 @@ class XFoilWidget::Impl {
     }
   }
 
-  XFoilWidget* owner_{};
-  Ui::XFoilWidget ui;
+  XFoilAnalysisWidget* owner_{};
+  Ui::XFoilAnalysisWidget ui;
   QButtonGroup* geometrySourceButtonGroup_{nullptr};
   GeometryTitleActivationFilter* nameFilter_{nullptr};
   GeometryDraftDiscardFilter* geometryDraftFilter_{nullptr};
@@ -3261,193 +3261,193 @@ class XFoilWidget::Impl {
   bool lastReady_{false};
 };
 
-XFoilWidget::XFoilWidget(QWidget* parent)
+XFoilAnalysisWidget::XFoilAnalysisWidget(QWidget* parent)
     : QWidget(parent), impl_(std::make_unique<Impl>(this)) {
   impl_->initialize();
 }
 
-XFoilWidget::~XFoilWidget() = default;
+XFoilAnalysisWidget::~XFoilAnalysisWidget() = default;
 
-void XFoilWidget::showEvent(QShowEvent* event) {
+void XFoilAnalysisWidget::showEvent(QShowEvent* event) {
   QWidget::showEvent(event);
   QTimer::singleShot(0, this,
                      [this]() { impl_->updateDefinitionHeightLimits(); });
 }
 
-Result<void> XFoilWidget::setGeometry(
+Result<void> XFoilAnalysisWidget::setGeometry(
     const geometry::AirfoilGeometry& geometry) {
   return impl_->setGeometry(geometry);
 }
 
-Result<void> XFoilWidget::applyImportedGeometry(
+Result<void> XFoilAnalysisWidget::applyImportedGeometry(
     const geometry::AirfoilGeometry& geometry, bool clockwiseReversed) {
   return impl_->applyImportedGeometry(geometry, clockwiseReversed);
 }
 
-void XFoilWidget::cancelAirfoilImportRequest() {
+void XFoilAnalysisWidget::cancelAirfoilImportRequest() {
   impl_->cancelAirfoilImportRequest();
 }
 
-Result<void> XFoilWidget::setNaca(std::string_view designation) {
+Result<void> XFoilAnalysisWidget::setNaca(std::string_view designation) {
   return impl_->setNaca(designation, false);
 }
 
-Result<void> XFoilWidget::setNacs(std::string_view designation) {
+Result<void> XFoilAnalysisWidget::setNacs(std::string_view designation) {
   return impl_->setNaca(designation, true);
 }
 
-void XFoilWidget::setPanelingOptions(const PanelingOptions& options) {
+void XFoilAnalysisWidget::setPanelingOptions(const PanelingOptions& options) {
   impl_->setPanelingOptions(options);
 }
 
-Result<SurfaceGeometry> XFoilWidget::generatePanel(
+Result<SurfaceGeometry> XFoilAnalysisWidget::generatePanel(
     const PanelingOptions& options) {
   return impl_->generatePanel(options);
 }
 
-Result<void> XFoilWidget::setConfiguration(
+Result<void> XFoilAnalysisWidget::setConfiguration(
     const AnalysisConfig& configuration) {
   return impl_->setConfiguration(configuration);
 }
 
-void XFoilWidget::setTarget(const AnalysisTarget& target) {
+void XFoilAnalysisWidget::setTarget(const AnalysisTarget& target) {
   impl_->setTarget(target);
 }
 
-void XFoilWidget::setSequence(const AlphaSequence& sequence) {
+void XFoilAnalysisWidget::setSequence(const AlphaSequence& sequence) {
   impl_->setSequence(sequence);
 }
 
-void XFoilWidget::setClSequence(const LiftSequence& sequence) {
+void XFoilAnalysisWidget::setClSequence(const LiftSequence& sequence) {
   impl_->setClSequence(sequence);
 }
 
-Result<void> XFoilWidget::applySetup(const AnalysisWorkflowSetup& setup) {
+Result<void> XFoilAnalysisWidget::applySetup(const AnalysisWorkflowSetup& setup) {
   return impl_->applySetup(setup);
 }
 
-Result<void> XFoilWidget::resetWorkflow() {
+Result<void> XFoilAnalysisWidget::resetWorkflow() {
   return impl_->resetWorkflow();
 }
 
-void XFoilWidget::setViewOptions(
+void XFoilAnalysisWidget::setViewOptions(
     const AnalysisWorkflowViewOptions& options) {
   impl_->setViewOptions(options);
 }
 
-AnalysisWorkflowViewOptions XFoilWidget::viewOptions() const {
+AnalysisWorkflowViewOptions XFoilAnalysisWidget::viewOptions() const {
   return impl_->viewOptions();
 }
 
-std::optional<AnalysisWorkflowSetup> XFoilWidget::currentSetup() const {
+std::optional<AnalysisWorkflowSetup> XFoilAnalysisWidget::currentSetup() const {
   return impl_->currentSetup();
 }
 
-Result<std::uint64_t> XFoilWidget::addComparisonPolar(
+Result<std::uint64_t> XFoilAnalysisWidget::addComparisonPolar(
     const PolarData& polar) {
   return impl_->addComparisonPolar(polar, GuiPolarOrigin::imported);
 }
 
-Result<std::uint64_t> XFoilWidget::addCurrentComparisonPolar() {
+Result<std::uint64_t> XFoilAnalysisWidget::addCurrentComparisonPolar() {
   return impl_->addCurrentAsComparison();
 }
 
-std::optional<PolarData> XFoilWidget::currentPolar() const {
+std::optional<PolarData> XFoilAnalysisWidget::currentPolar() const {
   return impl_->currentPolar();
 }
 
-std::optional<PolarData> XFoilWidget::selectedComparisonPolar() const {
+std::optional<PolarData> XFoilAnalysisWidget::selectedComparisonPolar() const {
   return impl_->selectedComparisonPolar();
 }
 
-std::optional<PressureExportData> XFoilWidget::selectedPressureExport() const {
+std::optional<PressureExportData> XFoilAnalysisWidget::selectedPressureExport() const {
   return impl_->selectedPressureExport();
 }
 
-bool XFoilWidget::hasCurrentCp() const noexcept {
+bool XFoilAnalysisWidget::hasCurrentCp() const noexcept {
   return impl_->hasCurrentCp();
 }
 
-bool XFoilWidget::hasActivePlot() const noexcept {
+bool XFoilAnalysisWidget::hasActivePlot() const noexcept {
   return impl_->hasActivePlot();
 }
 
-Result<std::string> XFoilWidget::activePlotPng() const {
+Result<std::string> XFoilAnalysisWidget::activePlotPng() const {
   return impl_->activePlotPng();
 }
 
-Result<std::string> XFoilWidget::activePlotPdf() const {
+Result<std::string> XFoilAnalysisWidget::activePlotPdf() const {
   return impl_->activePlotPdf();
 }
 
-Result<std::string> XFoilWidget::activePlotSvg() const {
+Result<std::string> XFoilAnalysisWidget::activePlotSvg() const {
   return impl_->activePlotSvg();
 }
 
-std::optional<geometry::AirfoilGeometry> XFoilWidget::geometry() const {
+std::optional<geometry::AirfoilGeometry> XFoilAnalysisWidget::geometry() const {
   return impl_->geometry();
 }
 
-std::optional<SurfaceGeometry> XFoilWidget::panelGeometry() const {
+std::optional<SurfaceGeometry> XFoilAnalysisWidget::panelGeometry() const {
   return impl_->panelGeometry();
 }
 
-PanelingOptions XFoilWidget::panelingOptions() const {
+PanelingOptions XFoilAnalysisWidget::panelingOptions() const {
   return impl_->panelingOptions();
 }
 
-AnalysisConfig XFoilWidget::configuration() const {
+AnalysisConfig XFoilAnalysisWidget::configuration() const {
   return impl_->configuration();
 }
 
-AnalysisTarget XFoilWidget::target() const {
+AnalysisTarget XFoilAnalysisWidget::target() const {
   return impl_->target();
 }
 
-AlphaSequence XFoilWidget::sequence() const {
+AlphaSequence XFoilAnalysisWidget::sequence() const {
   return impl_->sequence();
 }
 
-LiftSequence XFoilWidget::clSequence() const {
+LiftSequence XFoilAnalysisWidget::clSequence() const {
   return impl_->clSequence();
 }
 
-XFoilGuiState XFoilWidget::state() const {
+XFoilGuiState XFoilAnalysisWidget::state() const {
   return impl_->state();
 }
 
-bool XFoilWidget::isReadyToAnalyze() const {
+bool XFoilAnalysisWidget::isReadyToAnalyze() const {
   return impl_->isReadyToAnalyze();
 }
 
-void XFoilWidget::analyze() {
+void XFoilAnalysisWidget::analyze() {
   impl_->analyze();
 }
 
-void XFoilWidget::cancel() {
+void XFoilAnalysisWidget::cancel() {
   impl_->cancel();
 }
 
-bool XFoilWidget::isRunning() const {
+bool XFoilAnalysisWidget::isRunning() const {
   return impl_->isRunning();
 }
 
-QAction* XFoilWidget::analyzeAction() {
+QAction* XFoilAnalysisWidget::analyzeAction() {
   return impl_->analyzeAction();
 }
 
-QAction* XFoilWidget::cancelAction() {
+QAction* XFoilAnalysisWidget::cancelAction() {
   return impl_->cancelAction();
 }
 
-std::optional<OperatingPointData> XFoilWidget::currentOperatingPoint() const {
+std::optional<OperatingPointData> XFoilAnalysisWidget::currentOperatingPoint() const {
   return impl_->currentOperatingPoint();
 }
 
-std::optional<DetailedSequenceResult> XFoilWidget::currentSequence() const {
+std::optional<DetailedSequenceResult> XFoilAnalysisWidget::currentSequence() const {
   return impl_->currentSequence();
 }
 
 }  // namespace xfoil::gui
 
-// End: src/gui/XFoilWidget.cpp
+// End: src/gui/XFoilAnalysisWidget.cpp

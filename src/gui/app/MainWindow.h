@@ -22,7 +22,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // File: src/gui/app/MainWindow.h
-// Thin standalone application shell. Exactly one XFoilWidget is the central
+// Thin standalone application shell. Exactly one XFoilAnalysisWidget is the central
 // widget; file dialogs, settings and recent files remain app responsibilities.
 
 #pragma once
@@ -42,7 +42,7 @@ class QMenu;
 class QSettings;
 
 namespace xfoil::gui {
-class XFoilWidget;
+class XFoilAnalysisWidget;
 }
 
 namespace xfoil::gui::app {
@@ -120,7 +120,7 @@ class MainWindow : public QMainWindow {
   void showInfo(const QString& title, const QString& text) const;
 
   Dependencies dependencies_;
-  XFoilWidget* widget_{};
+  XFoilAnalysisWidget* widget_{};
   QAction* loadAirfoilAction_{};
   QAction* saveAirfoilAction_{};
   QAction* exportDxfAction_{};

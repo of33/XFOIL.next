@@ -21,7 +21,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// File: tests/gui/XFoilWidgetG2Tests.cpp
+// File: tests/gui/XFoilAnalysisWidgetG2Tests.cpp
 // G2 host setter, UI binding, validation, invalidation and isolation tests.
 
 #include <algorithm>
@@ -59,7 +59,7 @@
 #include <QTimer>
 #include <QtTest/QTest>
 
-#include "xfoil/gui/XFoilWidget.h"
+#include "xfoil/gui/XFoilAnalysisWidget.h"
 
 namespace {
 
@@ -69,7 +69,7 @@ using xfoil::Degrees;
 using xfoil::LiftTarget;
 using xfoil::PanelingOptions;
 using xfoil::gui::XFoilGuiState;
-using xfoil::gui::XFoilWidget;
+using xfoil::gui::XFoilAnalysisWidget;
 using xfoil::geometry::AirfoilGeometry;
 
 AirfoilGeometry diamond() {
@@ -84,7 +84,7 @@ AirfoilGeometry diamond() {
 }
 
 template <class T>
-T* child(XFoilWidget& widget, const char* name) {
+T* child(XFoilAnalysisWidget& widget, const char* name) {
   T* value = widget.findChild<T*>(QString::fromLatin1(name));
   Q_ASSERT(value != nullptr);
   return value;
@@ -98,7 +98,7 @@ QStringList directoryEntries(const QString& path) {
 
 }  // namespace
 
-class XFoilWidgetG2Tests : public QObject {
+class XFoilAnalysisWidgetG2Tests : public QObject {
   Q_OBJECT
 
  private slots:
@@ -107,7 +107,7 @@ class XFoilWidgetG2Tests : public QObject {
   }
 
   void startsEmptyWithPublicDefaults() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     const AnalysisConfig configuration;
     const PanelingOptions paneling;
 
@@ -171,14 +171,14 @@ class XFoilWidgetG2Tests : public QObject {
   }
 
   void programmaticSettersUpdateControlsAndPaths() {
-    XFoilWidget widget;
-    QSignalSpy geometrySpy(&widget, &XFoilWidget::geometryChanged);
-    QSignalSpy panelSpy(&widget, &XFoilWidget::panelingChanged);
+    XFoilAnalysisWidget widget;
+    QSignalSpy geometrySpy(&widget, &XFoilAnalysisWidget::geometryChanged);
+    QSignalSpy panelSpy(&widget, &XFoilAnalysisWidget::panelingChanged);
     QSignalSpy configurationSpy(&widget,
-                                &XFoilWidget::configurationChanged);
-    QSignalSpy targetSpy(&widget, &XFoilWidget::targetChanged);
-    QSignalSpy stateSpy(&widget, &XFoilWidget::stateChanged);
-    QSignalSpy validationSpy(&widget, &XFoilWidget::validationChanged);
+                                &XFoilAnalysisWidget::configurationChanged);
+    QSignalSpy targetSpy(&widget, &XFoilAnalysisWidget::targetChanged);
+    QSignalSpy stateSpy(&widget, &XFoilAnalysisWidget::stateChanged);
+    QSignalSpy validationSpy(&widget, &XFoilAnalysisWidget::validationChanged);
 
     QVERIFY(widget.setNaca("2412").isOk());
     QCOMPARE(geometrySpy.count(), 1);
@@ -244,7 +244,7 @@ class XFoilWidgetG2Tests : public QObject {
   }
 
   void uiControlsUseTheSameControllerPath() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     widget.resize(1280, 800);
     widget.show();
     QCoreApplication::processEvents();
@@ -325,7 +325,7 @@ class XFoilWidgetG2Tests : public QObject {
   }
 
   void geometryAndPanelInvalidationIsAtomic() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     QVERIFY(widget.setNaca("0012").isOk());
     QVERIFY(widget.generatePanel(PanelingOptions{}).isOk());
     const std::optional<AirfoilGeometry> firstGeometry = widget.geometry();
@@ -366,7 +366,7 @@ class XFoilWidgetG2Tests : public QObject {
   }
 
   void memoryGeometryUsesHostSetter() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     QVERIFY(widget.setGeometry(diamond()).isOk());
     QVERIFY(widget.geometry().has_value());
     QVERIFY(widget.state() == XFoilGuiState::geometry);
@@ -377,7 +377,7 @@ class XFoilWidgetG2Tests : public QObject {
   }
 
   void nacsAutopanelsWithoutImportNotice() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     QVERIFY(widget.setNacs("0012").isOk());
     QVERIFY(widget.geometry().has_value());
     QVERIFY(widget.panelGeometry().has_value());
@@ -387,7 +387,7 @@ class XFoilWidgetG2Tests : public QObject {
   }
 
   void importNoticeIsViewStateAndClears() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     widget.resize(1280, 800);
     widget.show();
     QCoreApplication::processEvents();
@@ -423,14 +423,14 @@ class XFoilWidgetG2Tests : public QObject {
   }
 
   void geometrySourceRadiosRequestImportAndRestoreOnCancel() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     widget.resize(800, 600);
     widget.show();
     QCoreApplication::processEvents();
     QVERIFY(widget.setNaca("0012").isOk());
     QVERIFY(child<QRadioButton>(widget, "geometryNacaRadio")->isChecked());
 
-    QSignalSpy requested(&widget, &XFoilWidget::airfoilImportRequested);
+    QSignalSpy requested(&widget, &XFoilAnalysisWidget::airfoilImportRequested);
     QTest::mouseClick(child<QRadioButton>(widget, "geometryImportRadio"),
                       Qt::LeftButton);
     QCOMPARE(requested.count(), 1);
@@ -450,7 +450,7 @@ class XFoilWidgetG2Tests : public QObject {
   }
 
   void geometryTitleAndTwoColumnSourceBody() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     widget.resize(1280, 800);
     widget.show();
     QCoreApplication::processEvents();
@@ -495,7 +495,7 @@ class XFoilWidgetG2Tests : public QObject {
             metrics.horizontalAdvance(QStringLiteral("00000")));
     QVERIFY(designation->width() < 150);
 
-    QSignalSpy requested(&widget, &XFoilWidget::airfoilImportRequested);
+    QSignalSpy requested(&widget, &XFoilAnalysisWidget::airfoilImportRequested);
     QTest::mouseClick(load, Qt::LeftButton);
     QCOMPARE(requested.count(), 1);
 
@@ -517,7 +517,7 @@ class XFoilWidgetG2Tests : public QObject {
   }
 
   void geometryTitleDoubleClickRenames() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     widget.resize(800, 600);
     widget.show();
     QCoreApplication::processEvents();
@@ -577,8 +577,8 @@ class XFoilWidgetG2Tests : public QObject {
   }
 
   void twoWidgetsRemainIndependent() {
-    XFoilWidget first;
-    XFoilWidget second;
+    XFoilAnalysisWidget first;
+    XFoilAnalysisWidget second;
 
     QVERIFY(first.setNaca("2412").isOk());
     QVERIFY(first.generatePanel(PanelingOptions{}).isOk());
@@ -592,7 +592,7 @@ class XFoilWidgetG2Tests : public QObject {
 
 
   void stateChangesDoNotRebuildTheWidgetHierarchy() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     QStringList before;
     for (QObject* child : widget.findChildren<QObject*>()) {
       before.push_back(child->objectName());
@@ -617,7 +617,7 @@ class XFoilWidgetG2Tests : public QObject {
     const QString cwd = QDir::currentPath();
     const QStringList before = directoryEntries(cwd);
     {
-      XFoilWidget widget;
+      XFoilAnalysisWidget widget;
       QVERIFY(widget.setNaca("2412").isOk());
       QVERIFY(widget.generatePanel(PanelingOptions{}).isOk());
       QVERIFY(widget.setConfiguration(AnalysisConfig{}).isOk());
@@ -628,11 +628,11 @@ class XFoilWidgetG2Tests : public QObject {
   }
 };
 
-int runXFoilWidgetG2Tests(int argc, char** argv) {
-  XFoilWidgetG2Tests tests;
+int runXFoilAnalysisWidgetG2Tests(int argc, char** argv) {
+  XFoilAnalysisWidgetG2Tests tests;
   return QTest::qExec(&tests, argc, argv);
 }
 
-#include "XFoilWidgetG2Tests.moc"
+#include "XFoilAnalysisWidgetG2Tests.moc"
 
-// End: tests/gui/XFoilWidgetG2Tests.cpp
+// End: tests/gui/XFoilAnalysisWidgetG2Tests.cpp

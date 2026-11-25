@@ -182,8 +182,8 @@ GUI_WIN_RESOURCE_OBJ := $(GUI_OBJ_DIR)/app/xfoil-next-icon.o
 QCP_WARNINGS := -Wno-deprecated-pragma -Wno-misleading-indentation
 GUI_ARCHIVE := $(GUI_LIB_DIR)/$(GUI_VARIANT)/libxfoil_next_gui.a
 GUI_ARCHIVE_OBJS := \
-	$(GUI_OBJ_DIR)/XFoilWidget.o \
-	$(GUI_OBJ_DIR)/moc_XFoilWidget.o \
+	$(GUI_OBJ_DIR)/XFoilAnalysisWidget.o \
+	$(GUI_OBJ_DIR)/moc_XFoilAnalysisWidget.o \
 	$(GUI_OBJ_DIR)/model/GuiDefinitionModel.o \
 	$(GUI_OBJ_DIR)/model/GuiPolarManager.o \
 	$(GUI_OBJ_DIR)/model/GuiResultSelectionModel.o \
@@ -226,14 +226,14 @@ GUI_TEST_OBJS := \
 	$(GUI_OBJ_DIR)/tests/GuiPlotInteractionTests.o \
 	$(GUI_OBJ_DIR)/tests/GuiDetailedSequenceContractTests.o \
 	$(GUI_OBJ_DIR)/tests/GuiSessionBackendTests.o \
-	$(GUI_OBJ_DIR)/tests/XFoilWidgetG2Tests.o \
-	$(GUI_OBJ_DIR)/tests/XFoilWidgetG3Tests.o \
-	$(GUI_OBJ_DIR)/tests/XFoilWidgetG4Tests.o \
+	$(GUI_OBJ_DIR)/tests/XFoilAnalysisWidgetG2Tests.o \
+	$(GUI_OBJ_DIR)/tests/XFoilAnalysisWidgetG3Tests.o \
+	$(GUI_OBJ_DIR)/tests/XFoilAnalysisWidgetG4Tests.o \
 	$(GUI_OBJ_DIR)/tests/GuiAnalysisWorkerTests.o \
-	$(GUI_OBJ_DIR)/tests/XFoilWidgetG6bTests.o \
-	$(GUI_OBJ_DIR)/tests/XFoilWidgetG6cTests.o \
-	$(GUI_OBJ_DIR)/tests/XFoilWidgetG6dTests.o \
-	$(GUI_OBJ_DIR)/tests/XFoilWidgetShellTests.o \
+	$(GUI_OBJ_DIR)/tests/XFoilAnalysisWidgetG6bTests.o \
+	$(GUI_OBJ_DIR)/tests/XFoilAnalysisWidgetG6cTests.o \
+	$(GUI_OBJ_DIR)/tests/XFoilAnalysisWidgetG6dTests.o \
+	$(GUI_OBJ_DIR)/tests/XFoilAnalysisWidgetShellTests.o \
 	$(GUI_OBJ_DIR)/tests/app/GuiFileAdaptersTests.o \
 	$(GUI_OBJ_DIR)/tests/app/MainWindowTests.o \
 	$(GUI_APP_COMMON_OBJS)
@@ -331,10 +331,10 @@ $(GUI_STAMP):
 $(GUI_GEN_DIR) $(GUI_LIB_DIR) $(GUI_TEST_DIR):
 	@mkdir -p $@
 
-$(GUI_GEN_DIR)/ui_XFoilWidget.h: src/gui/XFoilWidget.ui | $(GUI_GEN_DIR) $(GUI_STAMP)
+$(GUI_GEN_DIR)/ui_XFoilAnalysisWidget.h: src/gui/XFoilAnalysisWidget.ui | $(GUI_GEN_DIR) $(GUI_STAMP)
 	$(QT_UIC) $< -o $@
 
-$(GUI_GEN_DIR)/moc_XFoilWidget.cpp: include/xfoil/gui/XFoilWidget.h | $(GUI_GEN_DIR) $(GUI_STAMP)
+$(GUI_GEN_DIR)/moc_XFoilAnalysisWidget.cpp: include/xfoil/gui/XFoilAnalysisWidget.h | $(GUI_GEN_DIR) $(GUI_STAMP)
 	$(QT_MOC) $(GUI_MOC_FLAGS) $< -o $@
 
 $(GUI_GEN_DIR)/moc_GuiAnalysisWorker.cpp: src/gui/worker/GuiAnalysisWorker.h | $(GUI_GEN_DIR) $(GUI_STAMP)
@@ -357,13 +357,13 @@ $(GUI_GEN_DIR)/MainWindowTests.moc: tests/gui/app/MainWindowTests.cpp \
 		| $(GUI_GEN_DIR) $(GUI_STAMP)
 	$(QT_MOC) $(GUI_MOC_FLAGS) $< -o $@
 
-$(GUI_OBJ_DIR)/XFoilWidget.o: src/gui/XFoilWidget.cpp \
-		include/xfoil/gui/XFoilWidget.h \
+$(GUI_OBJ_DIR)/XFoilAnalysisWidget.o: src/gui/XFoilAnalysisWidget.cpp \
+		include/xfoil/gui/XFoilAnalysisWidget.h \
 		include/xfoil/gui/AnalysisWorkflowSetup.h \
 		src/gui/model/GuiDefinitionModel.h \
 		src/gui/model/GuiPolarManager.h \
 		src/gui/worker/GuiAnalysisWorker.h \
-		$(GUI_GEN_DIR)/ui_XFoilWidget.h | $(GUI_STAMP)
+		$(GUI_GEN_DIR)/ui_XFoilAnalysisWidget.h | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
 
@@ -442,7 +442,7 @@ $(GUI_OBJ_DIR)/plots/ScalarPlotView.o: \
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
 
-$(GUI_OBJ_DIR)/moc_XFoilWidget.o: $(GUI_GEN_DIR)/moc_XFoilWidget.cpp | $(GUI_STAMP)
+$(GUI_OBJ_DIR)/moc_XFoilAnalysisWidget.o: $(GUI_GEN_DIR)/moc_XFoilAnalysisWidget.cpp | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
 
@@ -539,21 +539,21 @@ $(GUI_OBJ_DIR)/tests/GuiSessionBackendTests.o: \
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
 
-$(GUI_OBJ_DIR)/tests/XFoilWidgetG2Tests.o: \
-		tests/gui/XFoilWidgetG2Tests.cpp \
-		$(GUI_GEN_DIR)/XFoilWidgetG2Tests.moc | $(GUI_STAMP)
+$(GUI_OBJ_DIR)/tests/XFoilAnalysisWidgetG2Tests.o: \
+		tests/gui/XFoilAnalysisWidgetG2Tests.cpp \
+		$(GUI_GEN_DIR)/XFoilAnalysisWidgetG2Tests.moc | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
 
-$(GUI_OBJ_DIR)/tests/XFoilWidgetG3Tests.o: \
-		tests/gui/XFoilWidgetG3Tests.cpp \
-		$(GUI_GEN_DIR)/XFoilWidgetG3Tests.moc | $(GUI_STAMP)
+$(GUI_OBJ_DIR)/tests/XFoilAnalysisWidgetG3Tests.o: \
+		tests/gui/XFoilAnalysisWidgetG3Tests.cpp \
+		$(GUI_GEN_DIR)/XFoilAnalysisWidgetG3Tests.moc | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
 
-$(GUI_OBJ_DIR)/tests/XFoilWidgetG4Tests.o: \
-		tests/gui/XFoilWidgetG4Tests.cpp \
-		$(GUI_GEN_DIR)/XFoilWidgetG4Tests.moc | $(GUI_STAMP)
+$(GUI_OBJ_DIR)/tests/XFoilAnalysisWidgetG4Tests.o: \
+		tests/gui/XFoilAnalysisWidgetG4Tests.cpp \
+		$(GUI_GEN_DIR)/XFoilAnalysisWidgetG4Tests.moc | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
 
@@ -563,27 +563,27 @@ $(GUI_OBJ_DIR)/tests/GuiAnalysisWorkerTests.o: \
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
 
-$(GUI_OBJ_DIR)/tests/XFoilWidgetG6bTests.o: \
-		tests/gui/XFoilWidgetG6bTests.cpp \
-		$(GUI_GEN_DIR)/XFoilWidgetG6bTests.moc | $(GUI_STAMP)
+$(GUI_OBJ_DIR)/tests/XFoilAnalysisWidgetG6bTests.o: \
+		tests/gui/XFoilAnalysisWidgetG6bTests.cpp \
+		$(GUI_GEN_DIR)/XFoilAnalysisWidgetG6bTests.moc | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
 
-$(GUI_OBJ_DIR)/tests/XFoilWidgetG6cTests.o: \
-		tests/gui/XFoilWidgetG6cTests.cpp \
-		$(GUI_GEN_DIR)/XFoilWidgetG6cTests.moc | $(GUI_STAMP)
+$(GUI_OBJ_DIR)/tests/XFoilAnalysisWidgetG6cTests.o: \
+		tests/gui/XFoilAnalysisWidgetG6cTests.cpp \
+		$(GUI_GEN_DIR)/XFoilAnalysisWidgetG6cTests.moc | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
 
-$(GUI_OBJ_DIR)/tests/XFoilWidgetG6dTests.o: \
-		tests/gui/XFoilWidgetG6dTests.cpp \
-		$(GUI_GEN_DIR)/XFoilWidgetG6dTests.moc | $(GUI_STAMP)
+$(GUI_OBJ_DIR)/tests/XFoilAnalysisWidgetG6dTests.o: \
+		tests/gui/XFoilAnalysisWidgetG6dTests.cpp \
+		$(GUI_GEN_DIR)/XFoilAnalysisWidgetG6dTests.moc | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
 
-$(GUI_OBJ_DIR)/tests/XFoilWidgetShellTests.o: \
-		tests/gui/XFoilWidgetShellTests.cpp \
-		$(GUI_GEN_DIR)/XFoilWidgetShellTests.moc | $(GUI_STAMP)
+$(GUI_OBJ_DIR)/tests/XFoilAnalysisWidgetShellTests.o: \
+		tests/gui/XFoilAnalysisWidgetShellTests.cpp \
+		$(GUI_GEN_DIR)/XFoilAnalysisWidgetShellTests.moc | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
 
@@ -622,7 +622,7 @@ $(GUI_OBJ_DIR)/app/AppIcon.o: src/gui/app/AppIcon.cpp \
 $(GUI_OBJ_DIR)/app/MainWindow.o: src/gui/app/MainWindow.cpp \
 		src/gui/app/MainWindow.h src/gui/app/AppIcon.h \
 		src/gui/app/GuiFileAdapters.h \
-		include/xfoil/gui/XFoilWidget.h | $(GUI_STAMP)
+		include/xfoil/gui/XFoilAnalysisWidget.h | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
 

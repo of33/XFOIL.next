@@ -21,9 +21,9 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// File: tests/gui/XFoilWidgetShellTests.cpp
+// File: tests/gui/XFoilAnalysisWidgetShellTests.cpp
 // Offscreen construction, embedding, ownership and global-side-effect
-// tests for the public XFoilWidget shell.
+// tests for the public XFoilAnalysisWidget shell.
 
 #include <QApplication>
 #include <QButtonGroup>
@@ -56,7 +56,7 @@
 
 #include "plots/GeometryPlotView.h"
 #include "plots/ResultPlotView.h"
-#include "xfoil/gui/XFoilWidget.h"
+#include "xfoil/gui/XFoilAnalysisWidget.h"
 
 namespace {
 
@@ -88,9 +88,9 @@ GlobalSnapshot captureGlobalSnapshot() {
 
 }  // namespace
 
-using xfoil::gui::XFoilWidget;
+using xfoil::gui::XFoilAnalysisWidget;
 
-class XFoilWidgetShellTests : public QObject {
+class XFoilAnalysisWidgetShellTests : public QObject {
   Q_OBJECT
 
  private slots:
@@ -110,7 +110,7 @@ class XFoilWidgetShellTests : public QObject {
   }
 
   void constructsWithoutApplicationOrMainWindow() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     QVERIFY(QApplication::instance() != nullptr);
     QVERIFY(qobject_cast<QMainWindow*>(&widget) == nullptr);
     QVERIFY(widget.findChildren<QMainWindow*>().isEmpty());
@@ -118,7 +118,7 @@ class XFoilWidgetShellTests : public QObject {
   }
 
   void shellUsesSemanticStructure() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
 
     QVERIFY(widget.findChild<QFrame*>("definitionsFrame") != nullptr);
     QVERIFY(widget.findChild<QScrollArea*>("definitionsScrollArea") != nullptr);
@@ -174,7 +174,7 @@ class XFoilWidgetShellTests : public QObject {
   }
 
   void g2StructureUsesSemanticNamesAndPromotedPlot() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     const QStringList required = {
         QStringLiteral("geometryGroup"),
         QStringLiteral("geometryImportRadio"),
@@ -248,8 +248,8 @@ class XFoilWidgetShellTests : public QObject {
 
   void parentOwnershipIsQtManaged() {
     auto* host = new QWidget;
-    auto* widget = new XFoilWidget(host);
-    QPointer<XFoilWidget> guard(widget);
+    auto* widget = new XFoilAnalysisWidget(host);
+    QPointer<XFoilAnalysisWidget> guard(widget);
 
     QCOMPARE(widget->parentWidget(), host);
     delete host;
@@ -260,7 +260,7 @@ class XFoilWidgetShellTests : public QObject {
   void embedsInHostLayout() {
     QWidget host;
     auto* layout = new QVBoxLayout(&host);
-    auto* widget = new XFoilWidget(&host);
+    auto* widget = new XFoilAnalysisWidget(&host);
     layout->addWidget(widget);
 
     QCOMPARE(layout->count(), 1);
@@ -278,10 +278,10 @@ class XFoilWidgetShellTests : public QObject {
   void twoWidgetsRemainIndependent() {
     auto* hostA = new QWidget;
     auto* hostB = new QWidget;
-    auto* first = new XFoilWidget(hostA);
-    auto* second = new XFoilWidget(hostB);
-    QPointer<XFoilWidget> firstGuard(first);
-    QPointer<XFoilWidget> secondGuard(second);
+    auto* first = new XFoilAnalysisWidget(hostA);
+    auto* second = new XFoilAnalysisWidget(hostB);
+    QPointer<XFoilAnalysisWidget> firstGuard(first);
+    QPointer<XFoilAnalysisWidget> secondGuard(second);
 
     QVERIFY(first != second);
     QCOMPARE(first->parentWidget(), hostA);
@@ -301,11 +301,11 @@ class XFoilWidgetShellTests : public QObject {
   GlobalSnapshot before_;
 };
 
-int runXFoilWidgetShellTests(int argc, char** argv) {
-  XFoilWidgetShellTests tests;
+int runXFoilAnalysisWidgetShellTests(int argc, char** argv) {
+  XFoilAnalysisWidgetShellTests tests;
   return QTest::qExec(&tests, argc, argv);
 }
 
-#include "XFoilWidgetShellTests.moc"
+#include "XFoilAnalysisWidgetShellTests.moc"
 
-// End: tests/gui/XFoilWidgetShellTests.cpp
+// End: tests/gui/XFoilAnalysisWidgetShellTests.cpp

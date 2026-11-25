@@ -122,7 +122,7 @@ The Windows GUI executable is not a supported single-file deployment. Run
 `windeployqt` on the release executable and keep the generated Qt libraries and
 plugin directories next to `xfoil.next-gui.exe` together with the MinGW runtime
 DLLs used by the build. The app is a thin shell
-around exactly one `XFoilWidget`: it adds File/Help actions, Open, Save
+around exactly one `XFoilAnalysisWidget`: it adds File/Help actions, Open, Save
 Airfoil, DXF export, recent files, QSettings and a cancel-before-close path.
 No solver, session or command-interpreter logic is duplicated in the shell.
 
@@ -154,7 +154,7 @@ deferred close. Open reuses the existing labeled/generic/MSES coordinate
 reader, Save Airfoil reuses the labeled writer, and Export DXF reuses the R12
 encoder. Cp/Cf/polar/BLOU import/export is not part of this increment.
 
-The embeddable `XFoilWidget` reads and writes no files, uses no `QSettings`
+The embeddable `XFoilAnalysisWidget` reads and writes no files, uses no `QSettings`
 and starts no standalone application. The separate `src/gui/app` shell owns
 the file dialogs, QSettings and application entry point. The Windows UCRT64
 Qt 6.12.0/GCC 16.2.0 Rev7 development build is qualified, but no Windows GUI

@@ -35,7 +35,7 @@
 #include <QtTest/QTest>
 
 #include "xfoil/gui/AnalysisWorkflowSetup.h"
-#include "xfoil/gui/XFoilWidget.h"
+#include "xfoil/gui/XFoilAnalysisWidget.h"
 #include "model/GuiDefinitionModel.h"
 #include "worker/GuiAnalysisWorker.h"
 #include "xfoil/AnalysisData.h"

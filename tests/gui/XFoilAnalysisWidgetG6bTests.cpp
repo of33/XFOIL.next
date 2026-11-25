@@ -21,7 +21,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// File: tests/gui/XFoilWidgetG6bTests.cpp
+// File: tests/gui/XFoilAnalysisWidgetG6bTests.cpp
 // G6b Basic/Expert controls, owning host setup transaction, repeated
 // reinitialization, reset, busy behavior, CL sequence and panel overlay.
 
@@ -39,7 +39,9 @@
 #include <QDoubleSpinBox>
 #include <QGroupBox>
 #include <QLabel>
+#include <QListWidget>
 #include <QPlainTextEdit>
+#include <QProgressBar>
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QPushButton>
@@ -53,7 +55,7 @@
 #include "plots/GeometryPlotView.h"
 #include "qcustomplot.h"
 #include "xfoil/gui/AnalysisWorkflowSetup.h"
-#include "xfoil/gui/XFoilWidget.h"
+#include "xfoil/gui/XFoilAnalysisWidget.h"
 
 namespace {
 
@@ -73,28 +75,28 @@ using xfoil::gui::MemoryGeometrySetup;
 using xfoil::gui::NacaGeometrySetup;
 using xfoil::gui::NacsGeometrySetup;
 using xfoil::gui::XFoilGuiState;
-using xfoil::gui::XFoilWidget;
+using xfoil::gui::XFoilAnalysisWidget;
 
 template <class T>
-T* child(XFoilWidget& widget, const char* name) {
+T* child(XFoilAnalysisWidget& widget, const char* name) {
   T* value = widget.findChild<T*>(QString::fromLatin1(name));
   Q_ASSERT(value != nullptr);
   return value;
 }
 
-QDoubleSpinBox* spin(XFoilWidget& widget, const char* name) {
+QDoubleSpinBox* spin(XFoilAnalysisWidget& widget, const char* name) {
   return child<QDoubleSpinBox>(widget, name);
 }
 
-QSpinBox* integerSpin(XFoilWidget& widget, const char* name) {
+QSpinBox* integerSpin(XFoilAnalysisWidget& widget, const char* name) {
   return child<QSpinBox>(widget, name);
 }
 
-QComboBox* combo(XFoilWidget& widget, const char* name) {
+QComboBox* combo(XFoilAnalysisWidget& widget, const char* name) {
   return child<QComboBox>(widget, name);
 }
 
-QCheckBox* check(XFoilWidget& widget, const char* name) {
+QCheckBox* check(XFoilAnalysisWidget& widget, const char* name) {
   return child<QCheckBox>(widget, name);
 }
 
@@ -149,14 +151,14 @@ AnalysisWorkflowSetup longSequenceSetup() {
   return setup;
 }
 
-void configureLongRun(XFoilWidget& widget) {
+void configureLongRun(XFoilAnalysisWidget& widget) {
   QVERIFY(widget.applySetup(longSequenceSetup()).isOk());
   QVERIFY(widget.isReadyToAnalyze());
 }
 
 }  // namespace
 
-class XFoilWidgetG6bTests : public QObject {
+class XFoilAnalysisWidgetG6bTests : public QObject {
   Q_OBJECT
 
  private slots:
@@ -165,7 +167,7 @@ class XFoilWidgetG6bTests : public QObject {
   }
 
   void basicExpertStructureAndPublicDefaults() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     auto* panelingTabs =
         child<QTabWidget>(widget, "panelingSettingsTabs");
     auto* conditionTabs =
@@ -223,11 +225,11 @@ class XFoilWidgetG6bTests : public QObject {
   }
 
   void applySetupBeforeShowRoundTripsAllFields() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     QVERIFY(!widget.isVisible());
     const AnalysisWorkflowSetup setup =
         nacaSetup("2412", LiftSequence{0.2, 0.8, 0.2});
-    QSignalSpy started(&widget, &XFoilWidget::analysisStarted);
+    QSignalSpy started(&widget, &XFoilAnalysisWidget::analysisStarted);
     QVERIFY(widget.applySetup(setup).isOk());
     QCOMPARE(started.count(), 0);
     QVERIFY(widget.isReadyToAnalyze());
@@ -255,7 +257,7 @@ class XFoilWidgetG6bTests : public QObject {
   }
 
   void uiControlsFeedTheSameModelPath() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     QVERIFY(widget.applySetup(nacaSetup()).isOk());
     integerSpin(widget, "panelCountSpin")->setValue(160);
     spin(widget, "upperRefinementStartSpin")->setValue(0.3);
@@ -287,12 +289,12 @@ class XFoilWidgetG6bTests : public QObject {
   }
 
   void memoryAndNacsGeometrySetups() {
-    XFoilWidget source;
+    XFoilAnalysisWidget source;
     QVERIFY(source.setNaca("0012").isOk());
     QVERIFY(source.geometry().has_value());
     AnalysisWorkflowSetup memory = nacaSetup();
     memory.geometry = MemoryGeometrySetup{*source.geometry()};
-    XFoilWidget first;
+    XFoilAnalysisWidget first;
     QVERIFY(first.applySetup(memory).isOk());
     QVERIFY(first.findChild<QRadioButton*>("geometryImportRadio")
                 ->isChecked());
@@ -303,7 +305,7 @@ class XFoilWidgetG6bTests : public QObject {
 
     AnalysisWorkflowSetup nacs = nacaSetup();
     nacs.geometry = NacsGeometrySetup{"0012"};
-    XFoilWidget second;
+    XFoilAnalysisWidget second;
     QVERIFY(second.applySetup(nacs).isOk());
     QVERIFY(second.findChild<QRadioButton*>("geometryNacsRadio")
                 ->isChecked());
@@ -312,8 +314,8 @@ class XFoilWidgetG6bTests : public QObject {
   }
 
   void allFourRequestModesApplyWithoutStart() {
-    XFoilWidget widget;
-    QSignalSpy started(&widget, &XFoilWidget::analysisStarted);
+    XFoilAnalysisWidget widget;
+    QSignalSpy started(&widget, &XFoilAnalysisWidget::analysisStarted);
     const std::vector<AnalysisWorkflowRequest> requests = {
         AlphaTarget{Degrees{2.0}}, LiftTarget{0.4},
         AlphaSequence{Degrees{0.0}, Degrees{3.0}, Degrees{1.0}},
@@ -332,9 +334,9 @@ class XFoilWidgetG6bTests : public QObject {
   }
 
   void applyDoesNotAutostartAndClearsOldResults() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     QVERIFY(widget.applySetup(nacaSetup()).isOk());
-    QSignalSpy started(&widget, &XFoilWidget::analysisStarted);
+    QSignalSpy started(&widget, &XFoilAnalysisWidget::analysisStarted);
     widget.analyze();
     QCOMPARE(started.count(), 1);
     QTRY_VERIFY_WITH_TIMEOUT(!widget.isRunning(), 30000);
@@ -350,7 +352,7 @@ class XFoilWidgetG6bTests : public QObject {
   }
 
   void repeatedReinitializationIsAtomicAndComplete() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     for (int iteration = 0; iteration < 20; ++iteration) {
       auto setup = nacaSetup(iteration % 2 == 0 ? "0012" : "2412");
       setup.paneling.panelCount = 100 + static_cast<std::size_t>(iteration);
@@ -365,7 +367,7 @@ class XFoilWidgetG6bTests : public QObject {
   }
 
   void failedSetupPreservesCompleteOldState() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     QVERIFY(widget.applySetup(nacaSetup()).isOk());
     const auto oldSetup = widget.currentSetup();
     const auto oldGeometry = widget.geometry();
@@ -373,12 +375,12 @@ class XFoilWidgetG6bTests : public QObject {
     const bool oldReady = widget.isReadyToAnalyze();
     const XFoilGuiState oldState = widget.state();
 
-    QSignalSpy geometry(&widget, &XFoilWidget::geometryChanged);
-    QSignalSpy paneling(&widget, &XFoilWidget::panelingChanged);
-    QSignalSpy configuration(&widget, &XFoilWidget::configurationChanged);
-    QSignalSpy target(&widget, &XFoilWidget::targetChanged);
-    QSignalSpy applied(&widget, &XFoilWidget::setupApplied);
-    QSignalSpy failed(&widget, &XFoilWidget::setupFailed);
+    QSignalSpy geometry(&widget, &XFoilAnalysisWidget::geometryChanged);
+    QSignalSpy paneling(&widget, &XFoilAnalysisWidget::panelingChanged);
+    QSignalSpy configuration(&widget, &XFoilAnalysisWidget::configurationChanged);
+    QSignalSpy target(&widget, &XFoilAnalysisWidget::targetChanged);
+    QSignalSpy applied(&widget, &XFoilAnalysisWidget::setupApplied);
+    QSignalSpy failed(&widget, &XFoilAnalysisWidget::setupFailed);
 
     auto invalid = nacaSetup("not-a-naca");
     const auto result = widget.applySetup(invalid);
@@ -404,7 +406,7 @@ class XFoilWidgetG6bTests : public QObject {
   }
 
   void invalidRequestFailsAtomically() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     auto setup = nacaSetup("0012", LiftSequence{0.2, 0.8, 0.0});
     const auto result = widget.applySetup(setup);
     QVERIFY(result.isErr());
@@ -415,7 +417,7 @@ class XFoilWidgetG6bTests : public QObject {
   }
 
   void busyRejectsApplyAndResetButAllowsViewOptions() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     configureLongRun(widget);
     widget.analyze();
     QVERIFY(widget.isRunning());
@@ -439,7 +441,7 @@ class XFoilWidgetG6bTests : public QObject {
   }
 
   void resetWorkflowReturnsToEmptyAndKeepsViewOptions() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     QVERIFY(widget.applySetup(nacaSetup()).isOk());
     AnalysisWorkflowViewOptions options;
     options.showPaneling = true;
@@ -461,23 +463,23 @@ class XFoilWidgetG6bTests : public QObject {
   }
 
   void applyEmitsCommittedSequenceInOrder() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     QStringList order;
-    QObject::connect(&widget, &XFoilWidget::geometryChanged, &widget,
+    QObject::connect(&widget, &XFoilAnalysisWidget::geometryChanged, &widget,
                      [&order] { order.push_back("geometryChanged"); });
-    QObject::connect(&widget, &XFoilWidget::panelingChanged, &widget,
+    QObject::connect(&widget, &XFoilAnalysisWidget::panelingChanged, &widget,
                      [&order] { order.push_back("panelingChanged"); });
-    QObject::connect(&widget, &XFoilWidget::configurationChanged, &widget,
+    QObject::connect(&widget, &XFoilAnalysisWidget::configurationChanged, &widget,
                      [&order] { order.push_back("configurationChanged"); });
-    QObject::connect(&widget, &XFoilWidget::targetChanged, &widget,
+    QObject::connect(&widget, &XFoilAnalysisWidget::targetChanged, &widget,
                      [&order] { order.push_back("targetChanged"); });
-    QObject::connect(&widget, &XFoilWidget::setupApplied, &widget,
+    QObject::connect(&widget, &XFoilAnalysisWidget::setupApplied, &widget,
                      [&order] { order.push_back("setupApplied"); });
-    QObject::connect(&widget, &XFoilWidget::stateChanged, &widget,
+    QObject::connect(&widget, &XFoilAnalysisWidget::stateChanged, &widget,
                      [&order](XFoilGuiState) {
                        order.push_back("stateChanged");
                      });
-    QObject::connect(&widget, &XFoilWidget::validationChanged, &widget,
+    QObject::connect(&widget, &XFoilAnalysisWidget::validationChanged, &widget,
                      [&order](bool) { order.push_back("validationChanged"); });
 
     QVERIFY(widget.applySetup(nacaSetup()).isOk());
@@ -491,9 +493,155 @@ class XFoilWidgetG6bTests : public QObject {
     QCOMPARE(order.at(6), QStringLiteral("validationChanged"));
   }
 
+  void applySetupAfterShowAndRepeatedViewOptionsStaySideEffectFree() {
+    XFoilAnalysisWidget widget;
+    AnalysisWorkflowViewOptions beforeShow;
+    beforeShow.showPaneling = true;
+    beforeShow.showPanelNodes = false;
+    widget.setViewOptions(beforeShow);
+    QVERIFY(widget.viewOptions().showPaneling);
+    QVERIFY(!widget.viewOptions().showPanelNodes);
+    QVERIFY(!widget.geometry().has_value());
+    QVERIFY(widget.state() == XFoilGuiState::empty);
+
+    widget.resize(1280, 800);
+    widget.show();
+    QCoreApplication::processEvents();
+    AnalysisWorkflowViewOptions afterShow;
+    afterShow.showPaneling = false;
+    afterShow.showPanelNodes = true;
+    widget.setViewOptions(afterShow);
+    QVERIFY(!widget.viewOptions().showPaneling);
+    QVERIFY(widget.viewOptions().showPanelNodes);
+
+    QSignalSpy started(&widget, &XFoilAnalysisWidget::analysisStarted);
+    auto setup = nacaSetup("0012", AlphaTarget{Degrees{3.0}});
+    QVERIFY(widget.applySetup(setup).isOk());
+    QCOMPARE(started.count(), 0);
+    QVERIFY(widget.isReadyToAnalyze());
+    QVERIFY(widget.state() == XFoilGuiState::configured);
+    QCOMPARE(widget.panelingOptions().panelCount, setup.paneling.panelCount);
+    QCOMPARE(widget.configuration().reynoldsNumber,
+             setup.configuration.reynoldsNumber);
+    QCOMPARE(std::get<AlphaTarget>(widget.target()).alpha.value, 3.0);
+    const auto accepted = widget.currentSetup();
+    QVERIFY(accepted.has_value());
+
+    QSignalSpy geometry(&widget, &XFoilAnalysisWidget::geometryChanged);
+    QSignalSpy paneling(&widget, &XFoilAnalysisWidget::panelingChanged);
+    QSignalSpy configuration(&widget,
+                             &XFoilAnalysisWidget::configurationChanged);
+    QSignalSpy target(&widget, &XFoilAnalysisWidget::targetChanged);
+    QSignalSpy failed(&widget, &XFoilAnalysisWidget::setupFailed);
+
+    const auto rejected = widget.applySetup(nacaSetup("not-a-naca"));
+    QVERIFY(rejected.isErr());
+    QCOMPARE(failed.count(), 1);
+    QCOMPARE(geometry.count(), 0);
+    QCOMPARE(paneling.count(), 0);
+    QCOMPARE(configuration.count(), 0);
+    QCOMPARE(target.count(), 0);
+    QCOMPARE(started.count(), 0);
+    QVERIFY(widget.isReadyToAnalyze());
+    QVERIFY(widget.state() == XFoilGuiState::configured);
+    QCOMPARE(widget.currentSetup()->configuration.reynoldsNumber,
+             accepted->configuration.reynoldsNumber);
+    QCOMPARE(std::get<AlphaTarget>(widget.target()).alpha.value, 3.0);
+  }
+
+  void resetFromInitialStateIsSafeAndDoesNotStart() {
+    XFoilAnalysisWidget widget;
+    QSignalSpy started(&widget, &XFoilAnalysisWidget::analysisStarted);
+    QVERIFY(widget.resetWorkflow().isOk());
+    QVERIFY(widget.resetWorkflow().isOk());
+    QCOMPARE(started.count(), 0);
+    QVERIFY(widget.state() == XFoilGuiState::empty);
+    QVERIFY(!widget.geometry().has_value());
+    QVERIFY(!widget.panelGeometry().has_value());
+    QVERIFY(!widget.currentSetup().has_value());
+    QVERIFY(!widget.isRunning());
+    QCOMPARE(widget.findChild<QProgressBar*>("analysisProgressBar")->value(),
+             0);
+    QVERIFY(widget.findChild<QLabel*>("analysisCurrentPointLabel")
+                ->text()
+                .isEmpty());
+    QVERIFY(!widget.analyzeAction()->isEnabled());
+  }
+
+  void resetAfterResultsAndComparisonClearsStateAndAllowsReanalysis() {
+    XFoilAnalysisWidget widget;
+    const auto setup = nacaSetup("0012", AlphaTarget{Degrees{2.0}});
+    QVERIFY(widget.applySetup(setup).isOk());
+    widget.analyze();
+    QTRY_VERIFY_WITH_TIMEOUT(!widget.isRunning(), 30000);
+    QVERIFY(widget.currentOperatingPoint().has_value());
+    QVERIFY(widget.addCurrentComparisonPolar().isOk());
+    auto* polarList = widget.findChild<QListWidget*>("polarListView");
+    QVERIFY(polarList != nullptr);
+    QCOMPARE(polarList->count(), 1);
+
+    QVERIFY(widget.resetWorkflow().isOk());
+    QCOMPARE(polarList->count(), 0);
+    QVERIFY(!widget.selectedComparisonPolar().has_value());
+    QVERIFY(!widget.currentPolar().has_value());
+    QVERIFY(!widget.currentOperatingPoint().has_value());
+    QVERIFY(!widget.currentSequence().has_value());
+    QVERIFY(widget.state() == XFoilGuiState::empty);
+    QVERIFY(!widget.currentSetup().has_value());
+    QVERIFY(!widget.isReadyToAnalyze());
+    QCOMPARE(widget.findChild<QProgressBar*>("analysisProgressBar")->value(),
+             0);
+    QVERIFY(widget.findChild<QLabel*>("analysisCurrentPointLabel")
+                ->text()
+                .isEmpty());
+    QVERIFY(widget.findChild<QLabel*>("analysisIterationLabel")
+                ->text()
+                .isEmpty());
+    QVERIFY(!widget.analyzeAction()->isEnabled());
+    QVERIFY(!widget.cancelAction()->isEnabled());
+
+    const auto retry = nacaSetup("0012", AlphaTarget{Degrees{1.5}});
+    QVERIFY(widget.applySetup(retry).isOk());
+    widget.analyze();
+    QTRY_VERIFY_WITH_TIMEOUT(!widget.isRunning(), 30000);
+    QVERIFY(widget.currentOperatingPoint().has_value());
+    QCOMPARE(widget.currentOperatingPoint()->alpha.value, 1.5);
+  }
+
+  void resetAfterCancelledJobClearsProgressAndAllowsReanalysis() {
+    XFoilAnalysisWidget widget;
+    configureLongRun(widget);
+    QSignalSpy cancelled(&widget, &XFoilAnalysisWidget::analysisCancelled);
+    widget.analyze();
+    QVERIFY(widget.isRunning());
+    widget.cancel();
+    QTRY_VERIFY_WITH_TIMEOUT(cancelled.count() == 1, 30000);
+    QTRY_VERIFY_WITH_TIMEOUT(!widget.isRunning(), 30000);
+
+    QVERIFY(widget.resetWorkflow().isOk());
+    QVERIFY(widget.state() == XFoilGuiState::empty);
+    QVERIFY(!widget.currentSetup().has_value());
+    QVERIFY(!widget.currentOperatingPoint().has_value());
+    QVERIFY(!widget.currentSequence().has_value());
+    QCOMPARE(widget.findChild<QProgressBar*>("analysisProgressBar")->value(),
+             0);
+    QVERIFY(widget.findChild<QLabel*>("analysisCurrentPointLabel")
+                ->text()
+                .isEmpty());
+    QVERIFY(widget.findChild<QLabel*>("analysisIterationLabel")
+                ->text()
+                .isEmpty());
+
+    const auto retry = nacaSetup("0012", AlphaTarget{Degrees{2.0}});
+    QVERIFY(widget.applySetup(retry).isOk());
+    widget.analyze();
+    QTRY_VERIFY_WITH_TIMEOUT(!widget.isRunning(), 30000);
+    QVERIFY(widget.currentOperatingPoint().has_value());
+  }
+
   void twoWidgetsKeepSetupAndViewOptionsIndependent() {
-    XFoilWidget first;
-    XFoilWidget second;
+    XFoilAnalysisWidget first;
+    XFoilAnalysisWidget second;
     QCOMPARE(spin(first, "reynoldsSpin")->value(), 500000.0);
     QCOMPARE(spin(second, "reynoldsSpin")->value(), 500000.0);
     QVERIFY(first.applySetup(nacaSetup("0012")).isOk());
@@ -508,12 +656,12 @@ class XFoilWidgetG6bTests : public QObject {
   }
 
   void clSequenceUsesPublicDetailedApiWithoutGuiLoop() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     auto setup = nacaSetup("0012", LiftSequence{0.2, 0.6, 0.2});
     setup.configuration.viscous = false;
     setup.paneling.panelCount = 100;
     QVERIFY(widget.applySetup(setup).isOk());
-    QSignalSpy started(&widget, &XFoilWidget::analysisStarted);
+    QSignalSpy started(&widget, &XFoilAnalysisWidget::analysisStarted);
     widget.analyze();
     QCOMPARE(started.count(), 1);
     QTRY_VERIFY_WITH_TIMEOUT(!widget.isRunning(), 30000);
@@ -525,7 +673,7 @@ class XFoilWidgetG6bTests : public QObject {
   }
 
   void panelingBasicControlsAndExpertAutoInitialize() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     auto* basic = child<QWidget>(widget, "panelingBasicPage");
     auto* expert = child<QWidget>(widget, "conditionExpertPage");
     auto* show = check(widget, "showPanelingCheckBox");
@@ -560,7 +708,7 @@ class XFoilWidgetG6bTests : public QObject {
   }
 
   void minimumSizeKeepsDefinitionsReadableWithoutClipping() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     QCOMPARE(widget.minimumWidth(), 960);
     QCOMPARE(widget.minimumHeight(), 620);
     widget.resize(960, 620);
@@ -576,7 +724,7 @@ class XFoilWidgetG6bTests : public QObject {
   }
 
   void clSequenceValidationReachesUiAndModel() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     auto setup = nacaSetup("0012", LiftSequence{0.2, 0.8, 0.0});
     const auto failed = widget.applySetup(setup);
     QVERIFY(failed.isErr());
@@ -594,15 +742,15 @@ class XFoilWidgetG6bTests : public QObject {
   }
 
   void defaultOverlayIsOffAndToggleIsViewOnly() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     widget.resize(1280, 800);
     widget.show();
     QCoreApplication::processEvents();
     QVERIFY(widget.applySetup(nacaSetup("0012")).isOk());
-    QSignalSpy geometry(&widget, &XFoilWidget::geometryChanged);
-    QSignalSpy paneling(&widget, &XFoilWidget::panelingChanged);
-    QSignalSpy configuration(&widget, &XFoilWidget::configurationChanged);
-    QSignalSpy target(&widget, &XFoilWidget::targetChanged);
+    QSignalSpy geometry(&widget, &XFoilAnalysisWidget::geometryChanged);
+    QSignalSpy paneling(&widget, &XFoilAnalysisWidget::panelingChanged);
+    QSignalSpy configuration(&widget, &XFoilAnalysisWidget::configurationChanged);
+    QSignalSpy target(&widget, &XFoilAnalysisWidget::targetChanged);
 
     auto* view = static_cast<xfoil::gui::GeometryPlotView*>(
         child<QWidget>(widget, "airfoilPlot"));
@@ -656,7 +804,7 @@ class XFoilWidgetG6bTests : public QObject {
   }
 
   void ux3LayoutContracts() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     widget.resize(1280, 800);
     widget.show();
     QCoreApplication::processEvents();
@@ -695,7 +843,7 @@ class XFoilWidgetG6bTests : public QObject {
   }
 
   void viewOptionsCanChangeDuringAnalysis() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     configureLongRun(widget);
     widget.analyze();
     QVERIFY(widget.isRunning());
@@ -712,11 +860,11 @@ class XFoilWidgetG6bTests : public QObject {
   }
 };
 
-int runXFoilWidgetG6bTests(int argc, char** argv) {
-  XFoilWidgetG6bTests tests;
+int runXFoilAnalysisWidgetG6bTests(int argc, char** argv) {
+  XFoilAnalysisWidgetG6bTests tests;
   return QTest::qExec(&tests, argc, argv);
 }
 
-#include "XFoilWidgetG6bTests.moc"
+#include "XFoilAnalysisWidgetG6bTests.moc"
 
-// End: tests/gui/XFoilWidgetG6bTests.cpp
+// End: tests/gui/XFoilAnalysisWidgetG6bTests.cpp

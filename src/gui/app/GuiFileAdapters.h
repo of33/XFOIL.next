@@ -23,7 +23,7 @@
 
 // File: src/gui/app/GuiFileAdapters.h
 // App-only file adapters. They reuse the accepted DAT reader, airfoil writer
-// and DXF encoder; the embeddable XFoilWidget remains file-I/O free.
+// and DXF encoder; the embeddable XFoilAnalysisWidget remains file-I/O free.
 
 #pragma once
 

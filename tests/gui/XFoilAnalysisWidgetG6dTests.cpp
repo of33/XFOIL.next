@@ -21,7 +21,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// File: tests/gui/XFoilWidgetG6dTests.cpp
+// File: tests/gui/XFoilAnalysisWidgetG6dTests.cpp
 // G6d memory projections: canonical Cp text, report view and active-plot
 // PNG/PDF/SVG rendering. No file path or file dialog enters the widget.
 
@@ -36,7 +36,7 @@
 #include "app/GuiFileAdapters.h"
 #include "plots/ResultPlotView.h"
 #include "qcustomplot.h"
-#include "xfoil/gui/XFoilWidget.h"
+#include "xfoil/gui/XFoilAnalysisWidget.h"
 
 namespace {
 
@@ -45,9 +45,9 @@ using xfoil::LiftTarget;
 using xfoil::PanelingOptions;
 using xfoil::PolarData;
 using xfoil::PolarPoint;
-using xfoil::gui::XFoilWidget;
+using xfoil::gui::XFoilAnalysisWidget;
 
-void configureAndAnalyze(XFoilWidget& widget) {
+void configureAndAnalyze(XFoilAnalysisWidget& widget) {
   QVERIFY(widget.setNaca("0012").isOk());
   PanelingOptions paneling;
   paneling.panelCount = 80;
@@ -77,19 +77,19 @@ PolarData comparisonPolar() {
 
 }  // namespace
 
-class XFoilWidgetG6dTests : public QObject {
+class XFoilAnalysisWidgetG6dTests : public QObject {
   Q_OBJECT
 
  private slots:
   void emptyWidgetRejectsCpAndStillHasAPlotSurface() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     QVERIFY(!widget.hasCurrentCp());
     QVERIFY(!widget.selectedPressureExport().has_value());
     QVERIFY(widget.hasActivePlot());
   }
 
   void currentCpUsesCanonicalTextAndValidPoint() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     configureAndAnalyze(widget);
     QTRY_VERIFY_WITH_TIMEOUT(widget.hasCurrentCp(), 5000);
     const auto data = widget.selectedPressureExport();
@@ -103,7 +103,7 @@ class XFoilWidgetG6dTests : public QObject {
   }
 
   void reportViewIsStructuredReadOnlyAndUpdates() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     auto* report = widget.findChild<QPlainTextEdit*>("reportView");
     QVERIFY(report != nullptr);
     QVERIFY(report->isReadOnly());
@@ -122,11 +122,11 @@ class XFoilWidgetG6dTests : public QObject {
   }
 
   void activePlotRendersPngPdfAndVectorSvg() {
-    XFoilWidget widget;
+    XFoilAnalysisWidget widget;
     configureAndAnalyze(widget);
     auto* tabs = widget.findChild<QTabWidget*>("resultPlotTabs");
     QVERIFY(tabs != nullptr);
-    QSignalSpy changed(&widget, &XFoilWidget::activePlotChanged);
+    QSignalSpy changed(&widget, &XFoilAnalysisWidget::activePlotChanged);
     tabs->setCurrentWidget(widget.findChild<QWidget*>("cpAlphaPage"));
     QCOMPARE(changed.count(), 1);
 
@@ -185,11 +185,11 @@ class XFoilWidgetG6dTests : public QObject {
   }
 };
 
-int runXFoilWidgetG6dTests(int argc, char** argv) {
-  XFoilWidgetG6dTests tests;
+int runXFoilAnalysisWidgetG6dTests(int argc, char** argv) {
+  XFoilAnalysisWidgetG6dTests tests;
   return QTest::qExec(&tests, argc, argv);
 }
 
-#include "XFoilWidgetG6dTests.moc"
+#include "XFoilAnalysisWidgetG6dTests.moc"
 
-// End: tests/gui/XFoilWidgetG6dTests.cpp
+// End: tests/gui/XFoilAnalysisWidgetG6dTests.cpp

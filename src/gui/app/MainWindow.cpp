@@ -22,7 +22,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // File: src/gui/app/MainWindow.cpp
-// Thin standalone shell: one XFoilWidget, app actions, dialogs, settings,
+// Thin standalone shell: one XFoilAnalysisWidget, app actions, dialogs, settings,
 // recent files and deferred close. No session or solver logic.
 
 #include "app/MainWindow.h"
@@ -54,7 +54,7 @@
 #include "app/ProductInfo.h"
 #include "xfoil/PolarData.h"
 #include "qcustomplot.h"
-#include "xfoil/gui/XFoilWidget.h"
+#include "xfoil/gui/XFoilAnalysisWidget.h"
 
 namespace xfoil::gui::app {
 namespace {
@@ -246,43 +246,43 @@ MainWindow::MainWindow(Dependencies dependencies, QWidget* parent)
   setWindowTitle(productName() + QStringLiteral(" ") + productVersion());
   setMinimumSize(1280, 720);
   resize(1280, 720);
-  widget_ = new XFoilWidget(this);
+  widget_ = new XFoilAnalysisWidget(this);
   setCentralWidget(widget_);
 
-  connect(widget_, &XFoilWidget::airfoilImportRequested, this,
+  connect(widget_, &XFoilAnalysisWidget::airfoilImportRequested, this,
           [this]() { openFileDialog(); });
 
   createActions();
   createMenus();
   statusBar()->showMessage(QStringLiteral("Ready"));
 
-  connect(widget_, &XFoilWidget::geometryChanged, this,
+  connect(widget_, &XFoilAnalysisWidget::geometryChanged, this,
           [this]() { updateAppActions(); });
-  connect(widget_, &XFoilWidget::panelingChanged, this,
+  connect(widget_, &XFoilAnalysisWidget::panelingChanged, this,
           [this]() { updateAppActions(); });
-  connect(widget_, &XFoilWidget::operatingPointReady, this,
+  connect(widget_, &XFoilAnalysisWidget::operatingPointReady, this,
           [this](const OperatingPointData&) { updateAppActions(); });
-  connect(widget_, &XFoilWidget::sequenceReady, this,
+  connect(widget_, &XFoilAnalysisWidget::sequenceReady, this,
           [this](const DetailedSequenceResult&) { updateAppActions(); });
-  connect(widget_, &XFoilWidget::comparisonPolarsChanged, this,
+  connect(widget_, &XFoilAnalysisWidget::comparisonPolarsChanged, this,
           [this]() { updateAppActions(); });
-  connect(widget_, &XFoilWidget::activePlotChanged, this,
+  connect(widget_, &XFoilAnalysisWidget::activePlotChanged, this,
           [this]() { updateAppActions(); });
-  connect(widget_, &XFoilWidget::resultSelectionChanged, this,
+  connect(widget_, &XFoilAnalysisWidget::resultSelectionChanged, this,
           [this]() { updateAppActions(); });
-  connect(widget_, &XFoilWidget::stateChanged, this,
+  connect(widget_, &XFoilAnalysisWidget::stateChanged, this,
           [this](XFoilGuiState) {
             updateAppActions();
             if (pendingClose_) {
               schedulePendingCloseCheck();
             }
           });
-  connect(widget_, &XFoilWidget::analysisCancelled, this, [this]() {
+  connect(widget_, &XFoilAnalysisWidget::analysisCancelled, this, [this]() {
     if (pendingClose_) {
       schedulePendingCloseCheck();
     }
   });
-  connect(widget_, &XFoilWidget::analysisFailed, this,
+  connect(widget_, &XFoilAnalysisWidget::analysisFailed, this,
           [this](const Error&) {
             if (pendingClose_) {
               schedulePendingCloseCheck();
