@@ -34,6 +34,16 @@ function SamePath([string]$Left, [string]$Right) {
     return ([IO.Path]::GetFullPath($Left).TrimEnd('\') -ieq [IO.Path]::GetFullPath($Right).TrimEnd('\'))
 }
 
+function Test-IsUnderRoot([string]$Path, [string]$Root) {
+    $candidate = Normalize $Path
+    $parent = Normalize $Root
+    if (SamePath $candidate $parent) {
+        return $true
+    }
+    return $candidate.StartsWith(
+        $parent + '\', [StringComparison]::OrdinalIgnoreCase)
+}
+
 function Assert-NotReparse([string]$Path) {
     if (-not (Test-Path -LiteralPath $Path)) {
         return
@@ -109,7 +119,7 @@ function Assert-UninstallLayout {
         Fail "Refusing to uninstall an unexpected location: $InstallRoot"
     }
     if (-not (Test-Path -LiteralPath $InstallRoot -PathType Container)) {
-        Fail "XFOIL.next GUI is not installed for this user: $InstallRoot"
+        Fail "XFOIL.next GUI is not installed for this user: $InstallRoot. A portable copy is removed by deleting its extracted folder."
     }
     $marker = Join-Path $InstallRoot $MarkerName
     if (-not (Test-Path -LiteralPath $marker -PathType Leaf)) {
@@ -222,8 +232,25 @@ function Schedule-HelperCleanup([string]$HelperDirectory) {
 }
 
 if ([string]::IsNullOrWhiteSpace($HelperInstallRoot)) {
-    $InstallRoot = Normalize $PSScriptRoot
+    $LocalRoot = Normalize $LocalAppDataDirectory
+    $ProgramsRoot = Normalize (Join-Path $LocalRoot 'Programs')
+    $InstallRoot = Normalize (Join-Path $ProgramsRoot $TargetName)
     Assert-UninstallLayout
+
+    if (-not (Test-IsUnderRoot $PSScriptRoot $InstallRoot)) {
+        try {
+            Invoke-Removal
+        } catch {
+            Write-Host ''
+            Write-Host "XFOIL.next GUI uninstallation failed:" -ForegroundColor Red
+            Write-Host $_.Exception.Message -ForegroundColor Red
+            exit 1
+        }
+        Write-Host ''
+        Write-Host 'XFOIL.next GUI was uninstalled for the current user.'
+        Write-Host 'The portable folder containing this uninstaller was not changed.'
+        exit 0
+    }
 
     $helperDirectory = Join-Path $env:TEMP (
         'XFOIL.next-GUI-uninstall-' + [Guid]::NewGuid().ToString('N'))

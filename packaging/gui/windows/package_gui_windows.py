@@ -191,7 +191,7 @@ def write_zip(root, target, top_dir, epoch):
         target.unlink()
     directories = {top_dir}
     files = []
-    for path in sorted(root.rglob("*")):
+    for path in sorted(root.rglob("*"), key=lambda p: p.relative_to(root).as_posix()):
         if path.is_dir():
             relative = path.relative_to(root).as_posix()
             parts = relative.split("/")

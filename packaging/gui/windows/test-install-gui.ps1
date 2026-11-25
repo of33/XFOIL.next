@@ -314,17 +314,35 @@ try {
     Assert-Marker $Target
     Write-Host 'marker migration: PASS'
 
-    $Wrong = Join-Path $Work 'wrong uninstaller location'
-    New-Item -ItemType Directory -Path $Wrong -Force | Out-Null
+    $PortableUninstall = Join-Path $Work 'portable uninstaller'
+    New-Item -ItemType Directory -Path $PortableUninstall -Force | Out-Null
+    $PortableUninstallScript = Join-Path $PortableUninstall 'Uninstall-XFOIL.next-GUI.ps1'
     Copy-Item -LiteralPath (Join-Path $Target 'Uninstall-XFOIL.next-GUI.ps1') `
-        -Destination $Wrong
-    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File `
-        (Join-Path $Wrong 'Uninstall-XFOIL.next-GUI.ps1') `
-        -LocalAppDataDirectory $Local -DesktopDirectory $Desktop `
-        -StartMenuProgramsDirectory $StartMenu | Out-Null
-    if ($LASTEXITCODE -eq 0) { Fail 'uninstaller accepted a script outside the managed target' }
-    if (-not (Test-Path -LiteralPath $TargetExe)) { Fail 'wrong-target rejection removed the installation' }
-    Write-Host 'unexpected target rejection: PASS'
+        -Destination $PortableUninstallScript
+    $rc = Invoke-UninstallPs1 $PortableUninstall $Local $Desktop $StartMenu
+    if ($rc -ne 0) { Fail "portable uninstaller failed: $rc" }
+    Wait-Until {
+        (-not (Test-Path -LiteralPath $Target)) -and
+        (-not (Test-Path -LiteralPath $DesktopLink)) -and
+        (-not (Test-Path -LiteralPath $StartFolder))
+    } 30 'portable uninstaller did not remove the installed copy'
+    if (-not (Test-Path -LiteralPath $PortableUninstallScript -PathType Leaf)) {
+        Fail 'portable uninstaller removed its own portable script'
+    }
+    Assert-ForeignLinks $Desktop $StartMenu
+    Write-Host 'portable uninstaller targets installed copy: PASS'
+
+    $rc = Invoke-UninstallPs1 $PortableUninstall $Local $Desktop $StartMenu
+    if ($rc -eq 0) { Fail 'portable uninstaller accepted a missing installation' }
+    if (-not (Test-Path -LiteralPath $PortableUninstallScript -PathType Leaf)) {
+        Fail 'portable no-install rejection removed the portable script'
+    }
+    Write-Host 'portable no-install rejection: PASS'
+
+    $rc = Invoke-InstallerCmd $Package $Local $Desktop $StartMenu
+    if ($rc -ne 0) { Fail "reinstall after portable uninstall failed: $rc" }
+    Assert-Marker $Target
+    Write-Host 'reinstall after portable uninstall: PASS'
 
     $junction = Join-Path $Target 'junction-test'
     New-Item -ItemType Junction -Path $junction -Target $Work | Out-Null

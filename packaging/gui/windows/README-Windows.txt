@@ -50,3 +50,8 @@ use the network and does not remove other XFOIL installations or shortcuts.
 Close XFOIL.next GUI before uninstalling. If an older test installation has no
 installation marker, run the current installer once and then use the
 uninstaller.
+
+The uninstaller can also be started from an extracted ZIP. In that case it
+removes the per-user installation and leaves the extracted portable folder
+unchanged. If no per-user installation exists, it reports that a portable copy
+is removed by deleting its extracted folder.

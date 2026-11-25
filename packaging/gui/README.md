@@ -74,8 +74,10 @@ shortcuts. The Start Menu folder also receives an uninstaller shortcut.
 `Uninstall XFOIL.next GUI.cmd` and `Uninstall-XFOIL.next-GUI.ps1` validate the
 per-user target, the install marker, the executable and the owned shortcuts
 before removing anything. Reparse points, foreign shortcuts and unexpected
-targets are refused. The uninstaller removes its managed shortcuts and folder,
-then removes itself through a temporary helper process.
+targets are refused. The uninstaller removes its managed shortcuts and folder.
+When it runs from the installed copy it removes itself through a temporary
+helper process. When it runs from an extracted portable copy it removes the
+per-user installation and leaves the portable folder unchanged.
 
 The Windows check validates the ZIP layout, modes, timestamps, PE imports,
 GUI subsystem, native icon and version resources, the Qt application identity
