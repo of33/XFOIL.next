@@ -49,6 +49,7 @@
 #include <QVBoxLayout>
 #include <QTimer>
 
+#include "app/AppIcon.h"
 #include "app/GuiFileAdapters.h"
 #include "app/ProductInfo.h"
 #include "xfoil/PolarData.h"
@@ -142,6 +143,7 @@ MainWindow::MainWindow(QWidget* parent)
 
 MainWindow::MainWindow(Dependencies dependencies, QWidget* parent)
     : QMainWindow(parent), dependencies_(std::move(dependencies)) {
+  setWindowIcon(applicationIcon());
   if (!dependencies_.chooseFile) {
     dependencies_.chooseFile =
         [this](FileDialogMode mode, const QString& title,

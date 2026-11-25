@@ -1,0 +1,6 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+  <qresource prefix="/xfoil-next">
+    <file alias="xfoil-next-icon.png">xfoil-next-icon.png</file>
+  </qresource>
+</RCC>

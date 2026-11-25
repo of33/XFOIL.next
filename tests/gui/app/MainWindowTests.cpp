@@ -27,9 +27,13 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QByteArray>
 #include <QDialog>
+#include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QIcon>
+#include <QImage>
 #include <QLabel>
 #include <QListWidget>
 #include <QPushButton>
@@ -41,6 +45,7 @@
 #include <QTimer>
 #include <QtTest/QTest>
 
+#include "app/AppIcon.h"
 #include "app/MainWindow.h"
 #include "app/ProductInfo.h"
 #include "qcustomplot.h"
@@ -164,6 +169,11 @@ class MainWindowTests : public QObject {
     auto* widget = qobject_cast<XFoilWidget*>(window.centralWidget());
     QVERIFY(widget != nullptr);
     QCOMPARE(window.findChildren<XFoilWidget*>().size(), 1);
+    const QIcon productIcon = xfoil::gui::app::applicationIcon();
+    QVERIFY(!productIcon.isNull());
+    QVERIFY(!window.windowIcon().isNull());
+    QCOMPARE(window.windowIcon().pixmap(64, 64).toImage(),
+             productIcon.pixmap(64, 64).toImage());
     QCOMPARE(window.findChild<QAction*>("loadAirfoilAction") != nullptr, true);
     QCOMPARE(window.findChild<QAction*>("loadAirfoilAction")->text(),
              QStringLiteral("&Load Airfoil..."));
@@ -194,6 +204,30 @@ class MainWindowTests : public QObject {
         xfoil::app::product::version.data(),
         static_cast<int>(xfoil::app::product::version.size()))));
     QVERIFY(window.close());
+  }
+
+  void applicationIconIsEmbeddedAndLoadable() {
+    QFile resource(QStringLiteral(":/xfoil-next/xfoil-next-icon.png"));
+    QVERIFY(resource.open(QIODevice::ReadOnly));
+    QVERIFY(resource.size() > 0);
+    QCOMPARE(resource.read(8), QByteArray("\x89PNG\r\n\x1a\n", 8));
+
+    const QString previousDirectory = QDir::currentPath();
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    QVERIFY(QDir::setCurrent(directory.path()));
+    const QIcon icon = xfoil::gui::app::applicationIcon();
+    QVERIFY(QDir::setCurrent(previousDirectory));
+    QVERIFY(!icon.isNull());
+    QVERIFY(!icon.availableSizes().isEmpty());
+  }
+
+  void applicationIconCanBeAppliedToQApplication() {
+    const QIcon previous = qApp->windowIcon();
+    qApp->setWindowIcon(QIcon());
+    qApp->setWindowIcon(xfoil::gui::app::applicationIcon());
+    QVERIFY(!qApp->windowIcon().isNull());
+    qApp->setWindowIcon(previous);
   }
 
   void polarImportAndComparisonExportUseAppAdapter() {

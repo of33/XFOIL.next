@@ -1,0 +1,4 @@
+// XFOIL.next native Windows application icon.
+// The ICO is derived from the canonical root XFOIL.next.png.
+// Compiled with windres for the standalone GUI application target only.
+IDI_ICON1 ICON "xfoil-next-icon.ico"

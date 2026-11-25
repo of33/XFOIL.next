@@ -29,11 +29,13 @@
 #include <QCoreApplication>
 #include <QString>
 
+#include "app/AppIcon.h"
 #include "app/MainWindow.h"
 #include "app/ProductInfo.h"
 
 int main(int argc, char** argv) {
   QApplication application(argc, argv);
+  application.setWindowIcon(xfoil::gui::app::applicationIcon());
   const QString productName = QString::fromLatin1(
       xfoil::app::product::name.data(),
       static_cast<int>(xfoil::app::product::name.size()));

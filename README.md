@@ -137,7 +137,7 @@ report:
 Plotting is not available in this build.
 ```
 
-An optional Qt 6.12.x GUI analysis surface and a thin standalone application
+An optional Qt 6.12.0 GUI analysis surface and a thin standalone application
 now exist. The widget owns a geometry/paneling/operating/target definition, an
 offscreen-checked interactive geometry and panel preview, five scalar sequence
 plots, selected-point Cp and Cf plots and a 4x3 result matrix with diagnostics,
@@ -199,17 +199,23 @@ make library-demo                 # standalone staged-library demo
 make test-library-demo            # demo integration tests
 ```
 
-Optional GUI analysis surface and standalone app build (Qt 6.12.x, Linux):
+Optional GUI analysis surface and standalone app build (Qt 6.12.0):
 
 ```sh
-QT_ROOT=/path/to/Qt/6.12.0/gcc_64 make gui
-QT_ROOT=/path/to/Qt/6.12.0/gcc_64 make gui-app
-QT_ROOT=/path/to/Qt/6.12.0/gcc_64 make test-gui
-QT_ROOT=/path/to/Qt/6.12.0/gcc_64 make gui-link-check
+source scripts/setup-gui-build.sh /path/to/Qt/6.12.0/gcc_64
+make gui-check-qt
+make gui-app
+make test-gui
 ```
 
-`make gui-app` writes `bin/debug/xfoil.next-gui` and
+The equivalent explicit environment uses `QT_ROOT`, `PATH`, `LD_LIBRARY_PATH`
+and `QT_PLUGIN_PATH`; `make gui-check-qt` reports the resolved Qt root, version,
+tools and platform. `make gui-app` writes `bin/debug/xfoil.next-gui` and
 `bin/release/xfoil.next-gui`; `make run-gui` starts the debug application.
+On Windows, use the MSYS2 UCRT64 shell and `scripts/setup-gui-build.sh`; the
+PowerShell helper `scripts/setup-gui-build.ps1` prepares the same Qt variables
+for child processes. The standalone GUI embeds its application icon; the
+Windows executable also carries the native icon resource.
 
 Run the GUI targets sequentially. The embeddable `xfoil::gui::XFoilWidget`
 accepts memory, NACA and NACS geometry, complete Basic/Expert paneling and

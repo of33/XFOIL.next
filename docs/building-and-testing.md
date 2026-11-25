@@ -15,7 +15,7 @@ relative to the root.
   determinism checks use the precompiled `fortran-bin/xfoil` and do not need
   a Fortran compiler.
 - `valgrind` only for `make test-valgrind`.
-- Qt 6.12.x only for the optional GUI skeleton targets. Set `QT_ROOT` to the
+- Qt 6.12.0 only for the optional GUI skeleton targets. Set `QT_ROOT` to the
   Qt kit prefix; the path is not built into the Makefile.
 
 ## Build targets
@@ -62,19 +62,66 @@ make gui-qcustomplot-check  QCustomPlot vendor/hash and smoke check
 make gui-link-check         public-header GUI consumer link check
 make clean-gui              remove build/gui
 make check-gui-dependencies GUI boundary and vendoring gate
+make gui-check-qt          validate QT_ROOT, Qt 6.12.0 tools, modules and kit
 ```
 
-The GUI targets require Qt 6.12.x. Resolve it with `QT_ROOT`, for example:
+The GUI targets require Qt 6.12.0. The supported modules are Core, Gui,
+Widgets, PrintSupport and Svg; the GUI test target also needs Test. The normal
+development and standalone build uses the shared Qt kit.
+
+Validate a kit before building:
 
 ```sh
-QT_ROOT=/path/to/Qt/6.12.0/gcc_64 make gui
-QT_ROOT=/path/to/Qt/6.12.0/gcc_64 make gui-app
-QT_ROOT=/path/to/Qt/6.12.0/gcc_64 QT_QPA_PLATFORM=offscreen make test-gui
-QT_ROOT=/path/to/Qt/6.12.0/gcc_64 QT_QPA_PLATFORM=offscreen make gui-link-check
+source scripts/setup-gui-build.sh /path/to/Qt/6.12.0/gcc_64
+make gui-check-qt
 ```
 
+`gui-check-qt` reports the resolved Qt root, version, qmake/moc/uic/rcc paths
+and kit platform. It rejects missing tools, incomplete module/library sets,
+versions other than 6.12.0 and obviously incompatible kits with corrective
+messages. The equivalent manual setup is:
+
+```sh
+export QT_ROOT=/path/to/Qt/6.12.0/gcc_64
+export PATH="$QT_ROOT/bin:$PATH"
+export LD_LIBRARY_PATH="$QT_ROOT/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+export QT_PLUGIN_PATH="$QT_ROOT/plugins"
+make gui-check-qt
+```
+
+Build and test the standalone GUI:
+
+```sh
+make gui-app
+make test-gui
+make gui-link-check
+```
+
+The helper also works in the MSYS2 UCRT64 shell. The PowerShell helper
+validates the same Qt kit and prepares `QT_ROOT`, `PATH` and `QT_PLUGIN_PATH`
+for child processes:
+
+```powershell
+. .\scripts\setup-gui-build.ps1 -QtRoot 'C:\Qt\6.12.0\mingw_64'
+```
+
+The supported GNU Make build shell remains MSYS2 UCRT64. The standalone GUI
+embeds its application icon through the Qt resource system, and the Windows
+executable also carries a native multi-resolution icon resource.
+
 The standalone targets write `bin/debug/xfoil.next-gui` and
-`bin/release/xfoil.next-gui` (`.exe` on Windows). The app is a thin shell
+`bin/release/xfoil.next-gui` (`.exe` on Windows). On Windows, build from the
+MSYS2 UCRT64 shell:
+
+```sh
+source scripts/setup-gui-build.sh /path/to/Qt/6.12.0/mingw_64
+make gui-app-release
+```
+
+The Windows GUI executable is not a supported single-file deployment. Run
+`windeployqt` on the release executable and keep the generated Qt libraries and
+plugin directories next to `xfoil.next-gui.exe` together with the MinGW runtime
+DLLs used by the build. The app is a thin shell
 around exactly one `XFoilWidget`: it adds File/Help actions, Open, Save
 Airfoil, DXF export, recent files, QSettings and a cancel-before-close path.
 No solver, session or command-interpreter logic is duplicated in the shell.
@@ -133,6 +180,24 @@ example `BUILDROOT=build/clang BINROOT=bin/clang`. Libraries land under
 pure IO objects, but not `src/main.cpp` or the application/CLI adapters.
 Static and shared objects use separate `libobj-static/` and
 `libobj-shared/` roots.
+
+### Planned 2.0.0 GUI downloads
+
+The planned 2.0.0 GUI assets are:
+
+```text
+XFOIL.next-GUI-2.0.0-linux-x86_64.AppImage
+XFOIL.next-GUI-2.0.0-windows-x86_64.zip
+```
+
+These are not part of the current version or a finished release. The Windows
+GUI ZIP is planned to keep the executable, Qt libraries, plugins and MinGW
+runtime together; run the executable from the extracted folder, not on its
+own. The Linux AppImage is the planned portable GUI asset. The CLI archive
+names remain `XFOIL.next-2.0.0-linux-x86_64.tar.xz` and
+`XFOIL.next-2.0.0-windows-x86_64.zip`; the Linux CLI archive preserves file
+names, executable permissions and bundled release information, while the
+Windows CLI ZIP keeps the executable and required runtime files together.
 
 ## Portable runtime packaging
 

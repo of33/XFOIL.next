@@ -556,7 +556,7 @@ LIB_SHARED_IMPORT_FLAG := -Wl,--out-implib
 	portable-check-linux portable-check-windows portable-repro-linux \
 	portable-repro-windows portable-sha256sums \
 	gui gui-debug gui-release gui-app gui-app-debug gui-app-release run-gui \
-	test-gui gui-qcustomplot-check gui-link-check \
+	test-gui gui-qcustomplot-check gui-link-check gui-check-qt \
 	clean-gui check-gui-dependencies \
 	clean help
 
@@ -595,6 +595,9 @@ gui-qcustomplot-check:
 
 gui-link-check:
 	$(MAKE) -f Makefile.gui gui-link-check
+
+gui-check-qt:
+	$(MAKE) -f Makefile.gui check-qt
 
 check-gui-dependencies:
 	$(MAKE) -f Makefile.gui check-gui-dependencies
@@ -1333,7 +1336,7 @@ help:
 	@echo "  make portable-repro-linux       - two clean Linux builds and compare"
 	@echo "  make portable-repro-windows     - two clean Windows builds and compare"
 	@echo ""
-	@echo "Optional GUI skeleton (requires Qt 6.12.x and QT_ROOT):"
+	@echo "Optional GUI skeleton (requires Qt 6.12.0 and QT_ROOT):"
 	@echo "  make gui                 - build libxfoil_next_gui.a (debug)"
 	@echo "  make gui-debug           - build the debug GUI archive"
 	@echo "  make gui-release         - build the release GUI archive"
@@ -1344,6 +1347,7 @@ help:
 	@echo "  make test-gui            - offscreen GUI tests"
 	@echo "  make gui-qcustomplot-check - QCustomPlot vendor/hash and smoke check"
 	@echo "  make gui-link-check      - minimal public-header GUI consumer"
+	@echo "  make gui-check-qt        - validate QT_ROOT and the Qt 6.12.0 GUI kit"
 	@echo "  make clean-gui           - remove build/gui"
 	@echo ""
 	@echo "Test:"

@@ -28,6 +28,8 @@
 SHELL := /bin/sh
 CXX ?= g++
 AR ?= ar
+PYTHON ?= python3
+WINDRES ?= windres
 
 CXXSTD := -std=c++20 -pthread
 BUILDROOT ?= build
@@ -93,8 +95,22 @@ QT_UIC := $(firstword $(wildcard \
 	$(QT_ROOT)/libexec/uic $(QT_ROOT)/bin/uic \
 	$(QT_ROOT)/libexec/uic.exe $(QT_ROOT)/bin/uic.exe \
 	$(QT_ROOT)/share/qt6/bin/uic.exe))
+QT_RCC := $(firstword $(wildcard \
+	$(QT_LIBEXECS)/rcc $(QT_LIBEXECS)/rcc.exe \
+	$(QT_HOST_BINS)/rcc $(QT_HOST_BINS)/rcc.exe \
+	$(QT_ROOT)/libexec/rcc $(QT_ROOT)/bin/rcc \
+	$(QT_ROOT)/libexec/rcc.exe $(QT_ROOT)/bin/rcc.exe \
+	$(QT_ROOT)/share/qt6/bin/rcc.exe))
 QT_KIT_TAG := $(shell printf '%s' "$(QT_ROOT)" | md5sum | cut -c1-8)
 GUI_VARIANT := $(GUI_TOOLCHAIN)-$(QT_KIT_TAG)
+ifeq ($(GUI_EXE_SUFFIX),.exe)
+GUI_QT_PLATFORM := windows
+else
+GUI_QT_PLATFORM := linux
+endif
+QT_CHECK_CMD = $(PYTHON) tools/check-qt.py --platform $(GUI_QT_PLATFORM) \
+	$(if $(strip $(QT_ROOT)),--qt-root "$(QT_ROOT)",) --cxx "$(CXX)" \
+	$(if $(filter .exe,$(GUI_EXE_SUFFIX)),--windres "$(WINDRES)",)
 
 GUI_MODE_DIR := $(GUI_BUILDROOT)/$(GUI_MODE)
 GUI_GEN_DIR := $(GUI_MODE_DIR)/gen/$(GUI_VARIANT)
@@ -154,6 +170,11 @@ GUI_QT_LIBS := -L$(QT_LIB_DIR) -lQt6Widgets -lQt6Gui -lQt6Core \
 GUI_TEST_LIBS := $(GUI_QT_LIBS) -lQt6Test
 
 QCP_DIR := src/gui/3rdparty/qcustomplot-2.1.1
+GUI_QRC := resources/gui/xfoil-next-icon.qrc
+GUI_QRC_CPP := $(GUI_GEN_DIR)/qrc_xfoil_next_icon.cpp
+GUI_QRC_OBJ := $(GUI_OBJ_DIR)/qrc_xfoil_next_icon.o
+GUI_WIN_RESOURCE := resources/gui/xfoil-next-icon.rc
+GUI_WIN_RESOURCE_OBJ := $(GUI_OBJ_DIR)/app/xfoil-next-icon.o
 # QCustomPlot 2.1.1 still uses the Qt 5 Q_ENUMS/Q_FLAGS macros. Qt 6.12
 # marks those macros deprecated, and Clang also reports two legacy
 # indentation sites. Limit both suppressions to the vendored QCP
@@ -179,11 +200,16 @@ GUI_ARCHIVE_OBJS := \
 	$(GUI_OBJ_DIR)/qcustomplot.o
 GUI_APP_MAIN_OBJ := $(GUI_OBJ_DIR)/app/main.o
 GUI_APP_COMMON_OBJS := \
+	$(GUI_OBJ_DIR)/app/AppIcon.o \
 	$(GUI_OBJ_DIR)/app/MainWindow.o \
 	$(GUI_OBJ_DIR)/app/GuiFileAdapters.o \
 	$(GUI_OBJ_DIR)/app/DatFileReader.o \
-	$(GUI_OBJ_DIR)/app/AirfoilWriter.o
+	$(GUI_OBJ_DIR)/app/AirfoilWriter.o \
+	$(GUI_QRC_OBJ)
 GUI_APP_OBJS := $(GUI_APP_MAIN_OBJ) $(GUI_APP_COMMON_OBJS)
+ifeq ($(GUI_EXE_SUFFIX),.exe)
+GUI_APP_OBJS += $(GUI_WIN_RESOURCE_OBJ)
+endif
 GUI_APP_EXE := $(if $(filter release,$(GUI_MODE)),$(GUI_RELEASE_EXE),$(GUI_DEBUG_EXE))
 GUI_TEST_BIN := $(GUI_TEST_DIR)/$(GUI_VARIANT)/xfoil_gui_tests$(GUI_EXE_SUFFIX)
 GUI_TEST_OBJS := \
@@ -221,9 +247,16 @@ CORE_LIBRARY := $(CORE_BUILDROOT)/$(GUI_MODE)/lib/$(CORE_STATIC_NAME)
 
 .PHONY: all gui gui-debug gui-release gui-app gui-app-debug \
 	gui-app-release gui-app-bin run-gui test-gui gui-qcustomplot-check \
-	gui-link-check clean check-gui-dependencies
+	gui-link-check check-qt check-qt-self-test gui-check-icon clean \
+	check-gui-dependencies
 
 all: gui
+
+check-qt:
+	$(QT_CHECK_CMD)
+
+check-qt-self-test:
+	$(PYTHON) tools/check-qt.py --self-test
 
 gui: $(GUI_ARCHIVE)
 
@@ -236,6 +269,17 @@ gui-app-release:
 	$(MAKE) -f Makefile.gui gui-app-bin GUI_MODE=release
 
 gui-app-bin: $(GUI_APP_EXE)
+
+ifeq ($(GUI_EXE_SUFFIX),.exe)
+gui-check-icon: $(GUI_RELEASE_EXE)
+	@objdump -h "$(GUI_RELEASE_EXE)" | grep -q '\.rsrc' || { \
+		echo "ERROR: Windows GUI executable has no .rsrc section"; \
+		exit 1; }
+	@echo "Native Windows icon resource: OK"
+else
+gui-check-icon:
+	@echo "Native Windows icon resource: not applicable on Linux"
+endif
 
 run-gui: gui-app-debug
 	LD_LIBRARY_PATH="$(QT_LIB_DIR):$${LD_LIBRARY_PATH:-}" \
@@ -280,31 +324,9 @@ clean:
 
 $(GUI_STAMP):
 	@mkdir -p $(dir $@)
-	@set -e; \
-		if [ -z "$(QT_ROOT)" ]; then \
-			echo "ERROR: Qt 6.12.x not found. Set QT_ROOT to the Qt kit prefix."; \
-			exit 1; \
-		fi; \
-		test -d "$(QT_INCLUDE_DIR)/QtCore"; \
-		test -x "$(QT_MOC)"; \
-		test -x "$(QT_UIC)"; \
-		case "$(QT_VERSION)" in \
-			6.12.*) ;; \
-			*) echo "ERROR: Qt 6.12.x required, found '$(QT_VERSION)'"; exit 1 ;; \
-		esac; \
-		for module in Core Gui Widgets PrintSupport Test; do \
-			test -d "$(QT_INCLUDE_DIR)/Qt$$module" || { \
-				echo "ERROR: missing Qt module: $$module"; exit 1; }; \
-		done; \
-		for lib in Qt6Core Qt6Gui Qt6Widgets Qt6PrintSupport Qt6Test; do \
-			if ls "$(QT_LIB_DIR)"/lib$$lib.so* >/dev/null 2>&1 \
-			   || test -f "$(QT_LIB_DIR)/lib$$lib.dll.a"; then :; \
-			else \
-				echo "ERROR: missing Qt library: $$lib"; exit 1; \
-			fi; \
-		done; \
-		printf 'QT_ROOT=%s\nQT_VERSION=%s\n' \
-			"$(QT_ROOT)" "$(QT_VERSION)" > "$@"
+	@$(QT_CHECK_CMD) >/dev/null
+	@printf 'QT_ROOT=%s\nQT_VERSION=%s\n' \
+		"$(QT_ROOT)" "$(QT_VERSION)" > "$@"
 
 $(GUI_GEN_DIR) $(GUI_LIB_DIR) $(GUI_TEST_DIR):
 	@mkdir -p $@
@@ -320,6 +342,9 @@ $(GUI_GEN_DIR)/moc_GuiAnalysisWorker.cpp: src/gui/worker/GuiAnalysisWorker.h | $
 
 $(GUI_GEN_DIR)/moc_qcustomplot.cpp: $(QCP_DIR)/qcustomplot.h | $(GUI_GEN_DIR) $(GUI_STAMP)
 	$(QT_MOC) $(GUI_MOC_FLAGS) -I$(QCP_DIR) $< -o $@
+
+$(GUI_QRC_CPP): $(GUI_QRC) resources/gui/xfoil-next-icon.png | $(GUI_GEN_DIR) $(GUI_STAMP)
+	$(QT_RCC) --name xfoil_next_icon $< -o $@
 
 $(GUI_GEN_DIR)/%.moc: tests/gui/%.cpp | $(GUI_GEN_DIR) $(GUI_STAMP)
 	$(QT_MOC) $(GUI_MOC_FLAGS) $< -o $@
@@ -428,6 +453,16 @@ $(GUI_OBJ_DIR)/moc_qcustomplot.o: $(GUI_GEN_DIR)/moc_qcustomplot.cpp | $(GUI_STA
 $(GUI_OBJ_DIR)/qcustomplot.o: $(QCP_DIR)/qcustomplot.cpp | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
+
+$(GUI_QRC_OBJ): $(GUI_QRC_CPP) | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+ifeq ($(GUI_EXE_SUFFIX),.exe)
+$(GUI_WIN_RESOURCE_OBJ): $(GUI_WIN_RESOURCE) resources/gui/xfoil-next-icon.ico | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(WINDRES) -I resources/gui $< -O coff -o $@
+endif
 
 $(GUI_OBJ_DIR)/tests/GuiTestMain.o: tests/gui/GuiTestMain.cpp | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
@@ -560,6 +595,7 @@ $(GUI_OBJ_DIR)/tests/app/GuiFileAdaptersTests.o: \
 
 $(GUI_OBJ_DIR)/tests/app/MainWindowTests.o: \
 		tests/gui/app/MainWindowTests.cpp \
+		src/gui/app/AppIcon.h \
 		$(GUI_GEN_DIR)/MainWindowTests.moc | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
@@ -574,12 +610,18 @@ $(GUI_ARCHIVE): $(GUI_ARCHIVE_OBJS)
 	$(AR) rcs $@ $(GUI_ARCHIVE_OBJS)
 
 $(GUI_APP_MAIN_OBJ): src/gui/app/main.cpp src/gui/app/MainWindow.h \
-		src/app/ProductInfo.h | $(GUI_STAMP)
+		src/gui/app/AppIcon.h src/app/ProductInfo.h | $(GUI_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
+
+$(GUI_OBJ_DIR)/app/AppIcon.o: src/gui/app/AppIcon.cpp \
+		src/gui/app/AppIcon.h | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) -MMD -MP -c $< -o $@
 
 $(GUI_OBJ_DIR)/app/MainWindow.o: src/gui/app/MainWindow.cpp \
-		src/gui/app/MainWindow.h src/gui/app/GuiFileAdapters.h \
+		src/gui/app/MainWindow.h src/gui/app/AppIcon.h \
+		src/gui/app/GuiFileAdapters.h \
 		include/xfoil/gui/XFoilWidget.h | $(GUI_STAMP)
 	@mkdir -p $(dir $@)
 	$(CXX) $(GUI_FLAGS) $(QCP_WARNINGS) -I$(QCP_DIR) -MMD -MP -c $< -o $@
