@@ -161,7 +161,7 @@ class XFoilWidgetG3Tests : public QObject {
     QCOMPARE(progress->toolTip(),
              QStringLiteral("Progress of the current analysis phase"));
     QVERIFY(!progress->isHidden());
-    QCOMPARE(progress->value(), 100);
+    QCOMPARE(progress->value(), 0);
     QCOMPARE(analyzeButton->text(), QStringLiteral("Analyze"));
     QCOMPARE(analyzeButton->property("analysisState").toString(),
              QStringLiteral("ready"));
@@ -181,8 +181,9 @@ class XFoilWidgetG3Tests : public QObject {
     const OperatingPointData first = *widget.currentOperatingPoint();
 
     widget.setTarget(LiftTarget{0.4});
-    QVERIFY(widget.state() == XFoilGuiState::configured);
-    QVERIFY(!widget.currentOperatingPoint().has_value());
+    QVERIFY(widget.state() == XFoilGuiState::results);
+    QVERIFY(widget.currentOperatingPoint().has_value());
+    QCOMPARE(widget.currentOperatingPoint()->alpha.value, first.alpha.value);
     QCOMPARE(first.alpha.value, 2.0);
 
     widget.analyze();
@@ -235,7 +236,7 @@ class XFoilWidgetG3Tests : public QObject {
     auto* bar = widget.findChild<QProgressBar*>("analysisProgressBar");
     QVERIFY(bar != nullptr);
     QVERIFY(!bar->isHidden());
-    QCOMPARE(bar->value(), 100);
+    QCOMPARE(bar->value(), 0);
   }
 
   void cancelDuringRunIsControlledAndIdempotent() {
@@ -279,10 +280,13 @@ class XFoilWidgetG3Tests : public QObject {
     QCoreApplication::processEvents();
     configurePoint(widget, 2.0);
     auto* bar = widget.findChild<QProgressBar*>("analysisProgressBar");
+    auto* current =
+        widget.findChild<QLabel*>("analysisCurrentPointLabel");
     auto* iteration =
         widget.findChild<QLabel*>("analysisIterationLabel");
     auto* status = widget.findChild<QLabel*>("analysisStatusLabel");
-    QVERIFY(bar && iteration && status);
+    QVERIFY(bar && current && iteration && status);
+    QVERIFY(current->text().isEmpty());
     QVERIFY(iteration->text().isEmpty());
     QCOMPARE(bar->value(), 0);
     QCOMPARE(bar->format(), QStringLiteral("%p%"));
@@ -290,18 +294,25 @@ class XFoilWidgetG3Tests : public QObject {
     QVERIFY(status->isHidden());
 
     QString seenIteration;
+    QString seenCurrent;
     QObject::connect(
         &widget, &XFoilWidget::progressChanged, &widget,
         [&](const xfoil::ProgressEvent& event) {
+          if (!current->text().contains(QStringLiteral("2")) ||
+              !current->text().contains(QString::fromUtf8("\xCE\xB1"))) {
+            return;
+          }
           if (event.iteration.has_value()) {
-            const auto current = static_cast<qulonglong>(*event.iteration + 1);
+            const auto currentIteration =
+                static_cast<qulonglong>(*event.iteration + 1);
             if (event.total.has_value() && *event.total > 0) {
               const QString expected =
                   QStringLiteral("Iteration %1 / %2")
-                      .arg(current)
+                      .arg(currentIteration)
                       .arg(static_cast<qulonglong>(*event.total));
               if (iteration->text() == expected) {
                 seenIteration = expected;
+                seenCurrent = current->text();
               }
             }
           }
@@ -309,13 +320,16 @@ class XFoilWidgetG3Tests : public QObject {
     widget.analyzeAction()->trigger();
     QTRY_VERIFY_WITH_TIMEOUT(!widget.isRunning(), 30000);
     QVERIFY(!seenIteration.isEmpty());
+    QVERIFY(!seenCurrent.isEmpty());
     QVERIFY(iteration->text().isEmpty());
-    QCOMPARE(bar->text(), QStringLiteral("100%"));
-    QCOMPARE(bar->value(), 100);
+    QVERIFY(current->text().isEmpty());
+    QCOMPARE(bar->text(), QStringLiteral("0%"));
+    QCOMPARE(bar->value(), 0);
     QCOMPARE(bar->alignment(), Qt::AlignCenter);
 
     widget.setTarget(AlphaTarget{Degrees{1.0}});
     QVERIFY(iteration->text().isEmpty());
+    QVERIFY(current->text().isEmpty());
     QCOMPARE(bar->value(), 0);
   }
 

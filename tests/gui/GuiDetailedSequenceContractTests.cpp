@@ -111,7 +111,7 @@ class GuiDetailedSequenceContractTests : public QObject {
     xfoil::gui::XFoilWidget widget;
     auto* tabs = widget.findChild<QTabWidget*>("resultPlotTabs");
     QVERIFY(tabs != nullptr);
-    QCOMPARE(tabs->count(), 8);
+    QCOMPARE(tabs->count(), 7);
 
     const QStringList scalarPlots = {
         QStringLiteral("clAlphaPlot"), QStringLiteral("clCdPlot"),

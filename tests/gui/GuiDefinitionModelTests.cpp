@@ -103,11 +103,11 @@ class GuiDefinitionModelTests : public QObject {
     QCOMPARE(model.configuration().transition.nCritical,
              configuration.transition.nCritical);
     QCOMPARE(std::get<xfoil::AlphaTarget>(model.target()).alpha.value, 0.0);
-    QCOMPARE(model.sequence().start.value, 0.0);
-    QCOMPARE(model.sequence().endExclusive.value, 5.0);
+    QCOMPARE(model.sequence().start.value, -5.0);
+    QCOMPARE(model.sequence().endExclusive.value, 20.0);
     QCOMPARE(model.sequence().step.value, 1.0);
-    QCOMPARE(model.clSequence().start, 0.0);
-    QCOMPARE(model.clSequence().endExclusive, 1.0);
+    QCOMPARE(model.clSequence().start, -0.5);
+    QCOMPARE(model.clSequence().endExclusive, 1.5);
     QCOMPARE(model.clSequence().step, 0.1);
     QVERIFY(model.makeRunSpec().isErr());
   }

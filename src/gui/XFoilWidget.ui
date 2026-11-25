@@ -7,13 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>1280</width>
-    <height>800</height>
+    <height>720</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>960</width>
-    <height>640</height>
+    <height>620</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -97,7 +97,10 @@
               </sizepolicy>
              </property>
              <property name="title">
-              <string/>
+              <string>Geometry: no geometry</string>
+             </property>
+             <property name="toolTip">
+              <string>Double-click the title to rename the airfoil.</string>
              </property>
              <layout class="QVBoxLayout" name="geometryGroupLayout">
               <property name="leftMargin">
@@ -115,64 +118,6 @@
               <property name="spacing">
                <number>5</number>
               </property>
-              <item>
-               <layout class="QHBoxLayout" name="geometryHeaderLayout">
-                <property name="leftMargin">
-                 <number>0</number>
-                </property>
-                <property name="topMargin">
-                 <number>0</number>
-                </property>
-                <property name="rightMargin">
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>0</number>
-                </property>
-                <property name="spacing">
-                 <number>5</number>
-                </property>
-                <item>
-                 <widget class="QLabel" name="geometryTitleLabel">
-                  <property name="text">
-                   <string>Geometry:</string>
-                  </property>
-                  <property name="accessibleName">
-                   <string>Geometry</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QStackedWidget" name="airfoilNameStack">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                    <horstretch>1</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <widget class="QLabel" name="airfoilNameDisplayLabel">
-                   <property name="text">
-                    <string>No geometry</string>
-                   </property>
-                   <property name="styleSheet">
-                    <string>font-weight: 600;</string>
-                   </property>
-                   <property name="accessibleName">
-                    <string>Airfoil name</string>
-                   </property>
-                  </widget>
-                  <widget class="QLineEdit" name="airfoilNameEdit">
-                   <property name="toolTip">
-                    <string>Click the name, edit it, then press Enter or leave the field. Escape cancels.</string>
-                   </property>
-                   <property name="accessibleName">
-                    <string>Airfoil name</string>
-                   </property>
-                  </widget>
-                 </widget>
-                </item>
-               </layout>
-              </item>
               <item>
                <layout class="QHBoxLayout" name="geometrySourceLayout">
                 <property name="leftMargin">
@@ -237,9 +182,9 @@
                  <number>0</number>
                 </property>
                 <property name="spacing">
-                 <number>8</number>
+                 <number>10</number>
                 </property>
-                <item alignment="Qt::AlignTop">
+                <item alignment="Qt::AlignLeft|Qt::AlignBottom">
                  <widget class="QPushButton" name="loadAirfoilButton">
                   <property name="text">
                    <string>Load Airfoil</string>
@@ -265,14 +210,14 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QWidget" name="nacaGeometryBlock" native="true">
+                 <widget class="QWidget" name="geometryNacaBlock" native="true">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                     <horstretch>1</horstretch>
                     <verstretch>0</verstretch>
                    </sizepolicy>
                   </property>
-                  <layout class="QVBoxLayout" name="nacaGeometryBlockLayout">
+                  <layout class="QVBoxLayout" name="geometryNacaLayout">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
@@ -289,31 +234,24 @@
                     <number>3</number>
                    </property>
                    <item>
-                    <layout class="QFormLayout" name="geometryForm">
-                     <property name="rowWrapPolicy">
-                      <enum>QFormLayout::WrapLongRows</enum>
+                    <widget class="QLabel" name="nacaDesignationLabel">
+                     <property name="text">
+                      <string>NACA designation</string>
                      </property>
-                     <item row="0" column="0">
-                      <widget class="QLabel" name="nacaDesignationLabel">
-                       <property name="text">
-                        <string>NACA designation</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="0" column="1">
-                      <widget class="QLineEdit" name="nacaDesignationEdit">
-                       <property name="placeholderText">
-                        <string>e.g. 2412</string>
-                       </property>
-                       <property name="toolTip">
-                        <string>NACA 4/5-digit or NACS designation, for example 2412.</string>
-                       </property>
-                       <property name="accessibleName">
-                        <string>NACA designation</string>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLineEdit" name="nacaDesignationEdit">
+                     <property name="placeholderText">
+                      <string>e.g. 2412</string>
+                     </property>
+                     <property name="toolTip">
+                      <string>NACA 4/5-digit or NACS designation, for example 2412.</string>
+                     </property>
+                     <property name="accessibleName">
+                      <string>NACA designation</string>
+                     </property>
+                    </widget>
                    </item>
                    <item>
                     <widget class="QPushButton" name="applyGeometryButton">
@@ -666,33 +604,13 @@
                    </widget>
                   </item>
                   <item row="3" column="0">
-                   <widget class="QLabel" name="iterationsLabel">
-                    <property name="text">
-                     <string>Iteration limit</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="1">
-                   <widget class="QSpinBox" name="iterationsSpin">
-                    <property name="toolTip">
-                     <string>Positive maximum iteration count.</string>
-                    </property>
-                    <property name="accessibleName">
-                     <string>Maximum iterations</string>
-                    </property>
-                    <property name="maximumWidth">
-                     <number>95</number>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="4" column="0">
                    <widget class="QLabel" name="xtrUpperLabel">
                     <property name="text">
                      <string>Xtr upper (x/c)</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="4" column="1">
+                  <item row="3" column="1">
                    <widget class="QDoubleSpinBox" name="xtrUpperSpin">
                     <property name="toolTip">
                      <string>Upper transition trip position x/c in [0, 1].</string>
@@ -705,14 +623,14 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="5" column="0">
+                  <item row="4" column="0">
                    <widget class="QLabel" name="xtrLowerLabel">
                     <property name="text">
                      <string>Xtr lower (x/c)</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="5" column="1">
+                  <item row="4" column="1">
                    <widget class="QDoubleSpinBox" name="xtrLowerSpin">
                     <property name="toolTip">
                      <string>Lower transition trip position x/c in [0, 1].</string>
@@ -808,24 +726,81 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="4" column="0">
-                   <widget class="QLabel" name="ncritLabel">
-                    <property name="text">
-                     <string>Ncrit</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="4" column="1">
-                   <widget class="QDoubleSpinBox" name="ncritSpin">
-                    <property name="toolTip">
-                     <string>Critical amplification exponent; must be positive.</string>
-                    </property>
-                    <property name="accessibleName">
-                     <string>Ncrit</string>
-                    </property>
-                    <property name="maximumWidth">
-                     <number>95</number>
-                    </property>
+                  <item row="4" column="0" colspan="2">
+                   <widget class="QWidget" name="expertLimitsRow" native="true">
+                    <layout class="QHBoxLayout" name="expertLimitsLayout">
+                     <property name="leftMargin">
+                      <number>0</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>0</number>
+                     </property>
+                     <property name="rightMargin">
+                      <number>0</number>
+                     </property>
+                     <property name="bottomMargin">
+                      <number>0</number>
+                     </property>
+                     <property name="spacing">
+                      <number>8</number>
+                     </property>
+                     <item>
+                      <widget class="QLabel" name="ncritLabel">
+                       <property name="text">
+                        <string>Ncrit</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QDoubleSpinBox" name="ncritSpin">
+                       <property name="toolTip">
+                        <string>Critical amplification exponent; must be positive.</string>
+                       </property>
+                       <property name="accessibleName">
+                        <string>Ncrit</string>
+                       </property>
+                       <property name="maximumWidth">
+                        <number>72</number>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="iterationsLabel">
+                       <property name="text">
+                        <string>Iteration limit</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QSpinBox" name="iterationsSpin">
+                       <property name="toolTip">
+                        <string>Positive maximum iteration count.</string>
+                       </property>
+                       <property name="accessibleName">
+                        <string>Maximum iterations</string>
+                       </property>
+                       <property name="maximumWidth">
+                        <number>72</number>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="expertLimitsSpacer">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeType">
+                        <enum>QSizePolicy::Expanding</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>0</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
                    </widget>
                   </item>
                  </layout>
@@ -920,6 +895,9 @@
                     <property name="accessibleName">
                      <string>Sequence start in degrees</string>
                     </property>
+                    <property name="value">
+                     <double>-5</double>
+                    </property>
                     <property name="maximumWidth">
                      <number>100</number>
                     </property>
@@ -940,6 +918,9 @@
                     <property name="accessibleName">
                      <string>Sequence exclusive end in degrees</string>
                     </property>
+                    <property name="value">
+                     <double>20</double>
+                    </property>
                     <property name="maximumWidth">
                      <number>100</number>
                     </property>
@@ -959,6 +940,9 @@
                     </property>
                     <property name="accessibleName">
                      <string>Sequence step in degrees</string>
+                    </property>
+                    <property name="value">
+                     <double>1</double>
                     </property>
                     <property name="maximumWidth">
                      <number>100</number>
@@ -1020,6 +1004,9 @@
                     <property name="accessibleName">
                      <string>CL sequence start</string>
                     </property>
+                    <property name="value">
+                     <double>-0.5</double>
+                    </property>
                     <property name="maximumWidth">
                      <number>100</number>
                     </property>
@@ -1040,6 +1027,9 @@
                     <property name="accessibleName">
                      <string>CL sequence exclusive end</string>
                     </property>
+                    <property name="value">
+                     <double>1.5</double>
+                    </property>
                     <property name="maximumWidth">
                      <number>100</number>
                     </property>
@@ -1059,6 +1049,9 @@
                     </property>
                     <property name="accessibleName">
                      <string>CL sequence step</string>
+                    </property>
+                    <property name="value">
+                     <double>0.1</double>
                     </property>
                     <property name="maximumWidth">
                      <number>100</number>
@@ -1617,37 +1610,8 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="reportPage">
-           <attribute name="title">
-            <string>Report</string>
-           </attribute>
-           <layout class="QVBoxLayout" name="reportLayout">
-            <item>
-             <widget class="QPlainTextEdit" name="reportView">
-              <property name="readOnly">
-               <bool>true</bool>
-              </property>
-              <property name="placeholderText">
-               <string>No analysis result</string>
-              </property>
-              <property name="accessibleName">
-               <string>Analysis report</string>
-              </property>
-              <property name="toolTip">
-               <string>Structured operating-point and sequence report. This view is not a file format.</string>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                <horstretch>1</horstretch>
-                <verstretch>1</verstretch>
-               </sizepolicy>
-              </property>
-             </widget>
-            </item>
-           </layout>
           </widget>
-         </widget>
-         <widget class="QFrame" name="resultsColumn">
+          <widget class="QFrame" name="resultsColumn">
           <property name="frameShape">
            <enum>QFrame::StyledPanel</enum>
           </property>
@@ -2490,6 +2454,35 @@
                </item>
               </layout>
              </widget>
+             <widget class="QWidget" name="reportPage">
+              <attribute name="title">
+               <string>Report</string>
+              </attribute>
+              <layout class="QVBoxLayout" name="reportLayout">
+               <item>
+                <widget class="QPlainTextEdit" name="reportView">
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                 <property name="placeholderText">
+                  <string>No analysis result</string>
+                 </property>
+                 <property name="accessibleName">
+                  <string>Analysis report</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>Structured operating-point and sequence report. This view is not a file format.</string>
+                 </property>
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                   <horstretch>1</horstretch>
+                   <verstretch>1</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
              <widget class="QWidget" name="comparisonPolarsPage">
               <attribute name="title">
                <string>Comparison Polars</string>
@@ -2763,6 +2756,34 @@
        </widget>
       </item>
       <item>
+       <widget class="QLabel" name="analysisCurrentPointLabel">
+        <property name="text">
+         <string />
+        </property>
+        <property name="accessibleName">
+         <string>Analysis current point</string>
+        </property>
+        <property name="toolTip">
+         <string>Current analysis point while an analysis is running.</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignVCenter</set>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>90</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>130</width>
+          <height>16777215</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QLabel" name="analysisIterationLabel">
         <property name="text">
          <string />
@@ -2831,7 +2852,6 @@ QProgressBar#analysisProgressBar::chunk { background-color: #1565c0; }
   <tabstop>loadAirfoilButton</tabstop>
   <tabstop>geometryNacaRadio</tabstop>
   <tabstop>geometryNacsRadio</tabstop>
-  <tabstop>airfoilNameDisplayLabel</tabstop>
   <tabstop>nacaDesignationEdit</tabstop>
   <tabstop>applyGeometryButton</tabstop>
   <tabstop>panelCountSpin</tabstop>
@@ -2847,14 +2867,14 @@ QProgressBar#analysisProgressBar::chunk { background-color: #1565c0; }
   <tabstop>reynoldsSpin</tabstop>
   <tabstop>machSpin</tabstop>
   <tabstop>viscousCheck</tabstop>
-  <tabstop>iterationsSpin</tabstop>
-  <tabstop>ncritSpin</tabstop>
   <tabstop>xtrUpperSpin</tabstop>
   <tabstop>xtrLowerSpin</tabstop>
   <tabstop>reynoldsDependencyCombo</tabstop>
   <tabstop>machDependencyCombo</tabstop>
   <tabstop>autoInitializeBoundaryLayerCheck</tabstop>
   <tabstop>viscousAccelerationSpin</tabstop>
+  <tabstop>ncritSpin</tabstop>
+  <tabstop>iterationsSpin</tabstop>
   <tabstop>analysisTargetTabs</tabstop>
   <tabstop>alphaTargetSpin</tabstop>
   <tabstop>clTargetSpin</tabstop>

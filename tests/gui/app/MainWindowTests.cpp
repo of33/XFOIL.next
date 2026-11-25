@@ -179,9 +179,9 @@ class MainWindowTests : public QObject {
     QVERIFY(window.findChild<QMenu*>("analysisMenu") == nullptr);
     QVERIFY(window.findChild<QMenu*>("helpMenu") != nullptr);
     QVERIFY(window.findChild<QToolBar*>("mainToolBar") == nullptr);
-    QCOMPARE(window.minimumSize(), QSize(1280, 800));
+    QCOMPARE(window.minimumSize(), QSize(1280, 720));
     QVERIFY(window.size().width() >= 1280);
-    QVERIFY(window.size().height() >= 800);
+    QVERIFY(window.size().height() >= 720);
 
     QVERIFY(!window.findChild<QAction*>("saveAirfoilAction")->isEnabled());
     QVERIFY(!window.findChild<QAction*>("exportDxfAction")->isEnabled());

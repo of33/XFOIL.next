@@ -49,6 +49,8 @@
 #include <QDoubleSpinBox>
 #include <QFontMetrics>
 #include <QFormLayout>
+#include <QGroupBox>
+#include <QInputDialog>
 #include <QLabel>
 #include <QImage>
 #include <QLineEdit>
@@ -59,14 +61,18 @@
 #include <QMarginsF>
 #include <QPageSize>
 #include <QPdfWriter>
+#include <QPalette>
 #include <QProgressBar>
+#include <QProxyStyle>
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QPainter>
 #include <QStackedWidget>
 #include <QStyle>
 #include <QStyledItemDelegate>
+#include <QStyleOptionGroupBox>
 #include <QStyleOptionViewItem>
+#include <QShowEvent>
 #include <QSignalBlocker>
 #include <QSizePolicy>
 #include <QSpinBox>
@@ -74,7 +80,7 @@
 #include <QTabBar>
 #include <QTabWidget>
 #include <QThread>
-#include <QKeyEvent>
+#include <QTimer>
 #include <QSvgGenerator>
 
 #include "model/GuiDefinitionModel.h"
@@ -196,6 +202,30 @@ QString formatIteration(const ProgressEvent& event) {
     }
     return QStringLiteral("Point %1")
         .arg(static_cast<qulonglong>(*event.sequenceIndex + 1));
+  }
+  return {};
+}
+
+QString formatCurrentPoint(const ProgressEvent& event,
+                           const GuiAnalysisRequest& request) {
+  const std::size_t sequenceIndex = event.sequenceIndex.value_or(0);
+  if (const auto* alpha = std::get_if<AlphaTarget>(&request)) {
+    return QStringLiteral("α = %1°")
+        .arg(alpha->alpha.value, 0, 'f', 3);
+  }
+  if (const auto* lift = std::get_if<LiftTarget>(&request)) {
+    return QStringLiteral("CL = %1").arg(lift->cl, 0, 'f', 6);
+  }
+  if (const auto* sequence = std::get_if<AlphaSequence>(&request)) {
+    const double alpha =
+        sequence->start.value +
+        sequence->step.value * static_cast<double>(sequenceIndex);
+    return QStringLiteral("α = %1°").arg(alpha, 0, 'f', 3);
+  }
+  if (const auto* sequence = std::get_if<LiftSequence>(&request)) {
+    const double cl =
+        sequence->start + sequence->step * static_cast<double>(sequenceIndex);
+    return QStringLiteral("CL = %1").arg(cl, 0, 'f', 6);
   }
   return {};
 }
@@ -375,33 +405,188 @@ class ComparisonPolarDelegate : public QStyledItemDelegate {
   }
 };
 
-class GeometryNameActivationFilter : public QObject {
+class BoldGeometryTitleStyle : public QProxyStyle {
  public:
-  explicit GeometryNameActivationFilter(QObject* parent) : QObject(parent) {}
+  BoldGeometryTitleStyle() {
+    setObjectName(QStringLiteral("boldGeometryTitleStyle"));
+  }
+
+  void drawComplexControl(ComplexControl control,
+                          const QStyleOptionComplex* option,
+                          QPainter* painter,
+                          const QWidget* widget = nullptr) const override {
+    const auto* group =
+        qstyleoption_cast<const QStyleOptionGroupBox*>(option);
+    if (!isGeometryGroup(control, widget) || group == nullptr) {
+      QProxyStyle::drawComplexControl(control, option, painter, widget);
+      return;
+    }
+
+    QStyleOptionGroupBox frameOption = *group;
+    frameOption.subControls &= ~QStyle::SC_GroupBoxLabel;
+    QProxyStyle::drawComplexControl(control, &frameOption, painter, widget);
+
+    if (group->subControls & QStyle::SC_GroupBoxLabel) {
+      drawGeometryTitle(painter, widget, group);
+    }
+  }
+
+  QRect subControlRect(ComplexControl control,
+                       const QStyleOptionComplex* option,
+                       SubControl subControl,
+                       const QWidget* widget = nullptr) const override {
+    const auto* group =
+        qstyleoption_cast<const QStyleOptionGroupBox*>(option);
+    QRect rect =
+        QProxyStyle::subControlRect(control, option, subControl, widget);
+    if (!isGeometryGroup(control, widget) || group == nullptr ||
+        subControl != QStyle::SC_GroupBoxLabel) {
+      return rect;
+    }
+
+    const QFont regularFont = widget->font();
+    QFont boldFont = regularFont;
+    boldFont.setBold(true);
+
+    const auto [prefix, name] = splitGeometryTitle(group->text);
+    const int totalWidth =
+        QFontMetrics(regularFont).horizontalAdvance(prefix) +
+        QFontMetrics(boldFont).horizontalAdvance(name);
+    const int extraWidth = totalWidth - rect.width();
+    if (extraWidth <= 0) {
+      return rect;
+    }
+
+    const Qt::Alignment horizontal =
+        static_cast<Qt::Alignment>(group->textAlignment &
+                                   Qt::AlignHorizontal_Mask);
+    if (horizontal & Qt::AlignRight) {
+      rect.setLeft(rect.left() - extraWidth);
+    } else if (horizontal & Qt::AlignHCenter) {
+      rect.adjust(-extraWidth / 2, 0, extraWidth - extraWidth / 2, 0);
+    } else {
+      rect.setWidth(totalWidth);
+    }
+    return rect;
+  }
+
+ private:
+  void drawGeometryTitle(QPainter* painter, const QWidget* widget,
+                         const QStyleOptionGroupBox* option) const {
+    QStyleOptionGroupBox labelOption = *option;
+    labelOption.subControls = QStyle::SC_GroupBoxLabel;
+    const QRect labelRect =
+        QProxyStyle::subControlRect(QStyle::CC_GroupBox, &labelOption,
+                                    QStyle::SC_GroupBoxLabel, widget);
+    if (!labelRect.isValid()) {
+      return;
+    }
+
+    const auto [prefix, name] = splitGeometryTitle(option->text);
+    if (prefix.isEmpty() && name.isEmpty()) {
+      return;
+    }
+
+    const QFont regularFont = widget->font();
+    QFont boldFont = regularFont;
+    boldFont.setBold(true);
+
+    const QFontMetrics regularMetrics(regularFont);
+    const QFontMetrics boldMetrics(boldFont);
+    const int prefixWidth = regularMetrics.horizontalAdvance(prefix);
+    const int nameWidth = boldMetrics.horizontalAdvance(name);
+    const int totalWidth = prefixWidth + nameWidth;
+
+    int x = labelRect.left();
+    const Qt::Alignment horizontal =
+        static_cast<Qt::Alignment>(option->textAlignment &
+                                   Qt::AlignHorizontal_Mask);
+    if (horizontal & Qt::AlignRight) {
+      x = labelRect.right() - totalWidth + 1;
+    } else if (horizontal & Qt::AlignHCenter) {
+      x = labelRect.center().x() - totalWidth / 2;
+    }
+
+    const QPalette::ColorGroup colorGroup =
+        (option->state & QStyle::State_Enabled) ? QPalette::Normal
+                                                : QPalette::Disabled;
+    const QColor color =
+        option->palette.color(colorGroup, QPalette::WindowText);
+
+    painter->save();
+    painter->setPen(color);
+    painter->setFont(regularFont);
+    painter->drawText(QRect(x, labelRect.top(), prefixWidth, labelRect.height()),
+                      Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine,
+                      prefix);
+
+    if (!name.isEmpty()) {
+      painter->setFont(boldFont);
+      painter->drawText(
+          QRect(x + prefixWidth, labelRect.top(), nameWidth,
+                labelRect.height()),
+          Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine, name);
+    }
+    painter->restore();
+  }
+
+  static std::pair<QString, QString> splitGeometryTitle(const QString& title) {
+    const QString prefix = QStringLiteral("Geometry: ");
+    if (title.startsWith(prefix)) {
+      return {prefix, title.mid(prefix.size())};
+    }
+    return {title, QString()};
+  }
+
+  static bool isGeometryGroup(ComplexControl control,
+                              const QWidget* widget) {
+    return control == QStyle::CC_GroupBox && widget != nullptr &&
+           widget->objectName() == QStringLiteral("geometryGroup");
+  }
+};
+
+class GeometryTitleActivationFilter : public QObject {
+ public:
+  explicit GeometryTitleActivationFilter(QObject* parent) : QObject(parent) {}
 
   std::function<void()> activate;
-  std::function<void()> cancel;
 
   bool eventFilter(QObject* watched, QEvent* event) override {
-    if (event->type() == QEvent::MouseButtonRelease &&
-        watched->objectName() == QStringLiteral("airfoilNameDisplayLabel")) {
-      auto* mouse = static_cast<QMouseEvent*>(event);
-      if (mouse->button() == Qt::LeftButton) {
-        if (activate) {
-          activate();
-        }
-        return true;
-      }
+    if (event->type() != QEvent::MouseButtonDblClick) {
+      return QObject::eventFilter(watched, event);
     }
-    if (event->type() == QEvent::KeyPress &&
-        watched->objectName() == QStringLiteral("airfoilNameEdit")) {
-      auto* key = static_cast<QKeyEvent*>(event);
-      if (key->key() == Qt::Key_Escape) {
-        if (cancel) {
-          cancel();
-        }
-        return true;
-      }
+    auto* group = qobject_cast<QGroupBox*>(watched);
+    auto* mouse = static_cast<QMouseEvent*>(event);
+    if (group == nullptr || mouse->button() != Qt::LeftButton ||
+        group->title().isEmpty()) {
+      return QObject::eventFilter(watched, event);
+    }
+    QStyleOptionGroupBox option;
+    option.initFrom(group);
+    option.subControls = QStyle::SC_GroupBoxFrame | QStyle::SC_GroupBoxLabel;
+    option.text = group->title();
+    option.textAlignment = group->alignment();
+    const QRect titleRect = group->style()->subControlRect(
+        QStyle::CC_GroupBox, &option, QStyle::SC_GroupBoxLabel, group);
+    if (!titleRect.contains(mouse->position().toPoint())) {
+      return QObject::eventFilter(watched, event);
+    }
+    if (activate) {
+      activate();
+    }
+    return true;
+  }
+};
+
+class GeometryDraftDiscardFilter : public QObject {
+ public:
+  explicit GeometryDraftDiscardFilter(QObject* parent) : QObject(parent) {}
+
+  std::function<void()> scheduleDiscard;
+
+  bool eventFilter(QObject* watched, QEvent* event) override {
+    if (event->type() == QEvent::FocusOut && scheduleDiscard) {
+      scheduleDiscard();
     }
     return QObject::eventFilter(watched, event);
   }
@@ -421,13 +606,15 @@ class XFoilWidget::Impl {
     geometrySourceButtonGroup_->addButton(ui.geometryImportRadio);
     geometrySourceButtonGroup_->addButton(ui.geometryNacaRadio);
     geometrySourceButtonGroup_->addButton(ui.geometryNacsRadio);
-    nameFilter_ = new GeometryNameActivationFilter(owner_);
+    nameFilter_ = new GeometryTitleActivationFilter(owner_);
     nameFilter_->activate = [this]() { startNameEdit(); };
-    nameFilter_->cancel = [this]() { cancelNameEdit(); };
-    ui.airfoilNameDisplayLabel->installEventFilter(nameFilter_);
-    ui.airfoilNameEdit->installEventFilter(nameFilter_);
-    QObject::connect(ui.airfoilNameEdit, &QLineEdit::editingFinished, owner_,
-                     [this]() { commitNameEdit(); });
+    ui.geometryGroup->installEventFilter(nameFilter_);
+    geometryDraftFilter_ = new GeometryDraftDiscardFilter(owner_);
+    geometryDraftFilter_->scheduleDiscard = [this]() {
+      scheduleGeometryDraftDiscard();
+    };
+    ui.nacaDesignationEdit->installEventFilter(geometryDraftFilter_);
+    ui.applyGeometryButton->installEventFilter(geometryDraftFilter_);
     ui.analyzeButton->setProperty("analysisState", "disabled");
     ui.polarListView->setItemDelegate(
         new ComparisonPolarDelegate(ui.polarListView));
@@ -441,6 +628,13 @@ class XFoilWidget::Impl {
   }
 
   ~Impl() {
+    if (ui.geometryGroup != nullptr) {
+      ui.geometryGroup->setStyle(nullptr);
+    }
+    delete geometryTitleStyle_;
+    geometryTitleStyle_ = nullptr;
+    delete geometryDraftFilter_;
+    geometryDraftFilter_ = nullptr;
     delete nameFilter_;
     shutdown();
   }
@@ -449,15 +643,17 @@ class XFoilWidget::Impl {
     configureResultViews();
     QObject::connect(
         ui.resultPlotTabs, &QTabWidget::currentChanged, owner_,
-        [this](int) { Q_EMIT owner_->activePlotChanged(); });
+        [this](int) {
+          for (ScalarPlotView* view :
+               {ui.clAlphaPlot, ui.clCdPlot, ui.cmAlphaPlot, ui.cmClPlot,
+                ui.efficiencyClPlot}) {
+            view->fitVisibleData();
+          }
+          Q_EMIT owner_->activePlotChanged();
+        });
     updateResultMatrix();
     ui.airfoilPlot->setShowPaneling(viewOptions_.showPaneling);
     ui.airfoilPlot->showPanelNodes(viewOptions_.showPanelNodes);
-    ui.airfoilPlot->setPanelingToggleCallback([this](bool visible) {
-      AnalysisWorkflowViewOptions options = viewOptions_;
-      options.showPaneling = visible;
-      owner_->setViewOptions(options);
-    });
     if (workerReady_) {
       (void)owner_->setConfiguration(configurationFromControls(ui));
     }
@@ -480,6 +676,11 @@ class XFoilWidget::Impl {
     ui.definitionsRowLayout->setStretch(3, 100);
     configureGeometryControlWidths();
     adjustDefinitionTabHeights();
+    if (geometryTitleStyle_ == nullptr) {
+      geometryTitleStyle_ = new BoldGeometryTitleStyle();
+    }
+    ui.geometryGroup->setStyle(geometryTitleStyle_);
+    updateTargetControls();
     refreshUi();
   }
 
@@ -671,10 +872,10 @@ class XFoilWidget::Impl {
     if (validateSetupCall().isErr()) {
       return;
     }
-    invalidateAnalysis();
     const Result<void> result = model_.setTarget(target);
     if (result.isOk()) {
       updateTargetControls();
+      resetActiveAnalysisKeepingResults();
     }
     refreshUi();
     Q_EMIT owner_->targetChanged();
@@ -684,10 +885,10 @@ class XFoilWidget::Impl {
     if (validateSetupCall().isErr()) {
       return;
     }
-    invalidateAnalysis();
     const Result<void> result = model_.setSequence(sequence);
     if (result.isOk()) {
       updateTargetControls();
+      resetActiveAnalysisKeepingResults();
     }
     refreshUi();
     Q_EMIT owner_->targetChanged();
@@ -697,10 +898,10 @@ class XFoilWidget::Impl {
     if (validateSetupCall().isErr()) {
       return;
     }
-    invalidateAnalysis();
     const Result<void> result = model_.setClSequence(sequence);
     if (result.isOk()) {
       updateTargetControls();
+      resetActiveAnalysisKeepingResults();
     }
     refreshUi();
     Q_EMIT owner_->targetChanged();
@@ -1052,7 +1253,7 @@ class XFoilWidget::Impl {
         (currentOperatingPoint_.has_value() ||
          currentSequence_.has_value()));
     polarManagerMessage_.clear();
-    refreshComparisonPlots(false);
+    refreshComparisonPlots(true);
     refreshReportView();
     Q_EMIT owner_->comparisonPolarsChanged();
   }
@@ -1187,8 +1388,10 @@ class XFoilWidget::Impl {
     analysisDiagnostics_.clear();
     currentOperatingPoint_.reset();
     currentSequence_.reset();
+    currentAnalysisRequest_ = spec.value().target();
     progressFraction_.reset();
     analysisIterationText_.clear();
+    analysisCurrentPointText_.clear();
     clearResultData();
     activeToken_ = std::make_shared<CancellationToken>();
 
@@ -1402,12 +1605,38 @@ class XFoilWidget::Impl {
     analysisOutcome_ = AnalysisOutcome::none;
     currentOperatingPoint_.reset();
     currentSequence_.reset();
+    currentAnalysisRequest_.reset();
     analysisDiagnostics_.clear();
     progressFraction_.reset();
     analysisIterationText_.clear();
+    analysisCurrentPointText_.clear();
     activeToken_.reset();
     analysisStatusText_ = QStringLiteral("Idle");
     clearResultData();
+  }
+
+  [[nodiscard]]
+  bool hasResultData() const {
+    return !selectionModel_.points().empty();
+  }
+
+  void resetActiveAnalysisKeepingResults() {
+    tracker_.invalidate();
+    activeToken_.reset();
+    progressFraction_.reset();
+    analysisIterationText_.clear();
+    currentAnalysisRequest_.reset();
+    analysisCurrentPointText_.clear();
+    if (!hasResultData()) {
+      setupError_.reset();
+      analysisOutcome_ = AnalysisOutcome::none;
+      currentOperatingPoint_.reset();
+      currentSequence_.reset();
+      analysisDiagnostics_.clear();
+      analysisStatusText_ = QStringLiteral("Idle");
+    } else if (analysisOutcome_ == AnalysisOutcome::running) {
+      analysisOutcome_ = AnalysisOutcome::results;
+    }
   }
 
   void startWorker() {
@@ -1495,8 +1724,10 @@ class XFoilWidget::Impl {
     }
     tracker_.finish(jobId, generationId);
     activeToken_.reset();
+    currentAnalysisRequest_.reset();
     progressFraction_.reset();
     analysisIterationText_.clear();
+    analysisCurrentPointText_.clear();
 
     const bool havePoint = currentOperatingPoint_.has_value();
     const bool haveSequence =
@@ -1565,6 +1796,10 @@ class XFoilWidget::Impl {
   void updateProgress(const ProgressEvent& event) {
     analysisStatusText_ = formatProgress(event);
     analysisIterationText_ = formatIteration(event);
+    analysisCurrentPointText_ = currentAnalysisRequest_.has_value()
+                                    ? formatCurrentPoint(
+                                          event, *currentAnalysisRequest_)
+                                    : QString{};
     if (event.total.has_value() && *event.total > 0) {
       const double fraction =
           event.fraction.has_value()
@@ -1578,6 +1813,7 @@ class XFoilWidget::Impl {
     }
     refreshProgressBar();
     ui.analysisStatusLabel->setText(analysisStatusText_);
+    ui.analysisCurrentPointLabel->setText(analysisCurrentPointText_);
     ui.analysisIterationLabel->setText(analysisIterationText_);
   }
 
@@ -1586,10 +1822,10 @@ class XFoilWidget::Impl {
     ui.analysisProgressBar->setVisible(true);
     if (!running) {
       ui.analysisProgressBar->setRange(0, 100);
-      ui.analysisProgressBar->setValue(
-          analysisOutcome_ == AnalysisOutcome::results ? 100 : 0);
+      ui.analysisProgressBar->setValue(0);
       ui.analysisProgressBar->setFormat(QStringLiteral("%p%"));
       ui.analysisIterationLabel->clear();
+      ui.analysisCurrentPointLabel->clear();
       ui.analysisProgressBar->setToolTip(
           QStringLiteral("Progress of the current analysis phase"));
       ui.analysisProgressBar->setAccessibleDescription(analysisStatusText_);
@@ -1791,6 +2027,10 @@ class XFoilWidget::Impl {
     }
     QObject::connect(ui.applyGeometryButton, &QPushButton::clicked, owner_,
             [this]() { applyGeometryFromControls(); });
+    QObject::connect(ui.nacaDesignationEdit, &QLineEdit::textEdited, owner_,
+            [this]() { geometryDraftDirty_ = true; });
+    QObject::connect(ui.nacaDesignationEdit, &QLineEdit::returnPressed,
+            owner_, [this]() { applyGeometryFromControls(); });
 
     for (QDoubleSpinBox* spin :
          {ui.bunchingSpin, ui.teToLeSpin, ui.refinementSpin,
@@ -1889,42 +2129,23 @@ class XFoilWidget::Impl {
     if (!model_.geometry().has_value()) {
       return;
     }
-    updatingName_ = true;
-    const std::string_view name = model_.geometry()->name();
-    ui.airfoilNameEdit->setText(QString::fromStdString(std::string(name)));
-    ui.airfoilNameStack->setCurrentWidget(ui.airfoilNameEdit);
-    ui.airfoilNameEdit->selectAll();
-    ui.airfoilNameEdit->setFocus();
-    updatingName_ = false;
-  }
-
-  void commitNameEdit() {
-    if (updatingName_ ||
-        ui.airfoilNameStack->currentWidget() != ui.airfoilNameEdit) {
+    const QString current = QString::fromStdString(
+        std::string(model_.geometry()->name()));
+    bool accepted = false;
+    const QString name = QInputDialog::getText(
+        owner_, QStringLiteral("Rename geometry"),
+        QStringLiteral("Airfoil name:"), QLineEdit::Normal, current,
+        &accepted);
+    if (!accepted) {
       return;
     }
-    const QString name = ui.airfoilNameEdit->text().trimmed();
-    const QString current =
-        model_.geometry().has_value()
-            ? QString::fromStdString(
-                  std::string(model_.geometry()->name()))
-            : QString();
-    updatingName_ = true;
-    ui.airfoilNameStack->setCurrentWidget(ui.airfoilNameDisplayLabel);
-    updatingName_ = false;
-    if (name == current) {
+    const QString trimmed = name.trimmed();
+    if (trimmed == current) {
       return;
     }
-    model_.renameGeometry(name.toStdString());
+    model_.renameGeometry(trimmed.toStdString());
     refreshUi();
     Q_EMIT owner_->geometryChanged();
-  }
-
-  void cancelNameEdit() {
-    updatingName_ = true;
-    ui.airfoilNameStack->setCurrentWidget(ui.airfoilNameDisplayLabel);
-    refreshUi();
-    updatingName_ = false;
   }
 
   void compactDefinitionLayouts() {
@@ -1932,7 +2153,7 @@ class XFoilWidget::Impl {
          {ui.panelingBasicForm, ui.panelingExpertForm,
           ui.conditionBasicForm, ui.conditionExpertForm,
           ui.alphaPointPageForm, ui.alphaSequencePageForm,
-          ui.clPointPageForm, ui.clSequencePageForm, ui.geometryForm}) {
+          ui.clPointPageForm, ui.clSequencePageForm}) {
       form->setContentsMargins(2, 2, 2, 2);
       form->setVerticalSpacing(2);
       form->setHorizontalSpacing(6);
@@ -1944,6 +2165,24 @@ class XFoilWidget::Impl {
       layout->setContentsMargins(4, 4, 4, 4);
       layout->setSpacing(3);
     }
+    for (QGroupBox* group :
+         {ui.geometryGroup, ui.panelingGroup, ui.operatingGroup,
+          ui.targetGroup}) {
+      QSizePolicy policy = group->sizePolicy();
+      policy.setVerticalPolicy(QSizePolicy::Maximum);
+      group->setSizePolicy(policy);
+      ui.definitionsRowLayout->setAlignment(group, Qt::AlignTop);
+    }
+    ui.geometryBodyLayout->setStretch(0, 0);
+    ui.geometryBodyLayout->setStretch(1, 1);
+    const auto limitVertical = [](QWidget* widget) {
+      QSizePolicy policy = widget->sizePolicy();
+      policy.setVerticalPolicy(QSizePolicy::Maximum);
+      widget->setSizePolicy(policy);
+    };
+    limitVertical(ui.definitionsFrame);
+    limitVertical(ui.definitionsScrollArea);
+    limitVertical(ui.definitionsRow);
     ui.resultsColumnLayout->setContentsMargins(2, 2, 2, 2);
     ui.resultsColumnLayout->setSpacing(4);
     ui.resultMatrixLayout->setContentsMargins(2, 2, 2, 2);
@@ -1952,6 +2191,29 @@ class XFoilWidget::Impl {
                                     QSizePolicy::Ignored);
   }
 
+ public:
+  void updateDefinitionHeightLimits() {
+    const int definitionsHeight = ui.definitionsRow->sizeHint().height();
+    if (definitionsHeight <= 0) {
+      return;
+    }
+    ui.definitionsRow->setMaximumHeight(definitionsHeight);
+    ui.definitionsScrollArea->setMaximumHeight(definitionsHeight);
+    const QMargins frameMargins =
+        ui.definitionsFrameLayout->contentsMargins();
+    const int frameHeight =
+        definitionsHeight + frameMargins.top() + frameMargins.bottom() +
+        2 * ui.definitionsFrame->frameWidth();
+    ui.definitionsFrame->setMaximumHeight(frameHeight);
+    const QList<int> sizes = ui.mainSplitter->sizes();
+    if (sizes.size() == 2) {
+      const int total = sizes.at(0) + sizes.at(1);
+      ui.mainSplitter->setSizes(
+          {frameHeight, std::max(0, total - frameHeight)});
+    }
+  }
+
+ private:
   void configureGeometryControlWidths() {
     const QFontMetrics metrics(ui.nacaDesignationEdit->font());
     const int width =
@@ -1984,6 +2246,7 @@ class XFoilWidget::Impl {
   }
 
   void applyGeometryFromControls() {
+    geometryDraftDirty_ = false;
     const GeometrySource source = geometrySourceFromControls();
     if (source != GeometrySource::naca &&
         source != GeometrySource::nacs) {
@@ -1993,6 +2256,44 @@ class XFoilWidget::Impl {
     const std::string designation =
         ui.nacaDesignationEdit->text().trimmed().toStdString();
     (void)setNaca(designation, source == GeometrySource::nacs);
+  }
+
+  void discardGeometryDraft() {
+    if (!geometryDraftDirty_) {
+      return;
+    }
+
+    const QSignalBlocker blocker(ui.nacaDesignationEdit);
+    ui.nacaDesignationEdit->setText(
+        QString::fromStdString(model_.designation()));
+    geometryDraftDirty_ = false;
+  }
+
+  void scheduleGeometryDraftDiscard() {
+    if (!geometryDraftDirty_ || geometryDraftDiscardCheckPending_) {
+      return;
+    }
+
+    geometryDraftDiscardCheckPending_ = true;
+    QMetaObject::invokeMethod(
+        owner_,
+        [this]() {
+          geometryDraftDiscardCheckPending_ = false;
+          discardGeometryDraftUnlessActiveFocus();
+        },
+        Qt::QueuedConnection);
+  }
+
+  void discardGeometryDraftUnlessActiveFocus() {
+    if (!geometryDraftDirty_) {
+      return;
+    }
+
+    QWidget* focus = owner_->focusWidget();
+    if (focus == ui.nacaDesignationEdit || focus == ui.applyGeometryButton) {
+      return;
+    }
+    discardGeometryDraft();
   }
 
   void panelingControlsChanged() {
@@ -2088,9 +2389,6 @@ class XFoilWidget::Impl {
 
   void updateGeometryControls() {
     updatingControls_ = true;
-    updatingName_ = true;
-    ui.airfoilNameStack->setCurrentWidget(ui.airfoilNameDisplayLabel);
-    updatingName_ = false;
     const GeometrySource source = model_.geometrySource();
     setGeometrySourceRadios(source);
     {
@@ -2099,6 +2397,7 @@ class XFoilWidget::Impl {
           QString::fromStdString(model_.designation()));
     }
     updatingControls_ = false;
+    geometryDraftDirty_ = false;
     updateGeometrySourceControls();
   }
 
@@ -2734,7 +3033,7 @@ class XFoilWidget::Impl {
       ui.cpAlphaPlot->clear();
       ui.cfAlphaPlot->clear();
     }
-    refreshComparisonPlots(false);
+    refreshComparisonPlots(fitPlots);
     refreshReportView();
     refreshUi();
     Q_EMIT owner_->resultSelectionChanged();
@@ -2744,7 +3043,7 @@ class XFoilWidget::Impl {
     if (!selectionModel_.select(sourceIndex)) {
       return;
     }
-    refreshResultPresentation(false);
+    refreshResultPresentation(true);
   }
 
   void operatingPointChanged(int index) {
@@ -2754,7 +3053,7 @@ class XFoilWidget::Impl {
     const std::size_t sourceIndex = static_cast<std::size_t>(
         ui.operatingPointCombo->itemData(index).toULongLong());
     if (selectionModel_.select(sourceIndex)) {
-      refreshResultPresentation(false);
+      refreshResultPresentation(true);
     }
   }
 
@@ -2765,7 +3064,7 @@ class XFoilWidget::Impl {
     const std::size_t sourceIndex = static_cast<std::size_t>(
         ui.deactivatePointCombo->itemData(index).toULongLong());
     if (selectionModel_.deactivate(sourceIndex)) {
-      refreshResultPresentation(false);
+      refreshResultPresentation(true);
     } else {
       refreshPointSelection();
     }
@@ -2778,7 +3077,7 @@ class XFoilWidget::Impl {
     const std::size_t sourceIndex = static_cast<std::size_t>(
         ui.activatePointCombo->itemData(index).toULongLong());
     if (selectionModel_.activate(sourceIndex)) {
-      refreshResultPresentation(false);
+      refreshResultPresentation(true);
     } else {
       refreshPointSelection();
     }
@@ -2790,6 +3089,7 @@ class XFoilWidget::Impl {
     const bool running = tracker_.isRunning();
 
     ui.analysisStatusLabel->setText(analysisStatusText_);
+    ui.analysisCurrentPointLabel->setText(analysisCurrentPointText_);
     ui.analysisIterationLabel->setText(analysisIterationText_);
     ui.analysisProgressBar->setAccessibleDescription(analysisStatusText_);
 
@@ -2883,18 +3183,16 @@ class XFoilWidget::Impl {
     }
     refreshProgressBar();
 
+    QString displayName = QStringLiteral("no geometry");
     if (model_.geometry().has_value()) {
       const std::string_view name = model_.geometry()->name();
-      const QString displayName =
+      displayName =
           name.empty()
               ? QStringLiteral("Unnamed geometry")
               : QString::fromStdString(std::string(name));
-      if (!updatingName_) {
-        ui.airfoilNameDisplayLabel->setText(displayName);
-      }
-    } else if (!updatingName_) {
-      ui.airfoilNameDisplayLabel->setText(QStringLiteral("No geometry"));
     }
+    ui.geometryGroup->setTitle(
+        QStringLiteral("Geometry: %1").arg(displayName));
     if (geometryImportNotice_) {
       ui.geometryImportNoticeLabel->setText(QStringLiteral(
           "Clockwise point order detected and reversed to "
@@ -2927,7 +3225,9 @@ class XFoilWidget::Impl {
   XFoilWidget* owner_{};
   Ui::XFoilWidget ui;
   QButtonGroup* geometrySourceButtonGroup_{nullptr};
-  GeometryNameActivationFilter* nameFilter_{nullptr};
+  GeometryTitleActivationFilter* nameFilter_{nullptr};
+  GeometryDraftDiscardFilter* geometryDraftFilter_{nullptr};
+  QStyle* geometryTitleStyle_{nullptr};
   GuiDefinitionModel model_;
   GuiResultSelectionModel selectionModel_;
   GuiResultSummary summary_;
@@ -2939,6 +3239,7 @@ class XFoilWidget::Impl {
   std::shared_ptr<CancellationToken> activeToken_;
   std::optional<OperatingPointData> currentOperatingPoint_;
   std::optional<DetailedSequenceResult> currentSequence_;
+  std::optional<GuiAnalysisRequest> currentAnalysisRequest_;
   std::vector<QString> analysisDiagnostics_;
   std::optional<double> progressFraction_;
   std::optional<Error> setupError_;
@@ -2949,8 +3250,10 @@ class XFoilWidget::Impl {
   AnalysisOutcome analysisOutcome_{AnalysisOutcome::none};
   QString analysisStatusText_{QStringLiteral("Idle")};
   QString analysisIterationText_;
+  QString analysisCurrentPointText_;
   bool updatingControls_{false};
-  bool updatingName_{false};
+  bool geometryDraftDirty_{false};
+  bool geometryDraftDiscardCheckPending_{false};
   bool geometryImportNotice_{false};
   bool workerReady_{false};
   bool shutdown_{false};
@@ -2964,6 +3267,12 @@ XFoilWidget::XFoilWidget(QWidget* parent)
 }
 
 XFoilWidget::~XFoilWidget() = default;
+
+void XFoilWidget::showEvent(QShowEvent* event) {
+  QWidget::showEvent(event);
+  QTimer::singleShot(0, this,
+                     [this]() { impl_->updateDefinitionHeightLimits(); });
+}
 
 Result<void> XFoilWidget::setGeometry(
     const geometry::AirfoilGeometry& geometry) {

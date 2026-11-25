@@ -44,6 +44,7 @@
 #include <QPushButton>
 #include <QRegularExpression>
 #include <QScrollArea>
+#include <QSpinBox>
 #include <QSplitter>
 #include <QStringList>
 #include <QTabWidget>
@@ -175,7 +176,7 @@ class GuiResultWorkspaceTests : public QObject {
     QVERIFY(std::abs(middle->width() / static_cast<double>(total) - 0.35) < 0.03);
     QVERIFY(std::abs(right->width() / static_cast<double>(total) - 0.30) < 0.03);
 
-    widget.resize(960, 640);
+    widget.resize(960, 620);
     QCoreApplication::processEvents();
     QVERIFY(right->width() >= right->minimumWidth());
     QVERIFY(left->width() > 0);
@@ -188,7 +189,14 @@ class GuiResultWorkspaceTests : public QObject {
     widget.show();
     QCoreApplication::processEvents();
     auto* splitter = widget.findChild<QSplitter*>("mainSplitter");
+    auto* frame = widget.findChild<QWidget*>("definitionsFrame");
+    auto* scroll =
+        widget.findChild<QScrollArea*>("definitionsScrollArea");
+    auto* row = widget.findChild<QWidget*>("definitionsRow");
     QVERIFY(splitter != nullptr);
+    QVERIFY(frame != nullptr);
+    QVERIFY(scroll != nullptr);
+    QVERIFY(row != nullptr);
     QCOMPARE(splitter->orientation(), Qt::Vertical);
     QCOMPARE(splitter->count(), 2);
     QVERIFY(!splitter->childrenCollapsible());
@@ -196,12 +204,17 @@ class GuiResultWorkspaceTests : public QObject {
              QStringLiteral("definitionsFrame"));
     QCOMPARE(splitter->widget(1)->objectName(),
              QStringLiteral("resultWorkspace"));
-    QCOMPARE(splitter->sizes().at(0), 270);
+    const int frameHeight = frame->sizeHint().height();
+    QCOMPARE(frame->maximumHeight(), frameHeight);
+    QCOMPARE(frame->height(), frameHeight);
+    QCOMPARE(scroll->height(), row->sizeHint().height());
+    QCOMPARE(row->height(), row->sizeHint().height());
+    QCOMPARE(splitter->sizes().at(0), frameHeight);
     QVERIFY(splitter->sizes().at(1) >= 429);
 
     widget.resize(1280, 900);
     QCoreApplication::processEvents();
-    QCOMPARE(splitter->sizes().at(0), 270);
+    QCOMPARE(splitter->sizes().at(0), frameHeight);
     QVERIFY(splitter->sizes().at(1) > 429);
   }
 
@@ -229,7 +242,7 @@ class GuiResultWorkspaceTests : public QObject {
     QVERIFY(conditions != nullptr);
     QVERIFY(target != nullptr);
     QCOMPARE(conditions->height(), target->height());
-    QVERIFY(paneling->height() < conditions->height());
+    QVERIFY(paneling->height() > conditions->height());
     const int frame = 2 * paneling->style()->pixelMetric(
                                 QStyle::PM_DefaultFrameWidth, nullptr, paneling);
     const int expectedPanelingHeight =
@@ -245,13 +258,23 @@ class GuiResultWorkspaceTests : public QObject {
     QCOMPARE(target->tabText(3), QStringLiteral("CL Sequence"));
 
     auto* ncrit = widget.findChild<QDoubleSpinBox*>("ncritSpin");
+    auto* iterations = widget.findChild<QSpinBox*>("iterationsSpin");
     auto* expert = widget.findChild<QWidget*>("conditionExpertPage");
     auto* basic = widget.findChild<QWidget*>("conditionBasicPage");
     QVERIFY(ncrit != nullptr);
+    QVERIFY(iterations != nullptr);
     QVERIFY(expert != nullptr);
     QVERIFY(basic != nullptr);
     QVERIFY(expert->isAncestorOf(ncrit));
     QVERIFY(!basic->isAncestorOf(ncrit));
+    QVERIFY(expert->isAncestorOf(iterations));
+    QVERIFY(!basic->isAncestorOf(iterations));
+    auto* limitsRow = ncrit->parentWidget();
+    QVERIFY(limitsRow != nullptr);
+    QCOMPARE(limitsRow->objectName(), QStringLiteral("expertLimitsRow"));
+    QCOMPARE(iterations->parentWidget(), limitsRow);
+    QVERIFY(ncrit->maximumWidth() <= 80);
+    QVERIFY(iterations->maximumWidth() <= 80);
   }
 
   void resultsColumnContainsMatrixAndInfoTabs() {
@@ -305,23 +328,23 @@ class GuiResultWorkspaceTests : public QObject {
     XFoilWidget widget;
     auto* tabs = widget.findChild<QTabWidget*>("resultPlotTabs");
     QVERIFY(tabs != nullptr);
-    QCOMPARE(tabs->count(), 8);
+    QCOMPARE(tabs->count(), 7);
     const QStringList titles = {
         QStringLiteral("CL(α)"), QStringLiteral("CL(CD)"),
         QStringLiteral("CM(α)"), QStringLiteral("CM(CL)"),
         QStringLiteral("CL/CD(CL)"), QStringLiteral("Cp"),
-        QStringLiteral("Cf"), QStringLiteral("Report")};
+        QStringLiteral("Cf")};
     const QStringList pages = {
         QStringLiteral("clAlphaPage"), QStringLiteral("clCdPage"),
         QStringLiteral("cmAlphaPage"), QStringLiteral("cmClPage"),
         QStringLiteral("efficiencyClPage"), QStringLiteral("cpAlphaPage"),
-        QStringLiteral("cfAlphaPage"), QStringLiteral("reportPage")};
+        QStringLiteral("cfAlphaPage")};
     const QStringList plots = {
         QStringLiteral("clAlphaPlot"), QStringLiteral("clCdPlot"),
         QStringLiteral("cmAlphaPlot"), QStringLiteral("cmClPlot"),
         QStringLiteral("efficiencyClPlot"), QStringLiteral("cpAlphaPlot"),
         QStringLiteral("cfAlphaPlot")};
-    for (int index = 0; index < 8; ++index) {
+    for (int index = 0; index < 7; ++index) {
       QCOMPARE(tabs->tabText(index), titles.at(index));
       QCOMPARE(tabs->widget(index)->objectName(), pages.at(index));
     }
@@ -414,10 +437,16 @@ class GuiResultWorkspaceTests : public QObject {
              QStringLiteral("No setup diagnostics"));
     auto* tabs = widget.findChild<QTabWidget*>("resultInfoTabs");
     QVERIFY(tabs != nullptr);
-    QCOMPARE(tabs->count(), 2);
+    QCOMPARE(tabs->count(), 3);
     QCOMPARE(tabs->tabText(0), QStringLiteral("Diagnostics"));
-    QCOMPARE(tabs->tabText(1), QStringLiteral("Comparison Polars"));
+    QCOMPARE(tabs->tabText(1), QStringLiteral("Report"));
+    QCOMPARE(tabs->tabText(2), QStringLiteral("Comparison Polars"));
     QCOMPARE(tabs->currentIndex(), 0);
+    auto* report = widget.findChild<QPlainTextEdit*>("reportView");
+    QVERIFY(report != nullptr);
+    QVERIFY(tabs->isAncestorOf(report));
+    QCOMPARE(tabs->widget(1)->objectName(), QStringLiteral("reportPage"));
+    QVERIFY(report->isReadOnly());
 
     auto* analyze = widget.findChild<QPushButton*>("analyzeButton");
     QVERIFY(analyze != nullptr);

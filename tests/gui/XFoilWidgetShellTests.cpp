@@ -145,14 +145,13 @@ class XFoilWidgetShellTests : public QObject {
     QVERIFY(widget.findChild<QPushButton*>("analyzeButton") != nullptr);
     QVERIFY(widget.findChild<QPushButton*>("cancelButton") == nullptr);
     QVERIFY(widget.findChild<QProgressBar*>("analysisProgressBar") != nullptr);
+    QVERIFY(widget.findChild<QLabel*>("analysisCurrentPointLabel") != nullptr);
     QVERIFY(widget.findChild<QLabel*>("analysisStatusLabel") != nullptr);
     QVERIFY(widget.findChild<QLabel*>("statusLabel") == nullptr);
     QVERIFY(widget.findChild<QLabel*>("workflowStateLabel") == nullptr);
     QVERIFY(widget.findChild<QRadioButton*>("geometryImportRadio") != nullptr);
     QVERIFY(widget.findChild<QRadioButton*>("geometryNacaRadio") != nullptr);
     QVERIFY(widget.findChild<QRadioButton*>("geometryNacsRadio") != nullptr);
-    QVERIFY(widget.findChild<QLabel*>("airfoilNameDisplayLabel") != nullptr);
-    QVERIFY(widget.findChild<QLineEdit*>("airfoilNameEdit") != nullptr);
     QVERIFY(widget.findChild<QLabel*>("geometryImportNoticeLabel") != nullptr);
     QVERIFY(widget.findChild<QTabWidget*>("analysisTargetTabs") != nullptr);
     QVERIFY(widget.findChild<QLabel*>("targetStatusLabel") == nullptr);
@@ -170,20 +169,18 @@ class XFoilWidgetShellTests : public QObject {
 
     QTabWidget* tabs = widget.findChild<QTabWidget*>("resultPlotTabs");
     QVERIFY(tabs != nullptr);
-    QCOMPARE(tabs->count(), 8);
+    QCOMPARE(tabs->count(), 7);
     QVERIFY(widget.findChild<QPlainTextEdit*>("reportView") != nullptr);
   }
 
   void g2StructureUsesSemanticNamesAndPromotedPlot() {
     XFoilWidget widget;
     const QStringList required = {
-        QStringLiteral("geometryTitleLabel"),
+        QStringLiteral("geometryGroup"),
         QStringLiteral("geometryImportRadio"),
         QStringLiteral("loadAirfoilButton"),
         QStringLiteral("geometryNacaRadio"),
         QStringLiteral("geometryNacsRadio"),
-        QStringLiteral("airfoilNameDisplayLabel"),
-        QStringLiteral("airfoilNameEdit"),
         QStringLiteral("geometryImportNoticeLabel"),
         QStringLiteral("nacaDesignationEdit"),
         QStringLiteral("applyGeometryButton"),
@@ -211,6 +208,7 @@ class XFoilWidgetShellTests : public QObject {
         QStringLiteral("setupDiagnosticsView"),
         QStringLiteral("analyzeButton"),
         QStringLiteral("analysisProgressBar"),
+        QStringLiteral("analysisCurrentPointLabel"),
         QStringLiteral("analysisIterationLabel"),
         QStringLiteral("analysisStatusLabel"),
         QStringLiteral("resultInfoTabs"),

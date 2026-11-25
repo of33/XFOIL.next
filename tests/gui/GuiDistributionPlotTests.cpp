@@ -200,10 +200,16 @@ class GuiDistributionPlotTests : public QObject {
     QVERIFY(!second.sampleMarkersEnabled());
     QCOMPARE(plot->graph(0)->scatterStyle().shape(),
              QCPScatterStyle::ssCircle);
+    QCOMPARE(plot->graph(1)->scatterStyle().shape(),
+             QCPScatterStyle::ssCircle);
+    QCOMPARE(plot->graph(1)->scatterStyle().pen().color(),
+             QColor(198, 93, 27));
     QTest::mouseClick(plot, Qt::RightButton, Qt::ControlModifier,
                       QPoint(100, 100));
     QVERIFY(!first.sampleMarkersEnabled());
     QCOMPARE(plot->graph(0)->scatterStyle().shape(),
+             QCPScatterStyle::ssNone);
+    QCOMPARE(plot->graph(1)->scatterStyle().shape(),
              QCPScatterStyle::ssNone);
   }
 

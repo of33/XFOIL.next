@@ -55,6 +55,7 @@
 #include "xfoil/gui/GuiState.h"
 
 class QAction;
+class QShowEvent;
 
 namespace xfoil::gui {
 
@@ -201,6 +202,9 @@ class XFOIL_GUI_API XFoilWidget : public QWidget {
   void sequenceReady(xfoil::DetailedSequenceResult sequence);
   void analysisCancelled();
   void analysisFailed(xfoil::Error error);
+
+ protected:
+  void showEvent(QShowEvent* event) override;
 
  private:
   class Impl;

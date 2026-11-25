@@ -31,7 +31,6 @@
 
 #include <QWidget>
 
-#include <functional>
 #include <vector>
 
 #include "xfoil/AnalysisData.h"
@@ -58,14 +57,13 @@ class GeometryPlotView : public QWidget {
   void setPanelGeometry(const SurfaceGeometry& panel);
   void setShowPaneling(bool visible);
   void showPanelNodes(bool visible);
-  void setPanelingToggleCallback(std::function<void(bool)> callback);
   void clearPanel();
   void clear();
   void fitVisibleData();
 
   [[nodiscard]]
   bool sampleMarkersEnabled() const noexcept {
-    return showPaneling_;
+    return sampleMarkersEnabled_;
   }
   void setSampleMarkersEnabled(bool enabled);
 
@@ -108,13 +106,13 @@ class GeometryPlotView : public QWidget {
   QCPCurve* panelContour_{};
   QCPCurve* panelTicks_{};
   InteractivePlotController* interaction_{};
-  std::function<void(bool)> panelingToggleCallback_;
   std::vector<xfoil::Point2D> panelPoints_;
   std::size_t geometryPointCount_{0};
   std::size_t panelPointCount_{0};
   std::size_t panelTickCount_{0};
   bool panelTicksVisible_{true};
   bool showPaneling_{false};
+  bool sampleMarkersEnabled_{false};
   bool hasGeometry_{false};
   bool hasPanel_{false};
   double xMinimum_{0.0};

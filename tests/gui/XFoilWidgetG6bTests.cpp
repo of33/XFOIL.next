@@ -561,7 +561,9 @@ class XFoilWidgetG6bTests : public QObject {
 
   void minimumSizeKeepsDefinitionsReadableWithoutClipping() {
     XFoilWidget widget;
-    widget.resize(960, 640);
+    QCOMPARE(widget.minimumWidth(), 960);
+    QCOMPARE(widget.minimumHeight(), 620);
+    widget.resize(960, 620);
     widget.show();
     QCoreApplication::processEvents();
     auto* scroll = child<QScrollArea>(widget, "definitionsScrollArea");
@@ -605,21 +607,37 @@ class XFoilWidgetG6bTests : public QObject {
     auto* view = static_cast<xfoil::gui::GeometryPlotView*>(
         child<QWidget>(widget, "airfoilPlot"));
     QVERIFY(!view->showPaneling());
+    QVERIFY(!view->sampleMarkersEnabled());
     auto* plot = view->findChild<QCustomPlot*>();
     QVERIFY(plot != nullptr);
+    auto* geometryContour = plot->findChild<QCPCurve*>("geometryContour");
     auto* contour = plot->findChild<QCPCurve*>("panelContour");
     auto* ticks = plot->findChild<QCPCurve*>("panelTicks");
     QVERIFY(contour != nullptr && ticks != nullptr);
+    QVERIFY(geometryContour != nullptr);
     QVERIFY(plot->findChild<QCPGraph*>("panelNodes") == nullptr);
     QVERIFY(!contour->visible());
     QVERIFY(!ticks->visible());
+    QCOMPARE(geometryContour->scatterStyle().shape(), QCPScatterStyle::ssNone);
 
     QTest::mouseClick(plot, Qt::RightButton, Qt::ControlModifier,
                       plot->axisRect()->rect().center());
-    QVERIFY(widget.viewOptions().showPaneling);
-    QVERIFY(check(widget, "showPanelingCheckBox")->isChecked());
-    QVERIFY(contour->visible());
-    QVERIFY(ticks->visible());
+    QVERIFY(view->sampleMarkersEnabled());
+    QCOMPARE(geometryContour->scatterStyle().shape(),
+             QCPScatterStyle::ssCircle);
+    QVERIFY(!widget.viewOptions().showPaneling);
+    QVERIFY(!check(widget, "showPanelingCheckBox")->isChecked());
+    QVERIFY(!contour->visible());
+    QVERIFY(!ticks->visible());
+    QCOMPARE(geometry.count(), 0);
+    QCOMPARE(paneling.count(), 0);
+    QCOMPARE(configuration.count(), 0);
+    QCOMPARE(target.count(), 0);
+
+    QTest::mouseClick(plot, Qt::RightButton, Qt::ControlModifier,
+                      plot->axisRect()->rect().center());
+    QVERIFY(!view->sampleMarkersEnabled());
+    QCOMPARE(geometryContour->scatterStyle().shape(), QCPScatterStyle::ssNone);
 
     AnalysisWorkflowViewOptions options;
     options.showPaneling = true;
@@ -666,7 +684,7 @@ class XFoilWidgetG6bTests : public QObject {
              panelTabs->tabBar()->sizeHint().height() +
                  panelTabs->widget(1)->sizeHint().height() + frame + 2);
     QCOMPARE(condTabs->height(), targetTabs->height());
-    QVERIFY(panelTabs->height() < condTabs->height());
+    QVERIFY(panelTabs->height() > condTabs->height());
     QVERIFY(load->width() >= 110 && load->width() <= 130);
     QVERIFY(designation->width() >= 80 && designation->width() <= 150);
     QCOMPARE(spin(widget, "reynoldsSpin")->value(), 500000.0);

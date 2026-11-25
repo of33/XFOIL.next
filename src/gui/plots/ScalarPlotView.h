@@ -82,6 +82,7 @@ class ScalarPlotView : public QWidget {
                       bool fitData = false);
   void setSelectionCallback(std::function<void(std::size_t)> callback);
   void fitVisibleData();
+  void ensureVisibleData();
 
   [[nodiscard]]
   std::size_t visiblePointCount() const noexcept;
@@ -110,6 +111,15 @@ class ScalarPlotView : public QWidget {
     bool converged{false};
   };
 
+  struct DataBounds {
+    double xMin{};
+    double xMax{};
+    double yMin{};
+    double yMax{};
+  };
+
+  [[nodiscard]]
+  std::optional<DataBounds> visibleDataBounds() const;
   void updateGraphs();
   void handleClick(const QPoint& position);
   [[nodiscard]]

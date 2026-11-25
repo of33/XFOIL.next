@@ -333,7 +333,7 @@ class GuiPlotInteractionTests : public QObject {
     QCOMPARE(bar->value(), before);
   }
 
-  void geometryCtrlRightTogglesPanelTicksOnly() {
+  void geometryCtrlRightTogglesSampleMarkersOnly() {
     GeometryPlotView view;
     view.resize(640, 480);
     view.show();
@@ -355,16 +355,19 @@ class GuiPlotInteractionTests : public QObject {
         plot->findChild<QCPCurve*>(QStringLiteral("panelTicks"));
     QVERIFY(contour != nullptr);
     QVERIFY(ticks != nullptr);
+    QVERIFY(!view.sampleMarkersEnabled());
     QCOMPARE(contour->scatterStyle().shape(), QCPScatterStyle::ssNone);
+    QVERIFY(view.showPaneling());
     QVERIFY(ticks->visible());
 
     sendMouse(plot, QEvent::MouseButtonPress, center, Qt::RightButton,
               Qt::RightButton, Qt::ControlModifier);
     sendMouse(plot, QEvent::MouseButtonRelease, center, Qt::RightButton,
               Qt::NoButton, Qt::ControlModifier);
-    QVERIFY(!view.showPaneling());
-    QVERIFY(!ticks->visible());
-    QCOMPARE(contour->scatterStyle().shape(), QCPScatterStyle::ssNone);
+    QVERIFY(view.sampleMarkersEnabled());
+    QCOMPARE(contour->scatterStyle().shape(), QCPScatterStyle::ssCircle);
+    QVERIFY(view.showPaneling());
+    QVERIFY(ticks->visible());
     QCOMPARE(plot->xAxis->range().lower, beforeX.lower);
     QCOMPARE(plot->xAxis->range().upper, beforeX.upper);
 
@@ -372,9 +375,12 @@ class GuiPlotInteractionTests : public QObject {
               Qt::RightButton, Qt::ControlModifier);
     sendMouse(plot, QEvent::MouseButtonRelease, center, Qt::RightButton,
               Qt::NoButton, Qt::ControlModifier);
+    QVERIFY(!view.sampleMarkersEnabled());
+    QCOMPARE(contour->scatterStyle().shape(), QCPScatterStyle::ssNone);
     QVERIFY(view.showPaneling());
     QVERIFY(ticks->visible());
-    QCOMPARE(contour->scatterStyle().shape(), QCPScatterStyle::ssNone);
+    QCOMPARE(plot->xAxis->range().lower, beforeX.lower);
+    QCOMPARE(plot->xAxis->range().upper, beforeX.upper);
   }
 
   void instancesAreIndependent() {

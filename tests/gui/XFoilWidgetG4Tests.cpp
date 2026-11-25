@@ -256,7 +256,11 @@ class XFoilWidgetG4Tests : public QObject {
     QCOMPARE(activate->count(), 1);
     QCOMPARE(operating->currentData().toULongLong(), qulonglong{0});
     QVERIFY(clMax->text() != unfilteredClMax);
+    auto* clCanvas = scalar(widget, "clAlphaPlot")->findChild<QCustomPlot*>();
+    QVERIFY(clCanvas != nullptr);
+    QVERIFY(!clCanvas->xAxis->range().contains(2.0));
     activate->setCurrentIndex(0);
+    QVERIFY(clCanvas->xAxis->range().contains(2.0));
     QCOMPARE(operating->count(), 3);
     QCOMPARE(activate->count(), 0);
     QCOMPARE(clMax->text(), unfilteredClMax);
@@ -312,15 +316,38 @@ class XFoilWidgetG4Tests : public QObject {
              QStringLiteral("n/a"));
   }
 
-  void setupChangeClearsResultsAndPlots() {
+  void targetChangeKeepsResultsUntilNextAnalysis() {
     XFoilWidget widget;
     configureSequence(widget, 3.0);
+    QSignalSpy started(&widget, &XFoilWidget::analysisStarted);
     widget.analyze();
     QTRY_VERIFY_WITH_TIMEOUT(!widget.isRunning(), 30000);
+    QCOMPARE(started.count(), 1);
     QCOMPARE(combo(widget, "operatingPointCombo")->count(), 3);
     QVERIFY(scalar(widget, "clAlphaPlot")->visiblePointCount() > 0);
 
+    const QString previousCl =
+        widget.findChild<QLabel*>("clValue")->text();
+    QVERIFY(previousCl != QStringLiteral("n/a"));
+    const std::size_t previousPointCount =
+        static_cast<std::size_t>(
+            scalar(widget, "clAlphaPlot")->visiblePointCount());
+    const std::size_t previousCpCount =
+        static_cast<std::size_t>(
+            distribution(widget, "cpPlot")->upperPointCount());
+    QVERIFY(previousCpCount > 0);
+
     widget.setTarget(AlphaTarget{Degrees{2.0}});
+    QCOMPARE(combo(widget, "operatingPointCombo")->count(), 3);
+    QCOMPARE(scalar(widget, "clAlphaPlot")->visiblePointCount(),
+             previousPointCount);
+    QCOMPARE(widget.findChild<QLabel*>("clValue")->text(), previousCl);
+    QCOMPARE(distribution(widget, "cpPlot")->upperPointCount(),
+             previousCpCount);
+    QVERIFY(widget.state() == XFoilGuiState::results);
+
+    widget.analyze();
+    QVERIFY(widget.isRunning());
     QCOMPARE(combo(widget, "operatingPointCombo")->count(), 0);
     QCOMPARE(scalar(widget, "clAlphaPlot")->visiblePointCount(),
              std::size_t{0});
@@ -328,6 +355,13 @@ class XFoilWidgetG4Tests : public QObject {
              QStringLiteral("n/a"));
     QCOMPARE(distribution(widget, "cpPlot")->upperPointCount(),
              std::size_t{0});
+    QTRY_VERIFY_WITH_TIMEOUT(!widget.isRunning(), 30000);
+    QCOMPARE(started.count(), 2);
+    QVERIFY(widget.state() == XFoilGuiState::results);
+    QCOMPARE(combo(widget, "operatingPointCombo")->count(), 1);
+    QVERIFY(scalar(widget, "clAlphaPlot")->visiblePointCount() > 0);
+    QVERIFY(widget.findChild<QLabel*>("clValue")->text() !=
+            QStringLiteral("n/a"));
   }
 };
 

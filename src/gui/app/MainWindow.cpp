@@ -242,8 +242,8 @@ MainWindow::MainWindow(Dependencies dependencies, QWidget* parent)
   }
 
   setWindowTitle(productName() + QStringLiteral(" ") + productVersion());
-  setMinimumSize(1280, 800);
-  resize(1280, 800);
+  setMinimumSize(1280, 720);
+  resize(1280, 720);
   widget_ = new XFoilWidget(this);
   setCentralWidget(widget_);
 

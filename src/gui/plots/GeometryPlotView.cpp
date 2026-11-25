@@ -144,10 +144,8 @@ GeometryPlotView::GeometryPlotView(QWidget* parent) : QWidget(parent) {
   interaction_ = new InteractivePlotController(plot_, false, true, this);
   interaction_->setFitCallback([this]() { fitVisibleData(); });
   interaction_->setMarkerToggleCallback([this]() {
-    setShowPaneling(!showPaneling_);
-    if (panelingToggleCallback_) {
-      panelingToggleCallback_(showPaneling_);
-    }
+    sampleMarkersEnabled_ = interaction_->sampleMarkersEnabled();
+    applySampleMarkers();
   });
   const auto refreshTicks = [this](const QCPRange&) {
     if (!adjustingAxes_) {
@@ -309,11 +307,6 @@ void GeometryPlotView::showPanelNodes(bool visible) {
   plot_->replot();
 }
 
-void GeometryPlotView::setPanelingToggleCallback(
-    std::function<void(bool)> callback) {
-  panelingToggleCallback_ = std::move(callback);
-}
-
 void GeometryPlotView::updatePanelVisibility() {
   panelContour_->setVisible(hasPanel_ && showPaneling_);
   panelTicks_->setVisible(hasPanel_ && showPaneling_ &&
@@ -364,11 +357,20 @@ void GeometryPlotView::fitVisibleData() {
 }
 
 void GeometryPlotView::setSampleMarkersEnabled(bool enabled) {
-  setShowPaneling(enabled);
+  sampleMarkersEnabled_ = enabled;
+  if (interaction_ != nullptr) {
+    interaction_->setSampleMarkersEnabled(enabled);
+  }
+  applySampleMarkers();
 }
 
 void GeometryPlotView::applySampleMarkers() {
-  updatePanelVisibility();
+  geometryContour_->setScatterStyle(
+      sampleMarkersEnabled_
+          ? QCPScatterStyle(QCPScatterStyle::ssCircle,
+                            QPen(geometryContour_->pen().color(), 1.0),
+                            Qt::NoBrush, kSampleMarkerSize)
+          : QCPScatterStyle(QCPScatterStyle::ssNone));
   plot_->replot();
 }
 

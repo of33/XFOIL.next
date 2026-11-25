@@ -383,6 +383,37 @@ class GuiScalarPlotTests : public QObject {
     QCOMPARE(plot->plottableCount(), 5);
   }
 
+  void ensureVisibleDataFitsSelectedPointOutsideCurrentAxes() {
+    ScalarPlotView view;
+    view.setKind(GuiScalarPlotKind::clAlpha);
+    view.resize(640, 480);
+    view.show();
+    QCoreApplication::processEvents();
+
+    const std::vector<GuiPointEntry> points = {
+        point(0, 0.0, 0.0), point(1, 1.0, 0.5),
+        point(2, 5.0, 50.0, 0.02, 0.0, false)};
+    view.setPoints(points, std::size_t{0}, true);
+    QCOMPARE(view.visiblePointCount(), std::size_t{2});
+    QCustomPlot* plot = canvas(view);
+    const QCPRange oldRange = plot->xAxis->range();
+    QVERIFY(!oldRange.contains(5.0));
+
+    view.setPoints(points, std::size_t{2}, false);
+    QCOMPARE(view.visiblePointCount(), std::size_t{3});
+    QVERIFY(!plot->xAxis->range().contains(5.0));
+    QVERIFY(!plot->yAxis->range().contains(50.0));
+
+    view.ensureVisibleData();
+    QVERIFY(plot->xAxis->range().contains(5.0));
+    QVERIFY(plot->yAxis->range().contains(50.0));
+
+    const QCPRange fittedRange = plot->xAxis->range();
+    view.ensureVisibleData();
+    QCOMPARE(plot->xAxis->range().lower, fittedRange.lower);
+    QCOMPARE(plot->xAxis->range().upper, fittedRange.upper);
+  }
+
   void disabledAndUnselectedNcMarkersAreNotClickable() {
     ScalarPlotView view;
     view.setKind(GuiScalarPlotKind::clAlpha);

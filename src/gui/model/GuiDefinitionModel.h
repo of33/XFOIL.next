@@ -170,8 +170,8 @@ class GuiDefinitionModel {
   bool configurationValid_{false};
   AnalysisMode mode_{AnalysisMode::alphaPoint};
   AnalysisTarget target_{AlphaTarget{Degrees{0.0}}};
-  AlphaSequence sequence_{Degrees{0.0}, Degrees{5.0}, Degrees{1.0}};
-  LiftSequence clSequence_{0.0, 1.0, 0.1};
+  AlphaSequence sequence_{Degrees{-5.0}, Degrees{20.0}, Degrees{1.0}};
+  LiftSequence clSequence_{-0.5, 1.5, 0.1};
   std::optional<Error> error_;
   XFoilGuiState state_{XFoilGuiState::empty};
 };

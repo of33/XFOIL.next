@@ -257,26 +257,24 @@ void ScalarPlotView::setSelectionCallback(
   selectionCallback_ = std::move(callback);
 }
 
-void ScalarPlotView::fitVisibleData() {
+std::optional<ScalarPlotView::DataBounds> ScalarPlotView::visibleDataBounds()
+    const {
   bool haveData = false;
-  double xMin = 0.0;
-  double xMax = 0.0;
-  double yMin = 0.0;
-  double yMax = 0.0;
+  DataBounds bounds;
   const auto include = [&](double x, double y) {
     if (!std::isfinite(x) || !std::isfinite(y)) {
       return;
     }
     if (!haveData) {
-      xMin = xMax = x;
-      yMin = yMax = y;
+      bounds.xMin = bounds.xMax = x;
+      bounds.yMin = bounds.yMax = y;
       haveData = true;
       return;
     }
-    xMin = std::min(xMin, x);
-    xMax = std::max(xMax, x);
-    yMin = std::min(yMin, y);
-    yMax = std::max(yMax, y);
+    bounds.xMin = std::min(bounds.xMin, x);
+    bounds.xMax = std::max(bounds.xMax, x);
+    bounds.yMin = std::min(bounds.yMin, y);
+    bounds.yMax = std::max(bounds.yMax, y);
   };
   for (const DisplayPoint& point : visiblePoints_) {
     include(point.x, point.y);
@@ -292,16 +290,46 @@ void ScalarPlotView::fitVisibleData() {
     }
   }
   if (!haveData) {
+    return std::nullopt;
+  }
+  return bounds;
+}
+
+void ScalarPlotView::fitVisibleData() {
+  const std::optional<DataBounds> bounds = visibleDataBounds();
+  if (!bounds.has_value()) {
     return;
   }
-  const double xSpan = std::max(xMax - xMin, 1.0e-6);
-  const double ySpan = std::max(yMax - yMin, 1.0e-6);
+  const double xSpan = std::max(bounds->xMax - bounds->xMin, 1.0e-6);
+  const double ySpan = std::max(bounds->yMax - bounds->yMin, 1.0e-6);
   const double xPadding = xSpan * 0.08 + 1.0e-9;
   const double yPadding = ySpan * 0.08 + 1.0e-9;
-  plot_->xAxis->setRange(xMin - xPadding, xMax + xPadding);
-  plot_->yAxis->setRange(yMin - yPadding, yMax + yPadding);
+  plot_->xAxis->setRange(bounds->xMin - xPadding, bounds->xMax + xPadding);
+  plot_->yAxis->setRange(bounds->yMin - yPadding, bounds->yMax + yPadding);
   if (plot_->axisRect()->width() > 0 && plot_->axisRect()->height() > 0) {
     plot_->replot();
+  }
+}
+
+void ScalarPlotView::ensureVisibleData() {
+  const std::optional<DataBounds> bounds = visibleDataBounds();
+  if (!bounds.has_value()) {
+    return;
+  }
+  const QCPRange xRange = plot_->xAxis->range();
+  const QCPRange yRange = plot_->yAxis->range();
+  const double xEpsilon =
+      std::max(std::abs(xRange.size()) * 1.0e-9, 1.0e-12);
+  const double yEpsilon =
+      std::max(std::abs(yRange.size()) * 1.0e-9, 1.0e-12);
+  const bool insideX =
+      xRange.lower <= bounds->xMin + xEpsilon &&
+      xRange.upper >= bounds->xMax - xEpsilon;
+  const bool insideY =
+      yRange.lower <= bounds->yMin + yEpsilon &&
+      yRange.upper >= bounds->yMax - yEpsilon;
+  if (!insideX || !insideY) {
+    fitVisibleData();
   }
 }
 

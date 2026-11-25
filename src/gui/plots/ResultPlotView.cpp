@@ -328,16 +328,21 @@ void ResultPlotView::applyPresentation() {
 }
 
 void ResultPlotView::applySampleMarkers() {
-  const QCPScatterStyle style =
-      sampleMarkersEnabled_
-          ? QCPScatterStyle(QCPScatterStyle::ssCircle,
-                            QPen(kSampleColor, 1.0), Qt::NoBrush, kSampleMarkerSize)
-          : QCPScatterStyle(QCPScatterStyle::ssNone);
+  const auto styleFor = [this](const QColor& lineColor) {
+    if (!sampleMarkersEnabled_) {
+      return QCPScatterStyle(QCPScatterStyle::ssNone);
+    }
+    const QColor markerColor =
+        lineColor.isValid() ? lineColor : kSampleColor;
+    return QCPScatterStyle(QCPScatterStyle::ssCircle,
+                           QPen(markerColor, 1.0), Qt::NoBrush,
+                           kSampleMarkerSize);
+  };
   if (upperGraph_ != nullptr) {
-    upperGraph_->setScatterStyle(style);
+    upperGraph_->setScatterStyle(styleFor(upperGraph_->pen().color()));
   }
   if (lowerGraph_ != nullptr) {
-    lowerGraph_->setScatterStyle(style);
+    lowerGraph_->setScatterStyle(styleFor(lowerGraph_->pen().color()));
   }
   if (plot_ != nullptr) {
     plot_->replot();
