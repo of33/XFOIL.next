@@ -22,8 +22,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // File: src/gui/app/MainWindow.cpp
-// Thin standalone shell: one XFoilAnalysisWidget, app actions, dialogs, settings,
-// recent files and deferred close. No session or solver logic.
+// Thin standalone shell: a workflow tab host with one Analysis page, app
+// actions, dialogs, settings, recent files and deferred close. No session or
+// solver logic.
 
 #include "app/MainWindow.h"
 
@@ -46,6 +47,7 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <QStatusBar>
+#include <QTabWidget>
 #include <QVBoxLayout>
 #include <QTimer>
 
@@ -246,8 +248,14 @@ MainWindow::MainWindow(Dependencies dependencies, QWidget* parent)
   setWindowTitle(productName() + QStringLiteral(" ") + productVersion());
   setMinimumSize(1280, 720);
   resize(1280, 720);
-  widget_ = new XFoilAnalysisWidget(this);
-  setCentralWidget(widget_);
+  workflowTabs_ = new QTabWidget(this);
+  workflowTabs_->setObjectName(QStringLiteral("workflowTabs"));
+  widget_ = new XFoilAnalysisWidget(workflowTabs_);
+  // Each future workflow page owns its widget and session. This shell exposes
+  // only the Analysis page.
+  workflowTabs_->addTab(widget_, QStringLiteral("Analysis"));
+  workflowTabs_->setCurrentIndex(0);
+  setCentralWidget(workflowTabs_);
 
   connect(widget_, &XFoilAnalysisWidget::airfoilImportRequested, this,
           [this]() { openFileDialog(); });

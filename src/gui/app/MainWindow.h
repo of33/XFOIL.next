@@ -22,8 +22,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // File: src/gui/app/MainWindow.h
-// Thin standalone application shell. Exactly one XFoilAnalysisWidget is the central
-// widget; file dialogs, settings and recent files remain app responsibilities.
+// Thin standalone application shell. The workflowTabs host is the central
+// widget; its single Analysis page owns the XFoilAnalysisWidget. File dialogs,
+// settings and recent files remain app responsibilities.
 
 #pragma once
 
@@ -40,6 +41,7 @@ class QAction;
 class QCloseEvent;
 class QMenu;
 class QSettings;
+class QTabWidget;
 
 namespace xfoil::gui {
 class XFoilAnalysisWidget;
@@ -120,6 +122,7 @@ class MainWindow : public QMainWindow {
   void showInfo(const QString& title, const QString& text) const;
 
   Dependencies dependencies_;
+  QTabWidget* workflowTabs_{};
   XFoilAnalysisWidget* widget_{};
   QAction* loadAirfoilAction_{};
   QAction* saveAirfoilAction_{};

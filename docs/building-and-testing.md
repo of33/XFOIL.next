@@ -121,9 +121,10 @@ make gui-app-release
 The Windows GUI executable is not a supported single-file deployment. Run
 `windeployqt` on the release executable and keep the generated Qt libraries and
 plugin directories next to `xfoil.next-gui.exe` together with the MinGW runtime
-DLLs used by the build. The app is a thin shell
-around exactly one `XFoilAnalysisWidget`: it adds File/Help actions, Open, Save
-Airfoil, DXF export, recent files, QSettings and a cancel-before-close path.
+DLLs used by the build. The app is a thin shell around a single-page workflow
+tab host; its `Analysis` tab contains exactly one `XFoilAnalysisWidget`. It adds
+File/Help actions, Open, Save Airfoil, DXF export, recent files, QSettings and a
+cancel-before-close path.
 No solver, session or command-interpreter logic is duplicated in the shell.
 
 Run the GUI targets sequentially. The current analysis surface owns memory,
