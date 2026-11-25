@@ -49,8 +49,24 @@ WINDOWS = load("package_gui_windows",
                GUI / "windows/package_gui_windows.py")
 CHECK_ZIP = load("check_gui_windows",
                  GUI / "windows/check_gui_windows.py")
+ICONS = load("icon_checks", GUI / "icon_checks.py")
 
 REQUIRED = set(WINDOWS.REQUIRED_FILES)
+OLD_PNG_SHA256 = "a04555590ece3c54a6ed19972725684064311bbc2b55157868be6bb8ab228dea"
+OLD_ICO_SHA256 = "5cb06f57a12a0f65cad644a02e0a98f6f34694259ef9800d1062c66887b46951"
+
+
+def fake_pe(subsystem=2):
+    import struct
+    data = bytearray(512)
+    data[:2] = b"MZ"
+    struct.pack_into("<I", data, 0x3C, 0x80)
+    data[0x80:0x84] = b"PE\0\0"
+    struct.pack_into("<H", data, 0x84, 0x8664)
+    struct.pack_into("<H", data, 0x80 + 24, 0x20B)
+    struct.pack_into("<H", data, 0x80 + 24 + 68, subsystem)
+    data[0x100:0x10D] = b"1.2.1\x00Analysis"
+    return bytes(data)
 
 
 def fill_required(root):
@@ -58,7 +74,7 @@ def fill_required(root):
         path = root / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         if relative == "xfoil.next-gui.exe":
-            path.write_bytes(b"MZ1.2.1\x00Analysis")
+            path.write_bytes(fake_pe())
         else:
             path.write_bytes(b"test\n")
 
@@ -85,6 +101,57 @@ class ToolTests(unittest.TestCase):
             expected = {
                 "tool.AppImage": hashlib.sha256(b"pinned").hexdigest()}
             self.assertEqual(TOOLS.verify_tools(temp, expected), pathlib.Path(temp))
+
+
+class IconTests(unittest.TestCase):
+    def test_corrected_png_and_ico(self):
+        png = ROOT / "resources/gui/xfoil-next-icon.png"
+        ico = ROOT / "resources/gui/xfoil-next-icon.ico"
+        png_info, sizes = ICONS.check_pair(png, ico)
+        self.assertEqual(png_info[:2], (512, 512))
+        self.assertEqual({(w, h) for w, h in sizes}, set(ICONS.ICO_SIZES))
+        self.assertNotEqual(
+            hashlib.sha256(png.read_bytes()).hexdigest(), OLD_PNG_SHA256)
+        self.assertNotEqual(
+            hashlib.sha256(ico.read_bytes()).hexdigest(), OLD_ICO_SHA256)
+
+    def test_installer_scripts_have_no_network_or_absolute_dev_paths(self):
+        ps = (GUI / "windows/Install-XFOIL.next-GUI.ps1").read_text(
+            encoding="utf-8")
+        cmd = (GUI / "windows/Install XFOIL.next GUI.cmd").read_text(
+            encoding="utf-8")
+        self.assertIn("LocalApplicationData", ps)
+        self.assertIn("'Programs'", ps)
+        self.assertIn("'XFOIL.next GUI'", ps)
+        self.assertIn("GetFolderPath('Desktop')", ps)
+        self.assertIn("GetFolderPath('Programs')", ps)
+        self.assertIn("WorkingDirectory", ps)
+        self.assertIn("IconLocation", ps)
+        self.assertIn("-NoProfile", cmd)
+        self.assertIn("-ExecutionPolicy Bypass", cmd)
+        for text in (ps, cmd):
+            self.assertNotIn("C:\\Program Files", text)
+            self.assertNotIn("C:\\Windows", text)
+            self.assertNotIn("C:\\Users\\Agent", text)
+            self.assertNotIn("/local/Olaf", text)
+            for token in ("Invoke-WebRequest", "Invoke-RestMethod",
+                          "Start-BitsTransfer", "New-ItemProperty",
+                          "reg.exe", "Registry::", "Start-Process -Verb RunAs"):
+                self.assertNotIn(token, text)
+
+    def test_pe_subsystem_parser(self):
+        def pe(subsystem):
+            data = bytearray(256)
+            data[:2] = b"MZ"
+            import struct
+            struct.pack_into("<I", data, 0x3C, 0x80)
+            data[0x80:0x84] = b"PE\0\0"
+            struct.pack_into("<H", data, 0x84, 0x8664)
+            struct.pack_into("<H", data, 0x80 + 24, 0x20B)
+            struct.pack_into("<H", data, 0x80 + 24 + 68, subsystem)
+            return bytes(data)
+        self.assertEqual(CHECK_ZIP.pe_subsystem(pe(2)), 2)
+        self.assertEqual(CHECK_ZIP.pe_subsystem(pe(3)), 3)
 
 
 class WindowsPackageTests(unittest.TestCase):
@@ -114,6 +181,15 @@ class WindowsPackageTests(unittest.TestCase):
             (root / "xfoil.next.exe").write_bytes(b"MZ")
             with self.assertRaises(WINDOWS.PackageError):
                 WINDOWS.check_tree(root, "1.2.1")
+
+    def test_missing_runtime_is_rejected(self):
+        for relative in ("Qt6Core.dll", "platforms/qwindows.dll"):
+            with tempfile.TemporaryDirectory() as temp:
+                root = pathlib.Path(temp) / "stage"
+                fill_required(root)
+                (root / relative).unlink()
+                with self.assertRaises(WINDOWS.PackageError):
+                    WINDOWS.check_tree(root, "1.2.1")
 
     def test_archive_check_accepts_required_layout(self):
         with tempfile.TemporaryDirectory() as temp:

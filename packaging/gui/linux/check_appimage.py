@@ -32,15 +32,19 @@ import os
 import pathlib
 import re
 import shutil
-import struct
 import subprocess
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+from icon_checks import IconError, check_png
+
 REQUIRED_FILES = (
     "AppRun",
+    ".DirIcon",
     "xfoil.next-gui.desktop",
     "xfoil-next.png",
     "usr/bin/xfoil.next-gui",
+    "usr/share/icons/hicolor/512x512/apps/xfoil-next.png",
     "LICENSE",
     "NOTICE",
     "SOURCE-INFO.txt",
@@ -213,13 +217,16 @@ def check_desktop(appdir):
 
 def check_icon(appdir):
     path = appdir / "xfoil-next.png"
-    data = path.read_bytes()
-    if data[:8] != b"\x89PNG\r\n\x1a\n" or data[12:16] != b"IHDR":
-        raise CheckError("xfoil-next.png is not a valid PNG file")
-    width, height = struct.unpack(">II", data[16:24])
-    if width != height or width < 128:
-        raise CheckError(
-            f"xfoil-next.png is {width}x{height}; expected square >=128")
+    try:
+        width, height, _colours, _transparent = check_png(path, 512, 512)
+    except IconError as error:
+        raise CheckError(f"corrected GUI icon check failed: {error}")
+    installed = appdir / "usr/share/icons/hicolor/512x512/apps/xfoil-next.png"
+    if sha256(path) != sha256(installed):
+        raise CheckError("AppDir root icon and installed icon differ")
+    dir_icon = appdir / ".DirIcon"
+    if sha256(dir_icon) != sha256(path):
+        raise CheckError(".DirIcon does not resolve to the corrected GUI icon")
     return width
 
 

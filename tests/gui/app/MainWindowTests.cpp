@@ -28,6 +28,7 @@
 #include <QAction>
 #include <QApplication>
 #include <QByteArray>
+#include <QColor>
 #include <QDialog>
 #include <QDir>
 #include <QFile>
@@ -298,6 +299,46 @@ class MainWindowTests : public QObject {
     qApp->setWindowIcon(xfoil::gui::app::applicationIcon());
     QVERIFY(!qApp->windowIcon().isNull());
     qApp->setWindowIcon(previous);
+  }
+
+  void applicationIconHasWhiteHexagonInteriorAndTransparentOutside() {
+    const QImage image(QStringLiteral(":/xfoil-next/xfoil-next-icon.png"));
+    QVERIFY(!image.isNull());
+    QCOMPARE(image.size(), QSize(512, 512));
+    QVERIFY(image.hasAlphaChannel());
+    const QPoint corners[] = {{0, 0}, {511, 0}, {0, 511}, {511, 511}};
+    for (const QPoint& point : corners) {
+      QCOMPARE(qAlpha(image.pixel(point)), 0);
+    }
+    const QPoint whitePoints[] = {{256, 100}, {256, 400}, {80, 256},
+                                  {432, 256}, {200, 240}, {300, 350}};
+    for (const QPoint& point : whitePoints) {
+      const QColor colour = image.pixelColor(point);
+      QCOMPARE(colour.alpha(), 255);
+      QVERIFY(colour.red() >= 250);
+      QVERIFY(colour.green() >= 250);
+      QVERIFY(colour.blue() >= 250);
+    }
+    int transparent = 0;
+    int blue = 0;
+    int black = 0;
+    for (int y = 0; y < image.height(); ++y) {
+      for (int x = 0; x < image.width(); ++x) {
+        const QColor colour = image.pixelColor(x, y);
+        if (colour.alpha() == 0) {
+          ++transparent;
+        } else if (colour.blue() > 80 && colour.red() < 80 &&
+                   colour.green() < 80) {
+          ++blue;
+        } else if (colour.red() < 50 && colour.green() < 50 &&
+                   colour.blue() < 50) {
+          ++black;
+        }
+      }
+    }
+    QVERIFY(transparent > 0);
+    QVERIFY(blue > 0);
+    QVERIFY(black > 0);
   }
 
   void polarImportAndComparisonExportUseAppAdapter() {

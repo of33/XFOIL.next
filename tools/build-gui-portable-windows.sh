@@ -117,10 +117,15 @@ if [ "$PACKAGE_ONLY" -eq 0 ]; then
     [ -f "$GUI_EXE" ] || fail "GUI release executable not found: $GUI_EXE"
     objdump -h "$GUI_EXE" | grep -q '\.rsrc' || \
         fail "Windows GUI executable has no .rsrc icon section"
+    "$PYTHON" packaging/gui/windows/check_windows_subsystems.py \
+        --gui "$GUI_EXE"
 
     rm -rf "$BUILD_ROOT/stage"
     mkdir -p "$STAGE/licenses"
     cp "$GUI_EXE" "$STAGE/xfoil.next-gui.exe"
+    cp "packaging/gui/windows/Install XFOIL.next GUI.cmd" "$STAGE/"
+    cp packaging/gui/windows/Install-XFOIL.next-GUI.ps1 "$STAGE/"
+    cp packaging/gui/windows/README-Windows.txt "$STAGE/README-Windows.txt"
 
     PATH="$QT_ROOT/bin:$PATH" \
         "$WINDEPLOYQT" --release --compiler-runtime --no-translations \

@@ -23,6 +23,7 @@ tests/data/xfoil-6.996/s15/** -whitespace
 
 # Windows command scripts are intentionally checked out with CRLF.
 *.bat text eol=crlf
+*.cmd text eol=crlf
 
 # Binary artifacts are exempt from any line-ending conversion.
 XFOIL.next.png -text

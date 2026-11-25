@@ -1,4 +1,5 @@
 // XFOIL.next native Windows application icon.
-// The ICO is derived from the canonical root XFOIL.next.png.
+// The ICO is derived from the canonical root XFOIL.next.png with an opaque
+// white interior inside the closed blue hexagon and a transparent outside.
 // Compiled with windres for the standalone GUI application target only.
 IDI_ICON1 ICON "xfoil-next-icon.ico"

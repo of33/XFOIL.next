@@ -1,0 +1,42 @@
+XFOIL.next GUI for Windows x86-64
+==================================
+
+This ZIP is a portable shared-Qt package. Extract the complete ZIP before use.
+Do not copy only xfoil.next-gui.exe to the desktop; it needs the Qt libraries
+and plugin folders next to it.
+
+Portable use
+------------
+
+1. Extract the complete ZIP to a folder of your choice.
+2. Run xfoil.next-gui.exe from that folder.
+3. Keep the executable together with Qt6*.dll, lib*.dll and the plugin
+   directories (platforms, imageformats, iconengines, styles, ...).
+
+User installation
+-----------------
+
+1. Extract the complete ZIP.
+2. Run "Install XFOIL.next GUI.cmd" from the extracted top-level folder.
+3. The complete runtime is copied to:
+   %LOCALAPPDATA%\Programs\XFOIL.next GUI
+4. A Desktop shortcut and a Start Menu shortcut are created.
+5. No administrator rights are required.
+
+The installer is per-user only. It does not install under Program Files,
+does not change the registry, does not request elevation and does not use the
+network. Re-running it updates the same installation and shortcuts.
+
+The stable Start Menu shortcut can be pinned manually. Automatic taskbar or
+Start pinning is not claimed.
+
+Portable use remains supported. Copying only the EXE is not supported.
+
+Manual removal
+--------------
+
+Delete the Desktop shortcut "XFOIL.next GUI.lnk", the Start Menu folder
+"XFOIL.next GUI" (with its shortcut), and the folder:
+%LOCALAPPDATA%\Programs\XFOIL.next GUI
+
+This is not a formal uninstaller.

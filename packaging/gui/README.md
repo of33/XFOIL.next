@@ -37,22 +37,42 @@ make gui-portable-repro-linux
 
 Outputs are written below `build/portable/gui/` and are not committed.
 
+The derived GUI PNG/ICO can be regenerated offline from the canonical root
+`XFOIL.next.png` with `tools/generate-gui-icons.py` (Pillow, NumPy and SciPy are
+required only for that one-time regeneration, not for normal builds).
+
 ## Windows GUI ZIP
 
 Build in MSYS2 UCRT64 on the validated Windows 11 baseline. The ZIP uses a
 single top-level directory and contains the GUI executable, Qt DLLs, MinGW
-runtime DLLs, Qt platform/image/icon plugins and license/notice files. The CLI
-executable and development files are excluded.
+runtime DLLs, Qt platform/image/icon plugins, license/notice files and two
+install helpers. The CLI executable and development files are excluded.
 
 ```sh
 export QT_ROOT=/c/msys64/ucrt64
 make gui-portable-windows
 make gui-portable-check-windows
 make gui-portable-repro-windows
+make check-windows-subsystems
+make test-gui-installer-windows
 ```
 
-The Windows check validates the ZIP layout, modes, timestamps, PE imports and
-a clean-`PATH` GUI startup when run on Windows.
+Portable use is unchanged: extract the complete ZIP and run
+`xfoil.next-gui.exe` from the extracted folder. The optional installer is
+`Install XFOIL.next GUI.cmd`; it calls
+`Install-XFOIL.next-GUI.ps1` with `-NoProfile -ExecutionPolicy Bypass` for the
+current process only. The installer copies the full runtime to
+`%LOCALAPPDATA%\Programs\XFOIL.next GUI`, creates a Desktop shortcut and a
+Start Menu shortcut, and does not request elevation, change the registry or use
+the network. Re-running updates the same target and shortcuts.
+
+The Windows check validates the ZIP layout, modes, timestamps, PE imports,
+GUI subsystem, native icon resource and a clean-`PATH` GUI startup. The
+PowerShell installer tests use temporary known-folder overrides and do not leave
+shortcuts in the real user profile.
+
+The Windows GUI executable is linked with `-mwindows`; the CLI and GUI test
+programs keep their console subsystem.
 
 ## AppStream
 
@@ -71,5 +91,6 @@ AppImage additionally includes the AppImage type-2 runtime notice.
 make test-gui-portable
 ```
 
-The tests cover pinned-tool rejection, forbidden CLI/dev files and deterministic
-ZIP construction/layout checks.
+The tests cover pinned-tool rejection, corrected PNG/ICO properties, forbidden
+CLI/dev files, PE subsystem parsing, installer-script path checks and
+deterministic ZIP construction/layout checks.

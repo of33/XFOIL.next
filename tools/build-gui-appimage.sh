@@ -174,6 +174,7 @@ EXTRA_QT_MODULES="svg;" \
 [ -f "$APPDIR/AppRun" ] || fail "linuxdeploy did not create AppRun"
 [ -f "$APPDIR/usr/bin/xfoil.next-gui" ] || \
     fail "linuxdeploy did not install the GUI executable"
+ln -sfn xfoil-next.png "$APPDIR/.DirIcon"
 
 QT_VERSION=$("$QT_ROOT/bin/qmake6" -query QT_VERSION 2>/dev/null || true)
 mkdir -p "$APPDIR/licenses"

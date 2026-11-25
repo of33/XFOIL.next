@@ -573,6 +573,7 @@ LIB_SHARED_IMPORT_FLAG := -Wl,--out-implib
 	gui-appimage gui-portable-windows gui-portable-check-linux \
 	gui-portable-check-windows gui-portable-repro-linux \
 	gui-portable-repro-windows test-gui-portable \
+	check-windows-subsystems test-gui-installer-windows \
 	gui gui-debug gui-release gui-app gui-app-debug gui-app-release run-gui \
 	test-gui gui-qcustomplot-check gui-link-check gui-check-qt \
 	clean-gui check-gui-dependencies \
@@ -1111,6 +1112,16 @@ gui-portable-repro-windows:
 test-gui-portable:
 	PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s packaging/gui/tests -v
 
+check-windows-subsystems:
+	python3 packaging/gui/windows/check_windows_subsystems.py \
+		--gui "$(GUI_PORTABLE_WINDOWS_BUILDROOT)/bin/release/xfoil.next-gui.exe" \
+		--cli "$(BINROOT)/release/xfoil.next.exe"
+
+test-gui-installer-windows:
+	powershell.exe -NoProfile -ExecutionPolicy Bypass \
+		-File packaging/gui/windows/test-install-gui.ps1 \
+		-ZipPath "$(GUI_PORTABLE_WINDOWS_ARCHIVE)"
+
 # ---------------------------------------------------------------------------
 # Armed no-I/O proof (Linux). The interposition shim is disarmed for
 # loader/harness work and is armed only around the public API workflow.
@@ -1405,6 +1416,8 @@ help:
 	@echo "  make gui-portable-repro-linux   - two AppImage packaging runs"
 	@echo "  make gui-portable-repro-windows - two Windows ZIP packaging runs"
 	@echo "  make test-gui-portable          - packaging infrastructure tests"
+	@echo "  make check-windows-subsystems   - GUI=windows, CLI=console subsystem"
+	@echo "  make test-gui-installer-windows - temporary-folder installer tests"
 	@echo ""
 	@echo "Optional GUI skeleton (requires Qt 6.12.0 and QT_ROOT):"
 	@echo "  make gui                 - build libxfoil_next_gui.a (debug)"

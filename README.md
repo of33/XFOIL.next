@@ -244,10 +244,28 @@ make gui-portable-windows
 The Linux AppImage is built and tested on Ubuntu 24.04 with GCC 13.3.0 and the
 Qt 6.12.0 kit. It bundles Qt libraries and plugins but not the CLI executable.
 No GLIBC 2.35 or older-glibc compatibility is promised for the GUI AppImage.
-The Windows ZIP is a complete folder: extract it and run
-`xfoil.next-gui.exe`; do not move the executable away from its Qt libraries and
-plugin directories. The local G8 artifacts are test packages, not release
-downloads. See [packaging/gui](packaging/gui/README.md) and
+The icon has an opaque white interior inside the blue hexagon and a transparent
+outside.
+
+The Windows GUI ZIP supports two user modes:
+
+- **Portable:** extract the complete ZIP and run `xfoil.next-gui.exe` in that
+  folder. Do not copy only the EXE to the desktop; it needs the Qt DLLs and
+  plugin directories next to it.
+- **Per-user installation:** extract the ZIP and run
+  `Install XFOIL.next GUI.cmd`. It copies the complete runtime to
+  `%LOCALAPPDATA%\Programs\XFOIL.next GUI` and creates Desktop and Start Menu
+  shortcuts. No administrator rights are required. The stable Start Menu
+  shortcut can be pinned manually.
+
+The Windows GUI executable uses the Windows GUI subsystem, so normal launches
+do not open a console window. The CLI remains a console application. To remove
+the per-user installation manually, delete both shortcuts and the
+`%LOCALAPPDATA%\Programs\XFOIL.next GUI` folder; this is not a formal
+uninstaller.
+
+The local G8 artifacts are test packages, not release downloads. See
+[packaging/gui](packaging/gui/README.md) and
 [building and testing](docs/building-and-testing.md).
 
 ## Portable runtime executables

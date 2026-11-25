@@ -36,6 +36,9 @@ import zipfile
 
 REQUIRED_FILES = (
     "xfoil.next-gui.exe",
+    "Install XFOIL.next GUI.cmd",
+    "Install-XFOIL.next-GUI.ps1",
+    "README-Windows.txt",
     "LICENSE",
     "NOTICE",
     "SOURCE-INFO.txt",

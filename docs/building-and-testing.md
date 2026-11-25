@@ -158,8 +158,8 @@ encoder. Cp/Cf/polar/BLOU import/export is not part of this increment.
 The embeddable `XFoilAnalysisWidget` reads and writes no files, uses no `QSettings`
 and starts no standalone application. The separate `src/gui/app` shell owns
 the file dialogs, QSettings and application entry point. The Windows UCRT64
-Qt 6.12.0/GCC 16.2.0 Rev7 development build is qualified, but no Windows GUI
-package or installer is provided.
+Qt 6.12.0/GCC 16.2.0 Rev7 development build is qualified, and G8/G8a provide
+local portable GUI packages plus an optional per-user installer.
 
 The adapter also accepts a kit found through `pkg-config` or `qmake`. The
 build emits generated MOC/UIC files only below `build/gui/`; debug and release
@@ -180,6 +180,8 @@ make gui-portable-check-windows validate the Windows ZIP
 make gui-portable-repro-linux   two AppImage packaging runs
 make gui-portable-repro-windows two Windows ZIP packaging runs
 make test-gui-portable          packaging infrastructure tests
+make check-windows-subsystems   GUI=windows, CLI=console subsystem
+make test-gui-installer-windows temporary known-folder installer tests
 ```
 
 The Linux AppImage uses the Qt 6.12.0 kit selected by `QT_ROOT` and pinned
@@ -187,8 +189,28 @@ AppImage tools in `APPIMAGE_TOOLS_DIR`. No AppImage tool or runtime is
 downloaded. The AppImage is built and tested on Ubuntu 24.04 with GCC 13.3.0;
 no GLIBC 2.35 compatibility promise is made for it. The Windows ZIP contains
 the GUI executable, Qt DLLs, plugins and MinGW runtime together in one
-top-level folder. The product version remains 1.2.1; the G8 artifacts use a
-`local-g8` suffix and are not release downloads. See
+top-level folder. The Windows GUI executable uses the Windows GUI subsystem;
+the CLI remains a console application.
+
+Windows users have two supported modes:
+
+- **Portable:** extract the complete ZIP and run `xfoil.next-gui.exe` from the
+  extracted folder. Keep the EXE with its Qt DLLs and plugin directories; a
+  copied-only EXE is not supported.
+- **Per-user installation:** run `Install XFOIL.next GUI.cmd` from the
+  extracted top-level folder. The complete runtime is copied to
+  `%LOCALAPPDATA%\Programs\XFOIL.next GUI`; Desktop and Start Menu shortcuts
+  are created for the stable installed path. The installer needs no
+  administrator rights, registry changes, network access or elevation. The
+  Start Menu shortcut can be pinned manually. Re-running updates the same
+  target without duplicate shortcuts.
+
+To remove a per-user installation manually, delete the Desktop shortcut
+`XFOIL.next GUI.lnk`, the Start Menu folder `XFOIL.next GUI` with its shortcut,
+and `%LOCALAPPDATA%\Programs\XFOIL.next GUI`. This is not a formal uninstaller.
+
+The product version remains 1.2.1; the G8 artifacts use a `local-g8` suffix and
+are not release downloads. See
 [packaging/gui](../packaging/gui/README.md).
 
 Product programs land under `bin/<mode>/`; intermediate objects, tests,
@@ -211,10 +233,11 @@ XFOIL.next-GUI-2.0.0-windows-x86_64.zip
 
 These are not part of the current version or a finished release. G8 builds
 local `1.2.1-local-g8` GUI packages with the same structure. The Windows GUI
-ZIP keeps the executable, Qt libraries, plugins and MinGW runtime together;
-run the executable from the extracted folder, not on its own. The Linux GUI
-AppImage is the portable GUI asset and is built/tested on Ubuntu 24.04; no
-older-glibc promise is made for it. The CLI archive names remain
+ZIP keeps the executable, Qt libraries, plugins and MinGW runtime together and
+includes the optional per-user installer; portable use still requires running
+the EXE from the extracted folder. The Linux GUI AppImage is the portable GUI
+asset and is built/tested on Ubuntu 24.04; no older-glibc promise is made for
+it. The CLI archive names remain
 `XFOIL.next-2.0.0-linux-x86_64.tar.xz` and
 `XFOIL.next-2.0.0-windows-x86_64.zip`; the Linux CLI archive preserves file
 names, executable permissions and bundled release information, while the

@@ -29,6 +29,7 @@ import os
 import pathlib
 import re
 import shutil
+import struct
 import subprocess
 import sys
 import tempfile
@@ -37,6 +38,9 @@ import zipfile
 
 REQUIRED = {
     "xfoil.next-gui.exe",
+    "Install XFOIL.next GUI.cmd",
+    "Install-XFOIL.next-GUI.ps1",
+    "README-Windows.txt",
     "LICENSE",
     "NOTICE",
     "SOURCE-INFO.txt",
@@ -71,6 +75,23 @@ LOCAL_IMPORT_PREFIXES = (
 
 class CheckError(Exception):
     pass
+
+
+def pe_subsystem(source):
+    """Return the PE optional-header subsystem value."""
+    if isinstance(source, (str, pathlib.Path)):
+        data = pathlib.Path(source).read_bytes()
+    else:
+        data = source
+    if len(data) < 64 or data[:2] != b"MZ":
+        raise CheckError("not a PE image")
+    pe_offset = struct.unpack_from("<I", data, 0x3C)[0]
+    if pe_offset + 24 + 70 > len(data) or data[pe_offset:pe_offset + 4] != b"PE\0\0":
+        raise CheckError("invalid PE header")
+    optional_magic = struct.unpack_from("<H", data, pe_offset + 24)[0]
+    if optional_magic not in (0x10B, 0x20B):
+        raise CheckError(f"unexpected PE optional magic: 0x{optional_magic:04x}")
+    return struct.unpack_from("<H", data, pe_offset + 24 + 68)[0]
 
 
 def check_archive(path, expected_version, epoch=None):
@@ -130,6 +151,11 @@ def check_archive(path, expected_version, epoch=None):
             data = handle.read()
         if expected_version.encode("utf-8") not in data:
             raise CheckError("product version not found in GUI executable")
+        subsystem = pe_subsystem(data)
+        if subsystem != 2:
+            raise CheckError(
+                f"GUI executable subsystem is {subsystem}, expected 2 "
+                "(IMAGE_SUBSYSTEM_WINDOWS_GUI)")
         return top, relative
 
 
@@ -151,6 +177,14 @@ def imported_dlls(exe):
 
 
 def check_dependencies(root, relative):
+    objdump = shutil.which("objdump")
+    if objdump:
+        result = subprocess.run(
+            [objdump, "-h", str(root / "xfoil.next-gui.exe")],
+            check=False, text=True,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        if result.returncode != 0 or ".rsrc" not in result.stdout:
+            raise CheckError("GUI executable has no native .rsrc icon section")
     present = {name.rsplit("/", 1)[-1].lower() for name in relative}
     for exe in sorted(root.rglob("*")):
         if exe.suffix.lower() not in (".exe", ".dll") or not exe.is_file():

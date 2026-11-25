@@ -125,6 +125,14 @@ else
 GUI_MODE_FLAGS := -O0 -g3
 endif
 
+# Only the standalone GUI executable gets Windows GUI subsystem semantics.
+# Tests, the link check and the CLI remain console-subsystem programs.
+ifeq ($(GUI_EXE_SUFFIX),.exe)
+GUI_APP_LINK_FLAGS := -mwindows
+else
+GUI_APP_LINK_FLAGS :=
+endif
+
 # Qt headers are not clean under -Wconversion/-Wsign-conversion and
 # QCustomPlot 2.1.1 uses old-style casts. Keep -Werror, but use the Qt-safe
 # subset for the optional GUI path only. Core and CLI builds retain the full
@@ -643,7 +651,8 @@ $(GUI_OBJ_DIR)/app/AirfoilWriter.o: src/app/AirfoilWriter.cpp \
 
 $(GUI_APP_EXE): $(GUI_APP_OBJS) $(GUI_ARCHIVE) $(CORE_LIBRARY)
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXSTD) $(GUI_MODE_FLAGS) $^ $(GUI_QT_LIBS) -o $@
+	$(CXX) $(CXXSTD) $(GUI_MODE_FLAGS) $^ $(GUI_QT_LIBS) \
+		$(GUI_APP_LINK_FLAGS) -o $@
 
 $(GUI_TEST_BIN): $(GUI_TEST_OBJS) $(GUI_ARCHIVE) $(CORE_LIBRARY)
 	@mkdir -p $(dir $@)
