@@ -171,7 +171,7 @@ header is:
 
 ```text
 # XFOIL_BATCH_RESULTS 1
-# product XFOIL.next 1.2.1
+# product XFOIL.next 2.0.0
 # index alpha cl cd cdp cm re mach ncrit_top ncrit_bottom xtr_top xtr_bottom converged iterations
 ```
 

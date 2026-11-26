@@ -43,7 +43,7 @@ class ApplicationMetadataTests : public QObject {
     QCOMPARE(QGuiApplication::applicationDisplayName(),
              QStringLiteral("XFOIL.next GUI"));
     QCOMPARE(QCoreApplication::applicationVersion(),
-             QStringLiteral("1.2.1"));
+             QStringLiteral("2.0.0"));
   }
 };
 

@@ -213,8 +213,8 @@ extracted folder unchanged. An installation created by G8b with
 `xfoil.next-gui.exe` is migrated by the current installer and is also accepted
 by the current uninstaller.
 
-The product version remains 1.2.1; the G8 artifacts use a `local-g8` suffix and
-are not release downloads. See
+The current development product version is 2.0.0; local GUI test packages use a
+`local-g8` suffix and are not release downloads. See
 [packaging/gui](../packaging/gui/README.md).
 
 Product programs land under `bin/<mode>/`; intermediate objects, tests,
@@ -235,10 +235,11 @@ XFOIL.next-GUI-2.0.0-linux-x86_64.AppImage
 XFOIL.next-GUI-2.0.0-windows-x86_64.zip
 ```
 
-These are not part of the current version or a finished release. G8 builds
-local `1.2.1-local-g8` GUI packages with the same structure. The Windows GUI
-ZIP keeps the executable, Qt libraries, plugins and MinGW runtime together and
-includes the optional per-user installer; portable use still requires running
+These are not produced by this development version transition and are not a
+finished release. Local GUI test packages use `2.0.0-local-g8` with the same
+structure. The Windows GUI ZIP keeps the executable, Qt libraries, plugins and
+MinGW runtime together and includes the optional per-user installer; portable
+use still requires running
 the EXE from the extracted folder. The Linux GUI AppImage is the portable GUI
 asset and is built/tested on Ubuntu 24.04; no older-glibc promise is made for
 it. The CLI archive names remain
@@ -443,7 +444,7 @@ Without the confirmation the target aborts without writing. It performs
 three byte-identical runs per case and checks that each case exits 0 before
 writing. After an update, review and update `tests/golden/metadata.md`.
 
-## Current counts (as of version 1.2.1)
+## Counts at the 1.2.1 point (historical)
 
 The commands above are the durable contract; the counts below are a point-in-
 time measurement and may change with new tests.

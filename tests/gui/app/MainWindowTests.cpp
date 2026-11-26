@@ -603,6 +603,12 @@ class MainWindowTests : public QObject {
 
     window.findChild<QAction*>("aboutAction")->trigger();
     QVERIFY(harness.infoTitle.contains(QStringLiteral("About")));
+    const QString aboutPrefix =
+        QStringLiteral("XFOIL.next ") +
+        QString::fromLatin1(xfoil::app::product::version.data(),
+                            static_cast<int>(
+                                xfoil::app::product::version.size()));
+    QVERIFY(harness.infoText.startsWith(aboutPrefix));
     QVERIFY(harness.infoText.contains(QStringLiteral("XFOIL.next")));
     QVERIFY(harness.infoText.contains(QStringLiteral("Qt ")));
     QVERIFY(harness.infoText.contains(
@@ -617,7 +623,7 @@ class MainWindowTests : public QObject {
     QCOMPARE(harness.infoText.count(
                  QStringLiteral("https://github.com/of33/XFOIL.next")),
              1);
-    QVERIFY(!harness.infoText.contains(QStringLiteral("2.0.0")));
+    QVERIFY(!harness.infoText.contains(QStringLiteral("1.2.1")));
     QVERIFY(window.close());
   }
 

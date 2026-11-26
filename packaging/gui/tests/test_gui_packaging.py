@@ -69,7 +69,7 @@ def fake_pe(subsystem=2):
     struct.pack_into("<H", data, 0x84, 0x8664)
     struct.pack_into("<H", data, 0x80 + 24, 0x20B)
     struct.pack_into("<H", data, 0x80 + 24 + 68, subsystem)
-    data[0x100:0x10D] = b"1.2.1\x00Analysis"
+    data[0x100:0x10D] = b"2.0.0\x00Analysis"
     return bytes(data)
 
 
@@ -229,7 +229,7 @@ class WindowsPackageTests(unittest.TestCase):
             (root / "platforms/qwindows.dll").write_bytes(b"dll")
             a = pathlib.Path(temp) / "a.zip"
             b = pathlib.Path(temp) / "b.zip"
-            top = "XFOIL.next-GUI-1.2.1-local-g8-windows-x86_64"
+            top = "XFOIL.next-GUI-2.0.0-local-g8-windows-x86_64"
             WINDOWS.write_zip(root, a, top, 1700000000)
             WINDOWS.write_zip(root, b, top, 1700000000)
             self.assertEqual(a.read_bytes(), b.read_bytes())
@@ -246,7 +246,7 @@ class WindowsPackageTests(unittest.TestCase):
             fill_required(root)
             (root / "xfoil.next-cli.exe").write_bytes(b"MZ")
             with self.assertRaises(WINDOWS.PackageError):
-                WINDOWS.check_tree(root, "1.2.1")
+                WINDOWS.check_tree(root, "2.0.0")
 
     def test_forbidden_legacy_gui_is_rejected(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -254,7 +254,7 @@ class WindowsPackageTests(unittest.TestCase):
             fill_required(root)
             (root / "xfoil.next-gui.exe").write_bytes(b"MZ")
             with self.assertRaises(WINDOWS.PackageError):
-                WINDOWS.check_tree(root, "1.2.1")
+                WINDOWS.check_tree(root, "2.0.0")
 
     def test_missing_runtime_is_rejected(self):
         for relative in ("Qt6Core.dll", "platforms/qwindows.dll"):
@@ -263,16 +263,16 @@ class WindowsPackageTests(unittest.TestCase):
                 fill_required(root)
                 (root / relative).unlink()
                 with self.assertRaises(WINDOWS.PackageError):
-                    WINDOWS.check_tree(root, "1.2.1")
+                    WINDOWS.check_tree(root, "2.0.0")
 
     def test_archive_check_accepts_required_layout(self):
         with tempfile.TemporaryDirectory() as temp:
             root = pathlib.Path(temp) / "stage"
             fill_required(root)
             archive = pathlib.Path(temp) / "gui.zip"
-            top = "XFOIL.next-GUI-1.2.1-local-g8-windows-x86_64"
+            top = "XFOIL.next-GUI-2.0.0-local-g8-windows-x86_64"
             WINDOWS.write_zip(root, archive, top, 1700000000)
-            actual_top, relative = CHECK_ZIP.check_archive(archive, "1.2.1")
+            actual_top, relative = CHECK_ZIP.check_archive(archive, "2.0.0")
             self.assertEqual(actual_top, top)
             self.assertIn("xfoil.next.exe", relative)
 
@@ -282,10 +282,10 @@ class WindowsPackageTests(unittest.TestCase):
             fill_required(root)
             (root / "xfoil.next-gui.exe").write_bytes(b"MZ")
             archive = pathlib.Path(temp) / "gui.zip"
-            top = "XFOIL.next-GUI-1.2.1-local-g8-windows-x86_64"
+            top = "XFOIL.next-GUI-2.0.0-local-g8-windows-x86_64"
             WINDOWS.write_zip(root, archive, top, 1700000000)
             with self.assertRaises(CHECK_ZIP.CheckError):
-                CHECK_ZIP.check_archive(archive, "1.2.1")
+                CHECK_ZIP.check_archive(archive, "2.0.0")
 
     def test_archive_check_rejects_marker(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -293,10 +293,10 @@ class WindowsPackageTests(unittest.TestCase):
             fill_required(root)
             (root / ".xfoil-next-gui-install").write_text("product\n")
             archive = pathlib.Path(temp) / "gui.zip"
-            top = "XFOIL.next-GUI-1.2.1-local-g8-windows-x86_64"
+            top = "XFOIL.next-GUI-2.0.0-local-g8-windows-x86_64"
             WINDOWS.write_zip(root, archive, top, 1700000000)
             with self.assertRaises(CHECK_ZIP.CheckError):
-                CHECK_ZIP.check_archive(archive, "1.2.1")
+                CHECK_ZIP.check_archive(archive, "2.0.0")
 
     def test_archive_check_rejects_cli(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -304,10 +304,10 @@ class WindowsPackageTests(unittest.TestCase):
             fill_required(root)
             (root / "xfoil.next-cli.exe").write_bytes(b"MZ")
             archive = pathlib.Path(temp) / "gui.zip"
-            top = "XFOIL.next-GUI-1.2.1-local-g8-windows-x86_64"
+            top = "XFOIL.next-GUI-2.0.0-local-g8-windows-x86_64"
             WINDOWS.write_zip(root, archive, top, 1700000000)
             with self.assertRaises(CHECK_ZIP.CheckError):
-                CHECK_ZIP.check_archive(archive, "1.2.1")
+                CHECK_ZIP.check_archive(archive, "2.0.0")
 
 
 if __name__ == "__main__":

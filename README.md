@@ -27,7 +27,7 @@ alt="GPL-3.0-or-later">
 
 # XFOIL.next
 
-**Version 1.2.1**
+**Current development version: 2.0.0**
 
 XFOIL.next implements the complete canonical non-graphical XFOIL
 functionality in modern C++.

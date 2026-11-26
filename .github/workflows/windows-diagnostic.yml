@@ -160,7 +160,7 @@ jobs:
           test ! -e bin/release/xfoil.next-gui.exe
           out=$(./bin/release/xfoil.next-cli.exe --version)
           echo "version output: [$out]"
-          test "$out" = "XFOIL.next 1.2.1"
+          test "$out" = "XFOIL.next 2.0.0"
 
       - name: Product binary layout
         shell: msys2 {0}

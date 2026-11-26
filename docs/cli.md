@@ -21,7 +21,7 @@ profile, then enters the menu loop. The banner is:
 
 ```text
  ===================================================
- XFOIL.next Version 1.2.1
+ XFOIL.next Version 2.0.0
  Copyright (C) 2026 Olaf Frommann
 
  Based upon XFOIL Version 6.996

@@ -5,7 +5,7 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-$PackageRootName = 'XFOIL.next-GUI-1.2.1-local-g8-windows-x86_64'
+$PackageRootName = 'XFOIL.next-GUI-2.0.0-local-g8-windows-x86_64'
 $Work = Join-Path $env:TEMP ('xfoil-g8b-installer-test-' + [Guid]::NewGuid().ToString('N'))
 $TargetName = 'XFOIL.next GUI'
 $MarkerName = '.xfoil-next-gui-install'
@@ -243,8 +243,8 @@ function Assert-VersionInfo([string]$Exe) {
     if ($v.ProductName -ne 'XFOIL.next GUI') { Fail "ProductName is '$($v.ProductName)'" }
     if ($v.InternalName -ne 'XFOIL.next GUI') { Fail "InternalName is '$($v.InternalName)'" }
     if ($v.OriginalFilename -ne 'xfoil.next.exe') { Fail "OriginalFilename is '$($v.OriginalFilename)'" }
-    if (-not $v.FileVersion.StartsWith('1.2.1')) { Fail "FileVersion is '$($v.FileVersion)'" }
-    if (-not $v.ProductVersion.StartsWith('1.2.1')) { Fail "ProductVersion is '$($v.ProductVersion)'" }
+    if (-not $v.FileVersion.StartsWith('2.0.0')) { Fail "FileVersion is '$($v.FileVersion)'" }
+    if (-not $v.ProductVersion.StartsWith('2.0.0')) { Fail "ProductVersion is '$($v.ProductVersion)'" }
 }
 
 function Assert-Marker([string]$Target) {
