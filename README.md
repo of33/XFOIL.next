@@ -37,6 +37,10 @@ Mark Drela and Harold Youngren. The numerical behaviour is validated
 directly against the original Fortran sources and the reference Fortran
 binary.
 
+<p align="center">
+<img src="docs/fig/XFOIL.next-2.0.0.png" alt="XFOIL.next 2.0.0 GUI" width="100%">
+</p>
+
 ## Motivation
 
 XFOIL.next builds on the enduring aerodynamic work embodied in XFOIL.
