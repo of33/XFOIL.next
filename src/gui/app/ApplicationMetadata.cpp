@@ -28,7 +28,6 @@
 #include "app/ApplicationMetadata.h"
 
 #include <QCoreApplication>
-#include <QGuiApplication>
 #include <QString>
 
 #include "app/ProductInfo.h"
@@ -41,8 +40,6 @@ void configureApplicationMetadata() {
       static_cast<int>(xfoil::app::product::name.size()));
   QCoreApplication::setOrganizationName(productName);
   QCoreApplication::setApplicationName(productName + QStringLiteral(" GUI"));
-  QGuiApplication::setApplicationDisplayName(
-      QStringLiteral("XFOIL.next GUI"));
   QCoreApplication::setApplicationVersion(QString::fromLatin1(
       xfoil::app::product::version.data(),
       static_cast<int>(xfoil::app::product::version.size())));
