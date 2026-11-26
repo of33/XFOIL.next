@@ -151,7 +151,7 @@ class XFoilAnalysisWidgetG2Tests : public QObject {
     QCOMPARE(widget.findChild<QGroupBox*>("panelingGroup")->title(),
              QStringLiteral("Paneling: no panel"));
     QCOMPARE(widget.findChild<QGroupBox*>("geometryGroup")->title(),
-             QStringLiteral("Geometry: no geometry"));
+             QStringLiteral("Airfoil: none"));
     QVERIFY(widget.findChild<QLabel*>("definitionsPlaceholder") == nullptr);
     QVERIFY(widget.findChild<QLabel*>("geometryPlaceholder") == nullptr);
     QCOMPARE(widget.findChild<QLabel*>("cdValue")->text(),
@@ -372,7 +372,7 @@ class XFoilAnalysisWidgetG2Tests : public QObject {
     QVERIFY(widget.state() == XFoilGuiState::geometry);
     QVERIFY(child<QRadioButton>(widget, "geometryImportRadio")->isChecked());
     QCOMPARE(child<QGroupBox>(widget, "geometryGroup")->title(),
-             QStringLiteral("Geometry: diamond"));
+             QStringLiteral("Airfoil: diamond"));
     QVERIFY(!child<QPushButton>(widget, "applyGeometryButton")->isEnabled());
   }
 
@@ -457,7 +457,7 @@ class XFoilAnalysisWidgetG2Tests : public QObject {
 
     auto* geometryGroup = child<QGroupBox>(widget, "geometryGroup");
     QCOMPARE(geometryGroup->title(),
-             QStringLiteral("Geometry: no geometry"));
+             QStringLiteral("Airfoil: none"));
     QCOMPARE(geometryGroup->style()->objectName(),
              QStringLiteral("boldGeometryTitleStyle"));
     QVERIFY(widget.findChild<QLabel*>("geometryTitleLabel") == nullptr);
@@ -473,6 +473,7 @@ class XFoilAnalysisWidgetG2Tests : public QObject {
     auto* create = child<QPushButton>(widget, "applyGeometryButton");
     QVERIFY(load && designationLabel && designation && create);
     QCOMPARE(load->text(), QStringLiteral("Load Airfoil"));
+    QCOMPARE(create->text(), QStringLiteral("Create airfoil"));
     QVERIFY(widget.findChild<QWidget*>("geometryNacaBlock") != nullptr);
     const QPoint labelOrigin =
         designationLabel->mapTo(geometryGroup, QPoint(0, 0));
@@ -510,9 +511,9 @@ class XFoilAnalysisWidgetG2Tests : public QObject {
 
     QVERIFY(widget.setNaca("0012").isOk());
     QCOMPARE(geometryGroup->title(),
-             QStringLiteral("Geometry: NACA 0012"));
+             QStringLiteral("Airfoil: NACA 0012"));
     for (QLabel* label : widget.findChildren<QLabel*>()) {
-      QVERIFY(!label->text().contains(QStringLiteral("Geometry:")));
+      QVERIFY(!label->text().contains(QStringLiteral("Airfoil:")));
     }
   }
 
@@ -523,7 +524,7 @@ class XFoilAnalysisWidgetG2Tests : public QObject {
     QCoreApplication::processEvents();
     QVERIFY(widget.setNaca("0012").isOk());
     auto* group = child<QGroupBox>(widget, "geometryGroup");
-    QCOMPARE(group->title(), QStringLiteral("Geometry: NACA 0012"));
+    QCOMPARE(group->title(), QStringLiteral("Airfoil: NACA 0012"));
 
     QStyleOptionGroupBox option;
     option.initFrom(group);
@@ -550,7 +551,7 @@ class XFoilAnalysisWidgetG2Tests : public QObject {
     QVERIFY(renameDialogSeen);
     QCOMPARE(QString::fromStdString(std::string(widget.geometry()->name())),
              QStringLiteral("My Wing"));
-    QCOMPARE(group->title(), QStringLiteral("Geometry: My Wing"));
+    QCOMPARE(group->title(), QStringLiteral("Airfoil: My Wing"));
 
     bool cancelDialogSeen = false;
     QTimer::singleShot(0, [&cancelDialogSeen]() {
@@ -568,12 +569,12 @@ class XFoilAnalysisWidgetG2Tests : public QObject {
     QVERIFY(cancelDialogSeen);
     QCOMPARE(QString::fromStdString(std::string(widget.geometry()->name())),
              QStringLiteral("My Wing"));
-    QCOMPARE(group->title(), QStringLiteral("Geometry: My Wing"));
+    QCOMPARE(group->title(), QStringLiteral("Airfoil: My Wing"));
 
     AirfoilGeometry renamed = *widget.geometry();
     renamed.setName("Programmatic");
     QVERIFY(widget.applyImportedGeometry(renamed, false).isOk());
-    QCOMPARE(group->title(), QStringLiteral("Geometry: Programmatic"));
+    QCOMPARE(group->title(), QStringLiteral("Airfoil: Programmatic"));
   }
 
   void twoWidgetsRemainIndependent() {

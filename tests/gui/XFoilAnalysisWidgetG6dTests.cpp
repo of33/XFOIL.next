@@ -25,6 +25,8 @@
 // G6d memory projections: canonical Cp text, report view and active-plot
 // PNG/PDF/SVG rendering. No file path or file dialog enters the widget.
 
+#include <cmath>
+#include <sstream>
 #include <string>
 
 #include <QImage>
@@ -121,6 +123,57 @@ class XFoilAnalysisWidgetG6dTests : public QObject {
     QVERIFY(text.contains("not a file format"));
   }
 
+  void airfoilPlotRendersPngPdfAndVectorSvg() {
+    XFoilAnalysisWidget widget;
+    QVERIFY(widget.setNaca("0012").isOk());
+    auto* plot = widget.findChild<QCustomPlot*>(
+        QStringLiteral("geometryPlot"));
+    QVERIFY(plot != nullptr);
+    auto* contour =
+        plot->findChild<QCPCurve*>(QStringLiteral("geometryContour"));
+    QVERIFY(contour != nullptr);
+    QVERIFY(widget.geometry().has_value());
+    QCOMPARE(contour->dataCount(),
+             static_cast<int>(widget.geometry()->coordinates().size()));
+
+    const auto png = widget.airfoilPlotPng();
+    QVERIFY(png.isOk());
+    const QByteArray pngBytes = QByteArray::fromStdString(png.value());
+    QVERIFY(pngBytes.startsWith("\x89PNG\r\n\x1a\n"));
+    const QImage image = QImage::fromData(pngBytes, "PNG");
+    QVERIFY(!image.isNull());
+    QCOMPARE(image.size(), QSize(1200, 800));
+
+    const auto pdf = widget.airfoilPlotPdf();
+    QVERIFY(pdf.isOk());
+    QVERIFY(pdf.value().starts_with("%PDF"));
+    QVERIFY(pdf.value().size() > 1000);
+    const std::string& pdfText = pdf.value();
+    const std::size_t mediaBox = pdfText.find("/MediaBox");
+    QVERIFY(mediaBox != std::string::npos);
+    const std::size_t boxOpen = pdfText.find('[', mediaBox);
+    const std::size_t boxClose = pdfText.find(']', boxOpen);
+    QVERIFY(boxOpen != std::string::npos);
+    QVERIFY(boxClose != std::string::npos);
+    std::istringstream boxStream(
+        pdfText.substr(boxOpen + 1, boxClose - boxOpen - 1));
+    double boxLeft = 0.0;
+    double boxBottom = 0.0;
+    double boxRight = 0.0;
+    double boxTop = 0.0;
+    boxStream >> boxLeft >> boxBottom >> boxRight >> boxTop;
+    QVERIFY(boxStream);
+    QVERIFY(std::abs((boxRight - boxLeft) - 900.0) < 0.5);
+    QVERIFY(std::abs((boxTop - boxBottom) - 600.0) < 0.5);
+
+    const auto svg = widget.airfoilPlotSvg();
+    QVERIFY(svg.isOk());
+    QVERIFY(svg.value().find("<svg") != std::string::npos);
+    QVERIFY(svg.value().find("<image") == std::string::npos);
+    QVERIFY(svg.value().find("XFOIL.next airfoil plot") !=
+            std::string::npos);
+  }
+
   void activePlotRendersPngPdfAndVectorSvg() {
     XFoilAnalysisWidget widget;
     configureAndAnalyze(widget);
@@ -161,6 +214,23 @@ class XFoilAnalysisWidgetG6dTests : public QObject {
     QVERIFY(pdf.isOk());
     QVERIFY(pdf.value().starts_with("%PDF"));
     QVERIFY(pdf.value().size() > 1000);
+    const std::string& pdfText = pdf.value();
+    const std::size_t mediaBox = pdfText.find("/MediaBox");
+    QVERIFY(mediaBox != std::string::npos);
+    const std::size_t boxOpen = pdfText.find('[', mediaBox);
+    const std::size_t boxClose = pdfText.find(']', boxOpen);
+    QVERIFY(boxOpen != std::string::npos);
+    QVERIFY(boxClose != std::string::npos);
+    std::istringstream boxStream(
+        pdfText.substr(boxOpen + 1, boxClose - boxOpen - 1));
+    double boxLeft = 0.0;
+    double boxBottom = 0.0;
+    double boxRight = 0.0;
+    double boxTop = 0.0;
+    boxStream >> boxLeft >> boxBottom >> boxRight >> boxTop;
+    QVERIFY(boxStream);
+    QVERIFY(std::abs((boxRight - boxLeft) - 900.0) < 0.5);
+    QVERIFY(std::abs((boxTop - boxBottom) - 600.0) < 0.5);
 
     const auto svg = widget.activePlotSvg();
     QVERIFY(svg.isOk());

@@ -205,10 +205,12 @@ class XFoilAnalysisWidgetG6cTests : public QObject {
     QVERIFY(widget.addComparisonPolar(polar("Draft")).isOk());
     auto* list = polarList(widget);
     list->setCurrentRow(0);
-    auto* nameEdit = widget.findChild<QLineEdit*>("polarNameEdit");
-    QCOMPARE(nameEdit->text(), QStringLiteral("Draft"));
-    nameEdit->setText(QStringLiteral("Renamed"));
-    widget.findChild<QPushButton*>("renamePolarButton")->click();
+    QVERIFY(widget.findChild<QLineEdit*>("polarNameEdit") == nullptr);
+    QVERIFY(widget.findChild<QCheckBox*>("polarVisibilityCheckBox") ==
+            nullptr);
+    QVERIFY(list->item(0)->flags() & Qt::ItemIsEditable);
+    QCOMPARE(list->item(0)->text(), QStringLiteral("Draft"));
+    list->item(0)->setText(QStringLiteral("Renamed"));
     QCOMPARE(list->item(0)->text(), QStringLiteral("Renamed"));
     QCOMPARE(widget.selectedComparisonPolar()->metadata.name,
              std::string{"Renamed"});

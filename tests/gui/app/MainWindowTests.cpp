@@ -41,6 +41,7 @@
 #include <QRadioButton>
 #include <QMenu>
 #include <QMessageBox>
+#include <QPalette>
 #include <QPointer>
 #include <QScrollArea>
 #include <QSignalSpy>
@@ -202,15 +203,72 @@ class MainWindowTests : public QObject {
     QCOMPARE(window.findChild<QAction*>("loadAirfoilAction") != nullptr, true);
     QCOMPARE(window.findChild<QAction*>("loadAirfoilAction")->text(),
              QStringLiteral("&Load Airfoil..."));
-    QCOMPARE(window.findChild<QAction*>("saveAirfoilAction") != nullptr, true);
-    QCOMPARE(window.findChild<QAction*>("exportDxfAction") != nullptr, true);
+    auto* saveAirfoil = window.findChild<QAction*>("saveAirfoilAction");
+    auto* exportDxf = window.findChild<QAction*>("exportDxfAction");
+    auto* exportAirfoilPng =
+        window.findChild<QAction*>("exportAirfoilPngAction");
+    auto* exportAirfoilPdf =
+        window.findChild<QAction*>("exportAirfoilPdfAction");
+    auto* exportAirfoilSvg =
+        window.findChild<QAction*>("exportAirfoilSvgAction");
+    auto* exportPng = window.findChild<QAction*>("exportPlotPngAction");
+    auto* exportPdf = window.findChild<QAction*>("exportPlotPdfAction");
+    auto* exportSvg = window.findChild<QAction*>("exportPlotSvgAction");
+    QVERIFY(saveAirfoil != nullptr);
+    QVERIFY(exportDxf != nullptr);
+    QVERIFY(exportAirfoilPng != nullptr);
+    QVERIFY(exportAirfoilPdf != nullptr);
+    QVERIFY(exportAirfoilSvg != nullptr);
+    QVERIFY(exportPng != nullptr);
+    QVERIFY(exportPdf != nullptr);
+    QVERIFY(exportSvg != nullptr);
+    QCOMPARE(saveAirfoil->text(), QStringLiteral("&Data..."));
+    QCOMPARE(exportDxf->text(), QStringLiteral("DXF..."));
+    QCOMPARE(exportAirfoilPng->text(), QStringLiteral("&PNG..."));
+    QCOMPARE(exportAirfoilPdf->text(), QStringLiteral("P&DF..."));
+    QCOMPARE(exportAirfoilSvg->text(), QStringLiteral("S&VG..."));
+    QCOMPARE(exportPng->text(), QStringLiteral("&PNG..."));
+    QCOMPARE(exportPdf->text(), QStringLiteral("P&DF..."));
+    QCOMPARE(exportSvg->text(), QStringLiteral("S&VG..."));
     QCOMPARE(window.findChild<QAction*>("exportCpAction") != nullptr, true);
-    QCOMPARE(window.findChild<QAction*>("exportPlotPngAction") != nullptr, true);
-    QCOMPARE(window.findChild<QAction*>("exportPlotPdfAction") != nullptr, true);
-    QCOMPARE(window.findChild<QAction*>("exportPlotSvgAction") != nullptr, true);
     QCOMPARE(window.findChild<QAction*>("exitAction") != nullptr, true);
     QCOMPARE(window.findChild<QAction*>("aboutAction") != nullptr, true);
-    QVERIFY(window.findChild<QMenu*>("fileMenu") != nullptr);
+    auto* fileMenu = window.findChild<QMenu*>("fileMenu");
+    auto* airfoilMenu = window.findChild<QMenu*>("exportAirfoilMenu");
+    auto* plotMenu = window.findChild<QMenu*>("exportPlotMenu");
+    auto* recentMenu = window.findChild<QMenu*>("recentFilesMenu");
+    QVERIFY(fileMenu != nullptr);
+    QVERIFY(airfoilMenu != nullptr);
+    QVERIFY(plotMenu != nullptr);
+    QVERIFY(recentMenu != nullptr);
+    QCOMPARE(airfoilMenu->title(), QStringLiteral("Export &Airfoil"));
+    QCOMPARE(airfoilMenu->actions().size(), 5);
+    QCOMPARE(airfoilMenu->actions().at(0), saveAirfoil);
+    QCOMPARE(airfoilMenu->actions().at(1), exportDxf);
+    QCOMPARE(airfoilMenu->actions().at(2), exportAirfoilPng);
+    QCOMPARE(airfoilMenu->actions().at(3), exportAirfoilPdf);
+    QCOMPARE(airfoilMenu->actions().at(4), exportAirfoilSvg);
+    QCOMPARE(plotMenu->title(), QStringLiteral("Export &Active Plot"));
+    QCOMPARE(plotMenu->actions().size(), 3);
+    QCOMPARE(plotMenu->actions().at(0), exportPng);
+    QCOMPARE(plotMenu->actions().at(1), exportPdf);
+    QCOMPARE(plotMenu->actions().at(2), exportSvg);
+    QCOMPARE(recentMenu->title(), QStringLiteral("Recent &Airfoils"));
+    QCOMPARE(recentMenu->actions().size(), 1);
+    QCOMPARE(recentMenu->actions().at(0)->text(),
+             QStringLiteral("No recent airfoils"));
+    QVERIFY(!fileMenu->actions().contains(saveAirfoil));
+    QVERIFY(!fileMenu->actions().contains(exportDxf));
+    QVERIFY(!fileMenu->actions().contains(exportAirfoilPng));
+    QVERIFY(!fileMenu->actions().contains(exportAirfoilPdf));
+    QVERIFY(!fileMenu->actions().contains(exportAirfoilSvg));
+    QVERIFY(!fileMenu->actions().contains(exportPng));
+    QVERIFY(!fileMenu->actions().contains(exportPdf));
+    QVERIFY(!fileMenu->actions().contains(exportSvg));
+    const int recentIndex =
+        fileMenu->actions().indexOf(recentMenu->menuAction());
+    QVERIFY(recentIndex > 0);
+    QVERIFY(fileMenu->actions().at(recentIndex - 1)->isSeparator());
     QVERIFY(window.findChild<QMenu*>("analysisMenu") == nullptr);
     QVERIFY(window.findChild<QMenu*>("helpMenu") != nullptr);
     QVERIFY(window.findChild<QToolBar*>("mainToolBar") == nullptr);
@@ -220,6 +278,12 @@ class MainWindowTests : public QObject {
 
     QVERIFY(!window.findChild<QAction*>("saveAirfoilAction")->isEnabled());
     QVERIFY(!window.findChild<QAction*>("exportDxfAction")->isEnabled());
+    QVERIFY(!window.findChild<QAction*>("exportAirfoilPngAction")
+                 ->isEnabled());
+    QVERIFY(!window.findChild<QAction*>("exportAirfoilPdfAction")
+                 ->isEnabled());
+    QVERIFY(!window.findChild<QAction*>("exportAirfoilSvgAction")
+                 ->isEnabled());
     QVERIFY(!window.findChild<QAction*>("exportCpAction")->isEnabled());
     QVERIFY(window.findChild<QAction*>("exportPlotPngAction")->isEnabled());
     QVERIFY(window.findChild<QAction*>("exportPlotPdfAction")->isEnabled());
@@ -587,12 +651,32 @@ class MainWindowTests : public QObject {
     QVERIFY(window.findChild<QAction*>("saveAirfoilAction")->isEnabled());
     QVERIFY(window.findChild<QAction*>("exportDxfAction")->isEnabled());
 
+    QVERIFY(window.findChild<QAction*>("exportAirfoilPngAction")
+                ->isEnabled());
+    QVERIFY(window.findChild<QAction*>("exportAirfoilPdfAction")
+                ->isEnabled());
+    QVERIFY(window.findChild<QAction*>("exportAirfoilSvgAction")
+                ->isEnabled());
+
+    harness.savePath = directory.filePath(QStringLiteral("saved"));
     window.findChild<QAction*>("saveAirfoilAction")->trigger();
     QVERIFY(harness.errors.isEmpty());
-    QCOMPARE(harness.lastSuggested, QStringLiteral("diamond"));
-    const QString saved = readText(harness.savePath);
+    QCOMPARE(harness.lastSuggested, QStringLiteral("diamond.dat"));
+    QString saved = readText(harness.savePath + QStringLiteral(".dat"));
     QVERIFY(saved.startsWith(QStringLiteral("diamond\n")));
     QCOMPARE(saved.count(QLatin1Char('\n')), 6);
+
+    harness.savePath = directory.filePath(QStringLiteral("saved-upper.DAT"));
+    window.findChild<QAction*>("saveAirfoilAction")->trigger();
+    QVERIFY(harness.errors.isEmpty());
+    QVERIFY(QFile::exists(harness.savePath));
+
+    harness.savePath = directory.filePath(QStringLiteral("saved-foreign.txt"));
+    window.findChild<QAction*>("saveAirfoilAction")->trigger();
+    QVERIFY(harness.errors.isEmpty());
+    QVERIFY(QFile::exists(harness.savePath + QStringLiteral(".dat")));
+    saved = readText(harness.savePath + QStringLiteral(".dat"));
+    QVERIFY(saved.startsWith(QStringLiteral("diamond\n")));
 
     harness.savePath = directory.filePath(QStringLiteral("panel.dxf"));
     window.findChild<QAction*>("exportDxfAction")->trigger();
@@ -600,6 +684,27 @@ class MainWindowTests : public QObject {
     const QString dxf = readText(harness.savePath);
     QVERIFY(dxf.startsWith(QStringLiteral("999\n")));
     QVERIFY(dxf.contains(QStringLiteral("LINE")));
+
+    harness.savePath = directory.filePath(QStringLiteral("airfoil.png"));
+    window.findChild<QAction*>("exportAirfoilPngAction")->trigger();
+    QVERIFY(harness.errors.isEmpty());
+    QFile airfoilPng(harness.savePath);
+    QVERIFY(airfoilPng.open(QIODevice::ReadOnly));
+    QVERIFY(airfoilPng.readAll().startsWith("\x89PNG\r\n\x1a\n"));
+
+    harness.savePath = directory.filePath(QStringLiteral("airfoil.pdf"));
+    window.findChild<QAction*>("exportAirfoilPdfAction")->trigger();
+    QVERIFY(harness.errors.isEmpty());
+    QFile airfoilPdf(harness.savePath);
+    QVERIFY(airfoilPdf.open(QIODevice::ReadOnly));
+    QVERIFY(airfoilPdf.readAll().startsWith("%PDF"));
+
+    harness.savePath = directory.filePath(QStringLiteral("airfoil.svg"));
+    window.findChild<QAction*>("exportAirfoilSvgAction")->trigger();
+    QVERIFY(harness.errors.isEmpty());
+    const QString airfoilSvg = readText(harness.savePath);
+    QVERIFY(airfoilSvg.contains(QStringLiteral("<svg")));
+    QVERIFY(!airfoilSvg.contains(QStringLiteral("<image")));
 
     window.findChild<QAction*>("aboutAction")->trigger();
     QVERIFY(harness.infoTitle.contains(QStringLiteral("About")));
@@ -618,6 +723,15 @@ class MainWindowTests : public QObject {
         static_cast<int>(xfoil::app::product::version.size()))));
     QVERIFY(harness.infoText.contains(
         QStringLiteral("Copyright (C) 2026 Olaf Frommann")));
+    QVERIFY(harness.infoText.contains(QStringLiteral(
+        "Copyright (C) 2026 Olaf Frommann\n\n"
+        "https://github.com/of33/XFOIL.next")));
+    QVERIFY(harness.infoText.contains(
+        QStringLiteral("This software uses:\n")));
+    const QString bullet(QChar(0x2022));
+    QVERIFY(harness.infoText.contains(bullet + QStringLiteral(" Qt ")));
+    QVERIFY(harness.infoText.contains(
+        bullet + QStringLiteral(" QCustomPlot ")));
     QVERIFY(harness.infoText.contains(QStringLiteral("XFOIL 6.996")));
     QVERIFY(harness.infoText.contains(QStringLiteral("GPL-3.0-or-later")));
     QCOMPARE(harness.infoText.count(
@@ -639,6 +753,7 @@ class MainWindowTests : public QObject {
     int minimumWidth = 0;
     int actualWidth = 0;
     bool found = false;
+    bool whiteBackground = false;
     QTimer timer;
     QObject::connect(&timer, &QTimer::timeout, &window, [&]() {
       for (QWidget* widget : QApplication::topLevelWidgets()) {
@@ -650,6 +765,9 @@ class MainWindowTests : public QObject {
         baseWidth = box->property("aboutBaseWidth").toInt();
         minimumWidth = box->minimumWidth();
         actualWidth = box->width();
+        auto* label = box->findChild<QLabel*>("aboutTextLabel");
+        whiteBackground = label != nullptr &&
+            label->palette().color(QPalette::Window) == QColor(Qt::white);
         found = true;
         timer.stop();
         box->accept();
@@ -659,6 +777,7 @@ class MainWindowTests : public QObject {
     timer.start(10);
     window.findChild<QAction*>("aboutAction")->trigger();
     QVERIFY(found);
+    QVERIFY(whiteBackground);
     QVERIFY2(baseWidth > 0, "base width missing");
     const int targetWidth = qRound(static_cast<double>(baseWidth) * 1.2);
     QVERIFY2(minimumWidth >= targetWidth || actualWidth >= targetWidth,

@@ -93,6 +93,9 @@ class MainWindow : public QMainWindow {
   void openPath(const QString& path);
   void saveAirfoilDialog();
   void exportDxfDialog();
+  void exportAirfoilPngDialog();
+  void exportAirfoilPdfDialog();
+  void exportAirfoilSvgDialog();
   void importPolarDialog();
   void exportCurrentPolarDialog();
   void exportComparisonPolarDialog();
@@ -127,6 +130,9 @@ class MainWindow : public QMainWindow {
   QAction* loadAirfoilAction_{};
   QAction* saveAirfoilAction_{};
   QAction* exportDxfAction_{};
+  QAction* exportAirfoilPngAction_{};
+  QAction* exportAirfoilPdfAction_{};
+  QAction* exportAirfoilSvgAction_{};
   QAction* importPolarAction_{};
   QAction* exportCurrentPolarAction_{};
   QAction* exportComparisonPolarAction_{};
@@ -136,6 +142,8 @@ class MainWindow : public QMainWindow {
   QAction* exportPlotSvgAction_{};
   QAction* exitAction_{};
   QAction* aboutAction_{};
+  QMenu* exportAirfoilMenu_{};
+  QMenu* exportPlotMenu_{};
   QMenu* recentFilesMenu_{};
   QMenu* fileMenu_{};
   QMenu* helpMenu_{};

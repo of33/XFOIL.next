@@ -141,6 +141,12 @@ class XFOIL_GUI_API XFoilAnalysisWidget : public QWidget {
   Result<std::string> activePlotPdf() const;
   [[nodiscard]]
   Result<std::string> activePlotSvg() const;
+  [[nodiscard]]
+  Result<std::string> airfoilPlotPng() const;
+  [[nodiscard]]
+  Result<std::string> airfoilPlotPdf() const;
+  [[nodiscard]]
+  Result<std::string> airfoilPlotSvg() const;
 
   [[nodiscard]]
   std::optional<geometry::AirfoilGeometry> geometry() const;

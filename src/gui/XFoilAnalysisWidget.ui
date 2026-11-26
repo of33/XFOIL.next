@@ -97,7 +97,7 @@
               </sizepolicy>
              </property>
              <property name="title">
-              <string>Geometry: no geometry</string>
+              <string>Airfoil: none</string>
              </property>
              <property name="toolTip">
               <string>Double-click the title to rename the airfoil.</string>
@@ -151,7 +151,7 @@
                    <string>NACA</string>
                   </property>
                   <property name="accessibleName">
-                   <string>NACA geometry</string>
+                   <string>NACA airfoil</string>
                   </property>
                  </widget>
                 </item>
@@ -161,7 +161,7 @@
                    <string>NACS</string>
                   </property>
                   <property name="accessibleName">
-                   <string>NACS geometry</string>
+                   <string>NACS airfoil</string>
                   </property>
                  </widget>
                 </item>
@@ -256,13 +256,13 @@
                    <item>
                     <widget class="QPushButton" name="applyGeometryButton">
                      <property name="text">
-                      <string>Create Geometry</string>
+                      <string>Create airfoil</string>
                      </property>
                      <property name="toolTip">
-                      <string>Create the selected NACA or NACS geometry and generate panels.</string>
+                      <string>Create the selected NACA or NACS airfoil and generate panels.</string>
                      </property>
                      <property name="accessibleName">
-                      <string>Create geometry</string>
+                      <string>Create airfoil</string>
                      </property>
                     </widget>
                    </item>
@@ -2522,7 +2522,7 @@
                       <string>Stored comparison polars</string>
                      </property>
                      <property name="toolTip">
-                      <string>Select the comparison polar to rename, reorder, hide or remove.</string>
+                      <string>Select a comparison polar; use its checkbox to show or hide it. Double-click or press F2 to rename it.</string>
                      </property>
                     </widget>
                    </item>
@@ -2540,32 +2540,12 @@
                     </widget>
                    </item>
                    <item>
-                    <widget class="QLineEdit" name="polarNameEdit">
-                     <property name="placeholderText">
-                      <string>Comparison name</string>
-                     </property>
-                     <property name="accessibleName">
-                      <string>Comparison polar name</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QCheckBox" name="polarVisibilityCheckBox">
-                     <property name="text">
-                      <string>Visible</string>
-                     </property>
-                     <property name="toolTip">
-                      <string>Show or hide the selected comparison polar in the five scalar plots.</string>
-                     </property>
-                     <property name="accessibleName">
-                      <string>Comparison polar visible</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
                     <widget class="QPushButton" name="renamePolarButton">
                      <property name="text">
                       <string>Rename</string>
+                     </property>
+                     <property name="toolTip">
+                      <string>Edit the selected comparison polar name in the list.</string>
                      </property>
                      <property name="accessibleName">
                       <string>Rename comparison polar</string>

@@ -531,7 +531,7 @@ class BoldGeometryTitleStyle : public QProxyStyle {
   }
 
   static std::pair<QString, QString> splitGeometryTitle(const QString& title) {
-    const QString prefix = QStringLiteral("Geometry: ");
+    const QString prefix = QStringLiteral("Airfoil: ");
     if (title.startsWith(prefix)) {
       return {prefix, title.mid(prefix.size())};
     }
@@ -599,6 +599,7 @@ class XFoilAnalysisWidget::Impl {
   explicit Impl(XFoilAnalysisWidget* owner) : owner_(owner) {
     ensureGuiMetaTypes();
     ui.setupUi(owner_);
+    connectXAxisSync();
     geometrySourceButtonGroup_ = new QButtonGroup(owner_);
     geometrySourceButtonGroup_->setObjectName(
         QStringLiteral("geometrySourceButtonGroup"));
@@ -1189,6 +1190,39 @@ class XFoilAnalysisWidget::Impl {
     }
   }
 
+  void connectXAxisSync() {
+    cpPlotCanvas_ =
+        ui.cpPlot->findChild<QCustomPlot*>(QStringLiteral("plotCanvas"));
+    airfoilPlotCanvas_ = ui.airfoilPlot->findChild<QCustomPlot*>(
+        QStringLiteral("geometryPlot"));
+    if (cpPlotCanvas_ == nullptr || airfoilPlotCanvas_ == nullptr) {
+      return;
+    }
+    QObject::connect(
+        cpPlotCanvas_->xAxis,
+        QOverload<const QCPRange&>::of(&QCPAxis::rangeChanged), owner_,
+        [this](const QCPRange& range) {
+          if (syncingXAxis_) {
+            return;
+          }
+          syncingXAxis_ = true;
+          ui.airfoilPlot->setXRange(range.lower, range.upper);
+          syncingXAxis_ = false;
+        });
+    QObject::connect(
+        airfoilPlotCanvas_->xAxis,
+        QOverload<const QCPRange&>::of(&QCPAxis::rangeChanged), owner_,
+        [this](const QCPRange& range) {
+          if (syncingXAxis_ || ui.airfoilPlot->isAdjustingAxes()) {
+            return;
+          }
+          syncingXAxis_ = true;
+          cpPlotCanvas_->xAxis->setRange(range);
+          syncingXAxis_ = false;
+          cpPlotCanvas_->replot(QCustomPlot::rpQueuedReplot);
+        });
+  }
+
   void refreshPolarManager() {
     updatingPolarList_ = true;
     {
@@ -1202,7 +1236,8 @@ class XFoilAnalysisWidget::Impl {
                       QVariant::fromValue<qulonglong>(entry.id));
         item->setData(kComparisonStyleIndexRole,
                       static_cast<int>(comparisonStyleIndexForId(entry.id)));
-        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable |
+                       Qt::ItemIsEditable);
         item->setCheckState(entry.visible ? Qt::Checked : Qt::Unchecked);
       }
       const std::optional<std::uint64_t> selected =
@@ -1217,23 +1252,9 @@ class XFoilAnalysisWidget::Impl {
         }
       }
     }
-    const GuiStoredPolar* selected = polarManager_.selected();
-    {
-      const QSignalBlocker blocker(ui.polarNameEdit);
-      ui.polarNameEdit->setText(
-          selected == nullptr ? QString()
-                              : QString::fromStdString(selected->name));
-    }
-    {
-      const QSignalBlocker blocker(ui.polarVisibilityCheckBox);
-      ui.polarVisibilityCheckBox->setChecked(
-          selected != nullptr && selected->visible);
-    }
-    const bool enabled = selected != nullptr;
-    ui.polarNameEdit->setEnabled(enabled);
+    const bool enabled = polarManager_.selected() != nullptr;
     ui.renamePolarButton->setEnabled(enabled);
     ui.removePolarButton->setEnabled(enabled);
-    ui.polarVisibilityCheckBox->setEnabled(enabled);
     ui.movePolarUpButton->setEnabled(enabled);
     ui.movePolarDownButton->setEnabled(enabled);
     ui.clearPolarsButton->setEnabled(!polarManager_.entries().empty());
@@ -1275,34 +1296,29 @@ class XFoilAnalysisWidget::Impl {
       return;
     }
     const std::uint64_t id = item->data(Qt::UserRole).toULongLong();
+    const auto& entries = polarManager_.entries();
+    const auto entry = std::find_if(
+        entries.begin(), entries.end(),
+        [id](const GuiStoredPolar& value) { return value.id == id; });
+    if (entry != entries.end()) {
+      const std::string name = item->text().trimmed().toStdString();
+      if (name != entry->name) {
+        const Result<void> renamed = polarManager_.rename(id, name);
+        polarManagerMessage_ =
+            renamed.isErr()
+                ? QString::fromStdString(renamed.error().message)
+                : QString();
+      }
+    }
     (void)polarManager_.setVisible(id, item->checkState() == Qt::Checked);
     refreshPolarManager();
   }
 
-  void renameSelectedPolar() {
-    const GuiStoredPolar* selected = polarManager_.selected();
-    if (selected == nullptr) {
-      return;
+  void editSelectedPolarName() {
+    QListWidgetItem* item = ui.polarListView->currentItem();
+    if (item != nullptr) {
+      ui.polarListView->editItem(item);
     }
-    const std::string name =
-        ui.polarNameEdit->text().trimmed().toStdString();
-    const Result<void> renamed =
-        polarManager_.rename(selected->id, name);
-    if (renamed.isErr()) {
-      polarManagerMessage_ = QString::fromStdString(renamed.error().message);
-    } else {
-      polarManagerMessage_.clear();
-    }
-    refreshPolarManager();
-  }
-
-  void setSelectedPolarVisibility(bool visible) {
-    const GuiStoredPolar* selected = polarManager_.selected();
-    if (selected == nullptr) {
-      return;
-    }
-    (void)polarManager_.setVisible(selected->id, visible);
-    refreshPolarManager();
   }
 
   void moveSelectedPolar(bool up) {
@@ -2094,11 +2110,9 @@ class XFoilAnalysisWidget::Impl {
               }
             });
     QObject::connect(ui.renamePolarButton, &QPushButton::clicked, owner_,
-            [this]() { renameSelectedPolar(); });
+            [this]() { editSelectedPolarName(); });
     QObject::connect(ui.removePolarButton, &QPushButton::clicked, owner_,
             [this]() { removeSelectedPolar(); });
-    QObject::connect(ui.polarVisibilityCheckBox, &QCheckBox::toggled, owner_,
-            [this](bool checked) { setSelectedPolarVisibility(checked); });
     QObject::connect(ui.movePolarUpButton, &QPushButton::clicked, owner_,
             [this]() { moveSelectedPolar(true); });
     QObject::connect(ui.movePolarDownButton, &QPushButton::clicked, owner_,
@@ -2723,15 +2737,63 @@ class XFoilAnalysisWidget::Impl {
   }
 
   [[nodiscard]]
+  QCustomPlot* airfoilPlot() const {
+    return ui.airfoilPlot != nullptr
+               ? ui.airfoilPlot->findChild<QCustomPlot*>(
+                     QStringLiteral("geometryPlot"))
+               : nullptr;
+  }
+
+  [[nodiscard]]
   bool hasActivePlot() const noexcept { return activePlot() != nullptr; }
 
   [[nodiscard]]
   Result<std::string> activePlotPng() const {
-    QCustomPlot* plot = activePlot();
+    return renderPlotPng(activePlot(),
+                         "No active result plot is available");
+  }
+
+  [[nodiscard]]
+  Result<std::string> activePlotPdf() const {
+    return renderPlotPdf(activePlot(),
+                         "No active result plot is available",
+                         QStringLiteral("XFOIL.next plot"));
+  }
+
+  [[nodiscard]]
+  Result<std::string> activePlotSvg() const {
+    return renderPlotSvg(
+        activePlot(), "No active result plot is available",
+        QStringLiteral("XFOIL.next analysis plot"),
+        QStringLiteral("Vector export of the active result plot"));
+  }
+
+  [[nodiscard]]
+  Result<std::string> airfoilPlotPng() const {
+    return renderPlotPng(airfoilPlot(), "No airfoil plot is available");
+  }
+
+  [[nodiscard]]
+  Result<std::string> airfoilPlotPdf() const {
+    return renderPlotPdf(airfoilPlot(), "No airfoil plot is available",
+                         QStringLiteral("XFOIL.next airfoil"));
+  }
+
+  [[nodiscard]]
+  Result<std::string> airfoilPlotSvg() const {
+    return renderPlotSvg(
+        airfoilPlot(), "No airfoil plot is available",
+        QStringLiteral("XFOIL.next airfoil plot"),
+        QStringLiteral("Vector export of the airfoil plot"));
+  }
+
+  [[nodiscard]]
+  Result<std::string> renderPlotPng(QCustomPlot* plot,
+                                    const char* noneMessage) const {
     if (plot == nullptr) {
       return Result<std::string>::fail(Error::make(
           ErrorCategory::invalidState, "gui.export.plot.none",
-          "No active result plot is available", "export"));
+          noneMessage, "export"));
     }
     constexpr int width = 1200;
     constexpr int height = 800;
@@ -2758,12 +2820,13 @@ class XFoilAnalysisWidget::Impl {
   }
 
   [[nodiscard]]
-  Result<std::string> activePlotPdf() const {
-    QCustomPlot* plot = activePlot();
+  Result<std::string> renderPlotPdf(QCustomPlot* plot,
+                                    const char* noneMessage,
+                                    const QString& title) const {
     if (plot == nullptr) {
       return Result<std::string>::fail(Error::make(
           ErrorCategory::invalidState, "gui.export.plot.none",
-          "No active result plot is available", "export"));
+          noneMessage, "export"));
     }
     constexpr int width = 1200;
     constexpr int height = 800;
@@ -2777,7 +2840,9 @@ class XFoilAnalysisWidget::Impl {
       }
       QPdfWriter writer(&buffer);
       writer.setResolution(96);
-      writer.setPageSize(QPageSize(QPageSize::A4));
+      writer.setPageSize(
+          QPageSize(QSizeF(width / 96.0, height / 96.0), QPageSize::Inch,
+                    title, QPageSize::ExactMatch));
       writer.setPageMargins(QMarginsF(0.0, 0.0, 0.0, 0.0));
       QCPPainter painter(&writer);
       plot->toPainter(&painter, width, height);
@@ -2793,12 +2858,14 @@ class XFoilAnalysisWidget::Impl {
   }
 
   [[nodiscard]]
-  Result<std::string> activePlotSvg() const {
-    QCustomPlot* plot = activePlot();
+  Result<std::string> renderPlotSvg(QCustomPlot* plot,
+                                    const char* noneMessage,
+                                    const QString& title,
+                                    const QString& description) const {
     if (plot == nullptr) {
       return Result<std::string>::fail(Error::make(
           ErrorCategory::invalidState, "gui.export.plot.none",
-          "No active result plot is available", "export"));
+          noneMessage, "export"));
     }
     constexpr int width = 1200;
     constexpr int height = 800;
@@ -2814,9 +2881,8 @@ class XFoilAnalysisWidget::Impl {
       generator.setOutputDevice(&buffer);
       generator.setSize(QSize(width, height));
       generator.setViewBox(QRect(0, 0, width, height));
-      generator.setTitle(QStringLiteral("XFOIL.next analysis plot"));
-      generator.setDescription(
-          QStringLiteral("Vector export of the active result plot"));
+      generator.setTitle(title);
+      generator.setDescription(description);
       QCPPainter painter(&generator);
       plot->toPainter(&painter, width, height);
       painter.end();
@@ -3183,16 +3249,16 @@ class XFoilAnalysisWidget::Impl {
     }
     refreshProgressBar();
 
-    QString displayName = QStringLiteral("no geometry");
+    QString displayName = QStringLiteral("none");
     if (model_.geometry().has_value()) {
       const std::string_view name = model_.geometry()->name();
       displayName =
           name.empty()
-              ? QStringLiteral("Unnamed geometry")
+              ? QStringLiteral("Unnamed airfoil")
               : QString::fromStdString(std::string(name));
     }
     ui.geometryGroup->setTitle(
-        QStringLiteral("Geometry: %1").arg(displayName));
+        QStringLiteral("Airfoil: %1").arg(displayName));
     if (geometryImportNotice_) {
       ui.geometryImportNoticeLabel->setText(QStringLiteral(
           "Clockwise point order detected and reversed to "
@@ -3246,6 +3312,9 @@ class XFoilAnalysisWidget::Impl {
   AnalysisWorkflowViewOptions viewOptions_;
   GuiPolarManager polarManager_;
   QString polarManagerMessage_;
+  QCustomPlot* cpPlotCanvas_{nullptr};
+  QCustomPlot* airfoilPlotCanvas_{nullptr};
+  bool syncingXAxis_{false};
   bool updatingPolarList_{false};
   AnalysisOutcome analysisOutcome_{AnalysisOutcome::none};
   QString analysisStatusText_{QStringLiteral("Idle")};
@@ -3382,6 +3451,18 @@ Result<std::string> XFoilAnalysisWidget::activePlotPdf() const {
 
 Result<std::string> XFoilAnalysisWidget::activePlotSvg() const {
   return impl_->activePlotSvg();
+}
+
+Result<std::string> XFoilAnalysisWidget::airfoilPlotPng() const {
+  return impl_->airfoilPlotPng();
+}
+
+Result<std::string> XFoilAnalysisWidget::airfoilPlotPdf() const {
+  return impl_->airfoilPlotPdf();
+}
+
+Result<std::string> XFoilAnalysisWidget::airfoilPlotSvg() const {
+  return impl_->airfoilPlotSvg();
 }
 
 std::optional<geometry::AirfoilGeometry> XFoilAnalysisWidget::geometry() const {

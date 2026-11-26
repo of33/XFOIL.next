@@ -45,6 +45,7 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QPalette>
 #include <QSettings>
 #include <QStatusBar>
 #include <QTabWidget>
@@ -222,6 +223,12 @@ MainWindow::MainWindow(Dependencies dependencies, QWidget* parent)
       auto* label = new QLabel(text, &dialog);
       label->setObjectName(QStringLiteral("aboutTextLabel"));
       label->setTextInteractionFlags(Qt::TextBrowserInteraction);
+      label->setAutoFillBackground(true);
+      label->setMargin(8);
+      QPalette labelPalette = label->palette();
+      labelPalette.setColor(QPalette::Window, Qt::white);
+      labelPalette.setColor(QPalette::WindowText, Qt::black);
+      label->setPalette(labelPalette);
       layout->addWidget(label);
       auto* buttons =
           new QDialogButtonBox(QDialogButtonBox::Ok, &dialog);
@@ -312,16 +319,37 @@ void MainWindow::createActions() {
   connect(loadAirfoilAction_, &QAction::triggered, this,
           [this](bool) { openFileDialog(); });
 
-  saveAirfoilAction_ = new QAction(QStringLiteral("&Save Airfoil..."), this);
+  saveAirfoilAction_ = new QAction(QStringLiteral("&Data..."), this);
   saveAirfoilAction_->setObjectName(QStringLiteral("saveAirfoilAction"));
   saveAirfoilAction_->setShortcut(QKeySequence::Save);
   connect(saveAirfoilAction_, &QAction::triggered, this,
           [this](bool) { saveAirfoilDialog(); });
 
-  exportDxfAction_ = new QAction(QStringLiteral("Export &DXF..."), this);
+  exportDxfAction_ = new QAction(QStringLiteral("DXF..."), this);
   exportDxfAction_->setObjectName(QStringLiteral("exportDxfAction"));
   connect(exportDxfAction_, &QAction::triggered, this,
           [this](bool) { exportDxfDialog(); });
+
+  exportAirfoilPngAction_ =
+      new QAction(QStringLiteral("&PNG..."), this);
+  exportAirfoilPngAction_->setObjectName(
+      QStringLiteral("exportAirfoilPngAction"));
+  connect(exportAirfoilPngAction_, &QAction::triggered, this,
+          [this](bool) { exportAirfoilPngDialog(); });
+
+  exportAirfoilPdfAction_ =
+      new QAction(QStringLiteral("P&DF..."), this);
+  exportAirfoilPdfAction_->setObjectName(
+      QStringLiteral("exportAirfoilPdfAction"));
+  connect(exportAirfoilPdfAction_, &QAction::triggered, this,
+          [this](bool) { exportAirfoilPdfDialog(); });
+
+  exportAirfoilSvgAction_ =
+      new QAction(QStringLiteral("S&VG..."), this);
+  exportAirfoilSvgAction_->setObjectName(
+      QStringLiteral("exportAirfoilSvgAction"));
+  connect(exportAirfoilSvgAction_, &QAction::triggered, this,
+          [this](bool) { exportAirfoilSvgDialog(); });
 
   importPolarAction_ = new QAction(QStringLiteral("&Import Polar..."), this);
   importPolarAction_->setObjectName(QStringLiteral("importPolarAction"));
@@ -347,20 +375,17 @@ void MainWindow::createActions() {
   connect(exportCpAction_, &QAction::triggered, this,
           [this](bool) { exportCpDialog(); });
 
-  exportPlotPngAction_ =
-      new QAction(QStringLiteral("Export Active Plot as &PNG..."), this);
+  exportPlotPngAction_ = new QAction(QStringLiteral("&PNG..."), this);
   exportPlotPngAction_->setObjectName(QStringLiteral("exportPlotPngAction"));
   connect(exportPlotPngAction_, &QAction::triggered, this,
           [this](bool) { exportPlotPngDialog(); });
 
-  exportPlotPdfAction_ =
-      new QAction(QStringLiteral("Export Active Plot as P&DF..."), this);
+  exportPlotPdfAction_ = new QAction(QStringLiteral("P&DF..."), this);
   exportPlotPdfAction_->setObjectName(QStringLiteral("exportPlotPdfAction"));
   connect(exportPlotPdfAction_, &QAction::triggered, this,
           [this](bool) { exportPlotPdfDialog(); });
 
-  exportPlotSvgAction_ =
-      new QAction(QStringLiteral("Export Active Plot as S&VG..."), this);
+  exportPlotSvgAction_ = new QAction(QStringLiteral("S&VG..."), this);
   exportPlotSvgAction_->setObjectName(QStringLiteral("exportPlotSvgAction"));
   connect(exportPlotSvgAction_, &QAction::triggered, this,
           [this](bool) { exportPlotSvgDialog(); });
@@ -381,18 +406,26 @@ void MainWindow::createMenus() {
   fileMenu_ = menuBar()->addMenu(QStringLiteral("&File"));
   fileMenu_->setObjectName(QStringLiteral("fileMenu"));
   fileMenu_->addAction(loadAirfoilAction_);
-  fileMenu_->addAction(saveAirfoilAction_);
-  fileMenu_->addAction(exportDxfAction_);
+  exportAirfoilMenu_ = fileMenu_->addMenu(QStringLiteral("Export &Airfoil"));
+  exportAirfoilMenu_->setObjectName(QStringLiteral("exportAirfoilMenu"));
+  exportAirfoilMenu_->addAction(saveAirfoilAction_);
+  exportAirfoilMenu_->addAction(exportDxfAction_);
+  exportAirfoilMenu_->addAction(exportAirfoilPngAction_);
+  exportAirfoilMenu_->addAction(exportAirfoilPdfAction_);
+  exportAirfoilMenu_->addAction(exportAirfoilSvgAction_);
   fileMenu_->addSeparator();
   fileMenu_->addAction(importPolarAction_);
   fileMenu_->addAction(exportCurrentPolarAction_);
   fileMenu_->addAction(exportComparisonPolarAction_);
   fileMenu_->addSeparator();
   fileMenu_->addAction(exportCpAction_);
-  fileMenu_->addAction(exportPlotPngAction_);
-  fileMenu_->addAction(exportPlotPdfAction_);
-  fileMenu_->addAction(exportPlotSvgAction_);
-  recentFilesMenu_ = fileMenu_->addMenu(QStringLiteral("Recent Files"));
+  exportPlotMenu_ = fileMenu_->addMenu(QStringLiteral("Export &Active Plot"));
+  exportPlotMenu_->setObjectName(QStringLiteral("exportPlotMenu"));
+  exportPlotMenu_->addAction(exportPlotPngAction_);
+  exportPlotMenu_->addAction(exportPlotPdfAction_);
+  exportPlotMenu_->addAction(exportPlotSvgAction_);
+  fileMenu_->addSeparator();
+  recentFilesMenu_ = fileMenu_->addMenu(QStringLiteral("Recent &Airfoils"));
   recentFilesMenu_->setObjectName(QStringLiteral("recentFilesMenu"));
   fileMenu_->addSeparator();
   fileMenu_->addAction(exitAction_);
@@ -436,8 +469,11 @@ void MainWindow::saveSettings() {
 }
 
 void MainWindow::updateAppActions() {
-  saveAirfoilAction_->setEnabled(widget_ != nullptr &&
-                                 widget_->geometry().has_value());
+  const bool airfoil = widget_ != nullptr && widget_->geometry().has_value();
+  saveAirfoilAction_->setEnabled(airfoil);
+  exportAirfoilPngAction_->setEnabled(airfoil);
+  exportAirfoilPdfAction_->setEnabled(airfoil);
+  exportAirfoilSvgAction_->setEnabled(airfoil);
   exportDxfAction_->setEnabled(widget_ != nullptr &&
                                widget_->panelGeometry().has_value());
   importPolarAction_->setEnabled(widget_ != nullptr);
@@ -461,7 +497,7 @@ void MainWindow::updateRecentMenu() {
   recentActions_.clear();
   if (recentFiles_.isEmpty()) {
     QAction* empty = recentFilesMenu_->addAction(
-        QStringLiteral("No recent files"));
+        QStringLiteral("No recent airfoils"));
     empty->setEnabled(false);
     return;
   }
@@ -581,23 +617,26 @@ void MainWindow::saveAirfoilDialog() {
     return;
   }
 
-  QString suggested = safeAirfoilBaseName(
-      QString::fromStdString(std::string(geometry->name())));
+  QString suggested = ensureSuffix(
+      safeAirfoilBaseName(
+          QString::fromStdString(std::string(geometry->name()))),
+      QStringLiteral(".dat"));
   const std::optional<QString> path = chooseFile(
       FileDialogMode::save, QStringLiteral("Save Airfoil"),
       airfoilSaveFilter(), suggested);
   if (!path.has_value()) {
     return;
   }
+  const QString targetPath = ensureSuffix(*path, QStringLiteral(".dat"));
   const FileWriteResult written =
-      saveAirfoilFile(toPath(*path), *geometry, true);
+      saveAirfoilFile(toPath(targetPath), *geometry, true);
   if (!written.success) {
     showError(QStringLiteral("Save Airfoil"),
               QString::fromStdString(written.message));
     return;
   }
   statusBar()->showMessage(
-      QStringLiteral("Saved %1").arg(QFileInfo(*path).fileName()));
+      QStringLiteral("Saved %1").arg(QFileInfo(targetPath).fileName()));
 }
 
 void MainWindow::exportDxfDialog() {
@@ -753,6 +792,78 @@ void MainWindow::exportCpDialog() {
       QStringLiteral("Exported %1").arg(QFileInfo(*path).fileName()));
 }
 
+void MainWindow::exportAirfoilPngDialog() {
+  const Result<std::string> encoded = widget_->airfoilPlotPng();
+  if (encoded.isErr()) {
+    showError(QStringLiteral("Export Airfoil as PNG"),
+              QString::fromStdString(encoded.error().message));
+    return;
+  }
+  const std::optional<QString> path = chooseFile(
+      FileDialogMode::save, QStringLiteral("Export Airfoil as PNG"),
+      pngSaveFilter(), QStringLiteral("xfoil_airfoil.png"));
+  if (!path.has_value()) {
+    return;
+  }
+  const FileWriteResult written =
+      saveBinaryFile(toPath(*path), encoded.value(), true);
+  if (!written.success) {
+    showError(QStringLiteral("Export Airfoil as PNG"),
+              QString::fromStdString(written.message));
+    return;
+  }
+  statusBar()->showMessage(
+      QStringLiteral("Exported %1").arg(QFileInfo(*path).fileName()));
+}
+
+void MainWindow::exportAirfoilPdfDialog() {
+  const Result<std::string> encoded = widget_->airfoilPlotPdf();
+  if (encoded.isErr()) {
+    showError(QStringLiteral("Export Airfoil as PDF"),
+              QString::fromStdString(encoded.error().message));
+    return;
+  }
+  const std::optional<QString> path = chooseFile(
+      FileDialogMode::save, QStringLiteral("Export Airfoil as PDF"),
+      pdfSaveFilter(), QStringLiteral("xfoil_airfoil.pdf"));
+  if (!path.has_value()) {
+    return;
+  }
+  const FileWriteResult written =
+      saveBinaryFile(toPath(*path), encoded.value(), true);
+  if (!written.success) {
+    showError(QStringLiteral("Export Airfoil as PDF"),
+              QString::fromStdString(written.message));
+    return;
+  }
+  statusBar()->showMessage(
+      QStringLiteral("Exported %1").arg(QFileInfo(*path).fileName()));
+}
+
+void MainWindow::exportAirfoilSvgDialog() {
+  const Result<std::string> encoded = widget_->airfoilPlotSvg();
+  if (encoded.isErr()) {
+    showError(QStringLiteral("Export Airfoil as SVG"),
+              QString::fromStdString(encoded.error().message));
+    return;
+  }
+  const std::optional<QString> path = chooseFile(
+      FileDialogMode::save, QStringLiteral("Export Airfoil as SVG"),
+      svgSaveFilter(), QStringLiteral("xfoil_airfoil.svg"));
+  if (!path.has_value()) {
+    return;
+  }
+  const FileWriteResult written =
+      saveBinaryFile(toPath(*path), encoded.value(), true);
+  if (!written.success) {
+    showError(QStringLiteral("Export Airfoil as SVG"),
+              QString::fromStdString(written.message));
+    return;
+  }
+  statusBar()->showMessage(
+      QStringLiteral("Exported %1").arg(QFileInfo(*path).fileName()));
+}
+
 void MainWindow::exportPlotPngDialog() {
   const Result<std::string> encoded = widget_->activePlotPng();
   if (encoded.isErr()) {
@@ -833,12 +944,14 @@ void MainWindow::showAbout() {
       QStringLiteral(
           "%1 %2\n\n"
           "Copyright (C) 2026 Olaf Frommann\n"
+          "\n"
           "%6\n\n"
           "XFOIL.next is based on XFOIL 6.996\n"
           "by Mark Drela and Harold Youngren.\n\n"
           "License: %5\n\n"
-          "Qt %3\n"
-          "QCustomPlot %4")
+          "This software uses:\n"
+          "\u2022 Qt %3\n"
+          "\u2022 QCustomPlot %4")
           .arg(productName(), productVersion(),
                QStringLiteral(QT_VERSION_STR),
                QStringLiteral(QCUSTOMPLOT_VERSION_STR), productLicense(),

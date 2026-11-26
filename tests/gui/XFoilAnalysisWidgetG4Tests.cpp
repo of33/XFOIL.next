@@ -181,6 +181,40 @@ class XFoilAnalysisWidgetG4Tests : public QObject {
         QStringLiteral("Highest computed CL/CD")));
   }
 
+  void cpAndAirfoilXAxesStaySynchronized() {
+    XFoilAnalysisWidget widget;
+    configureSequence(widget, 3.0);
+    widget.analyze();
+    QTRY_VERIFY_WITH_TIMEOUT(!widget.isRunning(), 30000);
+
+    auto* cp = distribution(widget, "cpPlot");
+    auto* airfoil = widget.findChild<QWidget*>("airfoilPlot");
+    QVERIFY(cp != nullptr);
+    QVERIFY(airfoil != nullptr);
+    auto* cpCanvas = cp->findChild<QCustomPlot*>();
+    auto* airfoilCanvas = airfoil->findChild<QCustomPlot*>();
+    QVERIFY(cpCanvas != nullptr);
+    QVERIFY(airfoilCanvas != nullptr);
+    QCOMPARE(airfoilCanvas->xAxis->range().lower,
+             cpCanvas->xAxis->range().lower);
+    QCOMPARE(airfoilCanvas->xAxis->range().upper,
+             cpCanvas->xAxis->range().upper);
+
+    cpCanvas->xAxis->setRange(0.10, 0.90);
+    QCOMPARE(airfoilCanvas->xAxis->range().lower, 0.10);
+    QCOMPARE(airfoilCanvas->xAxis->range().upper, 0.90);
+
+    airfoilCanvas->xAxis->setRange(-0.10, 1.10);
+    QCOMPARE(cpCanvas->xAxis->range().lower, -0.10);
+    QCOMPARE(cpCanvas->xAxis->range().upper, 1.10);
+
+    QVERIFY(widget.setNaca("2412").isOk());
+    QCOMPARE(airfoilCanvas->xAxis->range().lower, -0.10);
+    QCOMPARE(airfoilCanvas->xAxis->range().upper, 1.10);
+    QCOMPARE(cpCanvas->xAxis->range().lower, -0.10);
+    QCOMPARE(cpCanvas->xAxis->range().upper, 1.10);
+  }
+
   void selectingACombinationPointSynchronizesWithoutSolving() {
     XFoilAnalysisWidget widget;
     configureSequence(widget, 3.0);

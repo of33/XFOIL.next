@@ -119,8 +119,8 @@ class GeometryPlotViewTests : public QObject {
     QCPCurve* geometryCurve = curveOf(plot, "geometryContour");
     QCPCurve* panelContour = curveOf(plot, "panelContour");
     QCPCurve* panelTicks = curveOf(plot, "panelTicks");
-    QCOMPARE(geometryCurve->dataCount(), 6);
-    QCOMPARE(panelContour->dataCount(), 6);
+    QCOMPARE(geometryCurve->dataCount(), 5);
+    QCOMPARE(panelContour->dataCount(), 5);
     QVERIFY(view.panelTickCount() > 0);
     QCOMPARE(panelTicks->dataCount(),
              static_cast<int>(view.panelTickCount() * 3));

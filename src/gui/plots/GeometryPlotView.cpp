@@ -69,26 +69,20 @@ struct Bounds {
   }
 };
 
-QVector<double> closedX(const std::vector<xfoil::Point2D>& points) {
+QVector<double> contourX(const std::vector<xfoil::Point2D>& points) {
   QVector<double> values;
-  values.reserve(static_cast<int>(points.size()) + 1);
+  values.reserve(static_cast<int>(points.size()));
   for (const xfoil::Point2D& point : points) {
     values.push_back(point.x);
-  }
-  if (!points.empty()) {
-    values.push_back(points.front().x);
   }
   return values;
 }
 
-QVector<double> closedY(const std::vector<xfoil::Point2D>& points) {
+QVector<double> contourY(const std::vector<xfoil::Point2D>& points) {
   QVector<double> values;
-  values.reserve(static_cast<int>(points.size()) + 1);
+  values.reserve(static_cast<int>(points.size()));
   for (const xfoil::Point2D& point : points) {
     values.push_back(point.y);
-  }
-  if (!points.empty()) {
-    values.push_back(points.front().y);
   }
   return values;
 }
@@ -171,7 +165,7 @@ void GeometryPlotView::setGeometry(
                                     geometry.coordinates().end());
   geometryPointCount_ = points.size();
   hasGeometry_ = !points.empty();
-  setCurveData(geometryContour_, closedX(points), closedY(points));
+  setCurveData(geometryContour_, contourX(points), contourY(points));
   geometryContour_->setVisible(hasGeometry_);
   updateAxes();
 }
@@ -180,7 +174,7 @@ void GeometryPlotView::setPanelGeometry(const SurfaceGeometry& panel) {
   panelPointCount_ = panel.points.size();
   hasPanel_ = !panel.points.empty();
   panelPoints_ = panel.points;
-  setCurveData(panelContour_, closedX(panel.points), closedY(panel.points));
+  setCurveData(panelContour_, contourX(panel.points), contourY(panel.points));
   updateAxes();
 }
 
@@ -338,7 +332,9 @@ void GeometryPlotView::clear() {
   geometryContour_->setVisible(false);
   panelContour_->setVisible(false);
   panelTicks_->setVisible(false);
-  plot_->xAxis->setRange(0.0, 1.0);
+  if (!xRangeLinked_) {
+    plot_->xAxis->setRange(0.0, 1.0);
+  }
   plot_->yAxis->setRange(-0.01, 0.01);
   plot_->replot();
 }
@@ -396,7 +392,9 @@ void GeometryPlotView::updateAxes() {
 
   if (!bounds.valid) {
     adjustingAxes_ = true;
-    plot_->xAxis->setRange(0.0, 1.0);
+    if (!xRangeLinked_) {
+      plot_->xAxis->setRange(0.0, 1.0);
+    }
     plot_->yAxis->setRange(-0.01, 0.01);
     adjustingAxes_ = false;
     rebuildPanelTicks();
@@ -412,11 +410,25 @@ void GeometryPlotView::updateAxes() {
   const double yMinimum = bounds.yMinimum - kYPad;
   const double yMaximum = bounds.yMaximum + kYPad;
   adjustingAxes_ = true;
-  plot_->xAxis->setRange(xMinimum, xMaximum);
+  if (!xRangeLinked_) {
+    plot_->xAxis->setRange(xMinimum, xMaximum);
+  }
   plot_->yAxis->setRange(yMinimum, yMaximum);
   adjustingAxes_ = false;
   rebuildPanelTicks();
   plot_->replot();
+}
+
+void GeometryPlotView::setXRange(double lower, double upper) {
+  if (!std::isfinite(lower) || !std::isfinite(upper) || upper <= lower) {
+    return;
+  }
+  xRangeLinked_ = true;
+  adjustingAxes_ = true;
+  plot_->xAxis->setRange(lower, upper);
+  adjustingAxes_ = false;
+  rebuildPanelTicks();
+  plot_->replot(QCustomPlot::rpQueuedReplot);
 }
 
 }  // namespace xfoil::gui

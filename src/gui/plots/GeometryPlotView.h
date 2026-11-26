@@ -60,6 +60,12 @@ class GeometryPlotView : public QWidget {
   void clearPanel();
   void clear();
   void fitVisibleData();
+  void setXRange(double lower, double upper);
+
+  [[nodiscard]]
+  bool isAdjustingAxes() const noexcept {
+    return adjustingAxes_;
+  }
 
   [[nodiscard]]
   bool sampleMarkersEnabled() const noexcept {
@@ -119,6 +125,7 @@ class GeometryPlotView : public QWidget {
   double xMaximum_{1.0};
   double yMinimum_{0.0};
   double yMaximum_{0.0};
+  bool xRangeLinked_{false};
   bool adjustingAxes_{false};
 };
 
