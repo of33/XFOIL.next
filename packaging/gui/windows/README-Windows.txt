@@ -27,9 +27,7 @@ User installation
 
 The installer is per-user only. It does not install under Program Files,
 does not change the registry, does not request elevation and does not use the
-network. Re-running it updates the same installation and shortcuts. An
-installation from the previous G8b package is migrated in place by replacing
-only the managed executable xfoil.next-gui.exe with xfoil.next.exe.
+network. Re-running it updates the same installation and shortcuts.
 
 The stable Start Menu shortcut can be pinned manually. Automatic taskbar or
 Start pinning is not claimed.
@@ -49,10 +47,8 @@ Start Menu shortcuts and the application folder, and then removes itself.
 It does not need administrator rights, does not change the registry, does not
 use the network and does not remove other XFOIL installations or shortcuts.
 
-Close XFOIL.next GUI before uninstalling. The uninstaller accepts both the
-current xfoil.next.exe and the legacy xfoil.next-gui.exe inside the managed
-installation. If an older test installation has no installation marker, run
-the current installer once and then use the uninstaller.
+Close XFOIL.next GUI before uninstalling. The uninstaller accepts the current
+managed executable inside the installation.
 
 The uninstaller can also be started from an extracted ZIP. In that case it
 removes the per-user installation and leaves the extracted portable folder
