@@ -131,6 +131,9 @@ function New-Shortcut(
     [string]$TargetDirectory,
     [string]$Description
 ) {
+    if (Test-Path -LiteralPath $ShortcutPath -PathType Leaf) {
+        Remove-Item -LiteralPath $ShortcutPath -Force
+    }
     $shell = New-Object -ComObject WScript.Shell
     $shortcut = $shell.CreateShortcut($ShortcutPath)
     $shortcut.TargetPath = $TargetPath
