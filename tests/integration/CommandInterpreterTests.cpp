@@ -77,7 +77,7 @@ std::size_t countOccurrences(const std::string& text,
 
 std::string productProgramPath() {
   const char* configuredPath = std::getenv("XFOIL_CLI_PATH");
-  return configuredPath != nullptr ? configuredPath : "bin/debug/xfoil.next";
+  return configuredPath != nullptr ? configuredPath : "bin/debug/xfoil.next-cli";
 }
 
 // Absolute program path, resolved before a working-directory change.

@@ -103,14 +103,14 @@ for side in a b; do
         BUILDROOT="$BUILDROOT" BINROOT="$BINROOT" tools/build-portable-windows.sh
         python3 packaging/portable/package_portable.py package \
             --platform windows \
-            --executable "$BINROOT/release/xfoil.next.exe" \
+            --executable "$BINROOT/release/xfoil.next-cli.exe" \
             --output-dir "$WORK/dist-$side" \
             --metadata "$WORK/metadata.json"
     )
 done
 
-EXE_A="$WORK/a/$BINROOT/release/xfoil.next.exe"
-EXE_B="$WORK/b/$BINROOT/release/xfoil.next.exe"
+EXE_A="$WORK/a/$BINROOT/release/xfoil.next-cli.exe"
+EXE_B="$WORK/b/$BINROOT/release/xfoil.next-cli.exe"
 ARCHIVE_A="$WORK/dist-a/XFOIL.next-$VERSION-windows-x86_64.zip"
 ARCHIVE_B="$WORK/dist-b/XFOIL.next-$VERSION-windows-x86_64.zip"
 

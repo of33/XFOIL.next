@@ -112,7 +112,7 @@ VERSION=$(python3 -c \
 
 python3 packaging/portable/check_portable_binary.py \
     --platform windows \
-    --binary "$BINROOT/release/xfoil.next.exe" \
+    --binary "$BINROOT/release/xfoil.next-cli.exe" \
     --expected-version "$VERSION" \
     --run-version
 
@@ -120,4 +120,4 @@ printf 'source commit: %s\n' "$XFOIL_SOURCE_COMMIT"
 printf 'source tree:   %s\n' "$XFOIL_SOURCE_TREE"
 printf 'source ref:    %s\n' "$XFOIL_SOURCE_REF"
 printf 'SOURCE_DATE_EPOCH: %s\n' "$SOURCE_DATE_EPOCH"
-printf 'portable binary: %s\n' "$BINROOT/release/xfoil.next.exe"
+printf 'portable binary: %s\n' "$BINROOT/release/xfoil.next-cli.exe"

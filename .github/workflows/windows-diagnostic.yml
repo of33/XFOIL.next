@@ -130,7 +130,7 @@ jobs:
         shell: msys2 {0}
         run: |
           set -o pipefail
-          XFOIL_CLI_PATH=bin/release/xfoil.next.exe \
+          XFOIL_CLI_PATH=bin/release/xfoil.next-cli.exe \
             ./build/release/xfoil_tests | tee ci-release-full.log
           grep -F "0 failure(s) in 2277 test(s)" ci-release-full.log
 
@@ -138,7 +138,7 @@ jobs:
         shell: msys2 {0}
         run: |
           set -o pipefail
-          XFOIL_DUMP_DIAG=1 XFOIL_CLI_PATH=bin/debug/xfoil.next.exe \
+          XFOIL_DUMP_DIAG=1 XFOIL_CLI_PATH=bin/debug/xfoil.next-cli.exe \
             ./build/debug/xfoil_tests \
             regression.PaccDumpByteParityMatchesXfoil6996S12Target \
             | tee ci-pacc-diagnostic.log
@@ -148,13 +148,17 @@ jobs:
         shell: msys2 {0}
         run: |
           set -e
-          test -f bin/debug/xfoil.next.exe
+          test -f bin/debug/xfoil.next-cli.exe
           test ! -e bin/debug/xfoil.exe
-          test -f bin/release/xfoil.next.exe
+          test -f bin/release/xfoil.next-cli.exe
           test ! -e bin/release/xfoil.exe
+          test ! -e build/debug/xfoil.next-cli.exe
           test ! -e build/debug/xfoil.next.exe
+          test ! -e build/release/xfoil.next-cli.exe
           test ! -e build/release/xfoil.next.exe
-          out=$(./bin/release/xfoil.next.exe --version)
+          test ! -e bin/debug/xfoil.next-gui.exe
+          test ! -e bin/release/xfoil.next-gui.exe
+          out=$(./bin/release/xfoil.next-cli.exe --version)
           echo "version output: [$out]"
           test "$out" = "XFOIL.next 1.2.1"
 

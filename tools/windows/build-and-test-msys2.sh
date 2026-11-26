@@ -270,7 +270,7 @@ if [ "$BUILD_RC" = PASS ]; then
     "0 failure(s) in $BATCH_TOTAL test(s)" make test-batch || true
 
   # Release full suite against the release product binary.
-  CLI_RELEASE=$(exe bin/release/xfoil.next)
+  CLI_RELEASE=$(exe bin/release/xfoil.next-cli)
   RUNNER_RELEASE=$(exe build/release/xfoil_tests)
   step "release full suite" "$LOGDIR/30-release-full.txt" \
     "0 failure(s) in $FULL_TOTAL test(s)" \
@@ -278,26 +278,24 @@ if [ "$BUILD_RC" = PASS ]; then
 
   # Focused PACC dump diagnostic: XFOIL_DUMP_DIAG=1 only lifts report
   # sample caps; the test verdict must stay green.
-  CLI_DEBUG=$(exe bin/debug/xfoil.next)
+  CLI_DEBUG=$(exe bin/debug/xfoil.next-cli)
   RUNNER_DEBUG=$(exe build/debug/xfoil_tests)
   step "PACC diagnostic" "$LOGDIR/31-pacc-diagnostic.txt" \
     "0 failure(s) in $PACC_TOTAL test(s)" \
     env XFOIL_DUMP_DIAG=1 XFOIL_CLI_PATH="$CLI_DEBUG" \
       "./$RUNNER_DEBUG" regression.PaccDumpByteParityMatchesXfoil6996S12Target || true
 
-  # Binary contract (debug and release). On Windows the product binary
-  # is bin/<mode>/xfoil.next.exe; xfoil.exe must never exist and the old
-  # build/<mode> product path must be absent.
+  # Binary contract (debug and release). On Windows the CLI product binary
+  # is bin/<mode>/xfoil.next-cli.exe; xfoil.exe must never exist and no
+  # product executable may appear below build/<mode>.
   BINLOG="$LOGDIR/40-binary-contract.txt"
   BIN_RC=PASS
   {
-    echo "binary contract: bin/<mode>/xfoil.next.exe present, xfoil.exe absent"
+    echo "binary contract: bin/<mode>/xfoil.next-cli.exe present, xfoil.exe absent"
     for d in debug release; do
       bin=""
-      if [ -f "bin/$d/xfoil.next.exe" ]; then
-        bin="bin/$d/xfoil.next.exe"
-      elif [ -f "bin/$d/xfoil.next" ]; then
-        bin="bin/$d/xfoil.next"
+      if [ -f "bin/$d/xfoil.next-cli.exe" ]; then
+        bin="bin/$d/xfoil.next-cli.exe"
       fi
       if [ -n "$bin" ]; then
         echo "present: $bin"
@@ -319,11 +317,19 @@ if [ "$BUILD_RC" = PASS ]; then
       else
         echo "absent (correct): bin/$d/xfoil.exe"
       fi
-      if [ -e "build/$d/xfoil.next.exe" ] || [ -e "build/$d/xfoil.next" ]; then
-        echo "VIOLATION: old product path present: build/$d/xfoil.next[.exe]"
+      if [ -e "bin/$d/xfoil.next-gui.exe" ] || [ -e "bin/$d/xfoil.next-gui" ]; then
+        echo "VIOLATION: forbidden old GUI binary present in bin/$d"
         BIN_RC=FAIL
       else
-        echo "absent (correct): build/$d/xfoil.next[.exe]"
+        echo "absent (correct): old GUI binary in bin/$d"
+      fi
+      if [ -e "build/$d/xfoil.next-cli.exe" ] || [ -e "build/$d/xfoil.next-cli" ] || \
+         [ -e "build/$d/xfoil.next.exe" ] || [ -e "build/$d/xfoil.next" ] || \
+         [ -e "build/$d/xfoil.next-gui.exe" ] || [ -e "build/$d/xfoil.next-gui" ]; then
+        echo "VIOLATION: product path present below build/$d"
+        BIN_RC=FAIL
+      else
+        echo "absent (correct): product paths below build/$d"
       fi
     done
   } > "$BINLOG" 2>&1

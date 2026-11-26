@@ -91,14 +91,14 @@ for side in a b; do
         BUILDROOT="$BUILDROOT" BINROOT="$BINROOT" tools/build-portable-linux.sh
         python3 packaging/portable/package_portable.py package \
             --platform linux \
-            --executable "$BINROOT/release/xfoil.next" \
+            --executable "$BINROOT/release/xfoil.next-cli" \
             --output-dir "$WORK/dist-$side" \
             --metadata "$WORK/metadata.json"
     )
 done
 
-EXE_A="$WORK/a/$BINROOT/release/xfoil.next"
-EXE_B="$WORK/b/$BINROOT/release/xfoil.next"
+EXE_A="$WORK/a/$BINROOT/release/xfoil.next-cli"
+EXE_B="$WORK/b/$BINROOT/release/xfoil.next-cli"
 ARCHIVE_A="$WORK/dist-a/XFOIL.next-$VERSION-linux-x86_64.tar.xz"
 ARCHIVE_B="$WORK/dist-b/XFOIL.next-$VERSION-linux-x86_64.tar.xz"
 

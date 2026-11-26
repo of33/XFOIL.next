@@ -24,10 +24,10 @@
 // File: src/app/CommandLine.cpp
 // Implementation of the program argument parser.
 // Contract:
-// xfoil.next [airfoils.dat]
-// xfoil.next --batch FILE|- [--airfoils FILE] [--prefix PREFIX] [--quiet]
+// xfoil.next-cli [airfoils.dat]
+// xfoil.next-cli --batch FILE|- [--airfoils FILE] [--prefix PREFIX] [--quiet]
 // [--defaults FILE] [--working-directory DIR]
-// xfoil.next --help | --version
+// xfoil.next-cli --help | --version
 // The first detected argument error wins; the diagnostic is exact.
 // Prefix validity (character set [A-Za-z0-9._-]*, length
 // 0-128 bytes) is checked here before each file operation.

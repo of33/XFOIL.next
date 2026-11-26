@@ -11,11 +11,17 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $TargetName = 'XFOIL.next GUI'
+$ExecutableName = 'xfoil.next.exe'
+$LegacyExecutableName = 'xfoil.next-gui.exe'
 $MarkerName = '.xfoil-next-gui-install'
 $MarkerLines = @(
     'product = XFOIL.next GUI',
     'scope = per-user',
     'install-root = managed'
+)
+$MarkerExecutableLines = @(
+    'executable = xfoil.next.exe',
+    'executable = xfoil.next-gui.exe'
 )
 $QuietMode = $Quiet -or ($env:XFOIL_NEXT_GUI_UNINSTALL_QUIET -eq '1')
 
@@ -74,23 +80,29 @@ function Find-ReparsePoint([string]$Root) {
 
 function Assert-OwnedShortcut(
     [string]$ShortcutPath,
-    [string]$ExpectedTarget,
+    [string[]]$ExpectedTargets,
     [string]$ExpectedDirectory,
-    [string]$ExpectedIcon,
+    [string[]]$ExpectedIcons,
     [string]$Label
 ) {
     if (-not (Test-Path -LiteralPath $ShortcutPath -PathType Leaf)) {
         return
     }
     $shortcut = (New-Object -ComObject WScript.Shell).CreateShortcut($ShortcutPath)
-    if (-not (SamePath $shortcut.TargetPath $ExpectedTarget)) {
+    $targetMatches = @($ExpectedTargets | Where-Object {
+        SamePath $shortcut.TargetPath $_
+    })
+    if ($targetMatches.Count -eq 0) {
         Fail "Refusing to remove $Label with an unexpected target: $ShortcutPath"
     }
     if (-not (SamePath $shortcut.WorkingDirectory $ExpectedDirectory)) {
         Fail "Refusing to remove $Label with an unexpected working directory: $ShortcutPath"
     }
-    if (-not $shortcut.IconLocation.StartsWith(
-            $ExpectedIcon, [StringComparison]::OrdinalIgnoreCase)) {
+    $iconMatches = @($ExpectedIcons | Where-Object {
+        $shortcut.IconLocation.StartsWith(
+            $_, [StringComparison]::OrdinalIgnoreCase)
+    })
+    if ($iconMatches.Count -eq 0) {
         Fail "Refusing to remove $Label with an unexpected icon: $ShortcutPath"
     }
 }
@@ -133,11 +145,28 @@ function Assert-UninstallLayout {
             Fail 'The installation marker is invalid or belongs to another installation.'
         }
     }
-    $exe = Join-Path $InstallRoot 'xfoil.next-gui.exe'
-    if (-not (Test-Path -LiteralPath $exe -PathType Leaf)) {
+    $executableLines = @($markerContent | Where-Object {
+        $_.StartsWith('executable = ', [StringComparison]::OrdinalIgnoreCase)
+    })
+    foreach ($line in $executableLines) {
+        if ($MarkerExecutableLines -notcontains $line) {
+            Fail 'The installation marker names an unsupported GUI executable.'
+        }
+    }
+
+    $script:NewExe = Join-Path $InstallRoot $ExecutableName
+    $script:LegacyExe = Join-Path $InstallRoot $LegacyExecutableName
+    $newPresent = Test-Path -LiteralPath $NewExe -PathType Leaf
+    $legacyPresent = Test-Path -LiteralPath $LegacyExe -PathType Leaf
+    if (-not $newPresent -and -not $legacyPresent) {
         Fail 'The installed GUI executable is missing.'
     }
-    Assert-NotReparse $exe
+    if ($newPresent) { Assert-NotReparse $NewExe }
+    if ($legacyPresent) { Assert-NotReparse $LegacyExe }
+    $ownedExes = @()
+    if ($newPresent) { $ownedExes += $NewExe }
+    if ($legacyPresent) { $ownedExes += $LegacyExe }
+    $script:OwnedExes = $ownedExes
     $reparse = Find-ReparsePoint $InstallRoot
     if ($null -ne $reparse) {
         Fail "Refusing to remove an installation containing a reparse point: $reparse"
@@ -149,24 +178,28 @@ function Assert-UninstallLayout {
         'Uninstall ' + $TargetName + '.lnk')
     $uninstallCmd = Join-Path $InstallRoot 'Uninstall XFOIL.next GUI.cmd'
     Assert-NotReparse $StartFolder
-    Assert-OwnedShortcut $DesktopLink $exe $InstallRoot $exe 'Desktop shortcut'
-    Assert-OwnedShortcut $StartAppLink $exe $InstallRoot $exe 'Start Menu shortcut'
-    Assert-OwnedShortcut $StartUninstallLink $uninstallCmd $InstallRoot $exe `
-        'Start Menu uninstaller shortcut'
+    Assert-OwnedShortcut $DesktopLink $ownedExes $InstallRoot $ownedExes `
+        'Desktop shortcut'
+    Assert-OwnedShortcut $StartAppLink $ownedExes $InstallRoot $ownedExes `
+        'Start Menu shortcut'
+    Assert-OwnedShortcut $StartUninstallLink @($uninstallCmd) $InstallRoot `
+        $ownedExes 'Start Menu uninstaller shortcut'
 
-    $running = @(Get-Process -Name 'xfoil.next-gui' -ErrorAction SilentlyContinue |
-        Where-Object {
-            try { $_.Path -and (SamePath $_.Path $exe) } catch { $false }
+    $running = @(Get-Process -Name 'xfoil.next', 'xfoil.next-gui' `
+        -ErrorAction SilentlyContinue | Where-Object {
+            try { $_.Path -and (Test-IsUnderRoot $_.Path $InstallRoot) } catch { $false }
         })
     if ($running.Count -gt 0) {
         Fail 'Close XFOIL.next GUI before uninstalling.'
     }
-    try {
-        $stream = [IO.File]::Open($exe, [IO.FileMode]::Open,
-            [IO.FileAccess]::ReadWrite, [IO.FileShare]::None)
-        $stream.Close()
-    } catch {
-        Fail 'Close XFOIL.next GUI before uninstalling. The installed executable is in use.'
+    foreach ($ownedExe in $ownedExes) {
+        try {
+            $stream = [IO.File]::Open($ownedExe, [IO.FileMode]::Open,
+                [IO.FileAccess]::ReadWrite, [IO.FileShare]::None)
+            $stream.Close()
+        } catch {
+            Fail 'Close XFOIL.next GUI before uninstalling. The installed executable is in use.'
+        }
     }
 }
 

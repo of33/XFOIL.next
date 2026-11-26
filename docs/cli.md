@@ -1,14 +1,14 @@
 # Command-line interface
 
-The CLI binary is `xfoil.next` (`xfoil.next.exe` on MSYS2/Windows). It
+The CLI binary is `xfoil.next-cli` (`xfoil.next-cli.exe` on MSYS2/Windows). It
 provides the native interactive XFOIL command interface.
 
 ## Starting
 
 ```sh
-xfoil.next                 # interactive session, no startup profile
-xfoil.next profile.dat     # interactive session, loads profile.dat before input
-xfoil.next < commands.txt  # drive the session from a redirected command file
+xfoil.next-cli                 # interactive session, no startup profile
+xfoil.next-cli profile.dat     # interactive session, loads profile.dat before input
+xfoil.next-cli < commands.txt  # drive the session from a redirected command file
 ```
 
 There is no command-file argument; stdin redirection or a pipe is how a

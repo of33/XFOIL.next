@@ -457,7 +457,7 @@ bool resolveProgram(const std::string& program, std::string& resolved) {
     return true;
   }
 #ifdef _WIN32
-  // The build produces xfoil.next.exe; a configured path without the
+  // The build produces xfoil.next-cli.exe; a configured path without the
   // suffix is extended when the suffixed file exists.
   const std::string withSuffix = program + ".exe";
   if (std::filesystem::is_regular_file(withSuffix, error)) {

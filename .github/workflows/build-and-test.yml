@@ -70,7 +70,7 @@ jobs:
 
       - name: Integration tests
         env:
-          XFOIL_CLI_PATH: ${{ matrix.binroot }}/debug/xfoil.next
+          XFOIL_CLI_PATH: ${{ matrix.binroot }}/debug/xfoil.next-cli
         run: make test-integration CXX=${{ matrix.cxx }} BUILDROOT=${{ matrix.buildroot }} BINROOT=${{ matrix.binroot }}
 
       - name: Regression tests

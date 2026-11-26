@@ -61,11 +61,11 @@ TSAN_FLAGS := \
 	-fsanitize=thread \
 	-fno-omit-frame-pointer
 
-# Native C++ CLI product binary. POSIX: xfoil.next; MSYS2/MinGW/
-# Cygwin and native Windows: xfoil.next.exe. The suffix is derived
-# explicitly (no assumption that the toolchain appends it); a single
-# variable feeds every build, test and tool reference.
-XFOIL_CLI_NAME := xfoil.next
+# Canonical product executables. The CLI is xfoil.next-cli; the standalone
+# GUI is xfoil.next. The suffix is derived explicitly (no assumption that the
+# toolchain appends it); variables feed every build, test and tool reference.
+XFOIL_CLI_NAME := xfoil.next-cli
+XFOIL_GUI_NAME := xfoil.next
 ifeq ($(OS),Windows_NT)
 EXEEXT := .exe
 else ifneq (,$(filter Msys Cygwin,$(shell uname -o 2>/dev/null)))
@@ -505,8 +505,8 @@ PORTABLE_ROOT ?= $(BUILDROOT)/portable
 PORTABLE_DIST ?= $(PORTABLE_ROOT)/dist
 PORTABLE_LINUX_BUILDROOT ?= $(PORTABLE_ROOT)/linux-x86_64
 PORTABLE_WINDOWS_BUILDROOT ?= $(PORTABLE_ROOT)/windows-x86_64
-PORTABLE_LINUX_BINARY := $(PORTABLE_LINUX_BUILDROOT)/release/xfoil.next
-PORTABLE_WINDOWS_BINARY := $(PORTABLE_WINDOWS_BUILDROOT)/release/xfoil.next.exe
+PORTABLE_LINUX_BINARY := $(PORTABLE_LINUX_BUILDROOT)/release/$(XFOIL_CLI)
+PORTABLE_WINDOWS_BINARY := $(PORTABLE_WINDOWS_BUILDROOT)/release/$(XFOIL_CLI_NAME).exe
 PORTABLE_LINUX_ARCHIVE := $(PORTABLE_DIST)/XFOIL.next-$(PRODUCT_VERSION)-linux-x86_64.tar.xz
 PORTABLE_WINDOWS_ARCHIVE := $(PORTABLE_DIST)/XFOIL.next-$(PRODUCT_VERSION)-windows-x86_64.zip
 PORTABLE_WINDOWS_RUN_VERSION := $(if $(filter .exe,$(EXEEXT)),--run-version,)
@@ -573,7 +573,7 @@ LIB_SHARED_IMPORT_FLAG := -Wl,--out-implib
 	gui-appimage gui-portable-windows gui-portable-check-linux \
 	gui-portable-check-windows gui-portable-repro-linux \
 	gui-portable-repro-windows test-gui-portable \
-	check-windows-subsystems test-gui-installer-windows \
+	check-windows-subsystems check-gui-binary-layout test-gui-installer-windows \
 	gui gui-debug gui-release gui-app gui-app-debug gui-app-release run-gui \
 	test-gui gui-qcustomplot-check gui-link-check gui-check-qt \
 	clean-gui check-gui-dependencies \
@@ -1114,8 +1114,8 @@ test-gui-portable:
 
 check-windows-subsystems:
 	python3 packaging/gui/windows/check_windows_subsystems.py \
-		--gui "$(GUI_PORTABLE_WINDOWS_BUILDROOT)/bin/release/xfoil.next-gui.exe" \
-		--cli "$(BINROOT)/release/xfoil.next.exe"
+		--gui "$(GUI_PORTABLE_WINDOWS_BUILDROOT)/bin/release/$(XFOIL_GUI_NAME).exe" \
+		--cli "$(BINROOT)/release/$(XFOIL_CLI_NAME).exe"
 
 test-gui-installer-windows:
 	powershell.exe -NoProfile -ExecutionPolicy Bypass \
@@ -1189,6 +1189,11 @@ check-product-binary-layout: $(BIN_CLI_debug) $(BIN_CLI_release)
 	python3 tools/check-product-binary-layout.py \
 		--root . --binroot "$(BINROOT)" --buildroot "$(BUILDROOT)" \
 		--suffix "$(EXEEXT)"
+
+check-gui-binary-layout:
+	python3 tools/check-product-binary-layout.py \
+		--root . --binroot "$(BINROOT)" --buildroot "$(BUILDROOT)" \
+		--suffix "$(EXEEXT)" --require-gui
 
 check-release-inventory:
 	python3 tools/check-release-inventory.py
@@ -1384,7 +1389,7 @@ help:
 	@echo "  make                 - release build (default)"
 	@echo "  make debug           - debug build (-O0 -g3)"
 	@echo "  make release         - release build (-O3 -DNDEBUG)"
-	@echo "  products             - bin/<mode>/xfoil.next(.exe)"
+	@echo "  products             - bin/<mode>/xfoil.next-cli(.exe) and xfoil.next(.exe) GUI"
 	@echo "  make sanitize        - ASan+UBSan build (-O1 -g3)"
 	@echo "  make library         - static + shared library (LIB_MODE=release)"
 	@echo "  make library-static  - static library only"
@@ -1417,6 +1422,7 @@ help:
 	@echo "  make gui-portable-repro-windows - two Windows ZIP packaging runs"
 	@echo "  make test-gui-portable          - packaging infrastructure tests"
 	@echo "  make check-windows-subsystems   - GUI=windows, CLI=console subsystem"
+	@echo "  make check-gui-binary-layout - CLI and GUI product names below bin/"
 	@echo "  make test-gui-installer-windows - temporary-folder installer tests"
 	@echo ""
 	@echo "Optional GUI skeleton (requires Qt 6.12.0 and QT_ROOT):"

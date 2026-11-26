@@ -2,14 +2,14 @@ XFOIL.next GUI for Windows x86-64
 ==================================
 
 This ZIP is a portable shared-Qt package. Extract the complete ZIP before use.
-Do not copy only xfoil.next-gui.exe to the desktop; it needs the Qt libraries
+Do not copy only xfoil.next.exe to the desktop; it needs the Qt libraries
 and plugin folders next to it.
 
 Portable use
 ------------
 
 1. Extract the complete ZIP to a folder of your choice.
-2. Run xfoil.next-gui.exe from that folder.
+2. Run xfoil.next.exe from that folder.
 3. Keep the executable together with Qt6*.dll, lib*.dll and the plugin
    directories (platforms, imageformats, iconengines, styles, ...).
 
@@ -27,7 +27,9 @@ User installation
 
 The installer is per-user only. It does not install under Program Files,
 does not change the registry, does not request elevation and does not use the
-network. Re-running it updates the same installation and shortcuts.
+network. Re-running it updates the same installation and shortcuts. An
+installation from the previous G8b package is migrated in place by replacing
+only the managed executable xfoil.next-gui.exe with xfoil.next.exe.
 
 The stable Start Menu shortcut can be pinned manually. Automatic taskbar or
 Start pinning is not claimed.
@@ -47,9 +49,10 @@ Start Menu shortcuts and the application folder, and then removes itself.
 It does not need administrator rights, does not change the registry, does not
 use the network and does not remove other XFOIL installations or shortcuts.
 
-Close XFOIL.next GUI before uninstalling. If an older test installation has no
-installation marker, run the current installer once and then use the
-uninstaller.
+Close XFOIL.next GUI before uninstalling. The uninstaller accepts both the
+current xfoil.next.exe and the legacy xfoil.next-gui.exe inside the managed
+installation. If an older test installation has no installation marker, run
+the current installer once and then use the uninstaller.
 
 The uninstaller can also be started from an extracted ZIP. In that case it
 removes the per-user installation and leaves the extracted portable folder

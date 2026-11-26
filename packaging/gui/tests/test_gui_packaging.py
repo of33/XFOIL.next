@@ -77,7 +77,7 @@ def fill_required(root):
     for relative in REQUIRED:
         path = root / relative
         path.parent.mkdir(parents=True, exist_ok=True)
-        if relative == "xfoil.next-gui.exe":
+        if relative == "xfoil.next.exe":
             path.write_bytes(fake_pe())
         else:
             path.write_bytes(b"test\n")
@@ -202,7 +202,7 @@ class IconTests(unittest.TestCase):
         self.assertIn('VALUE "FileDescription", "XFOIL.next GUI"', rc)
         self.assertIn('VALUE "ProductName", "XFOIL.next GUI"', rc)
         self.assertIn('VALUE "InternalName", "XFOIL.next GUI"', rc)
-        self.assertIn('VALUE "OriginalFilename", "xfoil.next-gui.exe"', rc)
+        self.assertIn('VALUE "OriginalFilename", "xfoil.next.exe"', rc)
         self.assertIn("XFOIL_GUI_VERSION_STRING", rc)
 
     def test_pe_subsystem_parser(self):
@@ -238,13 +238,21 @@ class WindowsPackageTests(unittest.TestCase):
                 files = [name for name in names if not name.endswith("/")]
                 self.assertEqual(files, sorted(files))
                 self.assertTrue(all(name.startswith(top + "/") for name in names))
-                self.assertIn(top + "/xfoil.next-gui.exe", names)
+                self.assertIn(top + "/xfoil.next.exe", names)
 
     def test_forbidden_cli_is_rejected(self):
         with tempfile.TemporaryDirectory() as temp:
             root = pathlib.Path(temp) / "stage"
             fill_required(root)
-            (root / "xfoil.next.exe").write_bytes(b"MZ")
+            (root / "xfoil.next-cli.exe").write_bytes(b"MZ")
+            with self.assertRaises(WINDOWS.PackageError):
+                WINDOWS.check_tree(root, "1.2.1")
+
+    def test_forbidden_legacy_gui_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp) / "stage"
+            fill_required(root)
+            (root / "xfoil.next-gui.exe").write_bytes(b"MZ")
             with self.assertRaises(WINDOWS.PackageError):
                 WINDOWS.check_tree(root, "1.2.1")
 
@@ -266,7 +274,18 @@ class WindowsPackageTests(unittest.TestCase):
             WINDOWS.write_zip(root, archive, top, 1700000000)
             actual_top, relative = CHECK_ZIP.check_archive(archive, "1.2.1")
             self.assertEqual(actual_top, top)
-            self.assertIn("xfoil.next-gui.exe", relative)
+            self.assertIn("xfoil.next.exe", relative)
+
+    def test_archive_check_rejects_legacy_gui(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp) / "stage"
+            fill_required(root)
+            (root / "xfoil.next-gui.exe").write_bytes(b"MZ")
+            archive = pathlib.Path(temp) / "gui.zip"
+            top = "XFOIL.next-GUI-1.2.1-local-g8-windows-x86_64"
+            WINDOWS.write_zip(root, archive, top, 1700000000)
+            with self.assertRaises(CHECK_ZIP.CheckError):
+                CHECK_ZIP.check_archive(archive, "1.2.1")
 
     def test_archive_check_rejects_marker(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -283,7 +302,7 @@ class WindowsPackageTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root = pathlib.Path(temp) / "stage"
             fill_required(root)
-            (root / "xfoil.next.exe").write_bytes(b"MZ")
+            (root / "xfoil.next-cli.exe").write_bytes(b"MZ")
             archive = pathlib.Path(temp) / "gui.zip"
             top = "XFOIL.next-GUI-1.2.1-local-g8-windows-x86_64"
             WINDOWS.write_zip(root, archive, top, 1700000000)

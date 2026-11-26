@@ -60,8 +60,9 @@ GUI_EXE_SUFFIX := .exe
 else
 GUI_EXE_SUFFIX :=
 endif
-GUI_DEBUG_EXE := $(BINROOT)/debug/xfoil.next-gui$(GUI_EXE_SUFFIX)
-GUI_RELEASE_EXE := $(BINROOT)/release/xfoil.next-gui$(GUI_EXE_SUFFIX)
+GUI_PRODUCT_NAME := xfoil.next
+GUI_DEBUG_EXE := $(BINROOT)/debug/$(GUI_PRODUCT_NAME)$(GUI_EXE_SUFFIX)
+GUI_RELEASE_EXE := $(BINROOT)/release/$(GUI_PRODUCT_NAME)$(GUI_EXE_SUFFIX)
 
 GUI_TOOLCHAIN := $(shell printf '%s' "$(CXX)" | md5sum | cut -c1-8)
 QT_ROOT ?=

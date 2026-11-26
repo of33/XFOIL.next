@@ -106,7 +106,7 @@ fi
 export SOURCE_DATE_EPOCH
 
 STAGE="$BUILD_ROOT/stage/$TOP_DIR"
-GUI_EXE="$BUILD_ROOT/bin/release/xfoil.next-gui.exe"
+GUI_EXE="$BUILD_ROOT/bin/release/xfoil.next.exe"
 
 if [ "$PACKAGE_ONLY" -eq 0 ]; then
     if [ "$NO_BUILD" -eq 0 ]; then
@@ -122,7 +122,7 @@ if [ "$PACKAGE_ONLY" -eq 0 ]; then
 
     rm -rf "$BUILD_ROOT/stage"
     mkdir -p "$STAGE/licenses"
-    cp "$GUI_EXE" "$STAGE/xfoil.next-gui.exe"
+    cp "$GUI_EXE" "$STAGE/xfoil.next.exe"
     cp "packaging/gui/windows/Install XFOIL.next GUI.cmd" "$STAGE/"
     cp packaging/gui/windows/Install-XFOIL.next-GUI.ps1 "$STAGE/"
     cp "packaging/gui/windows/Uninstall XFOIL.next GUI.cmd" "$STAGE/"
@@ -132,7 +132,7 @@ if [ "$PACKAGE_ONLY" -eq 0 ]; then
     PATH="$QT_ROOT/bin:$PATH" \
         "$WINDEPLOYQT" --release --compiler-runtime --no-translations \
             --no-system-d3d-compiler --no-opengl-sw \
-            --dir "$STAGE" "$STAGE/xfoil.next-gui.exe"
+            --dir "$STAGE" "$STAGE/xfoil.next.exe"
 
     for runtime_dll in libstdc++-6.dll libgcc_s_seh-1.dll libwinpthread-1.dll; do
         if [ ! -f "$STAGE/$runtime_dll" ]; then

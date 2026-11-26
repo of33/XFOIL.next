@@ -38,8 +38,8 @@ make install    staged install (DESTDIR/PREFIX)
 Product executables:
 
 ```text
-bin/debug/xfoil.next
-bin/release/xfoil.next
+bin/debug/xfoil.next-cli
+bin/release/xfoil.next-cli
 ```
 
 On MSYS2/MinGW and native Windows the suffix is `.exe`. Test programs,
@@ -109,8 +109,8 @@ The supported GNU Make build shell remains MSYS2 UCRT64. The standalone GUI
 embeds its application icon through the Qt resource system, and the Windows
 executable also carries a native multi-resolution icon resource.
 
-The standalone targets write `bin/debug/xfoil.next-gui` and
-`bin/release/xfoil.next-gui` (`.exe` on Windows). On Windows, build from the
+The standalone targets write `bin/debug/xfoil.next` and
+`bin/release/xfoil.next` (`.exe` on Windows). On Windows, build from the
 MSYS2 UCRT64 shell:
 
 ```sh
@@ -120,7 +120,7 @@ make gui-app-release
 
 The Windows GUI executable is not a supported single-file deployment. Run
 `windeployqt` on the release executable and keep the generated Qt libraries and
-plugin directories next to `xfoil.next-gui.exe` together with the MinGW runtime
+plugin directories next to `xfoil.next.exe` together with the MinGW runtime
 DLLs used by the build. The app is a thin shell around a single-page workflow
 tab host; its `Analysis` tab contains exactly one `XFoilAnalysisWidget`. It adds
 File/Help actions, Open, Save Airfoil, DXF export, recent files, QSettings and a
@@ -158,8 +158,8 @@ encoder. Cp/Cf/polar/BLOU import/export is not part of this increment.
 The embeddable `XFoilAnalysisWidget` reads and writes no files, uses no `QSettings`
 and starts no standalone application. The separate `src/gui/app` shell owns
 the file dialogs, QSettings and application entry point. The Windows UCRT64
-Qt 6.12.0/GCC 16.2.0 Rev7 development build is qualified, and G8/G8a provide
-local portable GUI packages plus an optional per-user installer.
+Qt 6.12.0/GCC 16.2.0 Rev7 development build is qualified, and G8/G8a/G8b
+provide local portable GUI packages plus a per-user installer and uninstaller.
 
 The adapter also accepts a kit found through `pkg-config` or `qmake`. The
 build emits generated MOC/UIC files only below `build/gui/`; debug and release
@@ -194,7 +194,7 @@ the CLI remains a console application.
 
 Windows users have two supported modes:
 
-- **Portable:** extract the complete ZIP and run `xfoil.next-gui.exe` from the
+- **Portable:** extract the complete ZIP and run `xfoil.next.exe` from the
   extracted folder. Keep the EXE with its Qt DLLs and plugin directories; a
   copied-only EXE is not supported.
 - **Per-user installation:** run `Install XFOIL.next GUI.cmd` from the
@@ -205,9 +205,13 @@ Windows users have two supported modes:
   Start Menu shortcut can be pinned manually. Re-running updates the same
   target without duplicate shortcuts.
 
-To remove a per-user installation manually, delete the Desktop shortcut
-`XFOIL.next GUI.lnk`, the Start Menu folder `XFOIL.next GUI` with its shortcut,
-and `%LOCALAPPDATA%\Programs\XFOIL.next GUI`. This is not a formal uninstaller.
+Use **Uninstall XFOIL.next GUI** in the Start Menu, or
+`Uninstall XFOIL.next GUI.cmd` in `%LOCALAPPDATA%\Programs\XFOIL.next GUI`, to
+remove a per-user installation. The uninstaller validates the managed target,
+marker and owned shortcuts, and leaves unrelated XFOIL files and a portable
+extracted folder unchanged. An installation created by G8b with
+`xfoil.next-gui.exe` is migrated by the current installer and is also accepted
+by the current uninstaller.
 
 The product version remains 1.2.1; the G8 artifacts use a `local-g8` suffix and
 are not release downloads. See
@@ -267,8 +271,8 @@ Windows 11 + MSYS2 UCRT64 + GCC/MinGW 16.2.0 Rev7 development baseline; the
 Outputs are written below `build/portable/`:
 
 ```text
-linux-x86_64/release/xfoil.next
-windows-x86_64/release/xfoil.next.exe
+linux-x86_64/release/xfoil.next-cli
+windows-x86_64/release/xfoil.next-cli.exe
 dist/XFOIL.next-<version>-linux-x86_64.tar.xz
 dist/XFOIL.next-<version>-windows-x86_64.zip
 dist/XFOIL.next-<version>-SHA256SUMS

@@ -8,16 +8,16 @@ file, structured exit codes, comments, and prefixed run artifacts.
 ## Invocation
 
 ```text
-xfoil.next --batch FILE                     run one batch job from FILE
-xfoil.next --batch -                        read the job from stdin (cwd = process cwd)
-xfoil.next --batch FILE --profile FILE      load a startup profile before the commands
-xfoil.next --batch FILE --prefix PREFIX     prefix for session output files
-xfoil.next --batch FILE --quiet             suppress batch output on stdout
-xfoil.next --defaults FILE --batch FILE     load defaults via RDEF before the commands
-xfoil.next --working-directory DIR --batch FILE
+xfoil.next-cli --batch FILE                     run one batch job from FILE
+xfoil.next-cli --batch -                        read the job from stdin (cwd = process cwd)
+xfoil.next-cli --batch FILE --profile FILE      load a startup profile before the commands
+xfoil.next-cli --batch FILE --prefix PREFIX     prefix for session output files
+xfoil.next-cli --batch FILE --quiet             suppress batch output on stdout
+xfoil.next-cli --defaults FILE --batch FILE     load defaults via RDEF before the commands
+xfoil.next-cli --working-directory DIR --batch FILE
                                             working directory for the job
-xfoil.next --help                           show usage and exit (exit 0)
-xfoil.next --version                        show version and exit (exit 0)
+xfoil.next-cli --help                           show usage and exit (exit 0)
+xfoil.next-cli --version                        show version and exit (exit 0)
 ```
 
 Options are order-independent. A bare positional profile cannot be combined
@@ -229,12 +229,12 @@ QUIT
 Quiet run (stdout empty, transcript and results still written):
 
 ```sh
-xfoil.next --batch job.xfb --quiet
+xfoil.next-cli --batch job.xfb --quiet
 ```
 
 Prefixed run (writes `study_transcript.txt`, `study_results.dat`, and
 prefixed native outputs):
 
 ```sh
-xfoil.next --batch job.xfb --prefix study_
+xfoil.next-cli --batch job.xfb --prefix study_
 ```

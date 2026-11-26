@@ -24,9 +24,10 @@
 
 """Read-only gate for the canonical product executable layout.
 
-Checks that the CLI product programs exist below BINROOT/<mode>/ and that
-the former BUILDROOT/<mode>/xfoil.next path is not produced. Test programs,
-libraries and generated intermediate files must stay below BUILDROOT.
+The CLI product is ``xfoil.next-cli``; the standalone GUI product is
+``xfoil.next``. Products live below BINROOT/<mode>/; tests, libraries and
+generated intermediates live below BUILDROOT. The former GUI name
+``xfoil.next-gui`` must not reappear.
 """
 
 import argparse
@@ -34,7 +35,9 @@ import os
 import stat
 import sys
 
-PRODUCT_NAME = "xfoil.next"
+CLI_NAME = "xfoil.next-cli"
+GUI_NAME = "xfoil.next"
+OLD_GUI_NAME = "xfoil.next-gui"
 TEST_MARKERS = (
     "xfoil_tests",
     "xfoil_core_tests",
@@ -71,6 +74,8 @@ def main(argv):
                         help="platform executable suffix, for example .exe")
     parser.add_argument("--modes", default="debug,release",
                         help="comma-separated modes (default: debug,release)")
+    parser.add_argument("--require-gui", action="store_true",
+                        help="require the GUI product binary as well as the CLI")
     args = parser.parse_args(argv[1:])
 
     root = os.path.abspath(args.root)
@@ -88,19 +93,37 @@ def main(argv):
     failures = []
     products = []
     for mode in modes:
-        product = os.path.join(binroot, mode, PRODUCT_NAME + args.suffix)
-        products.append(product)
-        if not os.path.isfile(product):
-            failures.append("missing product binary: %s" %
-                            os.path.relpath(product, root))
-        elif not args.suffix and not executable(product):
-            failures.append("product binary is not executable: %s" %
-                            os.path.relpath(product, root))
+        cli = os.path.join(binroot, mode, CLI_NAME + args.suffix)
+        products.append(cli)
+        if not os.path.isfile(cli):
+            failures.append("missing CLI product binary: %s" %
+                            os.path.relpath(cli, root))
+        elif not args.suffix and not executable(cli):
+            failures.append("CLI product binary is not executable: %s" %
+                            os.path.relpath(cli, root))
 
-        for old_name in (PRODUCT_NAME, PRODUCT_NAME + ".exe"):
+        old_gui = os.path.join(binroot, mode,
+                               OLD_GUI_NAME + args.suffix)
+        if os.path.lexists(old_gui):
+            failures.append("old GUI product binary still exists: %s" %
+                            os.path.relpath(old_gui, root))
+
+        if args.require_gui:
+            gui = os.path.join(binroot, mode, GUI_NAME + args.suffix)
+            products.append(gui)
+            if not os.path.isfile(gui):
+                failures.append("missing GUI product binary: %s" %
+                                os.path.relpath(gui, root))
+            elif not args.suffix and not executable(gui):
+                failures.append("GUI product binary is not executable: %s" %
+                                os.path.relpath(gui, root))
+
+        for old_name in (CLI_NAME, CLI_NAME + ".exe", GUI_NAME,
+                         GUI_NAME + ".exe", OLD_GUI_NAME,
+                         OLD_GUI_NAME + ".exe"):
             old = os.path.join(buildroot, mode, old_name)
             if os.path.lexists(old):
-                failures.append("old product path still exists: %s" %
+                failures.append("product path below build/: %s" %
                                 os.path.relpath(old, root))
 
     if os.path.isdir(binroot):
@@ -108,6 +131,8 @@ def main(argv):
             for name in filenames:
                 rel = os.path.relpath(os.path.join(dirpath, name), root)
                 lowered = name.lower()
+                if OLD_GUI_NAME in lowered:
+                    failures.append("old GUI name below bin/: %s" % rel)
                 if any(marker in lowered for marker in TEST_MARKERS):
                     failures.append("test artifact below bin/: %s" % rel)
                 if lowered.endswith(LIBRARY_SUFFIXES):

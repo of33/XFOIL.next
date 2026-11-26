@@ -35,7 +35,7 @@ import time
 import zipfile
 
 REQUIRED_FILES = (
-    "xfoil.next-gui.exe",
+    "xfoil.next.exe",
     "Install XFOIL.next GUI.cmd",
     "Install-XFOIL.next-GUI.ps1",
     "Uninstall XFOIL.next GUI.cmd",
@@ -68,9 +68,11 @@ REQUIRED_FILES = (
 )
 FORBIDDEN_NAMES = {
     ".xfoil-next-gui-install",
-    "xfoil.next",
-    "xfoil.next.exe",
+    "xfoil.next-gui",
+    "xfoil.next-gui.exe",
     "xfoil.next-gui.pdb",
+    "xfoil.next-cli",
+    "xfoil.next-cli.exe",
     "qmake.exe",
     "qmake6.exe",
     "moc.exe",
@@ -151,7 +153,7 @@ def check_tree(root, expected_version):
     for relative in REQUIRED_FILES:
         if relative not in relpaths:
             raise PackageError(f"required package file missing: {relative}")
-    executable = root / "xfoil.next-gui.exe"
+    executable = root / "xfoil.next.exe"
     data = executable.read_bytes()
     if expected_version.encode("utf-8") not in data:
         raise PackageError(

@@ -74,7 +74,7 @@ class ExportRun {
     const char* const configuredPath = std::getenv("XFOIL_CLI_PATH");
     const std::string program = configuredPath != nullptr
                                     ? configuredPath
-                                    : "bin/debug/xfoil.next";
+                                    : "bin/debug/xfoil.next-cli";
     // PUB-W2: central portable process helper (cmd.exe syntax, .exe
     // resolution, quoting, separate stdout/stderr capture).
     testing::ProcessInvocation invocation;

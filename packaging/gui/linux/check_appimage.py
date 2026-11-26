@@ -41,9 +41,9 @@ from icon_checks import IconError, check_png
 REQUIRED_FILES = (
     "AppRun",
     ".DirIcon",
-    "xfoil.next-gui.desktop",
+    "xfoil.next.desktop",
     "xfoil-next.png",
-    "usr/bin/xfoil.next-gui",
+    "usr/bin/xfoil.next",
     "usr/share/icons/hicolor/512x512/apps/xfoil-next.png",
     "LICENSE",
     "NOTICE",
@@ -69,8 +69,10 @@ REQUIRED_LICENSE_FILES = (
     "licenses/AppImage-type2-runtime-NOTICE.txt",
 )
 FORBIDDEN_NAMES = {
-    "xfoil.next",
-    "xfoil.next.exe",
+    "xfoil.next-gui",
+    "xfoil.next-gui.exe",
+    "xfoil.next-cli",
+    "xfoil.next-cli.exe",
     "qmake",
     "qmake6",
     "moc",
@@ -184,7 +186,7 @@ def check_required(appdir):
 
 
 def check_desktop(appdir):
-    path = appdir / "xfoil.next-gui.desktop"
+    path = appdir / "xfoil.next.desktop"
     parser = configparser.ConfigParser(interpolation=None)
     try:
         parser.read(path, encoding="utf-8")
@@ -197,7 +199,7 @@ def check_desktop(appdir):
     expected = {
         "type": "Application",
         "name": "XFOIL.next GUI",
-        "exec": "xfoil.next-gui",
+        "exec": "xfoil.next",
         "icon": "xfoil-next",
         "terminal": "false",
     }
@@ -349,7 +351,7 @@ def check_build_paths(appdir):
 
 
 def check_version_markers(appdir, expected_version):
-    binary = appdir / "usr/bin/xfoil.next-gui"
+    binary = appdir / "usr/bin/xfoil.next"
     data = binary.read_bytes()
     if expected_version.encode("utf-8") not in data:
         raise CheckError(

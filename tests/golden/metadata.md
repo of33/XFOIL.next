@@ -15,7 +15,7 @@ anchors.
 | Verification compiler | Ubuntu clang 18.1.3 |
 | Make | GNU Make |
 | Build options | Debug build: `-std=c++20 -O0 -g3` plus the project warning flags (`-Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion -Wnon-virtual-dtor -Wold-style-cast -Woverloaded-virtual -Wnull-dereference -Wdouble-promotion -Wformat=2 -Werror`) |
-| Program | `build/debug/xfoil.next`, invoked from the repository root |
+| Program | `bin/debug/xfoil.next-cli`, invoked from the repository root |
 
 Golden text is generated with GCC and verified successfully with Clang.
 

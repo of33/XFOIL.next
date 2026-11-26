@@ -145,7 +145,7 @@ if [ "$NO_BUILD" -eq 0 ]; then
         BUILDROOT="$BUILD_ROOT/build" BINROOT="$BUILD_ROOT/bin" \
         CORE_BUILDROOT="$BUILD_ROOT/core"
 fi
-GUI_EXE="$BUILD_ROOT/bin/release/xfoil.next-gui"
+GUI_EXE="$BUILD_ROOT/bin/release/xfoil.next"
 [ -x "$GUI_EXE" ] || fail "GUI release executable not found: $GUI_EXE"
 
 export APPIMAGE_EXTRACT_AND_RUN=1
@@ -167,12 +167,12 @@ EXTRA_QT_MODULES="svg;" \
     "$TOOLS_DIR/linuxdeploy-x86_64.AppImage" --appimage-extract-and-run \
         --appdir "$APPDIR" \
         --executable "$GUI_EXE" \
-        --desktop-file packaging/gui/linux/xfoil.next-gui.desktop \
+        --desktop-file packaging/gui/linux/xfoil.next.desktop \
         --icon-file "$WORK/xfoil-next.png" \
         --plugin qt
 
 [ -f "$APPDIR/AppRun" ] || fail "linuxdeploy did not create AppRun"
-[ -f "$APPDIR/usr/bin/xfoil.next-gui" ] || \
+[ -f "$APPDIR/usr/bin/xfoil.next" ] || \
     fail "linuxdeploy did not install the GUI executable"
 ln -sfn xfoil-next.png "$APPDIR/.DirIcon"
 

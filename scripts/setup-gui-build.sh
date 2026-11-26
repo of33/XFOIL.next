@@ -182,7 +182,7 @@ if [ "$_is_sourced" -eq 1 ]; then
     printf '  make gui-check-qt\n'
     printf '  make gui-app\n'
     printf '  make test-gui\n'
-    printf '  bin/release/xfoil.next-gui\n'
+    printf '  bin/release/xfoil.next\n'
 else
     printf '\nThe script was executed, not sourced; the parent shell was not changed.\n'
     printf 'To configure the current shell, run:\n'

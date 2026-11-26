@@ -51,7 +51,7 @@ System libraries:  libc.so.6, libm.so.6, ld-linux-x86-64.so.2
 The executable does not require libstdc++.so.6, libgcc_s.so.1 or a
 project shared library at runtime. The system glibc remains dynamically
 linked. Install the archive contents in a directory of your choice and run
-`./xfoil.next`. No installation step is required.
+`./xfoil.next-cli`. No installation step is required.
 
 Original XFOIL provenance
 -------------------------

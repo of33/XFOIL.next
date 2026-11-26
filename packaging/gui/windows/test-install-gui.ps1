@@ -56,7 +56,7 @@ function Fail([string]$Message) {
 }
 
 function Stop-XfoilProcesses([string]$Root) {
-    Get-Process -Name 'xfoil.next-gui' -ErrorAction SilentlyContinue |
+    Get-Process -Name 'xfoil.next', 'xfoil.next-gui' -ErrorAction SilentlyContinue |
         Where-Object {
             try { $_.Path -and ($_.Path -like ($Root + '\*')) } catch { $false }
         } | ForEach-Object {
@@ -68,7 +68,7 @@ function Stop-XfoilProcesses([string]$Root) {
 function Wait-XfoilWindow([string]$ExpectedExe, [int]$TimeoutSeconds = 15) {
     $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
     while ((Get-Date) -lt $deadline) {
-        $process = Get-Process -Name 'xfoil.next-gui' -ErrorAction SilentlyContinue |
+        $process = Get-Process -Name 'xfoil.next', 'xfoil.next-gui' -ErrorAction SilentlyContinue |
             Where-Object {
                 try { $_.Path -and ([IO.Path]::GetFullPath($_.Path) -ieq [IO.Path]::GetFullPath($ExpectedExe)) } catch { $false }
             } | Select-Object -First 1
@@ -123,7 +123,7 @@ function Invoke-UninstallCmd([string]$Target, [string]$Local, [string]$Desktop, 
     return [int]$LASTEXITCODE
 }
 
-function Assert-Link([string]$Link, [string]$TargetPath, [string]$TargetDirectory, [string]$Description) {
+function Assert-Link([string]$Link, [string]$TargetPath, [string]$TargetDirectory, [string]$Description, [string]$ExpectedIcon = '') {
     if (-not (Test-Path -LiteralPath $Link -PathType Leaf)) { Fail "missing shortcut: $Link" }
     $shortcut = (New-Object -ComObject WScript.Shell).CreateShortcut($Link)
     if ([IO.Path]::GetFullPath($shortcut.TargetPath) -ine [IO.Path]::GetFullPath($TargetPath)) {
@@ -132,9 +132,11 @@ function Assert-Link([string]$Link, [string]$TargetPath, [string]$TargetDirector
     if ([IO.Path]::GetFullPath($shortcut.WorkingDirectory) -ine [IO.Path]::GetFullPath($TargetDirectory)) {
         Fail "shortcut working directory is wrong: $Link"
     }
+    if ([string]::IsNullOrWhiteSpace($ExpectedIcon)) {
+        $ExpectedIcon = Join-Path $TargetDirectory 'xfoil.next.exe'
+    }
     if (-not $shortcut.IconLocation.StartsWith(
-            (Join-Path $TargetDirectory 'xfoil.next-gui.exe'),
-            [StringComparison]::OrdinalIgnoreCase)) {
+            $ExpectedIcon, [StringComparison]::OrdinalIgnoreCase)) {
         Fail "shortcut icon is wrong: $Link"
     }
     if ($null -ne $Description -and $shortcut.Description -ne $Description) {
@@ -150,6 +152,49 @@ function New-TestLink([string]$Path) {
     $shortcut.IconLocation = (Join-Path $env:SystemRoot 'System32\notepad.exe,0')
     $shortcut.Description = 'Foreign XFOIL test link'
     $shortcut.Save()
+}
+
+function New-CustomShortcut([string]$Path, [string]$TargetPath, [string]$WorkingDirectory, [string]$Description, [string]$IconPath = '') {
+    if ([string]::IsNullOrWhiteSpace($IconPath)) {
+        $IconPath = $TargetPath
+    }
+    $shell = New-Object -ComObject WScript.Shell
+    $shortcut = $shell.CreateShortcut($Path)
+    $shortcut.TargetPath = $TargetPath
+    $shortcut.WorkingDirectory = $WorkingDirectory
+    $shortcut.IconLocation = "$IconPath,0"
+    $shortcut.Description = $Description
+    $shortcut.Save()
+}
+
+function New-LegacyInstall([string]$Package, [string]$Local, [string]$Desktop, [string]$StartMenu) {
+    $target = Join-Path (Join-Path $Local 'Programs') $TargetName
+    $legacyExe = Join-Path $target 'xfoil.next-gui.exe'
+    $desktopLink = Join-Path $Desktop ($TargetName + '.lnk')
+    $startFolder = Join-Path $StartMenu $TargetName
+    $startLink = Join-Path $startFolder ($TargetName + '.lnk')
+    $startUninstallLink = Join-Path $startFolder ('Uninstall ' + $TargetName + '.lnk')
+    if (Test-Path -LiteralPath $target) { Fail 'legacy test target already exists' }
+    New-Item -ItemType Directory -Path $target -Force | Out-Null
+    Copy-Item -LiteralPath (Join-Path $Package 'xfoil.next.exe') -Destination $legacyExe
+    Copy-Item -LiteralPath (Join-Path $Package 'Uninstall XFOIL.next GUI.cmd') -Destination $target
+    Copy-Item -LiteralPath (Join-Path $Package 'Uninstall-XFOIL.next-GUI.ps1') -Destination $target
+    @('product = XFOIL.next GUI', 'scope = per-user',
+      'install-root = managed') | Set-Content -LiteralPath (
+          Join-Path $target $MarkerName) -Encoding ascii
+    New-Item -ItemType Directory -Path $startFolder -Force | Out-Null
+    New-CustomShortcut $desktopLink $legacyExe $target 'XFOIL.next GUI'
+    New-CustomShortcut $startLink $legacyExe $target 'XFOIL.next GUI'
+    New-CustomShortcut $startUninstallLink (Join-Path $target 'Uninstall XFOIL.next GUI.cmd') `
+        $target 'Uninstall XFOIL.next GUI' $legacyExe
+    return [pscustomobject]@{
+        Target = $target
+        LegacyExe = $legacyExe
+        DesktopLink = $desktopLink
+        StartFolder = $startFolder
+        StartLink = $startLink
+        StartUninstallLink = $startUninstallLink
+    }
 }
 
 function Assert-ForeignLinks([string]$Desktop, [string]$StartMenu) {
@@ -197,7 +242,7 @@ function Assert-VersionInfo([string]$Exe) {
     if ($v.FileDescription -ne 'XFOIL.next GUI') { Fail "FileDescription is '$($v.FileDescription)'" }
     if ($v.ProductName -ne 'XFOIL.next GUI') { Fail "ProductName is '$($v.ProductName)'" }
     if ($v.InternalName -ne 'XFOIL.next GUI') { Fail "InternalName is '$($v.InternalName)'" }
-    if ($v.OriginalFilename -ne 'xfoil.next-gui.exe') { Fail "OriginalFilename is '$($v.OriginalFilename)'" }
+    if ($v.OriginalFilename -ne 'xfoil.next.exe') { Fail "OriginalFilename is '$($v.OriginalFilename)'" }
     if (-not $v.FileVersion.StartsWith('1.2.1')) { Fail "FileVersion is '$($v.FileVersion)'" }
     if (-not $v.ProductVersion.StartsWith('1.2.1')) { Fail "ProductVersion is '$($v.ProductVersion)'" }
 }
@@ -207,7 +252,8 @@ function Assert-Marker([string]$Target) {
     if (-not (Test-Path -LiteralPath $marker -PathType Leaf)) { Fail 'installation marker missing' }
     $content = @(Get-Content -LiteralPath $marker)
     foreach ($line in @('product = XFOIL.next GUI', 'scope = per-user',
-                        'install-root = managed')) {
+                        'install-root = managed',
+                        'executable = xfoil.next.exe')) {
         if ($content -notcontains $line) { Fail "installation marker missing '$line'" }
     }
 }
@@ -221,7 +267,7 @@ function Assert-StartMenuLayout([string]$StartMenu, [string]$Target) {
         Fail "unexpected Start Menu shortcuts: $($names -join ', ')"
     }
     Assert-Link (Join-Path $folder ($TargetName + '.lnk')) `
-        (Join-Path $Target 'xfoil.next-gui.exe') $Target 'XFOIL.next GUI'
+        (Join-Path $Target 'xfoil.next.exe') $Target 'XFOIL.next GUI'
     Assert-Link (Join-Path $folder ('Uninstall ' + $TargetName + '.lnk')) `
         (Join-Path $Target 'Uninstall XFOIL.next GUI.cmd') $Target 'Uninstall XFOIL.next GUI'
 }
@@ -231,7 +277,7 @@ try {
     $Extract = Join-Path $Work 'portable folder with spaces'
     Expand-Archive -LiteralPath $ZipPath -DestinationPath $Extract -Force
     $Package = Join-Path $Extract $PackageRootName
-    $Exe = Join-Path $Package 'xfoil.next-gui.exe'
+    $Exe = Join-Path $Package 'xfoil.next.exe'
     if (-not (Test-Path -LiteralPath $Exe -PathType Leaf)) { Fail 'portable executable missing' }
     foreach ($script in @('Uninstall XFOIL.next GUI.cmd', 'Uninstall-XFOIL.next-GUI.ps1')) {
         if (-not (Test-Path -LiteralPath (Join-Path $Package $script) -PathType Leaf)) {
@@ -247,7 +293,7 @@ try {
     $Desktop = Join-Path $Work 'Desktop'
     $StartMenu = Join-Path $Work 'Start Menu Programs'
     $Target = Join-Path (Join-Path $Local 'Programs') $TargetName
-    $TargetExe = Join-Path $Target 'xfoil.next-gui.exe'
+    $TargetExe = Join-Path $Target 'xfoil.next.exe'
     $DesktopLink = Join-Path $Desktop ($TargetName + '.lnk')
     $StartFolder = Join-Path $StartMenu $TargetName
     $StartLink = Join-Path $StartFolder ($TargetName + '.lnk')
@@ -344,6 +390,39 @@ try {
     Assert-Marker $Target
     Write-Host 'reinstall after portable uninstall: PASS'
 
+    $beforeHelpers = @(Helper-Artifacts)
+    $rc = Invoke-UninstallCmd $Target $Local $Desktop $StartMenu
+    if ($rc -ne 0) { Fail "uninstall before legacy migration failed: $rc" }
+    Wait-Uninstalled $Target $DesktopLink $StartFolder $beforeHelpers
+
+    $legacy = New-LegacyInstall $Package $Local $Desktop $StartMenu
+    $rc = Invoke-UninstallPs1 $PortableUninstall $Local $Desktop $StartMenu
+    if ($rc -ne 0) { Fail "portable uninstaller failed on legacy install: $rc" }
+    Wait-Until {
+        (-not (Test-Path -LiteralPath $legacy.Target)) -and
+        (-not (Test-Path -LiteralPath $legacy.DesktopLink)) -and
+        (-not (Test-Path -LiteralPath $legacy.StartFolder))
+    } 30 'portable uninstaller did not remove the legacy install'
+    if (-not (Test-Path -LiteralPath $PortableUninstallScript -PathType Leaf)) {
+        Fail 'portable uninstaller removed its portable script during legacy migration'
+    }
+    Assert-ForeignLinks $Desktop $StartMenu
+    Write-Host 'legacy portable uninstall: PASS'
+
+    $legacy = New-LegacyInstall $Package $Local $Desktop $StartMenu
+    $rc = Invoke-InstallerCmd $Package $Local $Desktop $StartMenu
+    if ($rc -ne 0) { Fail "legacy installer migration failed: $rc" }
+    if (-not (Test-Path -LiteralPath $TargetExe -PathType Leaf)) {
+        Fail 'migration did not create xfoil.next.exe'
+    }
+    if (Test-Path -LiteralPath $legacy.LegacyExe) {
+        Fail 'migration left xfoil.next-gui.exe in the target'
+    }
+    Assert-Marker $Target
+    Assert-Link $DesktopLink $TargetExe $Target 'XFOIL.next GUI'
+    Assert-StartMenuLayout $StartMenu $Target
+    Write-Host 'legacy installer migration: PASS'
+
     $junction = Join-Path $Target 'junction-test'
     New-Item -ItemType Junction -Path $junction -Target $Work | Out-Null
     $rc = Invoke-UninstallPs1 $Target $Local $Desktop $StartMenu
@@ -415,7 +494,7 @@ try {
     }
     Write-Host 'locked target rejection: PASS'
 
-    foreach ($missing in @('xfoil.next-gui.exe', 'Qt6Core.dll', 'platforms\qwindows.dll',
+    foreach ($missing in @('xfoil.next.exe', 'Qt6Core.dll', 'platforms\qwindows.dll',
                            'Uninstall XFOIL.next GUI.cmd', 'Uninstall-XFOIL.next-GUI.ps1')) {
         $Bad = Join-Path $Work ('bad-' + [Guid]::NewGuid().ToString('N'))
         Copy-Item -LiteralPath $Package -Destination $Bad -Recurse

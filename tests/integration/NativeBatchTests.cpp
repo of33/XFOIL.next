@@ -24,7 +24,7 @@
 // file: tests/integration/NativeBatchTests.cpp
 // execution matrix of the native batch mode.
 // All cases start the product program as a real process
-// (XFOIL_CLI_PATH fallback bin/debug/xfoil.next) in a unique,
+// (XFOIL_CLI_PATH fallback bin/debug/xfoil.next-cli) in a unique,
 // empty temporary directory. Exit codes, stderr diagnostics,
 // transcript/results file contents and produced artifacts are compared.
 // Re-parsing stdout to derive exit codes does not take place.
@@ -42,7 +42,7 @@ namespace {
 
 std::string productProgramPath() {
   const char* configuredPath = std::getenv("XFOIL_CLI_PATH");
-  return configuredPath != nullptr ? configuredPath : "bin/debug/xfoil.next";
+  return configuredPath != nullptr ? configuredPath : "bin/debug/xfoil.next-cli";
 }
 
 std::string absoluteProductProgramPath() {

@@ -62,19 +62,21 @@ make test-gui-installer-windows
 ```
 
 Portable use is unchanged: extract the complete ZIP and run
-`xfoil.next-gui.exe` from the extracted folder. The optional installer is
+`xfoil.next.exe` from the extracted folder. The optional installer is
 `Install XFOIL.next GUI.cmd`; it calls
 `Install-XFOIL.next-GUI.ps1` with `-NoProfile -ExecutionPolicy Bypass` for the
 current process only. The installer copies the full runtime to
 `%LOCALAPPDATA%\Programs\XFOIL.next GUI`, creates a Desktop shortcut and a
 Start Menu shortcut, and does not request elevation, change the registry or use
 the network. Re-running updates the same target, the install marker and the
-shortcuts. The Start Menu folder also receives an uninstaller shortcut.
+shortcuts. An installation created by G8b is migrated in place: the old
+`xfoil.next-gui.exe` is replaced by `xfoil.next.exe` only inside the managed
+per-user target. The Start Menu folder also receives an uninstaller shortcut.
 
 `Uninstall XFOIL.next GUI.cmd` and `Uninstall-XFOIL.next-GUI.ps1` validate the
-per-user target, the install marker, the executable and the owned shortcuts
-before removing anything. Reparse points, foreign shortcuts and unexpected
-targets are refused. The uninstaller removes its managed shortcuts and folder.
+per-user target, the install marker, the current or legacy executable and the
+owned shortcuts before removing anything. Reparse points, foreign shortcuts
+and unexpected targets are refused. The uninstaller removes its managed shortcuts and folder.
 When it runs from the installed copy it removes itself through a temporary
 helper process. When it runs from an extracted portable copy it removes the
 per-user installation and leaves the portable folder unchanged.
@@ -85,7 +87,8 @@ and a clean-`PATH` GUI startup. The PowerShell installer tests use temporary
 known-folder overrides and do not leave shortcuts in the real user profile.
 They cover install, repeated install, foreign-link preservation, marker and
 reparse rejection, running/locked rejection, installation-marker migration,
-uninstall, reinstall, complete removal and temporary-helper cleanup.
+G8b executable-name migration, legacy uninstall, uninstall, reinstall,
+complete removal and temporary-helper cleanup.
 
 The Windows GUI executable is linked with `-mwindows`; the CLI and GUI test
 programs keep their console subsystem.

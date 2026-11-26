@@ -166,8 +166,8 @@ variant (see [known differences](docs/known-differences.md)).
 Build (default target is a release build):
 
 ```sh
-make            # release build, binary at bin/release/xfoil.next
-make debug      # debug build,  binary at bin/debug/xfoil.next
+make            # release build, CLI at bin/release/xfoil.next-cli
+make debug      # debug build,  CLI at bin/debug/xfoil.next-cli
 make library    # release static + shared library under build/release/lib
 make install DESTDIR=/tmp/stage PREFIX=/usr
 ```
@@ -180,9 +180,9 @@ libraries remain below `build/`.
 Run the interactive CLI:
 
 ```sh
-bin/debug/xfoil.next                 # interactive session
-bin/debug/xfoil.next profile.dat     # interactive session with a startup profile
-bin/debug/xfoil.next < commands.txt  # drive the session from stdin
+bin/debug/xfoil.next-cli                 # interactive session
+bin/debug/xfoil.next-cli profile.dat     # interactive session with a startup profile
+bin/debug/xfoil.next-cli < commands.txt  # drive the session from stdin
 ```
 
 Run the test suites:
@@ -210,8 +210,8 @@ make test-gui
 
 The equivalent explicit environment uses `QT_ROOT`, `PATH`, `LD_LIBRARY_PATH`
 and `QT_PLUGIN_PATH`; `make gui-check-qt` reports the resolved Qt root, version,
-tools and platform. `make gui-app` writes `bin/debug/xfoil.next-gui` and
-`bin/release/xfoil.next-gui`; `make run-gui` starts the debug application.
+tools and platform. `make gui-app` writes `bin/debug/xfoil.next` and
+`bin/release/xfoil.next`; `make run-gui` starts the debug application.
 On Windows, use the MSYS2 UCRT64 shell and `scripts/setup-gui-build.sh`; the
 PowerShell helper `scripts/setup-gui-build.ps1` prepares the same Qt variables
 for child processes. The standalone GUI embeds its application icon; the
@@ -249,7 +249,7 @@ outside.
 
 The Windows GUI ZIP supports two user modes:
 
-- **Portable:** extract the complete ZIP and run `xfoil.next-gui.exe` in that
+- **Portable:** extract the complete ZIP and run `xfoil.next.exe` in that
   folder. Do not copy only the EXE to the desktop; it needs the Qt DLLs and
   plugin directories next to it.
 - **Per-user installation:** extract the ZIP and run
@@ -259,10 +259,11 @@ The Windows GUI ZIP supports two user modes:
   shortcut can be pinned manually.
 
 The Windows GUI executable uses the Windows GUI subsystem, so normal launches
-do not open a console window. The CLI remains a console application. To remove
-the per-user installation manually, delete both shortcuts and the
-`%LOCALAPPDATA%\Programs\XFOIL.next GUI` folder; this is not a formal
-uninstaller.
+do not open a console window. The CLI remains a console application. Remove a
+per-user installation with **Uninstall XFOIL.next GUI** in the Start Menu or
+with `Uninstall XFOIL.next GUI.cmd` in the install folder; the uninstaller
+removes only the managed shortcuts and installation folder. A portable copy is
+removed by deleting its extracted folder.
 
 The local G8 artifacts are test packages, not release downloads. See
 [packaging/gui](packaging/gui/README.md) and
@@ -305,7 +306,7 @@ XFOIL.next-1.2.1-SHA256SUMS
 
 Linux requires x86-64 and glibc 2.35 or newer; libstdc++ and libgcc are
 statically linked, while libc, libm and the loader remain system libraries.
-The Windows asset is a single `xfoil.next.exe` for x86-64 that uses Windows
+The Windows asset is a single `xfoil.next-cli.exe` for x86-64 that uses Windows
 UCRT system interfaces and needs no MSYS2, MinGW or project DLL. Each archive
 contains exactly `LICENSE`, `NOTICE` and the executable. No library SDK
 binary packages are part of this release. These are release candidates until
@@ -368,11 +369,11 @@ there.
 Supported Windows environment: **Windows 11 with MSYS2 UCRT64**. In an
 UCRT64 shell, install the toolchain (`pacman -S mingw-w64-ucrt-x86_64-gcc
 mingw-w64-ucrt-x86_64-gcc-fortran make python`) and build with the same
-Makefile; the product binary is `bin/debug/xfoil.next.exe` (or
-`bin/release/xfoil.next.exe`). Confirmed for the 1.2.1 release on Windows 11
+Makefile; the CLI binary is `bin/debug/xfoil.next-cli.exe` (or
+`bin/release/xfoil.next-cli.exe`). Confirmed for the 1.2.1 release on Windows 11
 + MSYS2 UCRT64 with GCC/MinGW 16.1.0 Rev5: the Debug and Release builds are
 clean under `-Werror`, and
-`xfoil.next.exe` starts directly in the UCRT64 console; from PowerShell
+`xfoil.next-cli.exe` starts directly in the UCRT64 console; from PowerShell
 or `cmd.exe` a normal build also runs when `<MSYS2>\ucrt64\bin` is on
 `PATH` (MSYS2 runtime DLLs). The separate `make portable-windows` target
 produces a single static-runtime executable that needs only the Windows
@@ -398,7 +399,7 @@ baseline is **Windows 11 + MSYS2 UCRT64 + GCC/MinGW 16.2.0 Rev7 + Qt
 - Cygwin is not supported and not promised;
 - a normal MSYS2 build links the UCRT64 runtime DLLs, so
   `<MSYS2>\ucrt64\bin` must be on `PATH` when starting
-  `xfoil.next.exe` from `cmd.exe` or PowerShell;
+  `xfoil.next-cli.exe` from `cmd.exe` or PowerShell;
 - the separate `make portable-windows` target produces a single
   static-runtime executable for Windows x86-64. It requires the Windows
   UCRT and no MSYS2/MSYS runtime DLL; see
@@ -431,11 +432,11 @@ cmd /k "call tools\windows\xfoil-next-env.bat D:\Programme\msys64"
 
 ### Starting the program
 
-The product binary is named `xfoil.next.exe` in `bin\debug\` or
+The CLI binary is named `xfoil.next-cli.exe` in `bin\debug\` or
 `bin\release\`. The former name `xfoil.exe` is never produced:
 
 ```bat
-bin\release\xfoil.next.exe
+bin\release\xfoil.next-cli.exe
 ```
 
 ### Windows-specific numerical contracts
@@ -495,7 +496,7 @@ builds Debug and Release with `-Werror`, runs the full debug suites
 (unit 1868, integration 343, batch 47), repeats core (465) and
 regression (5) three times each from the same untouched debug build,
 executes the full release suite (2266), checks the binary contract
-(`xfoil.next.exe` present, `xfoil.exe` absent, `--version` output),
+(`xfoil.next-cli.exe` present, `xfoil.exe` absent, `--version` output),
 and performs one `XFOIL_DUMP_DIAG=1` PACC dump diagnostic.
 It writes separate logs (`00-environment.txt` … `50-summary.txt`), a
 machine-readable summary, and `SHA256SUMS.txt`.

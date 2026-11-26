@@ -35,7 +35,7 @@ namespace {
 
 // Usage text (/10, new in): stdout, exit 0.
 void printUsage(std::ostream& out) {
-  out << "Usage: xfoil.next [OPTION]... [AIRFOILFILE]\n"
+  out << "Usage: xfoil.next-cli [OPTION]... [AIRFOILFILE]\n"
       << "  (no option)            interactive XFOIL session, optional\n"
       << "                         airfoil file as startup profile\n"
       << "  --batch FILE           run one batch job from FILE ('-' = stdin)\n"

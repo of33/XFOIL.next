@@ -60,14 +60,14 @@ SOURCE_URL = "https://github.com/of33/XFOIL.next"
 PLATFORMS = {
     "linux": {
         "asset": "linux-x86_64",
-        "exe": "xfoil.next",
+        "exe": "xfoil.next-cli",
         "extra": ".tar.xz",
         "appendices": [("GCC Runtime Library Exception",
                         "GCC-RUNTIME-EXCEPTION.txt")],
     },
     "windows": {
         "asset": "windows-x86_64",
-        "exe": "xfoil.next.exe",
+        "exe": "xfoil.next-cli.exe",
         "extra": ".zip",
         "appendices": [
             ("GCC Runtime Library Exception", "GCC-RUNTIME-EXCEPTION.txt"),

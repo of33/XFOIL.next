@@ -37,7 +37,7 @@ import time
 import zipfile
 
 REQUIRED = {
-    "xfoil.next-gui.exe",
+    "xfoil.next.exe",
     "Install XFOIL.next GUI.cmd",
     "Install-XFOIL.next-GUI.ps1",
     "Uninstall XFOIL.next GUI.cmd",
@@ -146,14 +146,15 @@ def check_archive(path, expected_version, epoch=None):
                 raise CheckError(
                     "the installation marker must be created by the installer, "
                     "not shipped in the ZIP")
-            if name in ("xfoil.next.exe", "xfoil.next",
+            if name in ("xfoil.next-gui.exe", "xfoil.next-gui",
+                        "xfoil.next-cli.exe", "xfoil.next-cli",
                         "qmake.exe", "moc.exe", "uic.exe", "rcc.exe",
                         "windeployqt.exe", "Qt6Test.dll"):
                 raise CheckError(f"forbidden ZIP entry: {rel}")
             if rel.lower().endswith((".pdb", ".lib", ".a", ".h", ".hpp",
                                      ".cpp", ".o", ".obj", ".log")):
                 raise CheckError(f"development artifact in ZIP: {rel}")
-        with archive.open(top + "/xfoil.next-gui.exe") as handle:
+        with archive.open(top + "/xfoil.next.exe") as handle:
             data = handle.read()
         if expected_version.encode("utf-8") not in data:
             raise CheckError("product version not found in GUI executable")
@@ -186,7 +187,7 @@ def check_dependencies(root, relative):
     objdump = shutil.which("objdump")
     if objdump:
         result = subprocess.run(
-            [objdump, "-h", str(root / "xfoil.next-gui.exe")],
+            [objdump, "-h", str(root / "xfoil.next.exe")],
             check=False, text=True,
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         if result.returncode != 0 or ".rsrc" not in result.stdout:
@@ -201,9 +202,9 @@ def check_dependencies(root, relative):
                 raise CheckError(
                     f"missing bundled dependency {dll} imported by "
                     f"{exe.relative_to(root)}")
-    if not imported_dlls(root / "xfoil.next-gui.exe"):
+    if not imported_dlls(root / "xfoil.next.exe"):
         raise CheckError("GUI executable has no readable PE import table")
-    if (root / "xfoil.next-gui.exe").read_bytes().find(b"\x00") < 0:
+    if (root / "xfoil.next.exe").read_bytes().find(b"\x00") < 0:
         raise CheckError("GUI executable is not a PE image")
 
 
@@ -257,12 +258,12 @@ def pe_version_strings(path):
 
 
 def check_version_metadata(root, expected_version):
-    values = pe_version_strings(root / "xfoil.next-gui.exe")
+    values = pe_version_strings(root / "xfoil.next.exe")
     expected = {
         "FileDescription": "XFOIL.next GUI",
         "ProductName": "XFOIL.next GUI",
         "InternalName": "XFOIL.next GUI",
-        "OriginalFilename": "xfoil.next-gui.exe",
+        "OriginalFilename": "xfoil.next.exe",
     }
     for name, wanted in expected.items():
         if values.get(name) != wanted:
@@ -312,7 +313,7 @@ def window_titles(pid):
 def check_clean_run(root):
     if os.name != "nt":
         raise CheckError("clean-PATH startup requires Windows")
-    exe = root / "xfoil.next-gui.exe"
+    exe = root / "xfoil.next.exe"
     with tempfile.TemporaryDirectory(prefix="xfoil-gui-run-") as temp:
         home = pathlib.Path(temp)
         env = {

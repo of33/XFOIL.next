@@ -9,14 +9,21 @@ $ErrorActionPreference = 'Stop'
 
 $PackageRoot = $PSScriptRoot
 $TargetName = 'XFOIL.next GUI'
+$ExecutableName = 'xfoil.next.exe'
+$LegacyExecutableName = 'xfoil.next-gui.exe'
 $MarkerName = '.xfoil-next-gui-install'
 $MarkerLines = @(
     'product = XFOIL.next GUI',
     'scope = per-user',
-    'install-root = managed'
+    'install-root = managed',
+    'executable = xfoil.next.exe'
+)
+$Forbidden = @(
+    'xfoil.next-gui.exe',
+    'xfoil.next-cli.exe'
 )
 $Required = @(
-    'xfoil.next-gui.exe',
+    'xfoil.next.exe',
     'Install XFOIL.next GUI.cmd',
     'Install-XFOIL.next-GUI.ps1',
     'Uninstall XFOIL.next GUI.cmd',
@@ -44,7 +51,8 @@ $DesktopDirectory = [IO.Path]::GetFullPath($DesktopDirectory)
 $StartMenuProgramsDirectory = [IO.Path]::GetFullPath($StartMenuProgramsDirectory)
 $ProgramsRoot = Join-Path $LocalAppDataDirectory 'Programs'
 $Target = Join-Path $ProgramsRoot $TargetName
-$TargetExe = Join-Path $Target 'xfoil.next-gui.exe'
+$TargetExe = Join-Path $Target $ExecutableName
+$LegacyExe = Join-Path $Target $LegacyExecutableName
 $Staging = Join-Path $ProgramsRoot ('.XFOIL.next-GUI-staging-' + [Guid]::NewGuid().ToString('N'))
 $Backup = Join-Path $ProgramsRoot ('.XFOIL.next-GUI-backup-' + [Guid]::NewGuid().ToString('N'))
 
@@ -53,6 +61,11 @@ function Assert-Package([string]$Root) {
         $path = Join-Path $Root $relative
         if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
             Fail "The package is incomplete: missing $relative. Extract the complete ZIP and run the installer from its top-level folder."
+        }
+    }
+    foreach ($relative in $Forbidden) {
+        if (Test-Path -LiteralPath (Join-Path $Root $relative)) {
+            Fail "The package contains a forbidden executable: $relative"
         }
     }
 }
@@ -64,6 +77,32 @@ function Assert-NotReparse([string]$Path) {
     $item = Get-Item -LiteralPath $Path -Force
     if ([bool]($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
         Fail "Refusing to install through a reparse point: $Path"
+    }
+}
+
+function Assert-ExecutableUnlocked([string]$Path) {
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        return
+    }
+    try {
+        $stream = [IO.File]::Open($Path, [IO.FileMode]::Open,
+            [IO.FileAccess]::ReadWrite, [IO.FileShare]::None)
+        $stream.Close()
+    } catch {
+        Fail 'Close XFOIL.next GUI before installing. The installed executable or one of its runtime files is in use.'
+    }
+}
+
+function Assert-NoRunningInstallation([string]$Root) {
+    $running = @(Get-Process -Name 'xfoil.next', 'xfoil.next-gui' `
+        -ErrorAction SilentlyContinue | Where-Object {
+            try {
+                $_.Path -and $_.Path.StartsWith(
+                    $Root + '\', [StringComparison]::OrdinalIgnoreCase)
+            } catch { $false }
+        })
+    if ($running.Count -gt 0) {
+        Fail 'Close XFOIL.next GUI before installing.'
     }
 }
 
@@ -119,15 +158,10 @@ try {
         -Encoding ascii
 
     if (Test-Path -LiteralPath $Target -PathType Container) {
-        if (Test-Path -LiteralPath $TargetExe -PathType Leaf) {
-            try {
-                $stream = [IO.File]::Open($TargetExe, [IO.FileMode]::Open,
-                    [IO.FileAccess]::ReadWrite, [IO.FileShare]::None)
-                $stream.Close()
-            } catch {
-                Fail 'Close XFOIL.next GUI before installing. The installed executable or one of its runtime files is in use.'
-            }
-        }
+        Assert-NotReparse $Target
+        Assert-NoRunningInstallation $Target
+        Assert-ExecutableUnlocked $TargetExe
+        Assert-ExecutableUnlocked $LegacyExe
         try {
             Move-Item -LiteralPath $Target -Destination $Backup
         } catch {
@@ -151,6 +185,12 @@ try {
     }
 
     Assert-Package $Target
+    if (-not (Test-Path -LiteralPath $TargetExe -PathType Leaf)) {
+        Fail 'The new GUI executable is missing after installation.'
+    }
+    if (Test-Path -LiteralPath $LegacyExe) {
+        Fail 'The legacy GUI executable still exists after installation.'
+    }
     New-Item -ItemType Directory -Path $DesktopDirectory -Force | Out-Null
     $StartMenuFolder = Join-Path $StartMenuProgramsDirectory $TargetName
     New-Item -ItemType Directory -Path $StartMenuFolder -Force | Out-Null

@@ -7,8 +7,8 @@ single-executable XFOIL.next runtime.
 
 | Platform | Executable | Runtime contract | Archive |
 | --- | --- | --- | --- |
-| Linux x86-64 | `xfoil.next` | single ELF, static libstdc++/libgcc, system glibc >= 2.35 | `XFOIL.next-<version>-linux-x86_64.tar.xz` |
-| Windows x86-64 | `xfoil.next.exe` | single PE, static MinGW-w64 runtime, Windows UCRT | `XFOIL.next-<version>-windows-x86_64.zip` |
+| Linux x86-64 | `xfoil.next-cli` | single ELF, static libstdc++/libgcc, system glibc >= 2.35 | `XFOIL.next-<version>-linux-x86_64.tar.xz` |
+| Windows x86-64 | `xfoil.next-cli.exe` | single PE, static MinGW-w64 runtime, Windows UCRT | `XFOIL.next-<version>-windows-x86_64.zip` |
 
 Each archive contains exactly `LICENSE`, `NOTICE` and the executable at the
 archive root. The additional `SHA256SUMS` file is distributed separately.
@@ -45,8 +45,8 @@ make portable-sha256sums
 Default outputs:
 
 ```text
-build/portable/linux-x86_64/release/xfoil.next
-build/portable/windows-x86_64/release/xfoil.next.exe
+build/portable/linux-x86_64/release/xfoil.next-cli
+build/portable/windows-x86_64/release/xfoil.next-cli.exe
 build/portable/dist/
 ```
 

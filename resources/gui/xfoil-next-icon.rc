@@ -24,7 +24,7 @@ BEGIN
       VALUE "FileVersion", XFOIL_GUI_VERSION_STRING
       VALUE "InternalName", "XFOIL.next GUI"
       VALUE "LegalCopyright", "Copyright (C) 2026 Olaf Frommann"
-      VALUE "OriginalFilename", "xfoil.next-gui.exe"
+      VALUE "OriginalFilename", "xfoil.next.exe"
       VALUE "ProductName", "XFOIL.next GUI"
       VALUE "ProductVersion", XFOIL_GUI_VERSION_STRING
     END
