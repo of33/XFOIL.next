@@ -15,8 +15,8 @@ relative to the root.
   determinism checks use the precompiled `fortran-bin/xfoil` and do not need
   a Fortran compiler.
 - `valgrind` only for `make test-valgrind`.
-- Qt 6.12.0 only for the optional GUI skeleton targets. Set `QT_ROOT` to the
-  Qt kit prefix; the path is not built into the Makefile.
+- Qt 6.12.0 for the GUI targets. Set `QT_ROOT` to the Qt kit prefix; the path
+  is not built into the Makefile.
 
 ## Build targets
 
@@ -47,7 +47,7 @@ consumer/linkcheck programs, sanitizer programs, harness builds, generated
 files and libraries remain under `build/`. `make clean` removes both generated
 trees (`build/` and the selected `BINROOT`).
 
-Optional GUI skeleton targets:
+GUI targets:
 
 ```text
 make gui                    GUI debug archive
@@ -67,7 +67,7 @@ make gui-check-qt          validate QT_ROOT, Qt 6.12.0 tools, modules and kit
 
 The GUI targets require Qt 6.12.0. The supported modules are Core, Gui,
 Widgets, PrintSupport and Svg; the GUI test target also needs Test. The normal
-development and standalone build uses the shared Qt kit.
+and standalone build uses the shared Qt kit.
 
 Validate a kit before building:
 
@@ -118,59 +118,29 @@ source scripts/setup-gui-build.sh /path/to/Qt/6.12.0/mingw_64
 make gui-app-release
 ```
 
-The Windows GUI executable is not a supported single-file deployment. Run
-`windeployqt` on the release executable and keep the generated Qt libraries and
-plugin directories next to `xfoil.next.exe` together with the MinGW runtime
-DLLs used by the build. The app is a thin shell around a single-page workflow
-tab host; its `Analysis` tab contains exactly one `XFoilAnalysisWidget`. It adds
-File/Help actions, Open, Save Airfoil, DXF export, recent files, QSettings and a
-cancel-before-close path.
-No solver, session or command-interpreter logic is duplicated in the shell.
+The Windows GUI executable is not a single-file deployment. Keep the Qt
+libraries, plugins and MinGW runtime next to `xfoil.next.exe`; the Windows GUI
+ZIP provides this complete runtime.
 
-Run the GUI targets sequentially. The current analysis surface owns memory,
-NACA or NACS geometry, paneling options, an `AnalysisConfig` and exactly one
-alpha, CL or exclusive-end alpha-sequence target. It runs those analyses
-asynchronously in one persistent worker thread and one worker-owned
-`xfoil::Session`; programmatic setup calls are short blocking worker calls
-outside an active job. Results cross the boundary as owning values. The result
-workspace has a left Cp/Airfoil column, five scalar sequence plots, selected
-Cp/Cf detail plots, a fixed right selection and 4x3 results column,
-setup/analysis diagnostics, an Analyze button, a Cancel button, progress and
-analysis status. Point selection and activate/deactivate filtering use source
-indices and owning results; they never rerun the solver. The matrix shows
-direct selected-point values plus derived summary values for enabled converged
-points, with `n/a` where a value is unavailable. The plots support pan,
-cursor-centred zoom, fit and optional sample markers; the airfoil contour keeps
-equal aspect. A non-converged selected point remains directly inspectable but
-is excluded from derived summaries. Provisional maxima and their resolution
-hints are shown explicitly.
+The GUI is the standalone Analysis application described in the README. It
+supports airfoil import, NACA/NACS geometry, paneling, operating conditions,
+alpha/CL points and sequences, progress, cancellation, Cp/Cf and scalar plots,
+point selection, comparison polars, reports and Cp/polar/plot exports.
 
-The GUI tests cover the definition model, selection and filtering, exact and
-interpolated summaries, scalar curves including NC markers and source order,
-Cp/Cf detail replacement and the inviscid state, plot interactions and
-independence, worker/job identity, alpha/CL/sequence execution, progress,
-cancellation, busy no-ops, two independent widgets, shutdown, the public-header
-link check, the app shell, file adapters, recent/settings persistence and
-deferred close. Open reuses the existing labeled/generic/MSES coordinate
-reader, Save Airfoil reuses the labeled writer, and Export DXF reuses the R12
-encoder. Cp/Cf/polar/BLOU import/export is not part of this increment.
+The GUI tests run offscreen and cover workflow setup, analysis execution,
+plots, point selection, exports and the standalone application shell. The
+supported 2.0.0 GUI build baseline is Ubuntu 24.04 with GCC 13.3.0 and Qt
+6.12.0 on Linux, and Windows 11 with MSYS2 UCRT64, GCC/MinGW 16.2.0 Rev7 and
+Qt 6.12.0 on Windows.
 
-The embeddable `XFoilAnalysisWidget` reads and writes no files, uses no `QSettings`
-and starts no standalone application. The separate `src/gui/app` shell owns
-the file dialogs, QSettings and application entry point. The Windows UCRT64
-Qt 6.12.0/GCC 16.2.0 Rev7 development build is qualified, and G8/G8a/G8b
-provide local portable GUI packages plus a per-user installer and uninstaller.
-
-The adapter also accepts a kit found through `pkg-config` or `qmake`. The
-build emits generated MOC/UIC files only below `build/gui/`; debug and release
-objects, and objects from different compilers or Qt kits, use separate
+The build emits generated MOC/UIC files only below `build/gui/`; debug and
+release objects, and objects from different compilers or Qt kits, use separate
 directories. The GUI archive is debug or release specific and contains the
-widget shell, definition model, session backend, geometry preview, generated
-UI/meta-objects and QCustomPlot. Core, session and CLI objects remain in the
-separate public library.
+standalone application, definition model, session backend, geometry preview,
+generated UI/meta-objects and QCustomPlot. Core, session and CLI objects remain
+in the separate public library.
 
-The GUI now includes a thin standalone application shell. G8 provides local
-portable GUI packages:
+GUI package targets:
 
 ```text
 make gui-appimage               Linux AppImage (Ubuntu 24.04 build host)
@@ -187,10 +157,10 @@ make test-gui-installer-windows temporary known-folder installer tests
 The Linux AppImage uses the Qt 6.12.0 kit selected by `QT_ROOT` and pinned
 AppImage tools in `APPIMAGE_TOOLS_DIR`. No AppImage tool or runtime is
 downloaded. The AppImage is built and tested on Ubuntu 24.04 with GCC 13.3.0;
-no GLIBC 2.35 compatibility promise is made for it. The Windows ZIP contains
-the GUI executable, Qt DLLs, plugins and MinGW runtime together in one
-top-level folder. The Windows GUI executable uses the Windows GUI subsystem;
-the CLI remains a console application.
+no older-glibc compatibility promise is made. The Windows ZIP contains the GUI
+executable, Qt DLLs, plugins and MinGW runtime together in one top-level
+folder. The Windows GUI executable uses the Windows GUI subsystem; the CLI
+remains a console application.
 
 Windows users have two supported modes:
 
@@ -209,13 +179,10 @@ Use **Uninstall XFOIL.next GUI** in the Start Menu, or
 `Uninstall XFOIL.next GUI.cmd` in `%LOCALAPPDATA%\Programs\XFOIL.next GUI`, to
 remove a per-user installation. The uninstaller validates the managed target,
 marker and owned shortcuts, and leaves unrelated XFOIL files and a portable
-extracted folder unchanged. An installation created by G8b with
-`xfoil.next-gui.exe` is migrated by the current installer and is also accepted
-by the current uninstaller.
+extracted folder unchanged.
 
-The current development product version is 2.0.0; local GUI test packages use a
-`local-g8` suffix and are not release downloads. See
-[packaging/gui](../packaging/gui/README.md).
+GUI package build outputs remain below `build/portable/gui/` and are not
+committed. See [packaging/gui](../packaging/gui/README.md).
 
 Product programs land under `bin/<mode>/`; intermediate objects, tests,
 generated files and libraries remain under `build/<mode>/`. The default
@@ -226,27 +193,22 @@ pure IO objects, but not `src/main.cpp` or the application/CLI adapters.
 Static and shared objects use separate `libobj-static/` and
 `libobj-shared/` roots.
 
-### Planned 2.0.0 GUI downloads
+### 2.0.0 packages
 
-The planned 2.0.0 GUI assets are:
+The 2.0.0 distribution uses four separate package names:
 
 ```text
+XFOIL.next-2.0.0-linux-x86_64.tar.xz
+XFOIL.next-2.0.0-windows-x86_64.zip
 XFOIL.next-GUI-2.0.0-linux-x86_64.AppImage
 XFOIL.next-GUI-2.0.0-windows-x86_64.zip
 ```
 
-These are not produced by this development version transition and are not a
-finished release. Local GUI test packages use `2.0.0-local-g8` with the same
-structure. The Windows GUI ZIP keeps the executable, Qt libraries, plugins and
-MinGW runtime together and includes the optional per-user installer; portable
-use still requires running
-the EXE from the extracted folder. The Linux GUI AppImage is the portable GUI
-asset and is built/tested on Ubuntu 24.04; no older-glibc promise is made for
-it. The CLI archive names remain
-`XFOIL.next-2.0.0-linux-x86_64.tar.xz` and
-`XFOIL.next-2.0.0-windows-x86_64.zip`; the Linux CLI archive preserves file
-names, executable permissions and bundled release information, while the
-Windows CLI ZIP keeps the executable and required runtime files together.
+The GUI and CLI are separate downloads. The Windows GUI ZIP contains the
+executable, Qt libraries, plugins and MinGW runtime together with the optional
+per-user installer. The Linux GUI AppImage is the portable GUI package and is
+built and tested on Ubuntu 24.04; no older-glibc promise is made. The final
+download links and SHA-256 checksums are added when the release is published.
 
 ## Portable runtime packaging
 
@@ -266,9 +228,9 @@ make portable-sha256sums       separate SHA256SUMS for both archives
 ```
 
 The Linux build requires Docker for the digest-pinned Ubuntu 22.04 /
-GCC 13.4.0 / glibc 2.35 builder. The Windows build runs on the current
-Windows 11 + MSYS2 UCRT64 + GCC/MinGW 16.2.0 Rev7 development baseline; the
-1.2.1 release artifacts remain validated with GCC/MinGW 16.1.0 Rev5.
+GCC 13.4.0 / glibc 2.35 builder. The Windows build runs on the supported
+Windows 11 + MSYS2 UCRT64 + GCC/MinGW 16.2.0 Rev7 baseline; the 1.2.1 release
+artifacts remain validated with GCC/MinGW 16.1.0 Rev5.
 Outputs are written below `build/portable/`:
 
 ```text

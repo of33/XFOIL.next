@@ -27,19 +27,29 @@ alt="GPL-3.0-or-later">
 
 # XFOIL.next
 
-**Current development version: 2.0.0**
+**Version 2.0.0**
 
-XFOIL.next implements the complete canonical non-graphical XFOIL
-functionality in modern C++.
-
-It is a C++20 port of the canonical XFOIL Fortran implementation by
-Mark Drela and Harold Youngren. The numerical behaviour is validated
-directly against the original Fortran sources and the reference Fortran
-binary.
+XFOIL.next is a C++20 implementation of the XFOIL airfoil analysis and design
+method. It combines the complete established command-line workflow with a
+standalone graphical analysis application. The numerical behaviour is
+validated directly against the original Fortran sources and the reference
+Fortran binary.
 
 <p align="center">
 <img src="docs/fig/XFOIL.next-2.0.0.png" alt="XFOIL.next 2.0.0 GUI" width="100%">
 </p>
+
+XFOIL.next 2.0.0 provides two user-facing programs:
+
+- **XFOIL.next GUI** (`xfoil.next`, `xfoil.next.exe`) for the standalone
+  Analysis workflow;
+- **XFOIL.next CLI** (`xfoil.next-cli`, `xfoil.next-cli.exe`) for the complete
+  command-line and batch workflow.
+
+The GUI and CLI are separate programs and separate package sets. XFOIL.next is
+licensed under [GPL-3.0-or-later](LICENSE). See [Quick start](#quick-start) and
+[Building and testing](docs/building-and-testing.md) for build and start
+instructions.
 
 ## Motivation
 
@@ -67,6 +77,11 @@ See [NOTICE](NOTICE) for full attribution and provenance details.
 
 ## What it provides
 
+- a standalone Qt 6.12.0 **XFOIL.next GUI** for the Analysis workflow:
+  airfoil import and NACA/NACS geometry, paneling, operating conditions,
+  alpha/CL single points and sequences, Cp/Cf/scalar plots, operating-point
+  selection and activation, comparison polars, reports, Cp/polar export, and
+  plot export as PNG, PDF or SVG;
 - the complete canonical non-graphical XFOIL command set: airfoil and
   panel geometry, NACA generation and file import, inviscid and viscous
   analysis, boundary-layer / transition / wake / interaction numerics,
@@ -132,35 +147,27 @@ logical state; concurrent use of one session is not supported.
 
 ## What it deliberately does not provide
 
-The command-line product has no graphical backend. X11 plotting, graphical
-curves, zoom, graphical cursor interaction, and PostScript / hardcopy output
-are not implemented. Pure plot and cursor commands are still recognised and
-report:
+The 2.0.0 GUI delivers the Analysis workflow. It is not a general
+geometry-design or scripting frontend and does not provide:
+
+- a Geometry-Design or Camber-Design workflow;
+- MDES or QDES;
+- Cf or boundary-layer export;
+- a project file format or global persistence of analysis state;
+- an SDK or additional binary add-on package;
+- additional workflow tabs beyond Analysis.
+
+The CLI has no graphical backend. X11 plotting, graphical cursor interaction
+and PostScript/hardcopy output are not implemented there. Pure plot and cursor
+commands are recognized and report:
 
 ```text
 Plotting is not available in this build.
 ```
 
-An optional Qt 6.12.0 GUI analysis surface and a thin standalone application
-now exist. The widget owns a geometry/paneling/operating/target definition, an
-offscreen-checked interactive geometry and panel preview, five scalar sequence
-plots, selected-point Cp and Cf plots and a 4x3 result matrix with diagnostics,
-progress and cancellation. Alpha, CL, alpha-sequence and CL-sequence analyses
-run asynchronously in exactly one persistent worker thread and one worker-owned
-`xfoil::Session`. The widget exposes an owning `AnalysisWorkflowSetup` host
-contract with atomic validation and repeated reinitialization, plus
-`resetWorkflow()` and instance-local view options. Point selection and
-activate/deactivate filtering use owning results and never rerun the solver. The matrix shows direct values for the
-selected point and derived `CL0`, `alpha0`, `CD0`, `CM0`, `CLmax` and
-`(CL/CD)max` summaries for enabled converged points, using `n/a` and explicit
-provisional hints where a value is not defined. The plots support pan,
-cursor-centred wheel zoom, fit and sample markers. The standalone shell adds
-File/Help actions, Open, Save Airfoil, DXF export, recent files, settings and a
-cancel-before-close path. Open accepts the existing labeled, generic and MSES
-coordinate files through `DatFileReader`; Save Airfoil uses the existing
-labeled writer; Export DXF uses the existing R12 encoder. Cp/Cf/polar/BLOU
-import/export is not part of this increment. The numerical, textual and
-file-related parts of mixed commands are kept.
+The standalone GUI provides its own analysis plots, but it is not a
+replacement for the original XFOIL plot and cursor command set.
+
 This is a port of XFOIL, not an independent re-derivation of the
 solver, and it is not a bit-identical reproduction of every Fortran build
 variant (see [known differences](docs/known-differences.md)).
@@ -203,7 +210,7 @@ make library-demo                 # standalone staged-library demo
 make test-library-demo            # demo integration tests
 ```
 
-Optional GUI analysis surface and standalone app build (Qt 6.12.0):
+Build the standalone GUI with the supported Qt 6.12.0 kit:
 
 ```sh
 source scripts/setup-gui-build.sh /path/to/Qt/6.12.0/gcc_64
@@ -216,91 +223,109 @@ The equivalent explicit environment uses `QT_ROOT`, `PATH`, `LD_LIBRARY_PATH`
 and `QT_PLUGIN_PATH`; `make gui-check-qt` reports the resolved Qt root, version,
 tools and platform. `make gui-app` writes `bin/debug/xfoil.next` and
 `bin/release/xfoil.next`; `make run-gui` starts the debug application.
+
 On Windows, use the MSYS2 UCRT64 shell and `scripts/setup-gui-build.sh`; the
 PowerShell helper `scripts/setup-gui-build.ps1` prepares the same Qt variables
-for child processes. The standalone GUI embeds its application icon; the
-Windows executable also carries the native icon resource.
+for child processes:
 
-Run the GUI targets sequentially. The embeddable `xfoil::gui::XFoilAnalysisWidget`
-accepts memory, NACA and NACS geometry, complete Basic/Expert paneling and
-condition controls, and an alpha/CL/alpha-sequence/CL-sequence target. It validates setup through the public
-`xfoil::Session` API and runs analysis in one persistent worker-owned session
-with owning result values, progress, cancellation and structured errors. It
-previews geometry and an optional red panel overlay with XFOIL-style node
-ticks, binds full scalar curves and selected-point Cp/Cf distributions with
-QCustomPlot, and provides source-index point selection, activate/deactivate
-filtering, a result matrix and derived summaries.
-The embeddable widget itself still has no file dialog, QSettings or import or
-export adapter; those responsibilities belong to the standalone shell.
-
-G8 adds local portable GUI packages for Linux and Windows:
-
-```sh
-export QT_ROOT=/path/to/Qt/6.12.0/gcc_64
-export APPIMAGE_TOOLS_DIR=/path/to/pinned/appimage-tools
-make gui-appimage
-make gui-portable-check-linux
-
-# In an MSYS2 UCRT64 shell on Windows:
-make gui-portable-windows
+```powershell
+. .\scripts\setup-gui-build.ps1 -QtRoot 'C:\Qt\6.12.0\mingw_64'
 ```
 
-The Linux AppImage is built and tested on Ubuntu 24.04 with GCC 13.3.0 and the
-Qt 6.12.0 kit. It bundles Qt libraries and plugins but not the CLI executable.
-No GLIBC 2.35 or older-glibc compatibility is promised for the GUI AppImage.
-The icon has an opaque white interior inside the blue hexagon and a transparent
-outside.
-
-The Windows GUI ZIP supports two user modes:
-
-- **Portable:** extract the complete ZIP and run `xfoil.next.exe` in that
-  folder. Do not copy only the EXE to the desktop; it needs the Qt DLLs and
-  plugin directories next to it.
-- **Per-user installation:** extract the ZIP and run
-  `Install XFOIL.next GUI.cmd`. It copies the complete runtime to
-  `%LOCALAPPDATA%\Programs\XFOIL.next GUI` and creates Desktop and Start Menu
-  shortcuts. No administrator rights are required. The stable Start Menu
-  shortcut can be pinned manually.
-
-The Windows GUI executable uses the Windows GUI subsystem, so normal launches
-do not open a console window. The CLI remains a console application. Remove a
-per-user installation with **Uninstall XFOIL.next GUI** in the Start Menu or
-with `Uninstall XFOIL.next GUI.cmd` in the install folder; the uninstaller
-removes only the managed shortcuts and installation folder. A portable copy is
-removed by deleting its extracted folder.
-
-The local G8 artifacts are test packages, not release downloads. See
-[packaging/gui](packaging/gui/README.md) and
-[building and testing](docs/building-and-testing.md).
-
-## Portable runtime executables
-
-The repository also provides a reproducible single-executable packaging
-path for Linux x86-64 and Windows x86-64:
+Start the GUI:
 
 ```sh
-make portable-linux            # pinned Ubuntu 22.04 / GCC 13.4.0 / glibc 2.35
-make portable-check-linux
-make portable-repro-linux
-
-# In an MSYS2 UCRT64 shell on the validated Windows 11 baseline:
-make portable-windows
-make portable-check-windows
-make portable-repro-windows
-
-make portable-sha256sums       # after both archives exist
+bin/release/xfoil.next
 ```
 
-Archives contain exactly `LICENSE`, `NOTICE` and the runtime executable.
-The Linux executable statically includes libstdc++/libgcc and requires
-system glibc 2.35 or newer. The Windows executable statically includes the
+```bat
+bin\release\xfoil.next.exe
+```
+
+The GUI provides the standalone Analysis workflow described above. The CLI
+remains a separate console program. See
+[packaging/gui](packaging/gui/README.md) for GUI package build details and
+[building and testing](docs/building-and-testing.md) for the complete build
+instructions.
+
+## Packages
+
+The 2.0.0 distribution separates the CLI and GUI into four packages:
+
+```text
+CLI, Linux x86-64:
+XFOIL.next-2.0.0-linux-x86_64.tar.xz
+
+CLI, Windows x86-64:
+XFOIL.next-2.0.0-windows-x86_64.zip
+
+GUI, Linux x86-64:
+XFOIL.next-GUI-2.0.0-linux-x86_64.AppImage
+
+GUI, Windows x86-64:
+XFOIL.next-GUI-2.0.0-windows-x86_64.zip
+```
+
+The final download links and SHA-256 checksums are added when the release is
+published.
+
+### Linux GUI package
+
+The GUI package is an AppImage built and tested on Ubuntu 24.04 x86-64 with
+GCC 13.3.0 and Qt 6.12.0. It contains the Qt runtime and plugins; a separate
+Qt installation is not required. Make it executable, then start it:
+
+```sh
+chmod +x XFOIL.next-GUI-2.0.0-linux-x86_64.AppImage
+./XFOIL.next-GUI-2.0.0-linux-x86_64.AppImage
+```
+
+No compatibility promise is made for older-glibc systems. The AppImage
+contains the GUI only; the CLI is a separate download.
+
+### Windows GUI package
+
+Extract the complete ZIP. Do not copy only `xfoil.next.exe` out of the
+package: the executable needs the Qt libraries, plugins and MinGW runtime in
+the same extracted directory.
+
+Portable use:
+
+```text
+Extract the complete ZIP and run xfoil.next.exe from the extracted folder.
+```
+
+Optional per-user installation:
+
+```bat
+Install XFOIL.next GUI.cmd
+```
+
+The installer copies the complete runtime to:
+
+```text
+%LOCALAPPDATA%\Programs\XFOIL.next GUI
+```
+
+It creates Desktop and Start Menu shortcuts and requires no administrator
+rights. Uninstall through **Uninstall XFOIL.next GUI** in the Start Menu or
+through `Uninstall XFOIL.next GUI.cmd` in the installation folder. The
+uninstaller removes only the managed installation and its shortcuts. There is
+no automatic taskbar or Start pinning. MSI, MSIX and system-wide installation
+are not provided.
+
+The Windows GUI executable uses the Windows GUI subsystem and therefore does
+not open a console window. The CLI remains a console application.
+
+### CLI packages
+
+The CLI packages contain exactly `LICENSE`, `NOTICE` and one executable. The
+Linux executable statically includes libstdc++/libgcc and requires system
+glibc 2.35 or newer. The Windows executable statically includes the
 MinGW-w64 runtime and requires the Windows UCRT, but no MSYS2/MSYS runtime
-DLLs. See [packaging/portable](packaging/portable/README.md) for the pinned
-toolchains, archive contract and source-identity requirements. These
-commands build local probe assets; they do not tag, upload or publish a
-release.
+DLLs. No library SDK binary packages are included.
 
-The 1.2.1 release preparation targets these candidate assets:
+The published 1.2.1 release used the corresponding CLI-only assets:
 
 ```text
 XFOIL.next-1.2.1-linux-x86_64.tar.xz
@@ -308,13 +333,9 @@ XFOIL.next-1.2.1-windows-x86_64.zip
 XFOIL.next-1.2.1-SHA256SUMS
 ```
 
-Linux requires x86-64 and glibc 2.35 or newer; libstdc++ and libgcc are
-statically linked, while libc, libm and the loader remain system libraries.
-The Windows asset is a single `xfoil.next-cli.exe` for x86-64 that uses Windows
-UCRT system interfaces and needs no MSYS2, MinGW or project DLL. Each archive
-contains exactly `LICENSE`, `NOTICE` and the executable. No library SDK
-binary packages are part of this release. These are release candidates until
-the tagged release is published.
+Build and packaging details are documented in
+[packaging/portable](packaging/portable/README.md) and
+[packaging/gui](packaging/gui/README.md).
 
 ## Library artifacts and consumption
 
@@ -386,7 +407,7 @@ exercised on Linux only. Platform-dependent numeric test deviations are
 handled by documented per-test portable contracts in
 `tests/TestSupport.h` and `tests/DumpParitySupport.h`; the Linux bit-exact
 and byte-exact contracts are unchanged. The reproducible MSYS2 evidence
-run is described in [Windows](#windows). The current 2.0 GUI development
+run is described in [Windows](#windows). The supported 2.0.0 GUI build
 baseline is Windows 11 + MSYS2 UCRT64 + GCC/MinGW 16.2.0 Rev7 + Qt 6.12.0;
 this does not replace the 1.2.1 release evidence.
 
@@ -395,9 +416,9 @@ this does not replace the 1.2.1 release evidence.
 ### Supported environment
 
 Validated for the 1.2.1 release on **Windows 11 + MSYS2 UCRT64 + GCC/MinGW
-16.1.0 Rev5** (the release baseline). The current 2.0 GUI development
-baseline is **Windows 11 + MSYS2 UCRT64 + GCC/MinGW 16.2.0 Rev7 + Qt
-6.12.0**; it does not replace the 1.2.1 release evidence.
+16.1.0 Rev5** (the release baseline). The supported 2.0.0 GUI build baseline
+is **Windows 11 + MSYS2 UCRT64 + GCC/MinGW 16.2.0 Rev7 + Qt 6.12.0**; it does
+not replace the 1.2.1 release evidence.
 
 - MSVC is not supported and not promised;
 - Cygwin is not supported and not promised;
@@ -513,8 +534,8 @@ Server, not Windows 11, and its toolchain is not the validated baseline;
 the workflow is a diagnostic evaluation, not a release check, and it may
 fail while unresolved toolchain deviations remain. The validated
 1.2.1 Windows release evidence remains the fully documented manual Windows 11
-+ MSYS2 UCRT64 + GCC/MinGW 16.1.0 Rev5 run described above. The current 2.0
-GUI development baseline is GCC/MinGW 16.2.0 Rev7 + Qt 6.12.0; see
++ MSYS2 UCRT64 + GCC/MinGW 16.1.0 Rev5 run described above. The supported
+2.0.0 GUI build baseline is GCC/MinGW 16.2.0 Rev7 + Qt 6.12.0; see
 `VALIDATION.md` for the hosted toolchain's measured deviations. This
 statement is not a promise of MSVC, Cygwin, a normal-build standalone
 binary or a bundled runtime. The explicit `make portable-windows` package
@@ -587,11 +608,9 @@ commitments. Order and scope may change as technical evaluation proceeds.
   prebuilt packages. The current library artifacts are source-compatible
   but do not promise a stable C++ ABI.
 
-- **Graphical user interface.** Develop a graphical user interface aligned
-  with the existing command, session, and CLI architecture. The optional Qt
-  build skeleton and embeddable widget shell exist; the application workflow,
-  plotting and cursor interaction are not yet available (see
-  [known differences](docs/known-differences.md)).
+- **Additional GUI workflows.** Develop additional workflows in the existing
+  graphical user interface, beyond the delivered Analysis workflow, while
+  keeping the command, session, and validation architecture aligned.
 
 - **QFoil approach evaluation.** Evaluate selected QFoil approaches for
   possible improvements to boundary-layer prediction, subject to numerical

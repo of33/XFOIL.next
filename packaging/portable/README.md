@@ -66,8 +66,8 @@ Ubuntu 22.04 image with GCC 13.4.0 (`13.4.0-6ubuntu1~22~ppa2`) and glibc
 g++-13 -static-libstdc++ -static-libgcc
 ```
 
-Windows uses the current Windows 11 + MSYS2 UCRT64 + GCC/MinGW 16.2.0
-Rev7 development baseline and links with:
+Windows uses the supported Windows 11 + MSYS2 UCRT64 + GCC/MinGW 16.2.0
+Rev7 build baseline and links with:
 
 ```text
 g++ -static -static-libgcc -static-libstdc++ -Wl,--no-insert-timestamp
@@ -75,8 +75,6 @@ g++ -static -static-libgcc -static-libstdc++ -Wl,--no-insert-timestamp
 
 The Windows package is built on that baseline; cross-building is not part of
 the contract. The 1.2.1 release evidence remains on GCC/MinGW 16.1.0 Rev5.
-The accepted package versions and license inventory are recorded in the
-B0/B1 evidence documents under ignored `docs/library/`.
 
 ## Determinism
 

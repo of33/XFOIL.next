@@ -4,18 +4,20 @@ This is a deliberately narrow ledger of the controlled differences between
 the C++ build and the specific Fortran reference binary. Fixed porting
 defects are not listed here; they are pinned as permanent regression tests.
 
-## 1. No plot or cursor backend
+## 1. No CLI plot or cursor backend
 
-There is no graphical backend. Plot and cursor commands are recognised and
-report exactly:
+The command-line program has no graphical backend. Plot and cursor commands
+are recognised and report exactly:
 
 ```text
 Plotting is not available in this build.
 ```
 
 Session state is unchanged and the current menu is kept. The Fortran binary
-may call X11 or abort on a missing display; the C++ contract is the
-deterministic unavailability message above.
+may call X11 or abort on a missing display; the C++ CLI contract is the
+deterministic unavailability message above. The standalone GUI provides its
+own analysis plots, but it is not a replacement for the original XFOIL plot
+and cursor command set.
 
 ## 2. Reference-build last-bit class
 

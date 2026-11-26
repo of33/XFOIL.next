@@ -4,59 +4,23 @@ All notable changes to XFOIL.next are documented here. The format follows
 a plain release log; this project does not advertise a strict
 keep-a-changelog layout.
 
-## Unreleased
+## 2.0.0
 
-- Added the owning public `xfoil::PolarData` value and pure in-memory
-  `decodePolarText`/`encodePolarText` conversion for the existing PolarText
-  contract, including side data, element data and column layout. PolarText and
-  the GUI DAT/profile adapters now parse and format decimal text without
-  process-global numeric locale changes.
-- Added the owning `xfoil::gui::AnalysisWorkflowSetup` host contract and
-  atomic `XFoilWidget::applySetup`/`resetWorkflow` transactions, complete
-  Basic/Expert paneling and analysis controls, a public CL-sequence analysis
-  mode and a view-only red paneling overlay with XFOIL-style node ticks.
-- Added the public compact and detailed CL sequence API
-  (`Session::solveClSequence`, `Session::solveDetailedClSequence`) with an
-  exclusive end boundary, one shared specified-CL sequence path, progress,
-  cancellation, owning Cp/Cf/CDF/iteration data and partial results. CLI CSEQ
-  behavior is unchanged.
-- Added an optional Qt 6.12.x GUI build skeleton with the embeddable
-  `xfoil::gui::XFoilWidget` shell, vendored QCustomPlot 2.1.1, offscreen Qt
-  tests, a public-header link check and GUI dependency/vendoring gates.
-- Added the GUI definition model and input surface: memory/NACA/NACS
-  geometry, paneling, operating conditions, alpha/CL/alpha-sequence targets,
-  an owning validated run snapshot and a geometry/panel preview.
-- Revised the GUI workspace to a 1x4 definition row, a Cp/Airfoil plus
-  seven-tab result area and a fixed right results column with point-selection
-  placeholders, a 4x3 n/a matrix and setup diagnostics.
-- Added the G3 GUI analysis worker: one persistent worker thread and one
-  worker-owned session run alpha, CL and detailed alpha-sequence analyses
-  asynchronously. Owning results, progress, cancellation, structured errors,
-  job/generation stale-result rejection, busy setup guards and safe worker
-  shutdown are covered by tests. The G4 increment below adds the plot and
-  matrix binding.
-- Added the G4 GUI result surface: source-index point selection,
-  activate/deactivate filtering, five full scalar curves with NC and
-  provisional states, selected-point Cp/Cf plots, an interactive airfoil plot,
-  pan/zoom/fit/sample-marker controls, a 4x3 direct matrix and derived
-  `CL0`/`alpha0`/`CD0`/`CM0`/`CLmax`/`(CL/CD)max` summaries. All display values
-  come from worker-owned results; selecting or filtering a point never reruns
-  the solver.
-- Added the optional owning detailed alpha sequence: each executed point
-  keeps its compact polar row plus its full Cp surface and, for viscous
-  points, its Cf distribution and CDF. The compact sequence API remains
-  unchanged, and both forms share one sequence/solver path.
-- Added the G5 standalone GUI shell: `xfoil.next-gui` wraps exactly one
-  `XFoilWidget` with File/Help actions, Open, Save Airfoil, DXF export,
-  recent files, QSettings and deferred cancel-before-close. App-only adapters
-  reuse the existing labeled/generic/MSES DAT reader, labeled airfoil writer
-  and DXF R12 encoder; Cp/Cf/polar/BLOU import/export and GUI packaging were
-  not added.
-- Adopted the current 2.0 GUI development baseline: GCC/MinGW 16.2.0 Rev7
-  on Windows and Qt 6.12.0 for Linux and Windows GUI qualification. The
-  1.2.1 release evidence remains on GCC/MinGW 16.1.0 Rev5.
-- The GUI remains a development feature and does not change the product
-  version, CLI behavior, solver behavior or library API.
+- Added the standalone Qt 6.12.0 **XFOIL.next GUI** and its Analysis workflow:
+  airfoil import and NACA/NACS geometry, paneling, operating conditions,
+  alpha/CL single points and sequences, Cp/Cf and scalar plots, comparison
+  polars, operating-point selection and reports.
+- Added asynchronous GUI analysis with phase progress, cancellation and
+  owning results.
+- Added GUI exports for Cp and polar data and for plots as PNG, PDF and SVG.
+- Added portable GUI packages: a Linux AppImage and a Windows ZIP with
+  portable use and an optional per-user installer and uninstaller.
+- Adopted the canonical executable names `xfoil.next`/`xfoil.next.exe` for the
+  GUI and `xfoil.next-cli`/`xfoil.next-cli.exe` for the CLI.
+- Extended the in-memory library with owning polar data, CL-sequence results
+  and the GUI analysis workflow setup values.
+- The CLI remains a separate console program with its established command and
+  batch workflows. The 2.0.0 GUI covers the Analysis workflow only.
 
 ## 1.2.1 — 2026-11-20
 

@@ -1,8 +1,7 @@
 # Portable GUI packaging
 
 This directory contains the XFOIL.next GUI packaging inputs. The product
-version remains the canonical value in `src/app/ProductInfo.h`; G8 tests use a
-`local-g8` suffix to avoid presenting the artifacts as release downloads.
+version is read from `src/app/ProductInfo.h`.
 
 ## Linux AppImage
 
@@ -37,8 +36,8 @@ make gui-portable-repro-linux
 
 Outputs are written below `build/portable/gui/` and are not committed.
 
-The derived GUI PNG/ICO can be regenerated offline from the owner-approved
-canonical source `resources/gui/Airfoil.Next_icon.png` with
+The derived GUI PNG/ICO can be regenerated offline from the canonical source
+`resources/gui/Airfoil.Next_icon.png` with
 `tools/generate-gui-icons.py`. The tool preserves the source aspect ratio,
 centres non-square sources on a transparent 512x512 canvas and writes the ICO
 frames from that proportional PNG. Pillow is required only for that explicit
@@ -61,17 +60,15 @@ make check-windows-subsystems
 make test-gui-installer-windows
 ```
 
-Portable use is unchanged: extract the complete ZIP and run
-`xfoil.next.exe` from the extracted folder. The optional installer is
+Portable use: extract the complete ZIP and run `xfoil.next.exe` from the
+extracted folder. The optional installer is
 `Install XFOIL.next GUI.cmd`; it calls
 `Install-XFOIL.next-GUI.ps1` with `-NoProfile -ExecutionPolicy Bypass` for the
 current process only. The installer copies the full runtime to
 `%LOCALAPPDATA%\Programs\XFOIL.next GUI`, creates a Desktop shortcut and a
 Start Menu shortcut, and does not request elevation, change the registry or use
 the network. Re-running updates the same target, the install marker and the
-shortcuts. An installation created by G8b is migrated in place: the old
-`xfoil.next-gui.exe` is replaced by `xfoil.next.exe` only inside the managed
-per-user target. The Start Menu folder also receives an uninstaller shortcut.
+shortcuts. The Start Menu folder also receives an uninstaller shortcut.
 
 `Uninstall XFOIL.next GUI.cmd` and `Uninstall-XFOIL.next-GUI.ps1` validate the
 per-user target, the install marker, the current or legacy executable and the
@@ -87,7 +84,7 @@ and a clean-`PATH` GUI startup. The PowerShell installer tests use temporary
 known-folder overrides and do not leave shortcuts in the real user profile.
 They cover install, repeated install, foreign-link preservation, marker and
 reparse rejection, running/locked rejection, installation-marker migration,
-G8b executable-name migration, legacy uninstall, uninstall, reinstall,
+legacy executable-name migration, legacy uninstall, uninstall, reinstall,
 complete removal and temporary-helper cleanup.
 
 The Windows GUI executable is linked with `-mwindows`; the CLI and GUI test
@@ -95,8 +92,8 @@ programs keep their console subsystem.
 
 ## AppStream
 
-The G8 local package deliberately uses `appimagetool --no-appstream`; no
-AppStream release or screenshot metadata is invented for a test package.
+The AppImage build uses `appimagetool --no-appstream`; no AppStream metadata
+is currently included.
 
 ## Licensing
 
