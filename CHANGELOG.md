@@ -12,7 +12,18 @@ keep-a-changelog layout.
   polars, operating-point selection and reports.
 - Added asynchronous GUI analysis with phase progress, cancellation and
   owning results.
-- Added GUI exports for Cp and polar data and for plots as PNG, PDF and SVG.
+- Consolidated the GUI File menu under **Export Airfoil**, **Export Active
+  Plot** and **Recent Airfoils**.
+- Added GUI exports for Cp and polar data, airfoil data and DXF, and plot
+  images as PNG, PDF and SVG.
+- Airfoil data export defaults to `.dat`; the extension is appended when the
+  selected name has no `.dat` extension (case-insensitive), and another
+  existing extension is preserved.
+- Airfoil plots export as PNG, PDF and SVG. PDF page size follows the plot
+  area, and open trailing edges are drawn open instead of being closed by an
+  artificial line. DXF export remains open.
+- The Cp and airfoil x axes stay synchronized. Comparison polar visibility
+  and inline rename use the stored-polar list directly.
 - Added portable GUI packages: a Linux AppImage and a Windows ZIP with
   portable use and an optional per-user installer and uninstaller.
 - Adopted the canonical executable names `xfoil.next`/`xfoil.next.exe` for the

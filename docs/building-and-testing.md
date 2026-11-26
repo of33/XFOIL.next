@@ -125,7 +125,8 @@ ZIP provides this complete runtime.
 The GUI is the standalone Analysis application described in the README. It
 supports airfoil import, NACA/NACS geometry, paneling, operating conditions,
 alpha/CL points and sequences, progress, cancellation, Cp/Cf and scalar plots,
-point selection, comparison polars, reports and Cp/polar/plot exports.
+point selection, comparison polars, reports, and exports for airfoil data and
+DXF, Cp and polar data, the airfoil view, and the active result plot.
 
 The GUI tests run offscreen and cover workflow setup, analysis execution,
 plots, point selection, exports and the standalone application shell. The

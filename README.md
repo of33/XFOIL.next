@@ -80,8 +80,8 @@ See [NOTICE](NOTICE) for full attribution and provenance details.
 - a standalone Qt 6.12.0 **XFOIL.next GUI** for the Analysis workflow:
   airfoil import and NACA/NACS geometry, paneling, operating conditions,
   alpha/CL single points and sequences, Cp/Cf/scalar plots, operating-point
-  selection and activation, comparison polars, reports, Cp/polar export, and
-  plot export as PNG, PDF or SVG;
+  selection and activation, comparison polars, reports, and exports for
+  airfoil data and DXF, Cp and polar data, and plots;
 - the complete canonical non-graphical XFOIL command set: airfoil and
   panel geometry, NACA generation and file import, inviscid and viscous
   analysis, boundary-layer / transition / wake / interaction numerics,
@@ -247,6 +247,33 @@ remains a separate console program. See
 [packaging/gui](packaging/gui/README.md) for GUI package build details and
 [building and testing](docs/building-and-testing.md) for the complete build
 instructions.
+
+### GUI exports
+
+The File menu keeps airfoil exports separate from result-plot exports:
+
+- **Export Airfoil** provides **Data...** (`.dat`), **DXF...**, and the
+  airfoil view as **PNG...**, **PDF...** or **SVG...**.
+- **Export Active Plot** provides the current result plot as **PNG...**,
+  **PDF...** or **SVG...**.
+
+Airfoil data export uses `.dat` as the default extension. If the selected
+name does not end in `.dat` (case-insensitive), the extension is appended.
+Another existing extension is preserved:
+
+```text
+airfoil       -> airfoil.dat
+airfoil.DAT   -> airfoil.DAT
+airfoil.txt   -> airfoil.txt.dat
+```
+
+Airfoil plot exports show the same view as the GUI. Open profile trailing
+edges are not closed by an artificial line in the airfoil view or in its PNG,
+PDF and SVG exports; DXF output remains open.
+
+Comparison polar visibility is controlled by the checkbox of each list entry.
+Rename a stored polar with inline editing, F2 or a double-click. Previously
+loaded airfoils remain available under **File > Recent Airfoils**.
 
 ## Packages
 
