@@ -23,8 +23,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # Reproducibility probe: archive the current commit twice, build each
-# clean source tree in the pinned Linux builder, package both, and
-# compare executable and archive hashes.
+# clean source tree natively on Ubuntu 24.04 / GCC 13.3.0, package both,
+# and compare executable and archive hashes.
 
 set -euo pipefail
 

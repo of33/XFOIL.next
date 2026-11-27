@@ -7,7 +7,7 @@ single-executable XFOIL.next runtime.
 
 | Platform | Executable | Runtime contract | Archive |
 | --- | --- | --- | --- |
-| Linux x86-64 | `xfoil.next-cli` | single ELF, static libstdc++/libgcc, system glibc >= 2.35 | `XFOIL.next-<version>-linux-x86_64.tar.xz` |
+| Linux x86-64 | `xfoil.next-cli` | single ELF, static libstdc++/libgcc, Ubuntu 24.04 system glibc, no older-glibc promise | `XFOIL.next-<version>-linux-x86_64.tar.xz` |
 | Windows x86-64 | `xfoil.next-cli.exe` | single PE, static MinGW-w64 runtime, Windows UCRT | `XFOIL.next-<version>-windows-x86_64.zip` |
 
 Each archive contains exactly `LICENSE`, `NOTICE` and the executable at the
@@ -58,13 +58,18 @@ Portable assets are packaging intermediates and intentionally stay below
 
 ## Pinned build environments
 
-Linux uses `tools/portable-linux.Dockerfile`, based on a digest-pinned
-Ubuntu 22.04 image with GCC 13.4.0 (`13.4.0-6ubuntu1~22~ppa2`) and glibc
-2.35. The executable is linked with:
+Linux is built natively on Ubuntu 24.04 x86-64 with GCC 13.3.0. The
+executable is linked with:
 
 ```text
-g++-13 -static-libstdc++ -static-libgcc
+g++ -static-libstdc++ -static-libgcc
 ```
+
+The accepted baseline requires a maximum GLIBC symbol version of 2.38. The
+static GCC C++ runtime means that no GLIBCXX runtime symbol version is
+required. `make portable-check-linux` reports both values from the actual
+binary; no older-glibc compatibility is promised. The packaging script
+enforces the Ubuntu 24.04 and GCC 13.3.x baseline.
 
 Windows uses the supported Windows 11 + MSYS2 UCRT64 + GCC/MinGW 16.2.0
 Rev7 build baseline and links with:
@@ -84,9 +89,10 @@ private build paths. The Linux archive is written with Python `tarfile` and
 XZ; the Windows archive with Python `zipfile`. The PE timestamp is zero.
 
 `make portable-repro-linux` exports the current commit twice, builds both
-clean trees in the pinned Linux image, packages both, and compares the
-executable and archive bytes. `make portable-repro-windows` performs the
-same check from two clean source copies on the Windows baseline.
+clean trees on the native Ubuntu 24.04 / GCC 13.3.0 baseline, packages both,
+and compares the executable and archive bytes.
+`make portable-repro-windows` performs the same check from two clean source
+copies on the Windows baseline.
 
 ## Source identity
 

@@ -22,8 +22,8 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# Build the portable Linux x86_64 runtime in the pinned Ubuntu 22.04 /
-# GCC 13.4.0 / glibc 2.35 builder image. The script does not package;
+# Build the portable Linux x86_64 runtime natively on the supported
+# Ubuntu 24.04 / GCC 13.3.0 baseline. The script does not package;
 # use `make portable-linux` for build and package.
 #
 # Builds from a clean source archive need:
@@ -37,20 +37,29 @@ cd "$ROOT"
 
 BUILDROOT=${BUILDROOT:-build/portable/linux-x86_64}
 BINROOT=${BINROOT:-$BUILDROOT}
-IMAGE=${XFOIL_LINUX_IMAGE:-xfoil-portable-linux:22.04-gcc13.4}
-DOCKERFILE=${XFOIL_LINUX_DOCKERFILE:-tools/portable-linux.Dockerfile}
 JOBS=${JOBS:-$(getconf _NPROCESSORS_ONLN 2>/dev/null || printf '1')}
-CXX_FLAGS='g++-13 -static-libstdc++ -static-libgcc'
+CXX_FLAGS='g++ -static-libstdc++ -static-libgcc'
 
 fail() {
     printf 'build-portable-linux.sh: error: %s\n' "$*" >&2
     exit 1
 }
 
-command -v docker >/dev/null 2>&1 || fail "docker is required"
+[ "$(uname -s)" = "Linux" ] || fail "a Linux host is required"
+[ "$(uname -m)" = "x86_64" ] || fail "an x86_64 Linux host is required"
+command -v g++ >/dev/null 2>&1 || fail "g++ is required"
 command -v python3 >/dev/null 2>&1 || fail "python3 is required"
 command -v readelf >/dev/null 2>&1 || fail "readelf is required"
 command -v git >/dev/null 2>&1 || true
+
+VERSION_ID=$(sed -n 's/^VERSION_ID="\([^"]*\)"/\1/p' /etc/os-release 2>/dev/null || true)
+[ "$VERSION_ID" = "24.04" ] || \
+    fail "Ubuntu 24.04 is required (found VERSION_ID=${VERSION_ID:-unknown})"
+GCC_VERSION=$(g++ -dumpfullversion 2>/dev/null || true)
+case "$GCC_VERSION" in
+    13.3*) ;;
+    *) fail "GCC 13.3.x is required (found ${GCC_VERSION:-unknown})" ;;
+esac
 
 git_value() {
     if [ -d "$ROOT/.git_custom" ]; then
@@ -100,22 +109,8 @@ mkdir -p "$BUILDROOT"
 python3 packaging/portable/package_portable.py metadata \
     --output "$BUILDROOT/source-metadata.json"
 
-if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
-    printf 'Building portable Linux builder image %s\n' "$IMAGE"
-    docker build -f "$DOCKERFILE" -t "$IMAGE" tools
-fi
-
-docker run --rm \
-    --user "$(id -u):$(id -g)" \
-    -v "$ROOT:/src" \
-    -w /src \
-    -e SOURCE_DATE_EPOCH="$SOURCE_DATE_EPOCH" \
-    -e XFOIL_SOURCE_COMMIT="$XFOIL_SOURCE_COMMIT" \
-    -e XFOIL_SOURCE_TREE="$XFOIL_SOURCE_TREE" \
-    -e XFOIL_SOURCE_REF="$XFOIL_SOURCE_REF" \
-    "$IMAGE" \
-    bash -c 'set -e; make -j"$1" release BUILDROOT="$2" BINROOT="$4" CXX="$3"' \
-    _ "$JOBS" "$BUILDROOT" "$CXX_FLAGS" "$BINROOT"
+make -j"$JOBS" release \
+    BUILDROOT="$BUILDROOT" BINROOT="$BINROOT" CXX="$CXX_FLAGS"
 
 VERSION=$(python3 -c \
     'import json,sys; print(json.load(open(sys.argv[1]))["version"])' \
@@ -127,6 +122,8 @@ python3 packaging/portable/check_portable_binary.py \
     --expected-version "$VERSION" \
     --run-version
 
+printf 'compiler: %s\n' "$(g++ --version | sed -n '1p')"
+printf 'runtime:  %s\n' "$(ldd --version | sed -n '1p')"
 printf 'source commit: %s\n' "$XFOIL_SOURCE_COMMIT"
 printf 'source tree:   %s\n' "$XFOIL_SOURCE_TREE"
 printf 'source ref:    %s\n' "$XFOIL_SOURCE_REF"

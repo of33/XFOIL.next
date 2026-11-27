@@ -41,11 +41,12 @@ Build identity
 Target:            Linux x86_64
 Runtime contract:  single ELF, statically linked libstdc++/libgcc,
                    dynamically linked to the system glibc
-Builder baseline:  Ubuntu 22.04.5 LTS, glibc 2.35
-Compiler:          GCC 13.4.0 (13.4.0-6ubuntu1~22~ppa2)
+Builder baseline:  Ubuntu 24.04 LTS, GCC 13.3.0
+Compiler:          GCC 13.3.0
 Build command:     make release BUILDROOT=<portable-root>
-                   CXX='g++-13 -static-libstdc++ -static-libgcc'
-Minimum platform:  x86-64 Linux with glibc 2.35 or newer
+                   CXX='g++ -static-libstdc++ -static-libgcc'
+Required symbols:  maximum GLIBC 2.38; no GLIBCXX runtime symbols
+Platform baseline: Ubuntu 24.04 x86-64; no older-glibc promise
 System libraries:  libc.so.6, libm.so.6, ld-linux-x86-64.so.2
 
 The executable does not require libstdc++.so.6, libgcc_s.so.1 or a

@@ -207,9 +207,10 @@ XFOIL.next-GUI-2.0.0-windows-x86_64.zip
 
 The GUI and CLI are separate downloads. The Windows GUI ZIP contains the
 executable, Qt libraries, plugins and MinGW runtime together with the optional
-per-user installer. The Linux GUI AppImage is the portable GUI package and is
-built and tested on Ubuntu 24.04; no older-glibc promise is made. The final
-download links and SHA-256 checksums are added when the release is published.
+per-user installer. The Linux GUI AppImage and the Linux CLI package are built
+and tested on Ubuntu 24.04; no older-glibc promise is made for either. The
+final download links and SHA-256 checksums are added when the release is
+published.
 
 ## Portable runtime packaging
 
@@ -228,10 +229,12 @@ make portable-repro-windows    two clean Windows builds, compare bytes
 make portable-sha256sums       separate SHA256SUMS for both archives
 ```
 
-The Linux build requires Docker for the digest-pinned Ubuntu 22.04 /
-GCC 13.4.0 / glibc 2.35 builder. The Windows build runs on the supported
-Windows 11 + MSYS2 UCRT64 + GCC/MinGW 16.2.0 Rev7 baseline; the 1.2.1 release
-artifacts remain validated with GCC/MinGW 16.1.0 Rev5.
+The Linux CLI is built natively on the supported Ubuntu 24.04 / GCC 13.3.0
+baseline. The accepted package requires a maximum GLIBC symbol version of
+2.38 and, with static libstdc++/libgcc, no GLIBCXX runtime symbol version.
+No older-glibc compatibility is promised. The Windows build runs on the
+supported Windows 11 + MSYS2 UCRT64 + GCC/MinGW 16.2.0 Rev7 baseline; the
+1.2.1 release artifacts remain validated with GCC/MinGW 16.1.0 Rev5.
 Outputs are written below `build/portable/`:
 
 ```text
@@ -244,8 +247,10 @@ dist/XFOIL.next-<version>-SHA256SUMS
 
 Each archive contains exactly `LICENSE`, `NOTICE` and the executable. The
 Linux executable statically includes libstdc++/libgcc and dynamically uses
-system glibc 2.35 or newer. The Windows executable statically includes the
-MinGW-w64 runtime and uses the Windows UCRT. The archive version comes from
+the Ubuntu 24.04 system glibc; the accepted binary requires GLIBC 2.38
+symbols and no GLIBCXX runtime symbols. No older-glibc compatibility is
+promised. The Windows executable statically includes the MinGW-w64 runtime
+and uses the Windows UCRT. The archive version comes from
 `src/app/ProductInfo.h`; packaging does not bump the version or publish a
 release. Builds from a clean source archive need `XFOIL_SOURCE_COMMIT`,
 `XFOIL_SOURCE_TREE`, optional `XFOIL_SOURCE_REF` and

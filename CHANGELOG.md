@@ -26,6 +26,10 @@ keep-a-changelog layout.
   and inline rename use the stored-polar list directly.
 - Added portable GUI packages: a Linux AppImage and a Windows ZIP with
   portable use and an optional per-user installer and uninstaller.
+- The Linux CLI package is built natively on Ubuntu 24.04 with GCC 13.3.0.
+  It requires the GLIBC 2.38 symbols used by that baseline and has no
+  GLIBCXX runtime dependency; no older-glibc compatibility is promised.
+  Windows packaging is unchanged.
 - Adopted the canonical executable names `xfoil.next`/`xfoil.next.exe` for the
   GUI and `xfoil.next-cli`/`xfoil.next-cli.exe` for the CLI.
 - Extended the in-memory library with owning polar data, CL-sequence results

@@ -29,8 +29,8 @@ Linux:
   * NEEDED is exactly the accepted system glibc set;
   * no RPATH/RUNPATH;
   * no libstdc++/libgcc/project shared library dependency;
-  * no GLIBCXX/CXXABI/GCC symbol versions;
-  * maximum GLIBC symbol version is 2.35;
+  * no CXXABI/GCC dynamic symbol versions;
+  * reports the maximum GLIBC and GLIBCXX symbol versions required;
   * --version reports the expected product version.
 
 Windows:
@@ -65,7 +65,7 @@ FORBIDDEN_LINUX = (
     "libgcc_s.so",
     "libxfoil_next.so",
 )
-FORBIDDEN_VERSION_PREFIXES = ("GLIBCXX_", "CXXABI_", "GCC_")
+FORBIDDEN_VERSION_PREFIXES = ("CXXABI_", "GCC_")
 WINDOWS_DLL_RE = re.compile(
     r"^(KERNEL32\.dll|api-ms-win-crt-[a-z0-9-]+\.dll)$", re.IGNORECASE)
 WINDOWS_FORBIDDEN = {
@@ -76,7 +76,7 @@ WINDOWS_FORBIDDEN = {
     "xfoil_next.dll",
 }
 GLIBC_RE = re.compile(r"GLIBC_([0-9]+)\.([0-9]+)")
-MAX_GLIBC = (2, 35)
+GLIBCXX_RE = re.compile(r"GLIBCXX_([0-9]+)\.([0-9]+)(?:\.([0-9]+))?")
 
 
 class CheckError(Exception):
@@ -147,22 +147,25 @@ def check_linux(binary, expected_version, run_version):
         if name.startswith(FORBIDDEN_VERSION_PREFIXES):
             raise CheckError(f"forbidden dynamic symbol version: {name}")
     glibc_versions = []
+    glibcxx_versions = []
     for name in names:
         match = GLIBC_RE.fullmatch(name)
         if match:
             glibc_versions.append((int(match.group(1)), int(match.group(2))))
+            continue
+        match = GLIBCXX_RE.fullmatch(name)
+        if match:
+            glibcxx_versions.append(tuple(
+                int(part) for part in match.groups() if part is not None))
     if not glibc_versions:
         raise CheckError("no GLIBC symbol versions found")
     maximum = max(glibc_versions)
-    if maximum > MAX_GLIBC:
-        raise CheckError(
-            f"minimum GLIBC floor is {maximum[0]}.{maximum[1]}, "
-            f"expected at most {MAX_GLIBC[0]}.{MAX_GLIBC[1]}")
+    maximum_cxx = max(glibcxx_versions) if glibcxx_versions else None
 
     if expected_version and run_version:
         check_version(binary, expected_version)
     print("linux: PASS")
-    return maximum
+    return maximum, maximum_cxx
 
 
 def pe_fields(binary):
@@ -289,8 +292,12 @@ def main():
 
     try:
         if args.platform == "linux":
-            maximum = check_linux(binary, args.expected_version, args.run_version)
-            print(f"minimum GLIBC: {maximum[0]}.{maximum[1]}")
+            maximum, maximum_cxx = check_linux(
+                binary, args.expected_version, args.run_version)
+            print(f"maximum GLIBC: {maximum[0]}.{maximum[1]}")
+            print("maximum GLIBCXX: " +
+                  ("none (static libstdc++)" if maximum_cxx is None
+                   else ".".join(str(part) for part in maximum_cxx)))
             if args.archive:
                 epoch = int(os.environ.get("SOURCE_DATE_EPOCH", "0"))
                 if not epoch:

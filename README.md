@@ -347,8 +347,9 @@ not open a console window. The CLI remains a console application.
 ### CLI packages
 
 The CLI packages contain exactly `LICENSE`, `NOTICE` and one executable. The
-Linux executable statically includes libstdc++/libgcc and requires system
-glibc 2.35 or newer. The Windows executable statically includes the
+Linux executable statically includes libstdc++/libgcc, is built natively on
+Ubuntu 24.04 with GCC 13.3.0, and requires GLIBC 2.38 symbols; no older-glibc
+compatibility is promised. The Windows executable statically includes the
 MinGW-w64 runtime and requires the Windows UCRT, but no MSYS2/MSYS runtime
 DLLs. No library SDK binary packages are included.
 
