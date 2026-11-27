@@ -22,8 +22,6 @@ keep-a-changelog layout.
 - Airfoil plots export as PNG, PDF and SVG. PDF page size follows the plot
   area, and open trailing edges are drawn open instead of being closed by an
   artificial line. DXF export remains open.
-- The Cp and airfoil x axes stay synchronized. Comparison polar visibility
-  and inline rename use the stored-polar list directly.
 - Added portable GUI packages: a Linux AppImage and a Windows ZIP with
   portable use and an optional per-user installer and uninstaller.
 - The Linux CLI package is built natively on Ubuntu 24.04 with GCC 13.3.0.
