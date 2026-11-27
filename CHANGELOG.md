@@ -4,7 +4,7 @@ All notable changes to XFOIL.next are documented here. The format follows
 a plain release log; this project does not advertise a strict
 keep-a-changelog layout.
 
-## 2.0.0
+## 2.0.0 — 2026-11-27
 
 - Added the standalone Qt 6.12.0 **XFOIL.next GUI** and its Analysis workflow:
   airfoil import and NACA/NACS geometry, paneling, operating conditions,
