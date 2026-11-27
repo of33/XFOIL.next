@@ -42,11 +42,11 @@ Target:            Windows x86_64
 Runtime contract:  single PE, statically linked MinGW-w64 runtime,
                    system UCRT provided by Windows
 Builder baseline:  Windows 11, MSYS2 UCRT64
-Compiler:          GCC/MinGW 16.1.0 Rev5 (gcc 16.1.0-5)
-Runtime packages:  mingw-w64-ucrt-x86_64-gcc-libs 16.1.0-5,
+Compiler:          GCC/MinGW 16.2.0 Rev7 (gcc 16.2.0-7)
+Runtime packages:  mingw-w64-ucrt-x86_64-gcc-libs 16.2.0-7,
                    mingw-w64-ucrt-x86_64-winpthreads
-                   14.0.0.r59.g93753750c-1,
-                   mingw-w64-ucrt-x86_64-crt 14.0.0.r59.g93753750c-1
+                   14.0.0.r598.ge3d18511f-1,
+                   mingw-w64-ucrt-x86_64-crt 14.0.0.r598.ge3d18511f-1
 Linker setting:    -Wl,--no-insert-timestamp
 Build command:     make release BUILDROOT=<portable-root>
                    CXX='g++ -static -static-libgcc -static-libstdc++
