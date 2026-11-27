@@ -208,9 +208,11 @@ XFOIL.next-GUI-2.0.0-windows-x86_64.zip
 The GUI and CLI are separate downloads. The Windows GUI ZIP contains the
 executable, Qt libraries, plugins and MinGW runtime together with the optional
 per-user installer. The Linux GUI AppImage and the Linux CLI package are built
-and tested on Ubuntu 24.04; no older-glibc promise is made for either. The
-final download links and SHA-256 checksums are added when the release is
-published.
+and tested on Ubuntu 24.04; no older-glibc promise is made for either.
+Published binary packages are available from the
+[GitHub Releases page](https://github.com/of33/XFOIL.next/releases). The CLI
+and GUI are separate downloads. The `XFOIL.next-2.0.0-SHA256SUMS` file
+contains the SHA-256 values for the four product packages.
 
 ## Portable runtime packaging
 

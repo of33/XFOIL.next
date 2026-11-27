@@ -293,8 +293,10 @@ GUI, Windows x86-64:
 XFOIL.next-GUI-2.0.0-windows-x86_64.zip
 ```
 
-The final download links and SHA-256 checksums are added when the release is
-published.
+Published binary packages are available from the
+[GitHub Releases page](https://github.com/of33/XFOIL.next/releases). The CLI
+and GUI are separate downloads. The `XFOIL.next-2.0.0-SHA256SUMS` file
+contains the SHA-256 values for the four product packages.
 
 ### Linux GUI package
 

@@ -1,8 +1,8 @@
 # Public C++ API
 
-A complete user manual is available as
-[XFOIL.next Library User Manual](../XFOIL.next-Library-Manual.pdf). It
-describes the implemented API and build state in detail.
+The separate [XFOIL.next Library User Manual](../XFOIL.next-Library-Manual.pdf)
+documents the 1.2.0 library baseline. This page is the current public API
+reference and includes the 2.0.0 additions.
 
 The public API is a small, value-typed, session-based interface under the
 `xfoil` namespace. It exposes no raw pointers, no public solver arrays, no
@@ -33,6 +33,9 @@ xfoil/SessionTypes.h              GeometrySetResult / GeometrySetError
 xfoil/Types.h                     Point2D, Vector2D, Degrees, Radians
 xfoil/geometry/AirfoilGeometry.h  owning unpanelled coordinate value type
 xfoil/gui/AnalysisWorkflowSetup.h owning GUI host setup/view value types
+xfoil/gui/Export.h                optional GUI visibility/import-export macro
+xfoil/gui/GuiState.h              optional GUI workflow state values
+xfoil/gui/XFoilAnalysisWidget.h   optional Qt Analysis widget surface
 xfoil/Limits.h                    canonical capacity constants (no API surface)
 ```
 
@@ -169,6 +172,9 @@ successful point:
   never reconstructed as `CD - CDp`.
 - `skinFriction`: optional owning `SkinFrictionDistribution` for the same
   valid viscous point.
+- `pressureExport`: optional owning `PressureExportData` when the session has
+  a complete panel/GAM state for the canonical CPDUMP input. It can also be
+  present for an inviscid point; it is not tied to the viscous Cf fields.
 
 The two optional drag fields and `skinFriction` are present together for
 a successful viscous point with a valid final VISCAL state, including a
@@ -179,6 +185,41 @@ values from a previous point.
 The Cf distribution uses boundary-layer stations and is separate from the
 panel-node `SurfaceDistribution` Cp data. Cp and Cf are never mixed in one
 vector type. Wake stations are excluded.
+
+### Pressure export data
+
+`PressureExportData` is the owning public projection of the canonical CPDUMP
+input for a point:
+
+```cpp
+struct PressureExportData {
+  double machNumber{0.0};
+  double qinf{0.0};
+  std::vector<double> x;
+  std::vector<double> gam;
+};
+```
+
+- `machNumber` is the existing CPDUMP flow value (Fortran `MINF`),
+  dimensionless.
+- `qinf` is the dimensionless freestream speed scale (Fortran `QINF`), not a
+  dimensional dynamic pressure.
+- `x` contains the panel-node normalized chord coordinates in panel order.
+- `gam` contains the aligned panel GAM values; it has the same length as `x`.
+- `pressureExport` is present when the successful operating point has a
+  complete panel/GAM state with matching non-empty arrays. It can be present
+  for an inviscid point and is not tied to `skinFriction` or CDF.
+- The vectors own their data and remain valid after the session changes. The
+  value contains no file path, stream, dialog or file-write operation. The
+  application layer decides whether and where to encode or write it.
+- This is the CPDUMP input value, not a public file API and not a Cf,
+  BLDUMP3 or boundary-layer export. Those remain outside the public library
+  surface.
+
+`pressureExport` is not carried by compact `PolarPoint` or `SequenceResult`
+rows. A detailed sequence exposes it only through the owning
+`DetailedSequencePoint::operatingPoint` when that point has the complete
+state.
 
 `xfoil::analyze(request)` returns these owning values directly, so Cf is
 available after the temporary one-shot session has been destroyed.
@@ -276,7 +317,9 @@ An inviscid detail point has `surface` but no `skinFriction` and no
 state has `surface`, `skinFriction` and `dragCoefficientFriction`. The Cf
 data uses boundary-layer stations, excludes wake stations, preserves the
 sign and is never interpolated onto Cp/panel nodes. Cp and Cf remain
-separate owning vector sets.
+separate owning vector sets. The operating point can also carry
+`pressureExport` when its completed panel/GAM state is complete, as described
+above.
 
 The detailed result is deliberately more memory-intensive than the compact
 result. It is intended for GUI distribution views and detailed host
@@ -364,52 +407,109 @@ and continue the run, as in the public alpha sequence.
 
 ## In-memory polar data
 
-`xfoil/PolarData.h` defines the owning scalar polar value used by the GUI
-comparison store and the application PolarText adapters:
+`xfoil/PolarData.h` defines the owning scalar polar value and its layout
+types. It contains no session, file, path, Qt, Cp or Cf data. The public
+capacity constants are:
+
+```cpp
+maxPolarTextPoints          = 800
+maxPolarTextElements        = 5
+polarTextSideCount          = 2
+polarTextElementColumnCount = 4
+```
+
+The column selectors are:
+
+```cpp
+enum class PolarColumn {
+  alpha, liftCoefficient, dragCoefficient, momentCoefficient,
+  dragCoefficientWave, dragCoefficientViscous,
+  dragCoefficientPressure, machNumber, reynoldsNumber, hingeMoment,
+  minimumPressureCoefficient, hingeDragCoefficient,
+  momentCoefficientDerivative
+};
+
+enum class PolarSideColumn {
+  nCritical, tripX, transitionX, transitionIndex
+};
+
+enum class PolarElementQuantity { cx, cy, cm, cdVisc };
+```
+
+`PolarMetadata` carries the stored polar header:
 
 ```cpp
 struct PolarMetadata {
   std::string name;
-  std::string code;
-  double version;
-  ReynoldsDependency reynoldsDependency;
-  MachDependency machDependency;
-  double referenceReynoldsNumber;
-  double referenceMachNumber;
-  std::array<double, 2> nCritical;
-  std::array<double, 2> tripX;
-  double pressureParameter;
-  double etaParameter;
-  std::size_t elementCount;
+  std::string code{"XFOIL"};
+  double version{6.99};
+  ReynoldsDependency reynoldsDependency{ReynoldsDependency::constant};
+  MachDependency machDependency{MachDependency::constant};
+  double referenceReynoldsNumber{0.0};
+  double referenceMachNumber{0.0};
+  std::array<double, polarTextSideCount> nCritical{};
+  std::array<double, polarTextSideCount> tripX{};
+  double pressureParameter{0.0};
+  double etaParameter{0.0};
+  std::size_t elementCount{1};
 };
+```
 
+`PolarSideData` contains `nCritical`, `tripX`, `transitionX` and
+`transitionIndex` for one side. `PolarElementData` contains `cx`, `cy`, `cm`
+and `cdVisc` for one element. `PolarElementSelection` selects up to four
+element quantities in order: `columns` has four optional slots, and `count`
+is the number of leading slots in use. The count is 0 to 4, every used slot
+must be present, and quantities may not repeat.
+
+`PolarColumnLayout` combines `baseColumns`, `sideColumns` and
+`elementSelection`. `PolarData` owns:
+
+```cpp
 struct PolarData {
   PolarMetadata metadata;
   std::vector<PolarPoint> points;
-  std::vector<std::array<PolarSideData, 2>> sideData;
-  std::vector<std::array<PolarElementData, 5>> elementData;
+  std::vector<std::array<PolarSideData, polarTextSideCount>> sideData;
+  std::vector<std::array<PolarElementData, maxPolarTextElements>>
+      elementData;
   PolarColumnLayout layout;
 };
 ```
 
-`PolarData` owns all values and contains no session, file, path, Qt or Cp/Cf
-data. `PolarText` has no separate convergence column; points decoded from
-PolarText are the accepted stored points and are marked converged, matching
-the existing stored-polar projection. Side and element data are retained.
+`points` is the scalar row set. `sideData` is aligned with `points` when side
+columns are selected; `elementData` is aligned with `points` when an element
+selection is present. Element rows always have capacity for five elements;
+`metadata.elementCount` records how many are in use and must be 1 to 5.
+`PolarText` has no separate convergence column; decoded points are accepted
+stored points and carry `ConvergenceStatus::converged`.
 
 `xfoil/PolarText.h` provides pure in-memory conversion:
 
 ```cpp
-Result<PolarData> decodePolarText(std::string_view text);
+enum class PolarTextCompatibility {
+  canonical,
+  xfoil6996BrokenSideOrder,
+};
+
+Result<PolarData> decodePolarText(
+    std::string_view text,
+    PolarTextCompatibility compatibility =
+        PolarTextCompatibility::canonical);
 Result<std::string> encodePolarText(const PolarData& polar);
 ```
 
-The functions use the existing canonical PolarText columns and layout, preserve
-the imported column order and element selection on roundtrip, return structured
-errors without partial values, and never access the filesystem. Numeric parsing
-and formatting are locale-independent: decimal points and Fortran D exponents
-are handled explicitly and no process-global `LC_NUMERIC`/locale mutation is
-performed.
+`canonical` is the normal format. `xfoil6996BrokenSideOrder` is a targeted
+read compatibility mode for the known XFOIL 6.996 side-order defect; it is
+not a general tolerance or alternate file format.
+
+Decoding validates the text and returns a structured `Result` error without a
+partial value. Encoding validates the layout, the 800-point limit, element
+count, side/element alignment and the presence of every selected optional
+column value. It preserves the base/side column order and element selection
+on roundtrip. Neither function accesses the filesystem, dialogs, environment
+or process-global locale. Numeric parsing and formatting are
+locale-independent: decimal points and Fortran D exponents are handled
+explicitly and no process-global `LC_NUMERIC` mutation is performed.
 
 ## Skin-friction distribution
 
@@ -614,33 +714,18 @@ from another thread.
 same session. `lastResult()` returns the most recent result held by the
 session.
 
-## GUI analysis workflow setup
+## Optional GUI component
 
-`xfoil/gui/AnalysisWorkflowSetup.h` defines the owning host setup contract for
-the optional Qt surface. It contains no Qt, widget, session, file or callback
-object:
+The `xfoil/gui/` headers declare the optional Qt Analysis component.
+`XFoilAnalysisWidget` is the Analysis widget, and `AnalysisWorkflowSetup`
+groups one geometry source, paneling options, an `AnalysisConfig` and one
+request (`AlphaTarget`, `LiftTarget`, `AlphaSequence` or `LiftSequence`).
+`AnalysisWorkflowViewOptions` contains view-only paneling options.
 
-```cpp
-xfoil::gui::AnalysisWorkflowSetup setup;
-setup.geometry = xfoil::gui::NacaGeometrySetup{"2412"};
-setup.paneling = xfoil::PanelingOptions{};
-setup.configuration = xfoil::AnalysisConfig{};
-setup.request = xfoil::LiftSequence{0.2, 0.8, 0.2};
-
-xfoil::gui::XFoilAnalysisWidget widget;
-if (!widget.applySetup(setup).isOk()) {
-  // The previous workflow, if any, is unchanged.
-}
-```
-
-`AnalysisWorkflowSetup` has one geometry source (memory, NACA or NACS), one
-complete `PanelingOptions`, one `AnalysisConfig` and one request (`AlphaTarget`,
-`LiftTarget`, `AlphaSequence` or `LiftSequence`). `XFoilAnalysisWidget::applySetup`
-validates a transient candidate session in the worker and atomically replaces
-the active session only after complete success. It never starts an analysis.
-`resetWorkflow()` returns the widget to its empty state, and
-`AnalysisWorkflowViewOptions` controls only the instance-local paneling overlay
-and panel-node markers.
+Construction, host integration, signal/slot routing, widget tutorials and
+file/dialog adapters are outside the 2.0.0 public library documentation.
+The library and session API above remains the supported non-GUI embedding
+surface.
 
 ## Minimal example
 
